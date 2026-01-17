@@ -29,7 +29,9 @@
       "Bash(NUL)",
       "Bash(Select-Object -First 150)",
       "Bash(timeout 30 powershell:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(npm run dev:*)",
+      "Bash(timeout 3 powershell:*)"
     ],
     "deny": [],
     "ask": []

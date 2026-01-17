@@ -4,7 +4,10 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>503 - Maintenance Mode</title>
-    @vite(['resources/css/app.css'])
+        <!-- Production Assets -->
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <script src="{{ asset('js/app.js') }}" defer></script>
+    @livewireStyles
 </head>
 <body class="antialiased bg-gradient-to-br from-yellow-50 to-amber-100 min-h-screen flex items-center justify-center p-4">
     <div class="max-w-2xl w-full">
@@ -73,5 +76,7 @@
             </div>
         </div>
     </div>
+    @livewireScripts
+    <script src="{{ asset('js/livewire.js') }}" defer></script>
 </body>
 </html>

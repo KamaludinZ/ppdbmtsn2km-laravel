@@ -1,0 +1,13 @@
+/* PPDB MTsN 2 Kota Malang - Tailwind CSS Fallback */
+@import url("https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css");
+@import url("https://fonts.bunny.net/css?family=figtree:300,400,500,600,700&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap");
+
+:root {
+    --primary: #10b981;
+    --secondary: #3b82f6;
+}
+
+body {
+    font-family: 'Figtree', 'Inter', system-ui, sans-serif;
+}

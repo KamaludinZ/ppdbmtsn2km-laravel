@@ -69,7 +69,15 @@
         }
     </style>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+        <!-- Production Assets -->
+    @if(app()->environment('local'))
+        <!-- Development with Vite -->
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @else
+        <!-- Production Assets -->
+        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+        <script src="{{ asset('js/app.js') }}" defer></script>
+    @endif
     @livewireStyles
 </head>
 <body class="antialiased bg-gray-50" x-data="{ sidebarOpen: false }">

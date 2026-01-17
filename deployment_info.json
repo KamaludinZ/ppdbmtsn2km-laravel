@@ -1,0 +1,13 @@
+{
+    "prepared_at": "2026-01-17 08:18:57",
+    "php_version": "8.2.12",
+    "laravel_version": "11.x",
+    "changes": {
+        "vite_removed": true,
+        "static_assets": true,
+        "production_ready": true
+    },
+    "files_modified": 16,
+    "warnings": 0,
+    "errors": 0
+}
