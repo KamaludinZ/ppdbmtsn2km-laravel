@@ -212,7 +212,7 @@ Route::post('/login', function (\Illuminate\Http\Request $request) {
     }
 
     return back()->withErrors(['email' => 'Email atau password salah, atau akun tidak aktif.'])->withInput(['email' => $credentials['email']]);
-})->name('login');
+})->name('login.process');
 Route::get('/login/admin', \App\Livewire\Auth\AdminLogin::class)->name('login.admin'); // Login untuk Admin/Panitia
 Route::get('/daftar', Register::class)->name('register');
 Route::post('/logout', function () {
