@@ -1,0 +1,620 @@
+<?php
+
+namespace App\Livewire\Pendaftar;
+
+use App\Models\Pengumuman as PengumumanModel;
+use App\Models\TimelinePendaftaran;
+use App\Models\TesPsikologiSetting;
+use App\Models\TesPsikologiPendaftar;
+use Illuminate\Support\Facades\Auth;
+use Livewire\Component;
+
+class Dashboard extends Component
+{
+    public $pendaftar;
+    public $jalur;
+    public $timeline;
+    public $progress = [];
+    public $pengumumanPendaftar;
+    public $tesPsikologiAktif = false;
+    public $tesPsikologiData = null;
+
+    public $documentLabels = [
+        'rapor' => ['label' => 'Scan Rapor', 'keterangan' => 'Upload dalam format PDF, maksimal 2 MB', 'wajib' => true],
+        'akta_kelahiran' => ['label' => 'Akta Kelahiran', 'keterangan' => 'Scan akta kelahiran dalam format PDF, maksimal 2 MB', 'wajib' => true],
+        'kartu_keluarga' => ['label' => 'Kartu Keluarga', 'keterangan' => 'Scan Kartu Keluarga dalam format PDF, maksimal 2 MB', 'wajib' => true],
+        'nisn' => ['label' => 'Scan/Bukti NISN', 'keterangan' => 'Kartu NISN atau screenshot cek NISN dalam format PDF, maksimal 2 MB', 'wajib' => true],
+        'ijazah' => ['label' => 'Ijazah/SKL/Surat Keterangan Aktif', 'keterangan' => 'Dari sekolah asal (SD/MI) dalam format PDF, maksimal 2 MB', 'wajib' => true],
+        'sertifikat' => ['label' => 'Sertifikat/Piagam', 'keterangan' => 'Jika memiliki prestasi, upload dalam format PDF, maksimal 2 MB', 'wajib' => false],
+        'kip' => ['label' => 'Kartu Indonesia Pintar (KIP)', 'keterangan' => 'Upload jika memiliki nomor KIP di formulir, format PDF maksimal 2 MB', 'wajib' => false, 'conditional' => 'nomor_kip'],
+        'pkh' => ['label' => 'Program Keluarga Harapan (PKH)', 'keterangan' => 'Upload jika memiliki nomor PKH di formulir, format PDF maksimal 2 MB', 'wajib' => false, 'conditional' => 'nomor_pkh'],
+        'kks' => ['label' => 'Kartu Keluarga Sejahtera (KKS)', 'keterangan' => 'Upload jika memiliki nomor KKS di formulir, format PDF maksimal 2 MB', 'wajib' => false, 'conditional' => 'nomor_kks'],
+    ];
+
+    public function mount()
+    {
+        // Get authenticated user's pendaftar data
+        $user = Auth::user();
+
+        if (!$user || $user->role !== 'pendaftar') {
+            return redirect()->to('/login');
+        }
+
+        $this->pendaftar = $user->pendaftar;
+
+        if (!$this->pendaftar) {
+            return redirect()->to('/daftar');
+        }
+
+        // Load relasi dokumen and verifikasi berkas
+        $this->pendaftar->load(['dokumen', 'verifikasiBerkas']);
+
+        $this->jalur = $this->pendaftar->jalurPendaftaran;
+
+        $this->timeline = TimelinePendaftaran::aktif()
+            ->byJalur($this->jalur->kode)
+            ->ordered()
+            ->get();
+
+        // Load pengumuman with kategori 'pendaftar'
+        $this->pengumumanPendaftar = PengumumanModel::where('kategori', 'pendaftar')
+            ->where('aktif', true)
+            ->orderByDesc('tanggal_publikasi')
+            ->get();
+
+        // Check if tes psikologi is active
+        $tesPsikologiSetting = TesPsikologiSetting::getSetting();
+        $this->tesPsikologiAktif = $tesPsikologiSetting->aktif;
+
+        // Load tes psikologi data if active
+        if ($this->tesPsikologiAktif) {
+            $this->tesPsikologiData = TesPsikologiPendaftar::firstOrCreate(
+                ['pendaftar_id' => $this->pendaftar->id],
+                ['status_verifikasi' => 'belum_upload']
+            );
+        }
+
+        $this->calculateProgress();
+    }
+
+    /**
+     * Check if formulir is complete (required fields filled)
+     * Delegates to Pendaftar model method for accurate validation
+     */
+    private function isFormulirComplete(): bool
+    {
+        return $this->pendaftar->isRequiredTabsCompleted();
+    }
+
+    /**
+     * Check if all required documents are uploaded
+     */
+    private function isUploadBerkasComplete(): bool
+    {
+        $requiredDocs = array_filter($this->documentLabels, function($doc) {
+            // Check if document is required (wajib = true)
+            if (isset($doc['wajib']) && $doc['wajib'] === true) {
+                // If conditional field is set, check if that field has value
+                if (isset($doc['conditional'])) {
+                    $conditionalField = $doc['conditional'];
+                    return !empty($this->pendaftar->$conditionalField);
+                }
+                return true;
+            }
+            return false;
+        });
+
+        // Get uploaded documents
+        $uploadedDocs = $this->pendaftar->dokumen->pluck('jenis_dokumen')->toArray();
+
+        foreach (array_keys($requiredDocs) as $docType) {
+            if (!in_array($docType, $uploadedDocs)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Map jenis dokumen to verifikasi_berkas status field
+     * Same mapping as in Dokumen model
+     */
+    private function mapDocumentToStatusField($jenisDokumen)
+    {
+        $mapping = [
+            'akta_kelahiran' => 'status_akte',
+            'raport' => 'status_rapor',
+            'rapor' => 'status_rapor',
+            'kartu_keluarga' => 'status_kk',
+            'kk' => 'status_kk',
+            'nisn' => 'status_nisn',
+            'ijazah' => 'status_ijazah',
+            'sertifikat' => 'status_sertifikat',
+            'kip' => 'status_kip',
+            'pkh' => 'status_pkh',
+            'kks' => 'status_kks',
+        ];
+
+        return $mapping[$jenisDokumen] ?? null;
+    }
+
+    /**
+     * Check if any required document needs fixing (status: tidak_sesuai or perlu_perbaikan)
+     */
+    private function hasDocumentNeedsFix(): bool
+    {
+        $verifikasi = $this->pendaftar->verifikasiBerkas;
+        if (!$verifikasi) {
+            return false;
+        }
+
+        // Get uploaded documents
+        $uploadedDocs = $this->pendaftar->dokumen;
+
+        // Check if any uploaded document has "tidak_sesuai" or "perlu_perbaikan" status
+        foreach ($uploadedDocs as $dokumen) {
+            $statusField = $this->mapDocumentToStatusField($dokumen->jenis_dokumen);
+
+            if ($statusField && isset($verifikasi->$statusField)) {
+                $status = $verifikasi->$statusField;
+
+                if (in_array($status, ['tidak_sesuai', 'perlu_perbaikan'])) {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Check if all required documents are waiting for verification (menunggu_verifikasi)
+     */
+    private function areAllDocumentsWaitingVerification(): bool
+    {
+        $verifikasi = $this->pendaftar->verifikasiBerkas;
+        if (!$verifikasi) {
+            return false;
+        }
+
+        // Get required document types based on documentLabels
+        $requiredDocTypes = array_keys(array_filter($this->documentLabels, function($doc) {
+            if (isset($doc['wajib']) && $doc['wajib'] === true) {
+                if (isset($doc['conditional'])) {
+                    $conditionalField = $doc['conditional'];
+                    return !empty($this->pendaftar->$conditionalField);
+                }
+                return true;
+            }
+            return false;
+        }));
+
+        // Map to status fields and check each required document
+        foreach ($requiredDocTypes as $docType) {
+            $statusField = $this->mapDocumentToStatusField($docType);
+
+            if ($statusField && isset($verifikasi->$statusField)) {
+                $status = $verifikasi->$statusField;
+
+                // If status is not menunggu_verifikasi or disetujui, return false
+                if (!in_array($status, ['menunggu_verifikasi', 'disetujui'])) {
+                    return false;
+                }
+            } else {
+                // Required document field doesn't exist or no mapping
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function calculateProgress()
+    {
+        $status = $this->pendaftar->status_pendaftaran;
+        $daftarUlang = $this->pendaftar->daftarUlang;
+
+        // Akun step - always completed
+        $this->progress = [
+            'akun' => [
+                'status' => 'completed',
+                'label' => 'Selesai',
+                'color' => 'emerald'
+            ]
+        ];
+
+        // Check if verification is approved
+        $isVerified = in_array($status, ['data_disetujui', 'lulus', 'tidak_lulus', 'cadangan']);
+        $needsFix = in_array($status, ['lengkapi_data', 'perbaiki_data']);
+
+        // FORMULIR STEP
+        $formulirComplete = $this->isFormulirComplete();
+        if ($isVerified) {
+            // After verification approved
+            $this->progress['formulir'] = [
+                'status' => 'completed',
+                'label' => 'Selesai',
+                'color' => 'emerald'
+            ];
+        } elseif ($needsFix) {
+            // Needs to be fixed
+            $this->progress['formulir'] = [
+                'status' => 'current',
+                'label' => 'Perbaiki',
+                'color' => 'red'
+            ];
+        } elseif ($formulirComplete) {
+            // Complete and waiting for verification
+            $this->progress['formulir'] = [
+                'status' => 'current',
+                'label' => 'Menunggu',
+                'color' => 'yellow'
+            ];
+        } else {
+            // Incomplete
+            $this->progress['formulir'] = [
+                'status' => 'current',
+                'label' => 'Lengkapi',
+                'color' => 'yellow'
+            ];
+        }
+
+        // UPLOAD BERKAS STEP
+        $berkasComplete = $this->isUploadBerkasComplete();
+        $hasDocumentNeedsFix = $this->hasDocumentNeedsFix();
+        $allDocumentsWaiting = $this->areAllDocumentsWaitingVerification();
+
+        if ($isVerified) {
+            // After verification approved
+            $this->progress['upload_berkas'] = [
+                'status' => 'completed',
+                'label' => 'Selesai',
+                'color' => 'emerald'
+            ];
+        } elseif ($hasDocumentNeedsFix) {
+            // Any document has "tidak_sesuai" or "perlu_perbaikan" status
+            $this->progress['upload_berkas'] = [
+                'status' => 'current',
+                'label' => 'Perbaiki',
+                'color' => 'red'
+            ];
+        } elseif ($berkasComplete && $allDocumentsWaiting) {
+            // All required documents uploaded and have "menunggu_verifikasi" status
+            $this->progress['upload_berkas'] = [
+                'status' => 'current',
+                'label' => 'Menunggu',
+                'color' => 'yellow'
+            ];
+        } else {
+            // Incomplete - not all documents uploaded
+            $this->progress['upload_berkas'] = [
+                'status' => 'current',
+                'label' => 'Lengkapi',
+                'color' => 'yellow'
+            ];
+        }
+
+        // TES PSIKOLOGI STEP (if active)
+        $tesPsikologiComplete = false;
+        if ($this->tesPsikologiAktif) {
+            if ($isVerified) {
+                // After verification approved
+                $this->progress['tes_psikologi'] = [
+                    'status' => 'completed',
+                    'label' => 'Selesai',
+                    'color' => 'emerald'
+                ];
+                $tesPsikologiComplete = true;
+            } elseif ($this->tesPsikologiData) {
+                if ($this->tesPsikologiData->status_verifikasi === 'disetujui') {
+                    $this->progress['tes_psikologi'] = [
+                        'status' => 'completed',
+                        'label' => 'Selesai',
+                        'color' => 'emerald'
+                    ];
+                    $tesPsikologiComplete = true;
+                } elseif ($this->tesPsikologiData->status_verifikasi === 'menunggu') {
+                    $this->progress['tes_psikologi'] = [
+                        'status' => 'current',
+                        'label' => 'Menunggu',
+                        'color' => 'yellow'
+                    ];
+                    $tesPsikologiComplete = true;
+                } elseif ($this->tesPsikologiData->status_verifikasi === 'ditolak') {
+                    $this->progress['tes_psikologi'] = [
+                        'status' => 'current',
+                        'label' => 'Perbaiki',
+                        'color' => 'red'
+                    ];
+                } else {
+                    // belum_upload
+                    $this->progress['tes_psikologi'] = [
+                        'status' => 'current',
+                        'label' => 'Lengkapi',
+                        'color' => 'yellow'
+                    ];
+                }
+            } else {
+                $this->progress['tes_psikologi'] = [
+                    'status' => 'current',
+                    'label' => 'Lengkapi',
+                    'color' => 'yellow'
+                ];
+            }
+        } else {
+            // If tes psikologi not active, consider it complete for verification unlock
+            $tesPsikologiComplete = true;
+        }
+
+        // VERIFIKASI STEP - new logic
+        // Check if all previous steps are "Selesai" (completed)
+        $allStepsCompleted = ($this->progress['formulir']['label'] === 'Selesai') &&
+                            ($this->progress['upload_berkas']['label'] === 'Selesai') &&
+                            (!$this->tesPsikologiAktif || $this->progress['tes_psikologi']['label'] === 'Selesai');
+
+        // Check if all previous steps are at least "Menunggu" (waiting or completed)
+        $allStepsAtLeastWaiting = ($formulirComplete &&
+                                   in_array($this->progress['formulir']['label'], ['Menunggu', 'Selesai'])) &&
+                                  ($berkasComplete &&
+                                   in_array($this->progress['upload_berkas']['label'], ['Menunggu', 'Selesai'])) &&
+                                  ($tesPsikologiComplete &&
+                                   (!$this->tesPsikologiAktif || in_array($this->progress['tes_psikologi']['label'], ['Menunggu', 'Selesai'])));
+
+        if ($isVerified || $allStepsCompleted) {
+            // Verification completed - when all steps are "Selesai"
+            $this->progress['verifikasi'] = [
+                'status' => 'completed',
+                'label' => 'Selesai',
+                'color' => 'emerald'
+            ];
+        } elseif ($allStepsAtLeastWaiting) {
+            // Waiting for verification - when all steps are at least "Menunggu"
+            $this->progress['verifikasi'] = [
+                'status' => 'current',
+                'label' => 'Menunggu',
+                'color' => 'yellow'
+            ];
+        } elseif ($needsFix) {
+            // Needs to be fixed
+            $this->progress['verifikasi'] = [
+                'status' => 'current',
+                'label' => 'Perbaiki',
+                'color' => 'red'
+            ];
+        } elseif (in_array($status, ['data_ditolak'])) {
+            // Rejected
+            $this->progress['verifikasi'] = [
+                'status' => 'current',
+                'label' => 'Ditolak',
+                'color' => 'red'
+            ];
+        } else {
+            // Locked until all steps are at least menunggu
+            $this->progress['verifikasi'] = [
+                'status' => 'pending',
+                'label' => 'Terkunci',
+                'color' => 'gray'
+            ];
+        }
+
+        // UJIAN STEP - active when verification is approved
+        $this->progress['ujian'] = [
+            'status' => in_array($status, ['lulus', 'tidak_lulus', 'cadangan']) ? 'completed' : ($status === 'data_disetujui' ? 'current' : 'pending'),
+            'label' => in_array($status, ['lulus', 'tidak_lulus', 'cadangan']) ? 'Selesai' : ($status === 'data_disetujui' ? 'Menunggu' : 'Terkunci'),
+            'color' => in_array($status, ['lulus', 'tidak_lulus', 'cadangan']) ? 'emerald' : ($status === 'data_disetujui' ? 'yellow' : 'gray')
+        ];
+
+        // PENGUMUMAN STEP
+        $this->progress['pengumuman'] = [
+            'status' => in_array($status, ['lulus', 'tidak_lulus', 'cadangan']) ? 'completed' : 'pending',
+            'label' => in_array($status, ['lulus', 'tidak_lulus', 'cadangan']) ? 'Selesai' : 'Terkunci',
+            'color' => in_array($status, ['lulus', 'tidak_lulus', 'cadangan']) ? 'emerald' : 'gray'
+        ];
+
+        // DAFTAR ULANG STEP
+        $this->progress['daftar_ulang'] = [
+            'status' => $this->pendaftar->setuju_daftar_ulang ? 'completed' : ($status === 'lulus' ? 'current' : 'pending'),
+            'label' => $this->pendaftar->setuju_daftar_ulang ? 'Selesai' : ($status === 'lulus' ? 'Upload' : 'Terkunci'),
+            'color' => $this->pendaftar->setuju_daftar_ulang ? 'emerald' : ($status === 'lulus' ? 'yellow' : 'gray')
+        ];
+
+        // UPLOAD DAFTAR ULANG STEP
+        $this->progress['upload_daftar_ulang'] = [
+            'status' => ($daftarUlang && $daftarUlang->status !== 'belum') ? 'completed' : (($this->pendaftar->setuju_daftar_ulang) ? 'current' : 'pending'),
+            'label' => ($daftarUlang && $daftarUlang->status !== 'belum') ? 'Selesai' : (($this->pendaftar->setuju_daftar_ulang) ? 'Upload' : 'Terkunci'),
+            'color' => ($daftarUlang && $daftarUlang->status !== 'belum') ? 'emerald' : (($this->pendaftar->setuju_daftar_ulang) ? 'yellow' : 'gray')
+        ];
+
+        // VERIFIKASI AKHIR STEP
+        $this->progress['verifikasi_akhir'] = [
+            'status' => ($daftarUlang && $daftarUlang->status === 'selesai') ? 'completed' : (($daftarUlang && $daftarUlang->status === 'proses') ? 'current' : 'pending'),
+            'label' => ($daftarUlang && $daftarUlang->status === 'selesai') ? 'Selesai' : (($daftarUlang && $daftarUlang->status === 'proses') ? 'Menunggu' : 'Terkunci'),
+            'color' => ($daftarUlang && $daftarUlang->status === 'selesai') ? 'emerald' : (($daftarUlang && $daftarUlang->status === 'proses') ? 'yellow' : 'gray')
+        ];
+    }
+
+    public function getStatusBadgesProperty()
+    {
+        $badges = [];
+        $status = $this->pendaftar->status_pendaftaran ?? 'menunggu';
+        $daftarUlang = $this->pendaftar->daftarUlang;
+
+        // Badge 1: STATUS PENDAFTARAN (always show)
+        $statusPendaftaranMap = [
+            'menunggu' => ['label' => 'Menunggu Verifikasi', 'color' => 'yellow'],
+            'menunggu_verifikasi' => ['label' => 'Menunggu Verifikasi', 'color' => 'yellow'],
+            'lengkapi_data' => ['label' => 'Lengkapi Data', 'color' => 'orange'],
+            'perbaiki_data' => ['label' => 'Perbaiki Data', 'color' => 'red'],
+            'data_disetujui' => ['label' => 'Data Disetujui', 'color' => 'green'],
+            'data_ditolak' => ['label' => 'Data Ditolak', 'color' => 'red'],
+            'draft' => ['label' => 'Draft', 'color' => 'gray'],
+        ];
+
+        // Determine display status for registration phase
+        $displayStatus = $status;
+        if (in_array($status, ['lulus', 'diterima', 'tidak_lulus', 'ditolak', 'cadangan'])) {
+            $displayStatus = 'data_disetujui';
+        }
+
+        // Default to waiting if status not in map
+        $pendaftaranStatus = isset($statusPendaftaranMap[$displayStatus]) ? $displayStatus : 'menunggu';
+        $badges[] = array_merge(
+            ['type' => 'Status Pendaftaran'],
+            $statusPendaftaranMap[$pendaftaranStatus]
+        );
+
+        // Badge 2: STATUS KELULUSAN (status tes)
+        $statusKelulusanMap = [
+            'menunggu' => ['label' => 'Belum Tes', 'color' => 'gray'],
+            'lulus' => ['label' => 'LULUS', 'color' => 'green'],
+            'diterima' => ['label' => 'LULUS', 'color' => 'green'],
+            'tidak_lulus' => ['label' => 'TIDAK LULUS', 'color' => 'red'],
+            'ditolak' => ['label' => 'TIDAK LULUS', 'color' => 'red'],
+            'cadangan' => ['label' => 'CADANGAN', 'color' => 'orange'],
+        ];
+
+        // For kelulusan, check if pendaftar has reached test/announcement phase
+        if (in_array($status, ['lulus', 'diterima', 'tidak_lulus', 'ditolak', 'cadangan'])) {
+            $kelulusanStatus = $status;
+        } else {
+            $kelulusanStatus = 'menunggu';
+        }
+
+        $badges[] = array_merge(
+            ['type' => 'Status Kelulusan'],
+            $statusKelulusanMap[$kelulusanStatus]
+        );
+
+        // Badge 3: STATUS DAFTAR ULANG
+        $statusDaftarUlangMap = [
+            'belum' => ['label' => 'Belum Daftar Ulang', 'color' => 'gray'],
+            'proses' => ['label' => 'Sedang Proses', 'color' => 'yellow'],
+            'selesai' => ['label' => 'Selesai', 'color' => 'green'],
+        ];
+
+        $daftarUlangStatus = $daftarUlang ? $daftarUlang->status : 'belum';
+        $badges[] = array_merge(
+            ['type' => 'Status Daftar Ulang'],
+            $statusDaftarUlangMap[$daftarUlangStatus]
+        );
+
+        return $badges;
+    }
+
+    public function setujuDaftarUlang()
+    {
+        try {
+            // Hanya bisa setuju jika status data disetujui (lulus)
+            if (!in_array($this->pendaftar->status_pendaftaran, ['lulus', 'diterima'])) {
+                $this->dispatch('statusUpdated', [
+                    'type' => 'error',
+                    'message' => 'Hanya pendaftar dengan status LULUS yang dapat menyetujui daftar ulang'
+                ]);
+                return;
+            }
+
+            // Jika sudah memilih (setuju atau tidak setuju), tidak bisa memilih lagi
+            if ($this->pendaftar->status_persetujuan_daftar_ulang && $this->pendaftar->status_persetujuan_daftar_ulang !== 'belum_memilih') {
+                $this->dispatch('statusUpdated', [
+                    'type' => 'info',
+                    'message' => 'Anda sudah membuat pilihan untuk daftar ulang sebelumnya'
+                ]);
+                return;
+            }
+
+            // Update status persetujuan
+            $this->pendaftar->update([
+                'setuju_daftar_ulang' => true,
+                'status_persetujuan_daftar_ulang' => 'setuju',
+                'tanggal_pilihan_daftar_ulang' => now(),
+            ]);
+
+            // Create record daftar ulang
+            \App\Models\DaftarUlang::create([
+                'pendaftar_id' => $this->pendaftar->id,
+                'status' => 'belum',
+                'batas_daftar_ulang' => now()->addMonths(2),
+            ]);
+
+            // Refresh data
+            $this->pendaftar = $this->pendaftar->fresh();
+
+            $this->dispatch('statusUpdated', [
+                'type' => 'success',
+                'message' => 'Terima kasih! Persetujuan daftar ulang Anda telah tercatat. Silakan lengkapi persyaratan daftar ulang segera.'
+            ]);
+
+        } catch (\Exception $e) {
+            $this->dispatch('statusUpdated', [
+                'type' => 'error',
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function tidakSetujuDaftarUlang()
+    {
+        try {
+            // Hanya bisa memilih jika status data disetujui (lulus)
+            if (!in_array($this->pendaftar->status_pendaftaran, ['lulus', 'diterima'])) {
+                $this->dispatch('statusUpdated', [
+                    'type' => 'error',
+                    'message' => 'Hanya pendaftar dengan status LULUS yang dapat membuat pilihan daftar ulang'
+                ]);
+                return;
+            }
+
+            // Jika sudah memilih (setuju atau tidak setuju), tidak bisa memilih lagi
+            if ($this->pendaftar->status_persetujuan_daftar_ulang && $this->pendaftar->status_persetujuan_daftar_ulang !== 'belum_memilih') {
+                $this->dispatch('statusUpdated', [
+                    'type' => 'info',
+                    'message' => 'Anda sudah membuat pilihan untuk daftar ulang sebelumnya'
+                ]);
+                return;
+            }
+
+            // Update status persetujuan
+            $this->pendaftar->update([
+                'setuju_daftar_ulang' => false,
+                'status_persetujuan_daftar_ulang' => 'tidak_setuju',
+                'tanggal_pilihan_daftar_ulang' => now(),
+            ]);
+
+            // Create record daftar ulang untuk mencatat keputusan tidak lanjut
+            // Status 'selesai' agar tidak menggantung sebagai proses aktif, dengan catatan jelas
+            \App\Models\DaftarUlang::create([
+                'pendaftar_id' => $this->pendaftar->id,
+                'status' => 'selesai',
+                'catatan' => 'Pendaftar memilih untuk TIDAK MELANJUTKAN daftar ulang.',
+                'batas_daftar_ulang' => now(), // Selesai sekarang
+            ]);
+
+            // Refresh data
+            $this->pendaftar = $this->pendaftar->fresh();
+
+            $this->dispatch('statusUpdated', [
+                'type' => 'info',
+                'message' => 'Pilihan Anda telah tercatat. Terima kasih atas partisipasi Anda dalam proses seleksi ini.'
+            ]);
+
+        } catch (\Exception $e) {
+            $this->dispatch('statusUpdated', [
+                'type' => 'error',
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    public function render()
+    {
+        return view('livewire.pendaftar.dashboard', [
+            'pengumumanPendaftar' => $this->pengumumanPendaftar
+        ])
+            ->layout('components.layouts.dashboard', [
+                'role' => 'pendaftar',
+                'pageTitle' => 'Dashboard Pendaftar',
+                'pageDescription' => 'Selamat datang di dashboard pendaftaran Anda'
+            ]);
+    }
+}

@@ -1,0 +1,294 @@
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\User;
+use App\Models\Pendaftar;
+use App\Models\AsalSekolah;
+use App\Models\JalurPendaftaran;
+use Illuminate\Support\Facades\Hash;
+
+class QualityFeatureTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_form_validation_on_create()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        // Test validation with invalid data
+        $response = $this->actingAs($admin)
+            ->post('/admin/data-asal-sekolah', [
+                'nama_sekolah' => '', // Required field
+                'npsn' => '123', // Invalid length
+                'alamat' => '', // Required field
+                'kecamatan' => '', // Required field
+                'kabupaten_kota' => '', // Required field
+                'provinsi' => '', // Required field
+                'status_sekolah' => 'invalid_status', // Invalid enum value
+                'jenjang' => 'invalid_jenjang', // Invalid enum value
+            ]);
+
+        $response->assertSessionHasErrors([
+            'nama_sekolah',
+            'npsn',
+            'alamat',
+            'kecamatan',
+            'kabupaten_kota',
+            'provinsi',
+            'status_sekolah',
+            'jenjang',
+        ]);
+    }
+
+    public function test_form_validation_on_update()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $sekolah = AsalSekolah::create([
+            'nama_sekolah' => 'Test School',
+            'npsn' => '12345678',
+            'alamat' => 'Test Address',
+            'kecamatan' => 'Test Kecamatan',
+            'kabupaten_kota' => 'Test Kabupaten',
+            'provinsi' => 'Test Provinsi',
+            'status_sekolah' => 'negeri',
+            'jenjang' => 'SD',
+            'aktif' => true,
+        ]);
+
+        // Test validation with invalid data on update
+        $response = $this->actingAs($admin)
+            ->put("/admin/data-asal-sekolah/{$sekolah->id}", [
+                'nama_sekolah' => '', // Required field
+                'npsn' => '123', // Invalid length
+                'alamat' => '', // Required field
+                'kecamatan' => '', // Required field
+                'kabupaten_kota' => '', // Required field
+                'provinsi' => '', // Required field
+                'status_sekolah' => 'invalid_status', // Invalid enum value
+                'jenjang' => 'invalid_jenjang', // Invalid enum value
+            ]);
+
+        $response->assertSessionHasErrors([
+            'nama_sekolah',
+            'npsn',
+            'alamat',
+            'kecamatan',
+            'kabupaten_kota',
+            'provinsi',
+            'status_sekolah',
+            'jenjang',
+        ]);
+    }
+
+    public function test_unique_constraint_validation()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        
+        // Create first school
+        $sekolah1 = AsalSekolah::create([
+            'nama_sekolah' => 'Same School',
+            'npsn' => '12345678',
+            'alamat' => 'Address 1',
+            'kecamatan' => 'Kecamatan 1',
+            'kabupaten_kota' => 'Kabupaten 1',
+            'provinsi' => 'Provinsi 1',
+            'status_sekolah' => 'negeri',
+            'jenjang' => 'SD',
+            'aktif' => true,
+        ]);
+
+        // Try to create another school with same NPSN
+        $response = $this->actingAs($admin)
+            ->post('/admin/data-asal-sekolah', [
+                'nama_sekolah' => 'Another School',
+                'npsn' => '12345678', // Same NPSN as above
+                'alamat' => 'Address 2',
+                'kecamatan' => 'Kecamatan 2',
+                'kabupaten_kota' => 'Kabupaten 2',
+                'provinsi' => 'Provinsi 2',
+                'status_sekolah' => 'swasta',
+                'jenjang' => 'MI',
+                'aktif' => true,
+            ]);
+
+        $response->assertSessionHasErrors(['npsn']); // Should fail unique validation
+    }
+
+    public function test_data_persistence_after_save()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $data = [
+            'nama_sekolah' => 'Quality Test School',
+            'npsn' => '87654321',
+            'nsm' => '123456789012',
+            'alamat' => 'Quality Test Address',
+            'kecamatan' => 'Quality Test Kecamatan',
+            'kabupaten_kota' => 'Quality Test Kabupaten',
+            'provinsi' => 'Quality Test Provinsi',
+            'status_sekolah' => 'swasta',
+            'jenjang' => 'SD',
+            'aktif' => true,
+        ];
+
+        $response = $this->actingAs($admin)->post('/admin/data-asal-sekolah', $data);
+        $response->assertRedirect();
+
+        // Verify data was saved correctly
+        $this->assertDatabaseHas('asal_sekolah', [
+            'nama_sekolah' => 'Quality Test School',
+            'npsn' => '87654321',
+            'nsm' => '123456789012',
+            'alamat' => 'Quality Test Address',
+            'kecamatan' => 'Quality Test Kecamatan',
+            'kabupaten_kota' => 'Quality Test Kabupaten',
+            'provinsi' => 'Quality Test Provinsi',
+            'status_sekolah' => 'swasta',
+            'jenjang' => 'SD',
+            'aktif' => true,
+        ]);
+    }
+
+    public function test_data_retrieval_consistency()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        
+        // Create test data
+        $sekolah = AsalSekolah::create([
+            'nama_sekolah' => 'Retrieval Test School',
+            'npsn' => '11223344',
+            'nsm' => '121212121212',
+            'alamat' => 'Retrieval Test Address',
+            'kecamatan' => 'Retrieval Test Kecamatan',
+            'kabupaten_kota' => 'Retrieval Test Kabupaten',
+            'provinsi' => 'Retrieval Test Provinsi',
+            'status_sekolah' => 'negeri',
+            'jenjang' => 'MI',
+            'aktif' => false,
+        ]);
+
+        // Test that data can be retrieved correctly
+        $response = $this->actingAs($admin)->get("/admin/data-asal-sekolah/{$sekolah->id}");
+        $response->assertStatus(200);
+        
+        $this->assertEquals('Retrieval Test School', $sekolah->fresh()->nama_sekolah);
+        $this->assertEquals('11223344', $sekolah->fresh()->npsn);
+        $this->assertEquals(false, $sekolah->fresh()->aktif);
+    }
+
+    public function test_relationship_integrity()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $jalur = JalurPendaftaran::factory()->create(['nama' => 'Test Jalur']);
+        
+        $pendaftar = Pendaftar::factory()->create([
+            'user_id' => $admin->id,
+            'jalur_pendaftaran_id' => $jalur->id,
+        ]);
+
+        // Test that relationships work properly
+        $this->assertEquals($jalur->id, $pendaftar->jalurPendaftaran->id);
+        $this->assertEquals($jalur->nama, $pendaftar->jalurPendaftaran->nama);
+        $this->assertEquals($admin->id, $pendaftar->user->id);
+    }
+
+    public function test_error_handling_graceful_degradation()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        // Test with malformed request
+        $response = $this->actingAs($admin)
+            ->post('/admin/data-asal-sekolah', [
+                'nama_sekolah' => str_repeat('a', 1000), // Too long
+                'npsn' => str_repeat('1', 20), // Too long
+                'alamat' => str_repeat('a', 1000), // Too long
+                'kecamatan' => str_repeat('a', 200), // Too long
+                'kabupaten_kota' => str_repeat('a', 200), // Too long
+                'provinsi' => str_repeat('a', 200), // Too long
+            ]);
+
+        $response->assertSessionHasErrors(); // Should handle gracefully with validation errors
+    }
+
+    public function test_data_type_consistency()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $data = [
+            'nama_sekolah' => 'Type Consistency School',
+            'npsn' => '12345678',
+            'nsm' => '123456789012',
+            'alamat' => 'Type Consistency Address',
+            'kecamatan' => 'Type Consistency Kecamatan',
+            'kabupaten_kota' => 'Type Consistency Kabupaten',
+            'provinsi' => 'Type Consistency Provinsi',
+            'status_sekolah' => 'negeri',
+            'jenjang' => 'SD',
+            'aktif' => '1', // String representation of boolean
+        ];
+
+        $response = $this->actingAs($admin)->post('/admin/data-asal-sekolah', $data);
+        $response->assertRedirect();
+
+        $sekolah = AsalSekolah::where('npsn', '12345678')->first();
+        
+        // Test that boolean is properly cast
+        $this->assertIsBool($sekolah->aktif);
+        $this->assertTrue($sekolah->aktif);
+    }
+
+    public function test_null_handling()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $data = [
+            'nama_sekolah' => 'Null Handling School',
+            'npsn' => '23456789',
+            'nsm' => null, // Test nullable field
+            'alamat' => 'Null Handling Address',
+            'kecamatan' => 'Null Handling Kecamatan',
+            'kabupaten_kota' => 'Null Handling Kabupaten',
+            'provinsi' => 'Null Handling Provinsi',
+            'status_sekolah' => 'swasta',
+            'jenjang' => 'SMP',
+            'aktif' => true,
+        ];
+
+        $response = $this->actingAs($admin)->post('/admin/data-asal-sekolah', $data);
+        $response->assertRedirect();
+
+        $sekolah = AsalSekolah::where('npsn', '23456789')->first();
+        
+        // Test that null value is properly handled
+        $this->assertNull($sekolah->nsm);
+    }
+
+    public function test_data_sanitization()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+
+        $data = [
+            'nama_sekolah' => '<script>alert("test")</script>Sanitized School',
+            'npsn' => '34567890',
+            'alamat' => '<img src=x onerror=alert("xss")>Sanitized Address',
+            'kecamatan' => 'Sanitized Kecamatan',
+            'kabupaten_kota' => 'Sanitized Kabupaten',
+            'provinsi' => 'Sanitized Provinsi',
+            'status_sekolah' => 'negeri',
+            'jenjang' => 'MTs',
+            'aktif' => true,
+        ];
+
+        $response = $this->actingAs($admin)->post('/admin/data-asal-sekolah', $data);
+        $response->assertRedirect();
+
+        $sekolah = AsalSekolah::where('npsn', '34567890')->first();
+        
+        // The data should be saved as-is, but when displayed it should be properly escaped
+        $this->assertStringContainsString('<script>', $sekolah->nama_sekolah);
+        $this->assertStringContainsString('<img', $sekolah->alamat);
+    }
+}

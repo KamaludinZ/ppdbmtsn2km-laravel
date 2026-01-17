@@ -1,0 +1,721 @@
+<?php
+
+namespace App\Livewire\Pendaftar;
+
+use Livewire\Component;
+use Livewire\WithFileUploads;
+use App\Models\Pendaftar as PendaftarModel;
+use App\Models\VerifikasiBerkas;
+use App\Models\Dokumen;
+use App\Services\ImageService;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
+
+class Formulir extends Component
+{
+    use WithFileUploads;
+
+    public $pendaftar;
+    public $verifikasi;
+    public $dokumen;
+
+    // Mode edit per section
+    public $editModePribadi = false;
+    public $editModeOrangTua = false;
+    public $editModeAlamat = false;
+    public $editModeSekolah = false;
+    public $editModeRapor = false;
+    public $editModePrestasi = false;
+    public $editModeIdentitasEmis = false;
+    public $editModeAyahEmis = false;
+    public $editModeIbuEmis = false;
+    public $editModeWaliEmis = false;
+    public $editModePendidikanEmis = false;
+
+    // Upload properties
+    public $file_rapor;
+    public $file_akte;
+    public $file_kk;
+    public $file_nisn;
+    public $file_ijazah;
+    public $file_sertifikat;
+    public $file_kip;
+
+    // Data Pribadi
+    public $nama_lengkap;
+    public $nisn;
+    public $tempat_lahir;
+    public $tanggal_lahir;
+    public $jenis_kelamin;
+    public $agama;
+    public $foto;
+    public $newFoto;
+
+    // Data Orang Tua
+    public $nama_ayah;
+    public $nama_ibu;
+    public $pekerjaan_ayah;
+    public $pekerjaan_ibu;
+    public $penghasilan_ortu;
+    public $telepon_ortu;
+
+    // Data Alamat (Extended)
+    public $alamat; // Alamat Siswa
+    public $alamat_ayah;
+    public $alamat_ibu;
+    public $alamat_wali;
+    public $provinsi;
+    public $kabupaten;
+    public $kecamatan;
+    public $desa;
+    public $kode_pos;
+    public $jarak_ke_sekolah;
+    public $transportasi;
+    
+    public $asal_kabkota;
+    public $telepon;
+    public $no_hp;
+    public $email;
+
+    // Data Sekolah
+    public $asal_sekolah;
+    public $jenis_sekolah_asal;
+    public $nsm_sekolah_asal;
+    public $npsn_sekolah_asal;
+    public $alamat_sekolah;
+    public $nilai_rata_rata;
+
+    // Data Rapor
+    public $nilai_b_indo_5_1;
+    public $nilai_matematika_5_1;
+    public $nilai_ipa_5_1;
+    public $nilai_b_indo_5_2;
+    public $nilai_matematika_5_2;
+    public $nilai_ipa_5_2;
+    public $nilai_b_indo_6_1;
+    public $nilai_matematika_6_1;
+    public $nilai_ipa_6_1;
+
+    // Data Prestasi
+    public $prestasi;
+
+    // EMIS - Data Identitas
+    public $nik;
+    public $nama_panggilan;
+    public $kewarganegaraan;
+    public $negara_asal;
+    public $nomor_kk;
+    public $anak_ke;
+    public $jumlah_saudara_kandung;
+    public $nomor_telepon_rumah;
+    public $email_pribadi;
+    public $jenis_tinggal;
+    public $alat_transportasi;
+    public $jarak_tempat_tinggal;
+    public $waktu_tempuh;
+    public $penerima_kps;
+    public $nomor_kps;
+    public $penerima_kip;
+    public $nomor_kip;
+    public $layak_pip;
+    public $alasan_layak_pip;
+
+    // EMIS - Data Alamat Detail
+    public $rt;
+    public $rw;
+    public $dusun;
+    public $latitude;
+    public $longitude;
+
+    // EMIS - Data Ayah
+    public $ayah_nik;
+    public $ayah_tahun_lahir;
+    public $ayah_pendidikan;
+    public $ayah_penghasilan;
+    public $ayah_no_hp;
+    public $ayah_berkebutuhan_khusus;
+
+    // EMIS - Data Ibu
+    public $ibu_nik;
+    public $ibu_tahun_lahir;
+    public $ibu_pendidikan;
+    public $ibu_penghasilan;
+    public $ibu_no_hp;
+    public $ibu_berkebutuhan_khusus;
+
+    // EMIS - Data Wali
+    public $memiliki_wali;
+    public $wali_nik;
+    public $wali_nama;
+    public $wali_tahun_lahir;
+    public $wali_pendidikan;
+    public $wali_pekerjaan;
+    public $wali_penghasilan;
+    public $wali_no_hp;
+
+    // EMIS - Riwayat Pendidikan
+    public $tk_nama;
+    public $tk_npsn;
+    public $tk_tahun_lulus;
+    public $sd_nama;
+    public $sd_npsn;
+    public $sd_tahun_lulus;
+    public $sd_nomor_peserta_ujian;
+    public $sd_nomor_seri_ijazah;
+    public $sd_nomor_skhun;
+    public $sd_nilai_matematika;
+    public $sd_nilai_ipa;
+    public $sd_nilai_ips;
+    public $sd_nilai_bahasa_indonesia;
+    public $sd_nilai_bahasa_inggris;
+    public $hobi;
+    public $cita_cita;
+    public $berkebutuhan_khusus;
+    public $jenis_kebutuhan_khusus = [];
+
+    // EMIS - File uploads
+    public $file_ijazah_sd;
+    public $file_skhun_sd;
+    public $file_kartu_keluarga;
+    public $file_akta_kelahiran;
+    public $newFileIjazahSd;
+    public $newFileSkhunSd;
+    public $newFileKartuKeluarga;
+    public $newFileAktaKelahiran;
+
+    public function mount()
+    {
+        $user = Auth::user();
+        if (!$user || $user->role !== 'pendaftar') {
+            return redirect()->to('/login');
+        }
+
+        $this->pendaftar = $user->pendaftar;
+        if (!$this->pendaftar) {
+            return redirect()->to('/daftar');
+        }
+
+        $this->loadVerifikasi();
+        $this->loadDokumen();
+        $this->loadDataToProperties();
+    }
+
+    public function loadVerifikasi()
+    {
+        $this->verifikasi = VerifikasiBerkas::firstOrCreate(
+            ['pendaftar_id' => $this->pendaftar->id],
+            [
+                'status' => 'menunggu',
+                'status_rapor' => 'belum_upload',
+                'status_akte' => 'belum_upload',
+                'status_kk' => 'belum_upload',
+                'status_nisn' => 'belum_upload',
+                'status_ijazah' => 'belum_upload',
+                'status_sertifikat' => 'belum_upload',
+                'status_kip' => 'belum_upload',
+            ]
+        );
+    }
+
+    public function loadDokumen()
+    {
+        $this->dokumen = Dokumen::where('pendaftar_id', $this->pendaftar->id)->get();
+    }
+
+    public function loadDataToProperties()
+    {
+        // Data Pribadi
+        $this->nama_lengkap = $this->pendaftar->nama_lengkap;
+        $this->nisn = $this->pendaftar->nisn;
+        $this->tempat_lahir = $this->pendaftar->tempat_lahir;
+        $this->tanggal_lahir = $this->pendaftar->tanggal_lahir ? $this->pendaftar->tanggal_lahir->format('Y-m-d') : null;
+        $this->jenis_kelamin = $this->pendaftar->jenis_kelamin;
+        $this->agama = $this->pendaftar->agama;
+        $this->foto = $this->pendaftar->foto;
+
+        // Data Orang Tua
+        $this->nama_ayah = $this->pendaftar->nama_ayah;
+        $this->nama_ibu = $this->pendaftar->nama_ibu;
+        $this->pekerjaan_ayah = $this->pendaftar->pekerjaan_ayah;
+        $this->pekerjaan_ibu = $this->pendaftar->pekerjaan_ibu;
+        $this->penghasilan_ortu = $this->pendaftar->penghasilan_ortu;
+        $this->telepon_ortu = $this->pendaftar->telepon_ortu;
+
+        // Data Alamat
+        $this->alamat = $this->pendaftar->alamat;
+        $this->alamat_ayah = $this->pendaftar->alamat_ayah;
+        $this->alamat_ibu = $this->pendaftar->alamat_ibu;
+        $this->alamat_wali = $this->pendaftar->alamat_wali;
+        $this->provinsi = $this->pendaftar->provinsi;
+        $this->kabupaten = $this->pendaftar->kabupaten;
+        $this->kecamatan = $this->pendaftar->kecamatan;
+        $this->desa = $this->pendaftar->desa;
+        $this->kode_pos = $this->pendaftar->kode_pos;
+        $this->jarak_ke_sekolah = $this->pendaftar->jarak_ke_sekolah;
+        $this->transportasi = $this->pendaftar->transportasi;
+        
+        $this->asal_kabkota = $this->pendaftar->asal_kabkota;
+        $this->telepon = $this->pendaftar->telepon;
+        $this->no_hp = $this->pendaftar->no_hp;
+        $this->email = $this->pendaftar->email;
+
+        // Data Sekolah
+        $this->asal_sekolah = $this->pendaftar->asal_sekolah;
+        $this->jenis_sekolah_asal = $this->pendaftar->jenis_sekolah_asal;
+        $this->nsm_sekolah_asal = $this->pendaftar->nsm_sekolah_asal;
+        $this->npsn_sekolah_asal = $this->pendaftar->npsn_sekolah_asal;
+        $this->alamat_sekolah = $this->pendaftar->alamat_sekolah;
+        $this->nilai_rata_rata = $this->pendaftar->nilai_rata_rata;
+
+        // Data Rapor
+        $this->nilai_b_indo_5_1 = $this->pendaftar->nilai_b_indo_5_1;
+        $this->nilai_matematika_5_1 = $this->pendaftar->nilai_matematika_5_1;
+        $this->nilai_ipa_5_1 = $this->pendaftar->nilai_ipa_5_1;
+        $this->nilai_b_indo_5_2 = $this->pendaftar->nilai_b_indo_5_2;
+        $this->nilai_matematika_5_2 = $this->pendaftar->nilai_matematika_5_2;
+        $this->nilai_ipa_5_2 = $this->pendaftar->nilai_ipa_5_2;
+        $this->nilai_b_indo_6_1 = $this->pendaftar->nilai_b_indo_6_1;
+        $this->nilai_matematika_6_1 = $this->pendaftar->nilai_matematika_6_1;
+        $this->nilai_ipa_6_1 = $this->pendaftar->nilai_ipa_6_1;
+
+        // Data Prestasi
+        $this->prestasi = $this->pendaftar->prestasi;
+
+        // EMIS - Data Identitas
+        $this->nik = $this->pendaftar->nik;
+        $this->nama_panggilan = $this->pendaftar->nama_panggilan;
+        $this->kewarganegaraan = $this->pendaftar->kewarganegaraan ?? 'WNI';
+        $this->negara_asal = $this->pendaftar->negara_asal;
+        $this->nomor_kk = $this->pendaftar->nomor_kk;
+        $this->anak_ke = $this->pendaftar->anak_ke;
+        $this->jumlah_saudara_kandung = $this->pendaftar->jumlah_saudara_kandung;
+        $this->nomor_telepon_rumah = $this->pendaftar->nomor_telepon_rumah;
+        $this->email_pribadi = $this->pendaftar->email_pribadi;
+        $this->jenis_tinggal = $this->pendaftar->jenis_tinggal;
+        $this->alat_transportasi = $this->pendaftar->alat_transportasi;
+        $this->jarak_tempat_tinggal = $this->pendaftar->jarak_tempat_tinggal;
+        $this->waktu_tempuh = $this->pendaftar->waktu_tempuh;
+        $this->penerima_kps = $this->pendaftar->penerima_kps;
+        $this->nomor_kps = $this->pendaftar->nomor_kps;
+        $this->penerima_kip = $this->pendaftar->penerima_kip;
+        $this->nomor_kip = $this->pendaftar->nomor_kip;
+        $this->layak_pip = $this->pendaftar->layak_pip;
+        $this->alasan_layak_pip = $this->pendaftar->alasan_layak_pip;
+
+        // EMIS - Data Alamat Detail
+        $this->rt = $this->pendaftar->rt;
+        $this->rw = $this->pendaftar->rw;
+        $this->dusun = $this->pendaftar->dusun;
+        $this->latitude = $this->pendaftar->latitude;
+        $this->longitude = $this->pendaftar->longitude;
+
+        // EMIS - Data Ayah
+        $this->ayah_nik = $this->pendaftar->ayah_nik;
+        $this->ayah_tahun_lahir = $this->pendaftar->ayah_tahun_lahir;
+        $this->ayah_pendidikan = $this->pendaftar->ayah_pendidikan;
+        $this->ayah_penghasilan = $this->pendaftar->ayah_penghasilan;
+        $this->ayah_no_hp = $this->pendaftar->ayah_no_hp;
+        $this->ayah_berkebutuhan_khusus = $this->pendaftar->ayah_berkebutuhan_khusus;
+
+        // EMIS - Data Ibu
+        $this->ibu_nik = $this->pendaftar->ibu_nik;
+        $this->ibu_tahun_lahir = $this->pendaftar->ibu_tahun_lahir;
+        $this->ibu_pendidikan = $this->pendaftar->ibu_pendidikan;
+        $this->ibu_penghasilan = $this->pendaftar->ibu_penghasilan;
+        $this->ibu_no_hp = $this->pendaftar->ibu_no_hp;
+        $this->ibu_berkebutuhan_khusus = $this->pendaftar->ibu_berkebutuhan_khusus;
+
+        // EMIS - Data Wali
+        $this->memiliki_wali = $this->pendaftar->memiliki_wali;
+        $this->wali_nik = $this->pendaftar->wali_nik;
+        $this->wali_nama = $this->pendaftar->wali_nama;
+        $this->wali_tahun_lahir = $this->pendaftar->wali_tahun_lahir;
+        $this->wali_pendidikan = $this->pendaftar->wali_pendidikan;
+        $this->wali_pekerjaan = $this->pendaftar->wali_pekerjaan;
+        $this->wali_penghasilan = $this->pendaftar->wali_penghasilan;
+        $this->wali_no_hp = $this->pendaftar->wali_no_hp;
+
+        // EMIS - Riwayat Pendidikan
+        $this->tk_nama = $this->pendaftar->tk_nama;
+        $this->tk_npsn = $this->pendaftar->tk_npsn;
+        $this->tk_tahun_lulus = $this->pendaftar->tk_tahun_lulus;
+        $this->sd_nama = $this->pendaftar->sd_nama;
+        $this->sd_npsn = $this->pendaftar->sd_npsn;
+        $this->sd_tahun_lulus = $this->pendaftar->sd_tahun_lulus;
+        $this->sd_nomor_peserta_ujian = $this->pendaftar->sd_nomor_peserta_ujian;
+        $this->sd_nomor_seri_ijazah = $this->pendaftar->sd_nomor_seri_ijazah;
+        $this->sd_nomor_skhun = $this->pendaftar->sd_nomor_skhun;
+        $this->sd_nilai_matematika = $this->pendaftar->sd_nilai_matematika;
+        $this->sd_nilai_ipa = $this->pendaftar->sd_nilai_ipa;
+        $this->sd_nilai_ips = $this->pendaftar->sd_nilai_ips;
+        $this->sd_nilai_bahasa_indonesia = $this->pendaftar->sd_nilai_bahasa_indonesia;
+        $this->sd_nilai_bahasa_inggris = $this->pendaftar->sd_nilai_bahasa_inggris;
+        $this->hobi = $this->pendaftar->hobi;
+        $this->cita_cita = $this->pendaftar->cita_cita;
+        $this->berkebutuhan_khusus = $this->pendaftar->berkebutuhan_khusus;
+        $this->jenis_kebutuhan_khusus = $this->pendaftar->jenis_kebutuhan_khusus ?? [];
+
+        // EMIS - Files
+        $this->file_ijazah_sd = $this->pendaftar->file_ijazah_sd;
+        $this->file_skhun_sd = $this->pendaftar->file_skhun_sd;
+        $this->file_kartu_keluarga = $this->pendaftar->file_kartu_keluarga;
+        $this->file_akta_kelahiran = $this->pendaftar->file_akta_kelahiran;
+    }
+
+    public function toggleEdit($section)
+    {
+        $property = 'editMode' . ucfirst($section);
+        if (property_exists($this, $property)) {
+            $this->$property = !$this->$property;
+            if (!$this->$property) {
+                $this->loadDataToProperties(); // Reset data if cancelling
+            }
+        }
+    }
+
+    public function saveDataPribadi()
+    {
+        $this->validate([
+            'nama_lengkap' => 'required|string|max:255',
+            'nisn' => 'required|string|max:10',
+            'tempat_lahir' => 'nullable|string|max:255',
+            'tanggal_lahir' => 'nullable|date',
+            'jenis_kelamin' => 'required|in:L,P',
+            'agama' => 'nullable|string|max:50',
+            'newFoto' => 'nullable|image|max:1024', // Maksimal 1MB untuk foto
+        ]);
+
+        $dataToUpdate = [
+            'nama_lengkap' => $this->nama_lengkap,
+            'nisn' => $this->nisn,
+            'tempat_lahir' => $this->tempat_lahir,
+            'tanggal_lahir' => $this->tanggal_lahir,
+            'jenis_kelamin' => $this->jenis_kelamin,
+            'agama' => $this->agama,
+        ];
+
+        if ($this->newFoto) {
+            $imageService = new ImageService();
+
+            // Hapus foto lama jika ada
+            $imageService->deleteOldFile($this->pendaftar->foto);
+
+            // Upload dan konversi ke WebP
+            $fotoPath = $imageService->uploadProfilePhoto($this->newFoto, 'photos', 500, 80);
+            $dataToUpdate['foto'] = $fotoPath;
+            $this->foto = $fotoPath;
+        }
+
+        $this->pendaftar->update($dataToUpdate);
+        $this->newFoto = null;
+        $this->editModePribadi = false;
+        $this->dispatch('statusUpdated', ['type' => 'success', 'message' => 'Data pribadi berhasil diperbarui.']);
+    }
+
+    public function saveDataOrangTua()
+    {
+        $this->pendaftar->update([
+            'nama_ayah' => $this->nama_ayah,
+            'nama_ibu' => $this->nama_ibu,
+            'pekerjaan_ayah' => $this->pekerjaan_ayah,
+            'pekerjaan_ibu' => $this->pekerjaan_ibu,
+            'penghasilan_ortu' => $this->penghasilan_ortu,
+            'telepon_ortu' => $this->telepon_ortu,
+        ]);
+        $this->editModeOrangTua = false;
+        $this->dispatch('statusUpdated', ['type' => 'success', 'message' => 'Data orang tua berhasil diperbarui.']);
+    }
+
+    public function saveDataAlamat()
+    {
+        $this->validate([
+            'alamat' => 'nullable|string',
+            'alamat_ayah' => 'nullable|string',
+            'alamat_ibu' => 'nullable|string',
+            'provinsi' => 'nullable|string',
+            'kabupaten' => 'nullable|string',
+            'kecamatan' => 'nullable|string',
+            'desa' => 'nullable|string',
+            'kode_pos' => 'nullable|string|max:10',
+            'jarak_ke_sekolah' => 'nullable|string',
+            'transportasi' => 'nullable|string',
+            'asal_kabkota' => 'nullable|string|max:100',
+            'no_hp' => 'nullable|string|max:20',
+            'email' => 'required|email',
+        ]);
+
+        $this->pendaftar->update([
+            'alamat' => $this->alamat,
+            'alamat_ayah' => $this->alamat_ayah,
+            'alamat_ibu' => $this->alamat_ibu,
+            'alamat_wali' => $this->alamat_wali,
+            'provinsi' => $this->provinsi,
+            'kabupaten' => $this->kabupaten,
+            'kecamatan' => $this->kecamatan,
+            'desa' => $this->desa,
+            'kode_pos' => $this->kode_pos,
+            'jarak_ke_sekolah' => $this->jarak_ke_sekolah,
+            'transportasi' => $this->transportasi,
+            
+            'asal_kabkota' => $this->asal_kabkota,
+            'telepon' => $this->telepon,
+            'no_hp' => $this->no_hp,
+            'email' => $this->email,
+        ]);
+        $this->editModeAlamat = false;
+        $this->dispatch('statusUpdated', ['type' => 'success', 'message' => 'Data alamat berhasil diperbarui.']);
+    }
+
+    public function saveDataSekolah()
+    {
+        $this->pendaftar->update([
+            'asal_sekolah' => $this->asal_sekolah,
+            'jenis_sekolah_asal' => $this->jenis_sekolah_asal,
+            'nsm_sekolah_asal' => $this->nsm_sekolah_asal,
+            'npsn_sekolah_asal' => $this->npsn_sekolah_asal,
+            'alamat_sekolah' => $this->alamat_sekolah,
+            'nilai_rata_rata' => $this->nilai_rata_rata,
+        ]);
+        $this->editModeSekolah = false;
+        $this->dispatch('statusUpdated', ['type' => 'success', 'message' => 'Data sekolah berhasil diperbarui.']);
+    }
+
+    public function saveDataRapor()
+    {
+        $this->validate([
+            'nilai_b_indo_5_1' => 'nullable|numeric|min:0|max:100',
+            'nilai_matematika_5_1' => 'nullable|numeric|min:0|max:100',
+            'nilai_ipa_5_1' => 'nullable|numeric|min:0|max:100',
+            'nilai_b_indo_5_2' => 'nullable|numeric|min:0|max:100',
+            'nilai_matematika_5_2' => 'nullable|numeric|min:0|max:100',
+            'nilai_ipa_5_2' => 'nullable|numeric|min:0|max:100',
+            'nilai_b_indo_6_1' => 'nullable|numeric|min:0|max:100',
+            'nilai_matematika_6_1' => 'nullable|numeric|min:0|max:100',
+            'nilai_ipa_6_1' => 'nullable|numeric|min:0|max:100',
+        ]);
+
+        $this->pendaftar->update([
+            'nilai_b_indo_5_1' => $this->nilai_b_indo_5_1,
+            'nilai_matematika_5_1' => $this->nilai_matematika_5_1,
+            'nilai_ipa_5_1' => $this->nilai_ipa_5_1,
+            'nilai_b_indo_5_2' => $this->nilai_b_indo_5_2,
+            'nilai_matematika_5_2' => $this->nilai_matematika_5_2,
+            'nilai_ipa_5_2' => $this->nilai_ipa_5_2,
+            'nilai_b_indo_6_1' => $this->nilai_b_indo_6_1,
+            'nilai_matematika_6_1' => $this->nilai_matematika_6_1,
+            'nilai_ipa_6_1' => $this->nilai_ipa_6_1,
+        ]);
+        $this->editModeRapor = false;
+        $this->dispatch('statusUpdated', ['type' => 'success', 'message' => 'Data rapor berhasil diperbarui.']);
+    }
+
+    public function saveDataPrestasi()
+    {
+        $this->pendaftar->update([
+            'prestasi' => $this->prestasi,
+        ]);
+        $this->editModePrestasi = false;
+        $this->dispatch('statusUpdated', ['type' => 'success', 'message' => 'Data prestasi berhasil diperbarui.']);
+    }
+
+    public function saveDataIdentitasEmis()
+    {
+        $this->validate([
+            'nik' => 'nullable|string|size:16',
+            'nomor_kk' => 'nullable|string|size:16',
+            'anak_ke' => 'nullable|integer|min:1',
+            'jumlah_saudara_kandung' => 'nullable|integer|min:0',
+            'jarak_tempat_tinggal' => 'nullable|integer|min:0',
+            'waktu_tempuh' => 'nullable|integer|min:0',
+            'nomor_kps' => 'nullable|string|max:50',
+            'nomor_kip' => 'nullable|string|max:50',
+        ]);
+
+        // Handle file uploads
+        $dataToUpdate = [
+            'nik' => $this->nik,
+            'nama_panggilan' => $this->nama_panggilan,
+            'kewarganegaraan' => $this->kewarganegaraan,
+            'negara_asal' => $this->negara_asal,
+            'nomor_kk' => $this->nomor_kk,
+            'anak_ke' => $this->anak_ke,
+            'jumlah_saudara_kandung' => $this->jumlah_saudara_kandung,
+            'nomor_telepon_rumah' => $this->nomor_telepon_rumah,
+            'email_pribadi' => $this->email_pribadi,
+            'jenis_tinggal' => $this->jenis_tinggal,
+            'alat_transportasi' => $this->alat_transportasi,
+            'jarak_tempat_tinggal' => $this->jarak_tempat_tinggal,
+            'waktu_tempuh' => $this->waktu_tempuh,
+            'penerima_kps' => $this->penerima_kps,
+            'nomor_kps' => $this->nomor_kps,
+            'penerima_kip' => $this->penerima_kip,
+            'nomor_kip' => $this->nomor_kip,
+            'layak_pip' => $this->layak_pip,
+            'alasan_layak_pip' => $this->alasan_layak_pip,
+            'rt' => $this->rt,
+            'rw' => $this->rw,
+            'dusun' => $this->dusun,
+            'latitude' => $this->latitude,
+            'longitude' => $this->longitude,
+        ];
+
+        // Upload Kartu Keluarga
+        if ($this->newFileKartuKeluarga) {
+            if ($this->pendaftar->file_kartu_keluarga) {
+                Storage::disk('public')->delete($this->pendaftar->file_kartu_keluarga);
+            }
+            $kkPath = $this->newFileKartuKeluarga->store('dokumen/kk', 'public');
+            $dataToUpdate['file_kartu_keluarga'] = $kkPath;
+            $this->file_kartu_keluarga = $kkPath;
+        }
+
+        // Upload Akta Kelahiran
+        if ($this->newFileAktaKelahiran) {
+            if ($this->pendaftar->file_akta_kelahiran) {
+                Storage::disk('public')->delete($this->pendaftar->file_akta_kelahiran);
+            }
+            $aktaPath = $this->newFileAktaKelahiran->store('dokumen/akta', 'public');
+            $dataToUpdate['file_akta_kelahiran'] = $aktaPath;
+            $this->file_akta_kelahiran = $aktaPath;
+        }
+
+        $this->pendaftar->update($dataToUpdate);
+        $this->newFileKartuKeluarga = null;
+        $this->newFileAktaKelahiran = null;
+        $this->editModeIdentitasEmis = false;
+        $this->dispatch('statusUpdated', ['type' => 'success', 'message' => 'Data identitas EMIS berhasil diperbarui.']);
+    }
+
+    public function saveDataAyahEmis()
+    {
+        $this->validate([
+            'ayah_nik' => 'nullable|string|size:16',
+            'ayah_tahun_lahir' => 'nullable|integer|min:1900|max:' . date('Y'),
+            'ayah_no_hp' => 'nullable|string|max:20',
+        ]);
+
+        $this->pendaftar->update([
+            'ayah_nik' => $this->ayah_nik,
+            'ayah_tahun_lahir' => $this->ayah_tahun_lahir,
+            'ayah_pendidikan' => $this->ayah_pendidikan,
+            'ayah_penghasilan' => $this->ayah_penghasilan,
+            'ayah_no_hp' => $this->ayah_no_hp,
+            'ayah_berkebutuhan_khusus' => $this->ayah_berkebutuhan_khusus,
+        ]);
+        $this->editModeAyahEmis = false;
+        $this->dispatch('statusUpdated', ['type' => 'success', 'message' => 'Data ayah EMIS berhasil diperbarui.']);
+    }
+
+    public function saveDataIbuEmis()
+    {
+        $this->validate([
+            'ibu_nik' => 'nullable|string|size:16',
+            'ibu_tahun_lahir' => 'nullable|integer|min:1900|max:' . date('Y'),
+            'ibu_no_hp' => 'nullable|string|max:20',
+        ]);
+
+        $this->pendaftar->update([
+            'ibu_nik' => $this->ibu_nik,
+            'ibu_tahun_lahir' => $this->ibu_tahun_lahir,
+            'ibu_pendidikan' => $this->ibu_pendidikan,
+            'ibu_penghasilan' => $this->ibu_penghasilan,
+            'ibu_no_hp' => $this->ibu_no_hp,
+            'ibu_berkebutuhan_khusus' => $this->ibu_berkebutuhan_khusus,
+        ]);
+        $this->editModeIbuEmis = false;
+        $this->dispatch('statusUpdated', ['type' => 'success', 'message' => 'Data ibu EMIS berhasil diperbarui.']);
+    }
+
+    public function saveDataWaliEmis()
+    {
+        $this->validate([
+            'wali_nik' => 'nullable|string|size:16',
+            'wali_tahun_lahir' => 'nullable|integer|min:1900|max:' . date('Y'),
+            'wali_no_hp' => 'nullable|string|max:20',
+        ]);
+
+        $this->pendaftar->update([
+            'memiliki_wali' => $this->memiliki_wali,
+            'wali_nik' => $this->wali_nik,
+            'wali_nama' => $this->wali_nama,
+            'wali_tahun_lahir' => $this->wali_tahun_lahir,
+            'wali_pendidikan' => $this->wali_pendidikan,
+            'wali_pekerjaan' => $this->wali_pekerjaan,
+            'wali_penghasilan' => $this->wali_penghasilan,
+            'wali_no_hp' => $this->wali_no_hp,
+        ]);
+        $this->editModeWaliEmis = false;
+        $this->dispatch('statusUpdated', ['type' => 'success', 'message' => 'Data wali EMIS berhasil diperbarui.']);
+    }
+
+    public function saveDataPendidikanEmis()
+    {
+        $this->validate([
+            'tk_npsn' => 'nullable|string|max:20',
+            'sd_npsn' => 'nullable|string|max:20',
+            'sd_tahun_lulus' => 'nullable|integer|min:1990|max:' . date('Y'),
+            'sd_nilai_matematika' => 'nullable|numeric|min:0|max:100',
+            'sd_nilai_ipa' => 'nullable|numeric|min:0|max:100',
+            'sd_nilai_ips' => 'nullable|numeric|min:0|max:100',
+            'sd_nilai_bahasa_indonesia' => 'nullable|numeric|min:0|max:100',
+            'sd_nilai_bahasa_inggris' => 'nullable|numeric|min:0|max:100',
+        ]);
+
+        $dataToUpdate = [
+            'tk_nama' => $this->tk_nama,
+            'tk_npsn' => $this->tk_npsn,
+            'tk_tahun_lulus' => $this->tk_tahun_lulus,
+            'sd_nama' => $this->sd_nama,
+            'sd_npsn' => $this->sd_npsn,
+            'sd_tahun_lulus' => $this->sd_tahun_lulus,
+            'sd_nomor_peserta_ujian' => $this->sd_nomor_peserta_ujian,
+            'sd_nomor_seri_ijazah' => $this->sd_nomor_seri_ijazah,
+            'sd_nomor_skhun' => $this->sd_nomor_skhun,
+            'sd_nilai_matematika' => $this->sd_nilai_matematika,
+            'sd_nilai_ipa' => $this->sd_nilai_ipa,
+            'sd_nilai_ips' => $this->sd_nilai_ips,
+            'sd_nilai_bahasa_indonesia' => $this->sd_nilai_bahasa_indonesia,
+            'sd_nilai_bahasa_inggris' => $this->sd_nilai_bahasa_inggris,
+            'hobi' => $this->hobi,
+            'cita_cita' => $this->cita_cita,
+            'berkebutuhan_khusus' => $this->berkebutuhan_khusus,
+            'jenis_kebutuhan_khusus' => $this->jenis_kebutuhan_khusus,
+        ];
+
+        // Upload Ijazah SD
+        if ($this->newFileIjazahSd) {
+            if ($this->pendaftar->file_ijazah_sd) {
+                Storage::disk('public')->delete($this->pendaftar->file_ijazah_sd);
+            }
+            $ijazahPath = $this->newFileIjazahSd->store('dokumen/ijazah', 'public');
+            $dataToUpdate['file_ijazah_sd'] = $ijazahPath;
+            $this->file_ijazah_sd = $ijazahPath;
+        }
+
+        // Upload SKHUN SD
+        if ($this->newFileSkhunSd) {
+            if ($this->pendaftar->file_skhun_sd) {
+                Storage::disk('public')->delete($this->pendaftar->file_skhun_sd);
+            }
+            $skhunPath = $this->newFileSkhunSd->store('dokumen/skhun', 'public');
+            $dataToUpdate['file_skhun_sd'] = $skhunPath;
+            $this->file_skhun_sd = $skhunPath;
+        }
+
+        $this->pendaftar->update($dataToUpdate);
+        $this->newFileIjazahSd = null;
+        $this->newFileSkhunSd = null;
+        $this->editModePendidikanEmis = false;
+        $this->dispatch('statusUpdated', ['type' => 'success', 'message' => 'Data pendidikan EMIS berhasil diperbarui.']);
+    }
+
+    public function render()
+    {
+        return view('livewire.pendaftar.formulir')
+            ->layout('components.layouts.dashboard', [
+                'role' => 'pendaftar',
+                'pageTitle' => 'Formulir Pendaftaran',
+                'pageDescription' => 'Lengkapi data pendaftaran Anda'
+            ]);
+    }
+}

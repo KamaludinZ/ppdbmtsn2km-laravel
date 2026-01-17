@@ -1,0 +1,446 @@
+===========================================
+PANDUAN SETUP APLIKASI PPDB MTS N 2 KM
+===========================================
+
+STACK TEKNOLOGI:
+- Laravel 12 (Latest)
+- Livewire 3.7.3
+- Vite 7.0.7
+- Tailwind CSS 4.0
+- PHP 8.2+
+- PostgreSQL 12+ (Database)
+- DomPDF 3.0 (PDF Export)
+- Laravel Excel 3.1 (Excel Export)
+
+===========================================
+MODE DEVELOPMENT
+===========================================
+
+1. INSTALASI DEPENDENCIES:
+
+   # Install PHP dependencies
+   composer install
+
+   # Install NPM dependencies
+   npm install
+
+2. KONFIGURASI ENVIRONMENT:
+
+   # Copy file .env.example
+   copy .env.example .env
+
+   # Generate application key
+   php artisan key:generate
+
+   # Konfigurasi database PostgreSQL di .env
+   # Sesuaikan DB_DATABASE, DB_USERNAME, DB_PASSWORD dengan setup PostgreSQL Anda
+
+3. MIGRASI DATABASE:
+
+   php artisan migrate
+
+   # (Optional) Seed data
+   php artisan db:seed
+
+4. JALANKAN DEVELOPMENT SERVER:
+
+   Opsi 1 - Menggunakan composer dev script (Recommended):
+   composer dev
+
+   Opsi 2 - Manual (jalankan di terminal terpisah):
+   Terminal 1: php artisan serve
+   Terminal 2: npm run dev
+   Terminal 3: php artisan queue:listen
+
+5. AKSES APLIKASI:
+
+   Browser: http://localhost:8000
+   Vite HMR: http://localhost:5173
+
+===========================================
+MODE PRODUCTION
+===========================================
+
+1. KONFIGURASI ENVIRONMENT:
+
+   # Gunakan .env.production.example sebagai template
+   copy .env.production.example .env
+
+   # Edit .env dan sesuaikan:
+   - APP_ENV=production
+   - APP_DEBUG=false
+   - APP_URL=https://your-domain.com
+   - Database credentials
+   - Mail settings
+   - dll
+
+2. OPTIMASI APLIKASI:
+
+   # Install dependencies (production only)
+   composer install --optimize-autoloader --no-dev
+
+   # Cache configuration
+   php artisan config:cache
+   php artisan route:cache
+   php artisan view:cache
+
+   # Build assets untuk production
+   npm run build:production
+
+3. SET PERMISSIONS (Linux/Unix):
+
+   chmod -R 755 storage
+   chmod -R 755 bootstrap/cache
+
+4. WEB SERVER CONFIGURATION:
+
+   - Document root: /public
+   - Enable mod_rewrite (Apache) atau sesuaikan nginx config
+   - SSL certificate (recommended)
+
+5. OPTIMASI TAMBAHAN:
+
+   # Enable OPcache di php.ini
+   opcache.enable=1
+   opcache.memory_consumption=256
+   opcache.max_accelerated_files=20000
+
+   # Queue worker (sebagai service/daemon)
+   php artisan queue:work --daemon
+
+===========================================
+LIVEWIRE 3 FEATURES
+===========================================
+
+1. MEMBUAT COMPONENT:
+
+   php artisan make:livewire NamaComponent
+
+   File akan dibuat di:
+   - app/Livewire/NamaComponent.php
+   - resources/views/livewire/nama-component.blade.php
+
+2. MENGGUNAKAN COMPONENT:
+
+   <livewire:nama-component />
+
+   atau
+
+   @livewire('nama-component')
+
+3. HOT RELOAD:
+
+   Vite sudah dikonfigurasi untuk auto-reload saat:
+   - File Livewire component berubah
+   - View blade berubah
+   - CSS/JS berubah
+
+===========================================
+VITE CONFIGURATION
+===========================================
+
+Development:
+- npm run dev        : Start Vite dev server dengan HMR
+- npm run preview    : Preview production build
+
+Production:
+- npm run build                : Build untuk production
+- npm run build:production     : Build dengan mode production
+
+File konfigurasi: vite.config.js
+- Auto-refresh untuk Livewire components
+- Tailwind CSS 4 integration
+- Optimized build output
+
+===========================================
+TROUBLESHOOTING
+===========================================
+
+1. Livewire tidak berfungsi:
+   - Pastikan @livewireStyles ada di <head>
+   - Pastikan @livewireScripts ada sebelum </body>
+   - Clear cache: php artisan view:clear
+
+2. Vite error:
+   - Hapus node_modules dan jalankan: npm install
+   - Clear Vite cache: npm run dev -- --force
+
+3. Permission error:
+   - Windows: Jalankan terminal as Administrator
+   - Linux: Sesuaikan ownership dan permissions
+
+4. Composer slow:
+   - Normal pada Windows saat "Generating autoload"
+   - Disable antivirus sementara untuk folder project
+
+===========================================
+USEFUL COMMANDS
+===========================================
+
+# Clear all cache
+php artisan optimize:clear
+
+# Generate IDE helper (jika menggunakan)
+php artisan ide-helper:generate
+
+# Run tests
+php artisan test
+
+# Check code style (Pint)
+./vendor/bin/pint
+
+# Database fresh dengan seeder
+php artisan migrate:fresh --seed
+
+===========================================
+KONFIGURASI POSTGRESQL
+===========================================
+
+Aplikasi ini menggunakan PostgreSQL sebagai database.
+
+1. INSTALASI POSTGRESQL:
+
+   Windows:
+   - Download dari https://www.postgresql.org/download/windows/
+   - Install PostgreSQL 12 atau versi lebih baru
+   - Catat password untuk user postgres saat instalasi
+
+   macOS:
+   brew install postgresql@16
+   brew services start postgresql@16
+
+   Linux (Ubuntu/Debian):
+   sudo apt update
+   sudo apt install postgresql postgresql-contrib
+   sudo systemctl start postgresql
+   sudo systemctl enable postgresql
+
+2. MEMBUAT DATABASE:
+
+   # Login ke PostgreSQL
+   psql -U postgres
+
+   # Buat database untuk development
+   CREATE DATABASE ppdb_mtsn2km;
+
+   # Buat database untuk production (opsional)
+   CREATE DATABASE ppdb_mtsn2km_production;
+
+   # Buat user khusus (opsional, recommended untuk production)
+   CREATE USER ppdb_user WITH ENCRYPTED PASSWORD 'your_secure_password';
+   GRANT ALL PRIVILEGES ON DATABASE ppdb_mtsn2km TO ppdb_user;
+   GRANT ALL PRIVILEGES ON DATABASE ppdb_mtsn2km_production TO ppdb_user;
+
+   # Keluar
+   \q
+
+3. KONFIGURASI .ENV:
+
+   Development (.env):
+   DB_CONNECTION=pgsql
+   DB_HOST=127.0.0.1
+   DB_PORT=5432
+   DB_DATABASE=ppdb_mtsn2km
+   DB_USERNAME=postgres
+   DB_PASSWORD=your_password
+
+   Production (.env di server):
+   DB_CONNECTION=pgsql
+   DB_HOST=127.0.0.1
+   DB_PORT=5432
+   DB_DATABASE=ppdb_mtsn2km_production
+   DB_USERNAME=ppdb_user
+   DB_PASSWORD=your_secure_password
+
+4. VERIFIKASI KONEKSI:
+
+   # Test koneksi database
+   php artisan migrate:status
+
+   # Jika berhasil, jalankan migrasi
+   php artisan migrate
+
+5. TROUBLESHOOTING POSTGRESQL:
+
+   - Connection refused:
+     * Pastikan PostgreSQL service berjalan
+     * Windows: services.msc → PostgreSQL service
+     * Linux: sudo systemctl status postgresql
+     * macOS: brew services list
+
+   - Authentication failed:
+     * Periksa username dan password di .env
+     * Pastikan user memiliki akses ke database
+
+   - Database does not exist:
+     * Buat database dulu: CREATE DATABASE ppdb_mtsn2km;
+
+   - Port 5432 already in use:
+     * Ganti DB_PORT di .env dengan port yang available
+     * Atau stop service yang menggunakan port tersebut
+
+6. BACKUP & RESTORE:
+
+   # Backup database
+   pg_dump -U postgres ppdb_mtsn2km > backup.sql
+
+   # Restore database
+   psql -U postgres ppdb_mtsn2km < backup.sql
+
+   # Backup dengan compressed format
+   pg_dump -U postgres -Fc ppdb_mtsn2km > backup.dump
+
+   # Restore dari compressed format
+   pg_restore -U postgres -d ppdb_mtsn2km backup.dump
+
+===========================================
+KONTRIBUTOR & SUPPORT
+===========================================
+
+Untuk pertanyaan atau issues, silakan hubungi tim developer.
+
+===========================================
+FITUR KEAMANAN
+===========================================
+
+Aplikasi ini dilengkapi dengan berbagai fitur keamanan:
+
+1. SECURITY HEADERS:
+   - X-Content-Type-Options: nosniff
+   - X-Frame-Options: SAMEORIGIN
+   - X-XSS-Protection
+   - Content-Security-Policy (CSP)
+   - Strict-Transport-Security (HSTS)
+   - Referrer-Policy
+
+2. RATE LIMITING:
+   - API: 60 requests per menit
+   - Login: 5 attempts per menit
+   - Throttle middleware tersedia
+
+3. CSRF PROTECTION:
+   - Auto-enabled untuk semua POST requests
+   - Token refresh otomatis
+   - Error page 419 untuk expired token
+
+4. CUSTOM ERROR PAGES:
+   - 404: Halaman tidak ditemukan
+   - 403: Akses ditolak
+   - 500: Server error
+   - 503: Maintenance mode
+   - 419: Session expired
+
+Lokasi middleware keamanan:
+- app/Http/Middleware/SecurityHeaders.php
+- bootstrap/app.php (konfigurasi)
+
+===========================================
+EXPORT PDF & EXCEL
+===========================================
+
+1. EXPORT PDF (DomPDF):
+
+   Contoh controller:
+   use Barryvdh\DomPDF\Facade\Pdf;
+
+   public function exportPDF() {
+       $data = ['items' => $items];
+       $pdf = Pdf::loadView('pdf.template', $data);
+       return $pdf->download('file.pdf');
+   }
+
+   Fitur:
+   - Custom header & footer
+   - Watermark support
+   - Multiple page size (A4, Letter, dll)
+   - Portrait/Landscape orientation
+
+2. EXPORT EXCEL (Laravel Excel):
+
+   Contoh export class:
+   namespace App\Exports;
+   use Maatwebsite\Excel\Concerns\FromCollection;
+
+   class DataExport implements FromCollection {
+       public function collection() {
+           return Model::all();
+       }
+   }
+
+   Fitur:
+   - Multi-sheet support
+   - Auto-styling
+   - Formula support
+   - Import & Export
+   - CSV, XLSX, XLS format
+
+3. DEMO ROUTES:
+   /exports          - Halaman demo export
+   /export/pdf       - Download PDF
+   /export/excel     - Download Excel
+
+Dokumentasi lengkap:
+- PDF: https://github.com/barryvdh/laravel-dompdf
+- Excel: https://docs.laravel-excel.com
+
+===========================================
+SECURITY CHECKLIST PRODUCTION
+===========================================
+
+Sebelum deploy ke production, pastikan:
+
+□ APP_DEBUG=false di .env
+□ APP_ENV=production di .env
+□ Generate APP_KEY baru
+□ Gunakan HTTPS (SSL certificate)
+□ Set SESSION_ENCRYPT=true
+□ Ganti semua default password
+□ Enable firewall
+□ Set proper file permissions (755 untuk folder, 644 untuk files)
+□ Disable directory listing di web server
+□ Enable OPcache
+□ Set up backup otomatis
+□ Configure proper logging
+□ Review CORS settings
+□ Enable rate limiting di production
+□ Set up monitoring (Sentry, New Relic, dll)
+□ Review security headers
+□ Update dependencies secara berkala
+
+===========================================
+CORS CONFIGURATION
+===========================================
+
+File: config/cors.php
+
+Untuk mengizinkan domain tertentu:
+'allowed_origins' => [
+    'https://your-domain.com',
+    'https://app.your-domain.com',
+],
+
+Untuk API dengan credentials:
+'supports_credentials' => true,
+
+===========================================
+TESTING SECURITY
+===========================================
+
+1. Test Security Headers:
+   curl -I https://your-domain.com
+
+2. Test Rate Limiting:
+   # Kirim request berulang kali
+   for i in {1..10}; do curl https://your-domain.com/api/endpoint; done
+
+3. Test CSRF Protection:
+   # POST tanpa CSRF token (harus ditolak)
+   curl -X POST https://your-domain.com/form
+
+4. Security Scan:
+   # Gunakan tools seperti:
+   - OWASP ZAP
+   - Burp Suite
+   - Security Headers (securityheaders.com)
+
+Happy coding! 🚀

@@ -1,0 +1,1617 @@
+<div>
+    @if(!$pendaftar)
+        <div class="text-center py-12">
+            <p class="text-gray-500">Data pendaftar tidak ditemukan.</p>
+        </div>
+    @else
+        <div class="space-y-6">
+            <!-- Flash Message -->
+            @if (session()->has('message'))
+                <div x-data="{ show: true }" x-show="show" x-init="setTimeout(() => show = false, 3000)" x-transition class="bg-emerald-500 text-white px-6 py-3 rounded-lg shadow-lg flex items-center">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    {{ session('message') }}
+                </div>
+            @endif
+
+            <!-- Header Info -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <div class="bg-gradient-to-r from-emerald-600 to-blue-600 px-6 py-8 text-white">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                        <!-- Left Section: Photo & Info -->
+                        <div class="flex items-start space-x-4 flex-1">
+                            @if($pendaftar->foto)
+                                <img src="{{ Storage::url($pendaftar->foto) }}" alt="Foto" class="w-24 h-24 rounded-lg object-cover border-4 border-white shadow-lg flex-shrink-0">
+                            @else
+                                <div class="w-24 h-24 bg-white rounded-lg flex items-center justify-center border-4 border-white shadow-lg flex-shrink-0">
+                                    <span class="text-4xl font-bold text-emerald-600">{{ strtoupper(substr($pendaftar->nama_lengkap, 0, 2)) }}</span>
+                                </div>
+                            @endif
+                            <div class="flex-1 min-w-0">
+                                <h2 class="text-2xl md:text-3xl font-bold mb-2">{{ $pendaftar->nama_lengkap }}</h2>
+                                <div class="space-y-1">
+                                    <div class="flex items-center space-x-2">
+                                        <svg class="w-4 h-4 text-emerald-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"></path>
+                                        </svg>
+                                        <span class="text-emerald-100 text-sm">No. Pendaftaran: <span class="font-semibold text-white">{{ $pendaftar->nomor_pendaftaran }}</span></span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <svg class="w-4 h-4 text-emerald-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
+                                        </svg>
+                                        <span class="text-emerald-100 text-sm">NISN: <span class="font-semibold text-white">{{ $pendaftar->nisn }}</span></span>
+                                    </div>
+                                    <div class="flex items-center space-x-2">
+                                        <svg class="w-4 h-4 text-emerald-200 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                                        </svg>
+                                        <span class="text-emerald-100 text-sm">Jalur: <span class="font-semibold text-white">{{ $pendaftar->jalurPendaftaran->nama ?? '-' }}</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Right Section: Status Badge -->
+                        <div class="flex md:flex-col items-start md:items-end justify-start md:justify-center gap-3">
+                            @php
+                                $statusColors = [
+                                    'draft' => 'bg-gray-100 text-gray-800 border-gray-300',
+                                    'menunggu' => 'bg-yellow-50 text-yellow-800 border-yellow-300',
+                                    'diverifikasi' => 'bg-blue-50 text-blue-800 border-blue-300',
+                                    'lulus' => 'bg-green-50 text-green-800 border-green-300',
+                                    'tidak_lulus' => 'bg-red-50 text-red-800 border-red-300',
+                                    'cadangan' => 'bg-blue-50 text-blue-800 border-blue-300',
+                                ];
+                                $statusLabels = [
+                                    'draft' => 'Draft',
+                                    'menunggu' => 'Menunggu Verifikasi',
+                                    'diverifikasi' => 'Diverifikasi',
+                                    'lulus' => 'Lulus Seleksi',
+                                    'tidak_lulus' => 'Tidak Lulus',
+                                    'cadangan' => 'Cadangan',
+                                ];
+                                $statusClass = $statusColors[$pendaftar->status_pendaftaran] ?? 'bg-gray-100 text-gray-800 border-gray-300';
+                                $statusLabel = $statusLabels[$pendaftar->status_pendaftaran] ?? ucfirst(str_replace('_', ' ', $pendaftar->status_pendaftaran));
+                            @endphp
+                            <div class="text-left md:text-right">
+                                <p class="text-emerald-100 text-xs font-semibold mb-2 uppercase tracking-wide">Status Pendaftaran</p>
+                                <span class="inline-block px-4 py-2.5 rounded-lg text-sm font-bold border-2 shadow-md {{ $statusClass }}">
+                                    {{ $statusLabel }}
+                                </span>
+                            </div>
+                            <div class="text-left md:text-right">
+                                <p class="text-emerald-100 text-xs font-semibold mb-2 uppercase tracking-wide">Ubah Status</p>
+                                <select wire:model.live="status_pendaftaran" wire:change="updateStatusPendaftaran" class="rounded-lg border-2 border-white shadow-md text-sm font-semibold focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                                    <option value="draft">Draft</option>
+                                    <option value="menunggu">Menunggu Verifikasi</option>
+                                    <option value="diverifikasi">Diverifikasi</option>
+                                    <option value="lulus">Lulus Seleksi</option>
+                                    <option value="tidak_lulus">Tidak Lulus</option>
+                                    <option value="cadangan">Cadangan</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div x-data="{ activeTab: 'siswa' }" class="bg-white rounded-lg shadow-lg overflow-hidden">
+                <!-- Tab Buttons -->
+                <div class="border-b border-gray-200 overflow-x-auto">
+                    <nav class="flex -mb-px whitespace-nowrap">
+                        <button @click="activeTab = 'siswa'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'siswa', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'siswa' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                            Data Siswa
+                        </button>
+                        <button @click="activeTab = 'orangtua'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'orangtua', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'orangtua' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                            Data Orang Tua
+                        </button>
+                        <button @click="activeTab = 'alamat'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'alamat', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'alamat' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                            Data Alamat
+                        </button>
+                        <button @click="activeTab = 'prestasi'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'prestasi', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'prestasi' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
+                            Prestasi Siswa
+                        </button>
+                        <button @click="activeTab = 'beasiswa'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'beasiswa', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'beasiswa' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Beasiswa & Bantuan
+                        </button>
+                        <button @click="activeTab = 'pendidikan'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'pendidikan', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'pendidikan' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                            Pendidikan Lain
+                        </button>
+                        <button @click="activeTab = 'dokumen'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'dokumen', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'dokumen' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            Verifikasi Dokumen
+                        </button>
+                        <button @click="activeTab = 'daftarulang'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'daftarulang', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'daftarulang' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Daftar Ulang
+                        </button>
+                    </nav>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="p-6">
+                    <!-- Data Pribadi Tab -->
+                    <div x-show="activeTab === 'pribadi'" x-transition>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Data Pribadi</h3>
+                            @if($editMode)
+                                <div class="space-x-2">
+                                    <button wire:click="saveDataPribadi" class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm">
+                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                        Simpan
+                                    </button>
+                                    <button wire:click="toggleEditMode" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">Batal</button>
+                                </div>
+                            @else
+                                <button wire:click="toggleEditMode" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    Edit Data
+                                </button>
+                            @endif
+                        </div>
+
+                        @if($editMode)
+                            <form wire:submit.prevent="saveDataPribadi" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <!-- Upload Foto -->
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Foto Pendaftar</label>
+                                    <div class="flex items-center space-x-4">
+                                        @if($foto)
+                                            <img src="{{ Storage::url($foto) }}" alt="Current foto" class="w-20 h-20 rounded-full object-cover">
+                                        @endif
+                                        <div>
+                                            <input type="file" wire:model="newFoto" accept="image/*" class="text-sm">
+                                            @error('newFoto') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                            <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG. Max: 2MB</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Nama Lengkap *</label>
+                                    <input type="text" wire:model="nama_lengkap" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                    @error('nama_lengkap') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">NISN *</label>
+                                    <input type="text" wire:model="nisn" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                    @error('nisn') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Tempat Lahir</label>
+                                    <input type="text" wire:model="tempat_lahir" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Tanggal Lahir</label>
+                                    <input type="date" wire:model="tanggal_lahir" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Jenis Kelamin *</label>
+                                    <select wire:model="jenis_kelamin" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                        <option value="L">Laki-laki</option>
+                                        <option value="P">Perempuan</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Agama</label>
+                                    <input type="text" wire:model="agama" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                </div>
+                            </form>
+                        @else
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">Nama Lengkap</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nama_lengkap }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">NISN</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nisn }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">Tempat Lahir</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->tempat_lahir ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">Tanggal Lahir</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->tanggal_lahir ? $pendaftar->tanggal_lahir->format('d F Y') : '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">Jenis Kelamin</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">Agama</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->agama ?? '-' }}</p>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Data Orang Tua Tab -->
+                    <div x-show="activeTab === 'orangtua'" x-transition>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Data Orang Tua</h3>
+                            @if($editMode)
+                                <div class="space-x-2">
+                                    <button wire:click="saveDataOrangTua" class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm">
+                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                        Simpan
+                                    </button>
+                                    <button wire:click="toggleEditMode" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">Batal</button>
+                                </div>
+                            @else
+                                <button wire:click="toggleEditMode" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    Edit Data
+                                </button>
+                            @endif
+                        </div>
+
+                        @if($editMode)
+                            <form wire:submit.prevent="saveDataOrangTua" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Nama Ayah</label>
+                                    <input type="text" wire:model="nama_ayah" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Pekerjaan Ayah</label>
+                                    <input type="text" wire:model="pekerjaan_ayah" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Nama Ibu</label>
+                                    <input type="text" wire:model="nama_ibu" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Pekerjaan Ibu</label>
+                                    <input type="text" wire:model="pekerjaan_ibu" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Penghasilan Orang Tua</label>
+                                    <input type="text" wire:model="penghasilan_ortu" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">No. Telepon/WA Orang Tua</label>
+                                    <input type="text" wire:model="telepon_ortu" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                </div>
+                            </form>
+                        @else
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">Nama Ayah</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nama_ayah ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">Pekerjaan Ayah</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->pekerjaan_ayah ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">Nama Ibu</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nama_ibu ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">Pekerjaan Ibu</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->pekerjaan_ibu ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">Penghasilan Orang Tua</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->penghasilan_ortu ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">No. Telepon/WA Orang Tua</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->telepon_ortu ?? '-' }}</p>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Data Alamat Tab -->
+                    <div x-show="activeTab === 'alamat'" x-transition>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Data Alamat & Kontak</h3>
+                            @if($editMode)
+                                <div class="space-x-2">
+                                    <button wire:click="saveDataAlamat" class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm">
+                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                        Simpan
+                                    </button>
+                                    <button wire:click="toggleEditMode" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">Batal</button>
+                                </div>
+                            @else
+                                <button wire:click="toggleEditMode" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    Edit Data
+                                </button>
+                            @endif
+                        </div>
+
+                        @if($editMode)
+                            <form wire:submit.prevent="saveDataAlamat" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700">Alamat Lengkap</label>
+                                    <textarea wire:model="alamat" rows="3" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200"></textarea>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Kab/Kota</label>
+                                    <input type="text" wire:model="asal_kabkota" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">No. Telepon</label>
+                                    <input type="text" wire:model="telepon" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">No. HP</label>
+                                    <input type="text" wire:model="no_hp" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                    @error('no_hp') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Email *</label>
+                                    <input type="email" wire:model="email" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                    @error('email') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+                            </form>
+                        @else
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-600">Alamat Lengkap</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->alamat ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">Kab/Kota</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->asal_kabkota ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">No. Telepon</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->telepon ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">No. HP</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->no_hp ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">Email</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->email }}</p>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Data Sekolah Asal Tab -->
+                    <div x-show="activeTab === 'sekolah'" x-transition>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Data Sekolah Asal</h3>
+                            @if($editMode)
+                                <div class="space-x-2">
+                                    <button wire:click="saveDataSekolah" class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm">
+                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                        Simpan
+                                    </button>
+                                    <button wire:click="toggleEditMode" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">Batal</button>
+                                </div>
+                            @else
+                                <button wire:click="toggleEditMode" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    Edit Data
+                                </button>
+                            @endif
+                        </div>
+
+                        @if($editMode)
+                            <form wire:submit.prevent="saveDataSekolah" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Nama Sekolah</label>
+                                    <input type="text" wire:model="asal_sekolah" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Jenis Sekolah</label>
+                                    <select wire:model="jenis_sekolah_asal" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                        <option value="">Pilih Jenis</option>
+                                        <option value="madrasah">Madrasah</option>
+                                        <option value="umum">Umum</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">NSM (untuk Madrasah)</label>
+                                    <input type="text" wire:model="nsm_sekolah_asal" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">NPSN (untuk Sekolah Umum)</label>
+                                    <input type="text" wire:model="npsn_sekolah_asal" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700">Nilai Rata-Rata</label>
+                                    <input type="number" step="0.01" wire:model="nilai_rata_rata" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-700">Alamat Sekolah</label>
+                                    <textarea wire:model="alamat_sekolah" rows="2" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200"></textarea>
+                                </div>
+                            </form>
+                        @else
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">Nama Sekolah</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->asal_sekolah ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">Jenis Sekolah</label>
+                                    <p class="mt-1 text-base text-gray-900">
+                                        @if($pendaftar->jenis_sekolah_asal)
+                                            <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full {{ $pendaftar->jenis_sekolah_asal === 'madrasah' ? 'bg-purple-100 text-purple-800' : 'bg-indigo-100 text-indigo-800' }}">
+                                                {{ ucfirst($pendaftar->jenis_sekolah_asal) }}
+                                            </span>
+                                        @else
+                                            -
+                                        @endif
+                                    </p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">
+                                        {{ $pendaftar->jenis_sekolah_asal === 'madrasah' ? 'NSM' : 'NPSN' }}
+                                    </label>
+                                    <p class="mt-1 text-base text-gray-900">
+                                        {{ $pendaftar->jenis_sekolah_asal === 'madrasah' ? ($pendaftar->nsm_sekolah_asal ?? '-') : ($pendaftar->npsn_sekolah_asal ?? '-') }}
+                                    </p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-600">Nilai Rata-Rata</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_rata_rata ?? '-' }}</p>
+                                </div>
+                                @if($pendaftar->alamat_sekolah)
+                                <div class="md:col-span-2">
+                                    <label class="block text-sm font-medium text-gray-600">Alamat Sekolah</label>
+                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->alamat_sekolah }}</p>
+                                </div>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Data Rapor Tab -->
+                    <div x-show="activeTab === 'rapor'" x-transition>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Data Nilai Rapor</h3>
+                            @if($editMode)
+                                <div class="space-x-2">
+                                    <button wire:click="saveDataRapor" class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm">
+                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                        Simpan
+                                    </button>
+                                    <button wire:click="toggleEditMode" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">Batal</button>
+                                </div>
+                            @else
+                                <button wire:click="toggleEditMode" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    Edit Data
+                                </button>
+                            @endif
+                        </div>
+
+                        @if($editMode)
+                            <form wire:submit.prevent="saveDataRapor" class="space-y-6">
+                                <!-- Kelas 5 Semester 1 -->
+                                <div class="border-l-4 border-blue-500 pl-4">
+                                    <h4 class="font-semibold text-gray-900 mb-3">Kelas 5 Semester 1</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Bahasa Indonesia</label>
+                                            <input type="number" step="0.01" min="0" max="100" wire:model="nilai_b_indo_5_1" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                            @error('nilai_b_indo_5_1') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Matematika</label>
+                                            <input type="number" step="0.01" min="0" max="100" wire:model="nilai_matematika_5_1" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                            @error('nilai_matematika_5_1') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">IPA</label>
+                                            <input type="number" step="0.01" min="0" max="100" wire:model="nilai_ipa_5_1" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                            @error('nilai_ipa_5_1') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Kelas 5 Semester 2 -->
+                                <div class="border-l-4 border-green-500 pl-4">
+                                    <h4 class="font-semibold text-gray-900 mb-3">Kelas 5 Semester 2</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Bahasa Indonesia</label>
+                                            <input type="number" step="0.01" min="0" max="100" wire:model="nilai_b_indo_5_2" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                            @error('nilai_b_indo_5_2') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Matematika</label>
+                                            <input type="number" step="0.01" min="0" max="100" wire:model="nilai_matematika_5_2" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                            @error('nilai_matematika_5_2') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">IPA</label>
+                                            <input type="number" step="0.01" min="0" max="100" wire:model="nilai_ipa_5_2" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                            @error('nilai_ipa_5_2') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Kelas 6 Semester 1 -->
+                                <div class="border-l-4 border-purple-500 pl-4">
+                                    <h4 class="font-semibold text-gray-900 mb-3">Kelas 6 Semester 1</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Bahasa Indonesia</label>
+                                            <input type="number" step="0.01" min="0" max="100" wire:model="nilai_b_indo_6_1" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                            @error('nilai_b_indo_6_1') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">Matematika</label>
+                                            <input type="number" step="0.01" min="0" max="100" wire:model="nilai_matematika_6_1" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                            @error('nilai_matematika_6_1') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700">IPA</label>
+                                            <input type="number" step="0.01" min="0" max="100" wire:model="nilai_ipa_6_1" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                            @error('nilai_ipa_6_1') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Rata-rata -->
+                                <div class="bg-emerald-50 p-4 rounded-lg">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-medium text-gray-700">Rata-rata Nilai:</span>
+                                        <span class="text-2xl font-bold text-emerald-600">{{ $pendaftar->hitungRataRataRapor() }}</span>
+                                    </div>
+                                </div>
+                            </form>
+                        @else
+                            <div class="space-y-6">
+                                <!-- Kelas 5 Semester 1 -->
+                                <div class="border-l-4 border-blue-500 pl-4">
+                                    <h4 class="font-semibold text-gray-900 mb-3">Kelas 5 Semester 1</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-600">Bahasa Indonesia</label>
+                                            <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_b_indo_5_1 ?? '-' }}</p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-600">Matematika</label>
+                                            <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_matematika_5_1 ?? '-' }}</p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-600">IPA</label>
+                                            <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_ipa_5_1 ?? '-' }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Kelas 5 Semester 2 -->
+                                <div class="border-l-4 border-green-500 pl-4">
+                                    <h4 class="font-semibold text-gray-900 mb-3">Kelas 5 Semester 2</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-600">Bahasa Indonesia</label>
+                                            <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_b_indo_5_2 ?? '-' }}</p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-600">Matematika</label>
+                                            <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_matematika_5_2 ?? '-' }}</p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-600">IPA</label>
+                                            <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_ipa_5_2 ?? '-' }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Kelas 6 Semester 1 -->
+                                <div class="border-l-4 border-purple-500 pl-4">
+                                    <h4 class="font-semibold text-gray-900 mb-3">Kelas 6 Semester 1</h4>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-600">Bahasa Indonesia</label>
+                                            <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_b_indo_6_1 ?? '-' }}</p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-600">Matematika</label>
+                                            <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_matematika_6_1 ?? '-' }}</p>
+                                        </div>
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-600">IPA</label>
+                                            <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_ipa_6_1 ?? '-' }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Rata-rata -->
+                                <div class="bg-emerald-50 p-4 rounded-lg">
+                                    <div class="flex justify-between items-center">
+                                        <span class="text-sm font-medium text-gray-700">Rata-rata Nilai:</span>
+                                        <span class="text-2xl font-bold text-emerald-600">{{ $pendaftar->hitungRataRataRapor() }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Data Prestasi Tab -->
+                    <div x-show="activeTab === 'prestasi'" x-transition>
+                        <div class="flex justify-between items-center mb-4">
+                            <h3 class="text-lg font-semibold text-gray-900">Data Prestasi</h3>
+                            @if($editMode)
+                                <div class="space-x-2">
+                                    <button wire:click="saveDataPrestasi" class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm">
+                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                        Simpan
+                                    </button>
+                                    <button wire:click="toggleEditMode" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">Batal</button>
+                                </div>
+                            @else
+                                <button wire:click="toggleEditMode" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
+                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+                                    Edit Data
+                                </button>
+                            @endif
+                        </div>
+
+                        @if($editMode)
+                            <form wire:submit.prevent="saveDataPrestasi">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Prestasi yang Dimiliki</label>
+                                    <textarea wire:model="prestasi" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200" placeholder="Tuliskan prestasi yang pernah diraih (akademik maupun non-akademik)"></textarea>
+                                    <p class="mt-1 text-xs text-gray-500">Contoh: Juara 1 Lomba MTQ Tingkat Kota, Juara 2 Olimpiade Matematika, dll.</p>
+                                </div>
+                            </form>
+                        @else
+                            <div>
+                                <label class="block text-sm font-medium text-gray-600 mb-2">Prestasi yang Dimiliki</label>
+                                @if($pendaftar->prestasi)
+                                    <div class="bg-gray-50 p-4 rounded-lg">
+                                        <p class="text-base text-gray-900 whitespace-pre-line">{{ $pendaftar->prestasi }}</p>
+                                    </div>
+                                @else
+                                    <p class="text-base text-gray-500 italic">Tidak ada data prestasi</p>
+                                @endif
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Data EMIS Tab -->
+                    <div x-show="activeTab === 'emisidentitas'" x-transition>
+                        <div class="mb-6">
+                            <h3 class="text-lg font-semibold text-gray-900 mb-4">Data EMIS Kemenag 4.0</h3>
+                            <p class="text-sm text-gray-600">Data lengkap siswa untuk kebutuhan integrasi EMIS (Education Management Information System)</p>
+                        </div>
+
+                        <!-- Data Identitas & Keluarga -->
+                        <div class="mb-8 bg-emerald-50 p-6 rounded-lg border border-emerald-200">
+                            <h4 class="text-md font-semibold text-emerald-900 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>
+                                Data Identitas & Keluarga
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white p-4 rounded-lg">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">NIK</label>
+                                    <p class="text-base font-semibold text-gray-900">{{ $pendaftar->nik ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nama Panggilan</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->nama_panggilan ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Kewarganegaraan</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->kewarganegaraan ?? '-' }}</p>
+                                    @if($pendaftar->negara_asal)
+                                        <p class="text-sm text-gray-600">Negara: {{ $pendaftar->negara_asal }}</p>
+                                    @endif
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nomor KK</label>
+                                    <p class="text-base font-semibold text-gray-900">{{ $pendaftar->nomor_kk ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Anak Ke-</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->anak_ke ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Jumlah Saudara</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->jumlah_saudara_kandung ?? '-' }} orang</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Alamat Detail -->
+                        <div class="mb-8 bg-blue-50 p-6 rounded-lg border border-blue-200">
+                            <h4 class="text-md font-semibold text-blue-900 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path></svg>
+                                Alamat Detail
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 bg-white p-4 rounded-lg">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">RT / RW</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->rt ?? '-' }} / {{ $pendaftar->rw ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Dusun</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->dusun ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Kelurahan/Desa</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->desa ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Kecamatan</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->kecamatan ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Kabupaten/Kota</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->kabupaten ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Provinsi</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->provinsi ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Kode Pos</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->kode_pos ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Koordinat</label>
+                                    @if($pendaftar->latitude && $pendaftar->longitude)
+                                        <p class="text-sm text-gray-900">{{ $pendaftar->latitude }}, {{ $pendaftar->longitude }}</p>
+                                    @else
+                                        <p class="text-base text-gray-500">-</p>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Tempat Tinggal & Transportasi -->
+                        <div class="mb-8 bg-purple-50 p-6 rounded-lg border border-purple-200">
+                            <h4 class="text-md font-semibold text-purple-900 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                                Tempat Tinggal & Transportasi
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 bg-white p-4 rounded-lg">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Jenis Tinggal</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->jenis_tinggal ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Alat Transportasi</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->alat_transportasi ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Jarak ke Sekolah</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->jarak_tempat_tinggal ?? '-' }} km</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Waktu Tempuh</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->waktu_tempuh ?? '-' }} menit</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Ayah -->
+                        <div class="mb-8 bg-cyan-50 p-6 rounded-lg border border-cyan-200">
+                            <h4 class="text-md font-semibold text-cyan-900 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                Data Ayah
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white p-4 rounded-lg">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">NIK Ayah</label>
+                                    <p class="text-base font-semibold text-gray-900">{{ $pendaftar->ayah_nik ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nama Ayah</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->nama_ayah ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Tahun Lahir</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->ayah_tahun_lahir ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Pendidikan</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->ayah_pendidikan ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Pekerjaan</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->pekerjaan_ayah ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Penghasilan</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->ayah_penghasilan ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">No HP</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->ayah_no_hp ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Berkebutuhan Khusus</label>
+                                    <p class="text-base text-gray-900">
+                                        @if($pendaftar->ayah_berkebutuhan_khusus)
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Ya</span>
+                                        @else
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Tidak</span>
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Ibu -->
+                        <div class="mb-8 bg-pink-50 p-6 rounded-lg border border-pink-200">
+                            <h4 class="text-md font-semibold text-pink-900 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                Data Ibu
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white p-4 rounded-lg">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">NIK Ibu</label>
+                                    <p class="text-base font-semibold text-gray-900">{{ $pendaftar->ibu_nik ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nama Ibu</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->nama_ibu ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Tahun Lahir</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->ibu_tahun_lahir ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Pendidikan</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->ibu_pendidikan ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Pekerjaan</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->pekerjaan_ibu ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Penghasilan</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->ibu_penghasilan ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">No HP</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->ibu_no_hp ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Berkebutuhan Khusus</label>
+                                    <p class="text-base text-gray-900">
+                                        @if($pendaftar->ibu_berkebutuhan_khusus)
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Ya</span>
+                                        @else
+                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Tidak</span>
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Wali (jika ada) -->
+                        @if($pendaftar->memiliki_wali)
+                            <div class="mb-8 bg-indigo-50 p-6 rounded-lg border border-indigo-200">
+                                <h4 class="text-md font-semibold text-indigo-900 mb-4 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                                    Data Wali
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white p-4 rounded-lg">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">NIK Wali</label>
+                                        <p class="text-base font-semibold text-gray-900">{{ $pendaftar->wali_nik ?? '-' }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nama Wali</label>
+                                        <p class="text-base text-gray-900">{{ $pendaftar->wali_nama ?? '-' }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Tahun Lahir</label>
+                                        <p class="text-base text-gray-900">{{ $pendaftar->wali_tahun_lahir ?? '-' }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Pendidikan</label>
+                                        <p class="text-base text-gray-900">{{ $pendaftar->wali_pendidikan ?? '-' }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Pekerjaan</label>
+                                        <p class="text-base text-gray-900">{{ $pendaftar->wali_pekerjaan ?? '-' }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Penghasilan</label>
+                                        <p class="text-base text-gray-900">{{ $pendaftar->wali_penghasilan ?? '-' }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">No HP</label>
+                                        <p class="text-base text-gray-900">{{ $pendaftar->wali_no_hp ?? '-' }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        <!-- Riwayat Pendidikan -->
+                        <div class="mb-8 bg-amber-50 p-6 rounded-lg border border-amber-200">
+                            <h4 class="text-md font-semibold text-amber-900 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                                Riwayat Pendidikan
+                            </h4>
+
+                            <!-- TK/RA -->
+                            <div class="bg-white p-4 rounded-lg mb-4">
+                                <h5 class="font-semibold text-gray-700 mb-3">TK/RA</h5>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nama TK/RA</label>
+                                        <p class="text-base text-gray-900">{{ $pendaftar->tk_nama ?? '-' }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">NPSN</label>
+                                        <p class="text-base text-gray-900">{{ $pendaftar->tk_npsn ?? '-' }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Tahun Lulus</label>
+                                        <p class="text-base text-gray-900">{{ $pendaftar->tk_tahun_lulus ?? '-' }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- SD/MI -->
+                            <div class="bg-white p-4 rounded-lg">
+                                <h5 class="font-semibold text-gray-700 mb-3">SD/MI</h5>
+                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nama SD/MI</label>
+                                        <p class="text-base font-semibold text-gray-900">{{ $pendaftar->sd_nama ?? '-' }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">NPSN</label>
+                                        <p class="text-base text-gray-900">{{ $pendaftar->sd_npsn ?? '-' }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Tahun Lulus</label>
+                                        <p class="text-base text-gray-900">{{ $pendaftar->sd_tahun_lulus ?? '-' }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">No Peserta UN</label>
+                                        <p class="text-sm text-gray-900">{{ $pendaftar->sd_nomor_peserta_ujian ?? '-' }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">No Seri Ijazah</label>
+                                        <p class="text-sm text-gray-900">{{ $pendaftar->sd_nomor_seri_ijazah ?? '-' }}</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">No SKHUN</label>
+                                        <p class="text-sm text-gray-900">{{ $pendaftar->sd_nomor_skhun ?? '-' }}</p>
+                                    </div>
+                                </div>
+
+                                <!-- Nilai SD -->
+                                <div class="border-t pt-4">
+                                    <h6 class="font-medium text-gray-700 mb-3 text-sm">Nilai Rapor SD</h6>
+                                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+                                        <div class="text-center p-2 bg-blue-50 rounded">
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">Matematika</label>
+                                            <p class="text-lg font-bold text-blue-900">{{ $pendaftar->sd_nilai_matematika ?? '-' }}</p>
+                                        </div>
+                                        <div class="text-center p-2 bg-green-50 rounded">
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">IPA</label>
+                                            <p class="text-lg font-bold text-green-900">{{ $pendaftar->sd_nilai_ipa ?? '-' }}</p>
+                                        </div>
+                                        <div class="text-center p-2 bg-yellow-50 rounded">
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">IPS</label>
+                                            <p class="text-lg font-bold text-yellow-900">{{ $pendaftar->sd_nilai_ips ?? '-' }}</p>
+                                        </div>
+                                        <div class="text-center p-2 bg-red-50 rounded">
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">B. Indonesia</label>
+                                            <p class="text-lg font-bold text-red-900">{{ $pendaftar->sd_nilai_bahasa_indonesia ?? '-' }}</p>
+                                        </div>
+                                        <div class="text-center p-2 bg-purple-50 rounded">
+                                            <label class="block text-xs font-medium text-gray-600 mb-1">B. Inggris</label>
+                                            <p class="text-lg font-bold text-purple-900">{{ $pendaftar->sd_nilai_bahasa_inggris ?? '-' }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Program Bantuan Pemerintah -->
+                        <div class="mb-8 bg-green-50 p-6 rounded-lg border border-green-200">
+                            <h4 class="text-md font-semibold text-green-900 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                Program Bantuan Pemerintah
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white p-4 rounded-lg">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Penerima KPS</label>
+                                    <p class="text-base text-gray-900">
+                                        @if($pendaftar->penerima_kps)
+                                            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">Ya</span>
+                                            @if($pendaftar->nomor_kps)
+                                                <span class="block mt-1 text-xs text-gray-600">No: {{ $pendaftar->nomor_kps }}</span>
+                                            @endif
+                                        @else
+                                            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-gray-100 text-gray-800">Tidak</span>
+                                        @endif
+                                    </p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Penerima KIP</label>
+                                    <p class="text-base text-gray-900">
+                                        @if($pendaftar->penerima_kip)
+                                            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">Ya</span>
+                                            @if($pendaftar->nomor_kip)
+                                                <span class="block mt-1 text-xs text-gray-600">No: {{ $pendaftar->nomor_kip }}</span>
+                                            @endif
+                                        @else
+                                            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-gray-100 text-gray-800">Tidak</span>
+                                        @endif
+                                    </p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Layak PIP</label>
+                                    <p class="text-base text-gray-900">
+                                        @if($pendaftar->layak_pip)
+                                            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">Ya</span>
+                                            @if($pendaftar->alasan_layak_pip)
+                                                <span class="block mt-1 text-xs text-gray-600">Alasan: {{ $pendaftar->alasan_layak_pip }}</span>
+                                            @endif
+                                        @else
+                                            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-gray-100 text-gray-800">Tidak</span>
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Tambahan -->
+                        <div class="mb-8 bg-gray-50 p-6 rounded-lg border border-gray-200">
+                            <h4 class="text-md font-semibold text-gray-900 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path></svg>
+                                Data Tambahan
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white p-4 rounded-lg">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Hobi</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->hobi ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Cita-cita</label>
+                                    <p class="text-base text-gray-900">{{ $pendaftar->cita_cita ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Berkebutuhan Khusus</label>
+                                    <p class="text-base text-gray-900">
+                                        @if($pendaftar->berkebutuhan_khusus)
+                                            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-yellow-100 text-yellow-800">Ya</span>
+                                        @else
+                                            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-gray-100 text-gray-800">Tidak</span>
+                                        @endif
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Dokumen EMIS -->
+                        @if($pendaftar->file_kartu_keluarga || $pendaftar->file_akta_kelahiran || $pendaftar->file_ijazah_sd || $pendaftar->file_skhun_sd)
+                            <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                                <h4 class="text-md font-semibold text-gray-900 mb-4 flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                    Dokumen Pendukung EMIS
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg">
+                                    @if($pendaftar->file_kartu_keluarga)
+                                        <div class="flex items-center justify-between p-3 border rounded-lg">
+                                            <div class="flex items-center">
+                                                <svg class="w-8 h-8 text-blue-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                                <span class="text-sm font-medium text-gray-700">Kartu Keluarga</span>
+                                            </div>
+                                            <a href="{{ Storage::url($pendaftar->file_kartu_keluarga) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Lihat</a>
+                                        </div>
+                                    @endif
+                                    @if($pendaftar->file_akta_kelahiran)
+                                        <div class="flex items-center justify-between p-3 border rounded-lg">
+                                            <div class="flex items-center">
+                                                <svg class="w-8 h-8 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                                <span class="text-sm font-medium text-gray-700">Akta Kelahiran</span>
+                                            </div>
+                                            <a href="{{ Storage::url($pendaftar->file_akta_kelahiran) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Lihat</a>
+                                        </div>
+                                    @endif
+                                    @if($pendaftar->file_ijazah_sd)
+                                        <div class="flex items-center justify-between p-3 border rounded-lg">
+                                            <div class="flex items-center">
+                                                <svg class="w-8 h-8 text-yellow-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                                <span class="text-sm font-medium text-gray-700">Ijazah SD/MI</span>
+                                            </div>
+                                            <a href="{{ Storage::url($pendaftar->file_ijazah_sd) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Lihat</a>
+                                        </div>
+                                    @endif
+                                    @if($pendaftar->file_skhun_sd)
+                                        <div class="flex items-center justify-between p-3 border rounded-lg">
+                                            <div class="flex items-center">
+                                                <svg class="w-8 h-8 text-purple-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                                <span class="text-sm font-medium text-gray-700">SKHUN SD/MI</span>
+                                            </div>
+                                            <a href="{{ Storage::url($pendaftar->file_skhun_sd) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Lihat</a>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Data Daftar Ulang Tab -->
+                    <div x-show="activeTab === 'daftarulang'" x-transition>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Data Daftar Ulang</h3>
+
+                        @if($daftarUlang)
+                            <!-- Status Overview -->
+                            <div class="mb-6 bg-gradient-to-r from-emerald-50 to-blue-50 border border-emerald-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-600">Status Daftar Ulang</p>
+                                        @php
+                                            $duColors = ['belum' => 'bg-gray-100 text-gray-800', 'proses' => 'bg-yellow-100 text-yellow-800', 'selesai' => 'bg-green-100 text-green-800'];
+                                            $duLabels = ['belum' => 'Belum Daftar Ulang', 'proses' => 'Sedang Proses', 'selesai' => 'Selesai'];
+                                        @endphp
+                                        <span class="inline-block mt-1 px-3 py-1 rounded-full text-sm font-semibold {{ $duColors[$daftarUlang->status] ?? 'bg-gray-100 text-gray-800' }}">
+                                            {{ $duLabels[$daftarUlang->status] ?? $daftarUlang->status }}
+                                        </span>
+                                    </div>
+                                    @if($daftarUlang->tanggal_daftar_ulang)
+                                    <div class="text-right">
+                                        <p class="text-sm font-medium text-gray-600">Tanggal Daftar Ulang</p>
+                                        <p class="text-base font-semibold text-gray-900 mt-1">{{ $daftarUlang->tanggal_daftar_ulang->format('d F Y') }}</p>
+                                    </div>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <!-- Sub Tabs for Madrasah, Seragam, Ukuran -->
+                            <div x-data="{ duSubTab: 'madrasah' }" class="space-y-4">
+                                <!-- Sub Tab Navigation -->
+                                <div class="border-b border-gray-200">
+                                    <nav class="-mb-px flex space-x-4">
+                                        <button @click="duSubTab = 'madrasah'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': duSubTab === 'madrasah', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': duSubTab !== 'madrasah' }" class="py-3 px-4 text-center border-b-2 font-medium text-sm transition focus:outline-none rounded-t-lg">
+                                            Daftar Ulang Madrasah
+                                        </button>
+                                        <button @click="duSubTab = 'seragam'" :class="{ 'border-blue-500 text-blue-600 bg-blue-50': duSubTab === 'seragam', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': duSubTab !== 'seragam' }" class="py-3 px-4 text-center border-b-2 font-medium text-sm transition focus:outline-none rounded-t-lg">
+                                            Daftar Ulang Seragam
+                                        </button>
+                                        <button @click="duSubTab = 'ukuran'" :class="{ 'border-purple-500 text-purple-600 bg-purple-50': duSubTab === 'ukuran', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': duSubTab !== 'ukuran' }" class="py-3 px-4 text-center border-b-2 font-medium text-sm transition focus:outline-none rounded-t-lg">
+                                            Ukuran Seragam & Atribut
+                                        </button>
+                                    </nav>
+                                </div>
+
+                                <!-- Madrasah Sub Tab -->
+                                <div x-show="duSubTab === 'madrasah'" x-transition class="space-y-4">
+                                    <!-- Surat Pernyataan -->
+                                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                        <h4 class="font-semibold text-gray-900 mb-2">Surat Pernyataan</h4>
+                                        @if($daftarUlang->surat_pernyataan_path)
+                                            <div class="flex items-center space-x-2">
+                                                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                                <a href="{{ Storage::url($daftarUlang->surat_pernyataan_path) }}" target="_blank" class="text-blue-600 hover:text-blue-800 font-medium text-sm">
+                                                    Lihat Surat Pernyataan
+                                                </a>
+                                            </div>
+                                        @else
+                                            <p class="text-sm text-gray-500">Belum ada surat pernyataan</p>
+                                        @endif
+                                    </div>
+
+                                    <!-- Biaya & Pembayaran -->
+                                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                        <h4 class="font-semibold text-gray-900 mb-3">Biaya & Pembayaran</h4>
+                                        @if($daftarUlang->biaya_items)
+                                            @php $biayaItems = json_decode($daftarUlang->biaya_items, true); @endphp
+                                            @if($biayaItems)
+                                                <div class="space-y-2">
+                                                    @foreach($biayaItems as $biaya)
+                                                        <div class="flex justify-between items-center text-sm">
+                                                            <span class="text-gray-700">{{ $biaya['name'] }}</span>
+                                                            <span class="font-semibold text-gray-900">Rp {{ number_format($biaya['amount'], 0, ',', '.') }}</span>
+                                                        </div>
+                                                    @endforeach
+                                                    <div class="pt-2 border-t border-green-300 flex justify-between items-center">
+                                                        <span class="font-bold text-gray-900">Total</span>
+                                                        <span class="font-bold text-emerald-700 text-lg">Rp {{ number_format(array_sum(array_column($biayaItems, 'amount')), 0, ',', '.') }}</span>
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <p class="text-sm text-gray-500">Belum ada data biaya</p>
+                                            @endif
+                                        @else
+                                            <p class="text-sm text-gray-500">Belum ada data biaya</p>
+                                        @endif
+                                    </div>
+
+                                    <!-- Opsi Pembayaran -->
+                                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                        <h4 class="font-semibold text-gray-900 mb-2">Opsi Pembayaran</h4>
+                                        @if($daftarUlang->opsi_pembayaran)
+                                            <span class="inline-block px-3 py-1 bg-yellow-200 text-yellow-800 rounded-full text-sm font-semibold">
+                                                {{ ucfirst($daftarUlang->opsi_pembayaran) }}
+                                            </span>
+                                        @else
+                                            <p class="text-sm text-gray-500">Belum memilih opsi</p>
+                                        @endif
+                                    </div>
+
+                                    <!-- Bank/Metode Pembayaran -->
+                                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                                        <h4 class="font-semibold text-gray-900 mb-2">Bank/Metode Pembayaran</h4>
+                                        @if($daftarUlang->bank_terpilih)
+                                            @php $bank = json_decode($daftarUlang->bank_terpilih, true); @endphp
+                                            @if($bank)
+                                                <div class="space-y-1">
+                                                    <p class="text-sm font-semibold text-gray-900">{{ $bank['name'] ?? '-' }}</p>
+                                                    <p class="text-sm text-gray-700">{{ $bank['account_number'] ?? '-' }}</p>
+                                                    <p class="text-sm text-gray-600">a.n. {{ $bank['account_name'] ?? '-' }}</p>
+                                                </div>
+                                            @else
+                                                <p class="text-sm text-gray-500">Belum memilih bank</p>
+                                            @endif
+                                        @else
+                                            <p class="text-sm text-gray-500">Belum memilih bank</p>
+                                        @endif
+                                    </div>
+
+                                    <!-- Bukti Pembayaran -->
+                                    <div class="bg-pink-50 border border-pink-200 rounded-lg p-4">
+                                        <h4 class="font-semibold text-gray-900 mb-2">Bukti Pembayaran</h4>
+                                        @if($daftarUlang->bukti_pembayaran_madrasah)
+                                            <div class="flex items-center space-x-2">
+                                                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                                <a href="{{ Storage::url($daftarUlang->bukti_pembayaran_madrasah) }}" target="_blank" class="text-blue-600 hover:text-blue-800 font-medium text-sm">
+                                                    Lihat Bukti Pembayaran
+                                                </a>
+                                            </div>
+                                        @else
+                                            <p class="text-sm text-gray-500">Belum upload bukti</p>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <!-- Seragam Sub Tab -->
+                                <div x-show="duSubTab === 'seragam'" x-transition class="space-y-4">
+                                    <!-- Paket Seragam -->
+                                    <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                                        <h4 class="font-semibold text-gray-900 mb-2">Paket Seragam</h4>
+                                        @if($pendaftar->seragam && $pendaftar->seragam->paket_terpilih)
+                                            @php $paket = json_decode($pendaftar->seragam->paket_terpilih, true); @endphp
+                                            @if($paket)
+                                                <div>
+                                                    <p class="font-semibold text-gray-900">{{ $paket['name'] ?? '-' }}</p>
+                                                    <p class="text-sm text-gray-600 mt-1">{{ $paket['description'] ?? '-' }}</p>
+                                                </div>
+                                            @else
+                                                <p class="text-sm text-gray-500">Belum memilih paket</p>
+                                            @endif
+                                        @else
+                                            <p class="text-sm text-gray-500">Belum memilih paket</p>
+                                        @endif
+                                    </div>
+
+                                    <!-- Biaya & Pembayaran -->
+                                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                        <h4 class="font-semibold text-gray-900 mb-3">Biaya & Pembayaran</h4>
+                                        @if($pendaftar->seragam && $pendaftar->seragam->biaya_items)
+                                            @php $biayaItems = json_decode($pendaftar->seragam->biaya_items, true); @endphp
+                                            @if($biayaItems)
+                                                <div class="space-y-2">
+                                                    @foreach($biayaItems as $biaya)
+                                                        <div class="flex justify-between items-center text-sm">
+                                                            <span class="text-gray-700">{{ $biaya['name'] }}</span>
+                                                            <span class="font-semibold text-gray-900">Rp {{ number_format($biaya['amount'], 0, ',', '.') }}</span>
+                                                        </div>
+                                                    @endforeach
+                                                    <div class="pt-2 border-t border-green-300 flex justify-between items-center">
+                                                        <span class="font-bold text-gray-900">Total</span>
+                                                        <span class="font-bold text-emerald-700 text-lg">Rp {{ number_format(array_sum(array_column($biayaItems, 'amount')), 0, ',', '.') }}</span>
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <p class="text-sm text-gray-500">Belum ada data biaya</p>
+                                            @endif
+                                        @else
+                                            <p class="text-sm text-gray-500">Belum ada data biaya</p>
+                                        @endif
+                                    </div>
+
+                                    <!-- Opsi Pembayaran -->
+                                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                        <h4 class="font-semibold text-gray-900 mb-2">Opsi Pembayaran</h4>
+                                        @if($pendaftar->seragam && $pendaftar->seragam->opsi_pembayaran)
+                                            <span class="inline-block px-3 py-1 bg-yellow-200 text-yellow-800 rounded-full text-sm font-semibold">
+                                                {{ ucfirst($pendaftar->seragam->opsi_pembayaran) }}
+                                            </span>
+                                        @else
+                                            <p class="text-sm text-gray-500">Belum memilih opsi</p>
+                                        @endif
+                                    </div>
+
+                                    <!-- Bank/Metode Pembayaran -->
+                                    <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                                        <h4 class="font-semibold text-gray-900 mb-2">Bank/Metode Pembayaran</h4>
+                                        @if($pendaftar->seragam && $pendaftar->seragam->bank_terpilih)
+                                            @php $bank = json_decode($pendaftar->seragam->bank_terpilih, true); @endphp
+                                            @if($bank)
+                                                <div class="space-y-1">
+                                                    <p class="text-sm font-semibold text-gray-900">{{ $bank['name'] ?? '-' }}</p>
+                                                    <p class="text-sm text-gray-700">{{ $bank['account_number'] ?? '-' }}</p>
+                                                    <p class="text-sm text-gray-600">a.n. {{ $bank['account_name'] ?? '-' }}</p>
+                                                </div>
+                                            @else
+                                                <p class="text-sm text-gray-500">Belum memilih bank</p>
+                                            @endif
+                                        @else
+                                            <p class="text-sm text-gray-500">Belum memilih bank</p>
+                                        @endif
+                                    </div>
+
+                                    <!-- Bukti Pembayaran -->
+                                    <div class="bg-pink-50 border border-pink-200 rounded-lg p-4">
+                                        <h4 class="font-semibold text-gray-900 mb-2">Bukti Pembayaran</h4>
+                                        @if($pendaftar->seragam && $pendaftar->seragam->bukti_pembayaran)
+                                            <div class="flex items-center space-x-2">
+                                                <svg class="w-5 h-5 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                                <a href="{{ Storage::url($pendaftar->seragam->bukti_pembayaran) }}" target="_blank" class="text-blue-600 hover:text-blue-800 font-medium text-sm">
+                                                    Lihat Bukti Pembayaran
+                                                </a>
+                                            </div>
+                                        @else
+                                            <p class="text-sm text-gray-500">Belum upload bukti</p>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <!-- Ukuran Sub Tab -->
+                                <div x-show="duSubTab === 'ukuran'" x-transition class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <!-- Ukuran Jas -->
+                                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                                        <h4 class="font-semibold text-gray-900 mb-2">Ukuran Jas</h4>
+                                        @if($pendaftar->seragam && $pendaftar->seragam->ukuran_jas)
+                                            @php $ukuranJas = json_decode($pendaftar->seragam->ukuran_jas, true); @endphp
+                                            @if($ukuranJas)
+                                                <div>
+                                                    <p class="text-base font-bold text-gray-900">{{ $ukuranJas['size'] ?? '-' }}</p>
+                                                    <p class="text-sm text-gray-600 mt-1">{{ $ukuranJas['measurement'] ?? '-' }}</p>
+                                                </div>
+                                            @else
+                                                <p class="text-sm text-gray-500">Belum dipilih</p>
+                                            @endif
+                                        @else
+                                            <p class="text-sm text-gray-500">Belum dipilih</p>
+                                        @endif
+                                    </div>
+
+                                    <!-- Ukuran Atasan -->
+                                    <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                                        <h4 class="font-semibold text-gray-900 mb-2">Ukuran Atasan</h4>
+                                        @if($pendaftar->seragam && $pendaftar->seragam->ukuran_atasan)
+                                            @php $ukuranAtasan = json_decode($pendaftar->seragam->ukuran_atasan, true); @endphp
+                                            @if($ukuranAtasan)
+                                                <div>
+                                                    <p class="text-base font-bold text-gray-900">{{ $ukuranAtasan['size'] ?? '-' }}</p>
+                                                    <p class="text-sm text-gray-600 mt-1">{{ $ukuranAtasan['measurement'] ?? '-' }}</p>
+                                                </div>
+                                            @else
+                                                <p class="text-sm text-gray-500">Belum dipilih</p>
+                                            @endif
+                                        @else
+                                            <p class="text-sm text-gray-500">Belum dipilih</p>
+                                        @endif
+                                    </div>
+
+                                    <!-- Ukuran Bawahan -->
+                                    <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
+                                        <h4 class="font-semibold text-gray-900 mb-2">Ukuran Bawahan</h4>
+                                        @if($pendaftar->seragam && $pendaftar->seragam->ukuran_bawahan)
+                                            @php $ukuranBawahan = json_decode($pendaftar->seragam->ukuran_bawahan, true); @endphp
+                                            @if($ukuranBawahan)
+                                                <div>
+                                                    <p class="text-base font-bold text-gray-900">{{ $ukuranBawahan['size'] ?? '-' }}</p>
+                                                    <p class="text-sm text-gray-600 mt-1">{{ $ukuranBawahan['measurement'] ?? '-' }}</p>
+                                                </div>
+                                            @else
+                                                <p class="text-sm text-gray-500">Belum dipilih</p>
+                                            @endif
+                                        @else
+                                            <p class="text-sm text-gray-500">Belum dipilih</p>
+                                        @endif
+                                    </div>
+
+                                    <!-- Ukuran Kopyah -->
+                                    <div class="bg-cyan-50 border border-cyan-200 rounded-lg p-4">
+                                        <h4 class="font-semibold text-gray-900 mb-2">Ukuran Kopyah</h4>
+                                        @if($pendaftar->jenis_kelamin === 'L')
+                                            @if($pendaftar->seragam && $pendaftar->seragam->ukuran_kopyah)
+                                                @php $ukuranKopyah = json_decode($pendaftar->seragam->ukuran_kopyah, true); @endphp
+                                                @if($ukuranKopyah)
+                                                    <div>
+                                                        <p class="text-base font-bold text-gray-900">{{ $ukuranKopyah['size'] ?? '-' }}</p>
+                                                        <p class="text-sm text-gray-600 mt-1">{{ $ukuranKopyah['measurement'] ?? '-' }}</p>
+                                                    </div>
+                                                @else
+                                                    <p class="text-sm text-gray-500">Belum dipilih</p>
+                                                @endif
+                                            @else
+                                                <p class="text-sm text-gray-500">Belum dipilih</p>
+                                            @endif
+                                        @else
+                                            <p class="text-sm text-gray-500 italic">Tidak perlu (Perempuan)</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if($daftarUlang->catatan)
+                            <div class="mt-6 bg-gray-50 border border-gray-300 rounded-lg p-4">
+                                <h4 class="font-semibold text-gray-900 mb-2">Catatan</h4>
+                                <p class="text-sm text-gray-700">{{ $daftarUlang->catatan }}</p>
+                            </div>
+                            @endif
+                        @else
+                            <div class="text-center py-12">
+                                <svg class="mx-auto h-16 w-16 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <p class="mt-4 text-base text-gray-600 font-medium">Belum ada data daftar ulang</p>
+                                <p class="text-sm text-gray-500 mt-1">Pendaftar belum mengisi data daftar ulang</p>
+                            </div>
+                        @endif
+                    </div>
+
+                    <!-- Verifikasi Dokumen Tab -->
+                    <div x-show="activeTab === 'dokumen'" x-transition>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Verifikasi Berkas / Dokumen</h3>
+                        <div class="space-y-6">
+                            @php
+                                $dokumenList = [
+                                    ['key' => 'rapor', 'label' => 'Scan Rapor'],
+                                    ['key' => 'akte', 'label' => 'Akte Kelahiran'],
+                                    ['key' => 'kk', 'label' => 'Kartu Keluarga'],
+                                    ['key' => 'nisn', 'label' => 'Scan NISN'],
+                                    ['key' => 'ijazah', 'label' => 'Ijazah/Surat Keterangan Aktif'],
+                                    ['key' => 'sertifikat', 'label' => 'Sertifikat/Piagam'],
+                                    ['key' => 'kip', 'label' => 'Scan KIP/PKH/KKS'],
+                                ];
+
+                                $statusOptions = [
+                                    'belum_upload' => ['label' => 'Belum Upload', 'color' => 'bg-gray-100 text-gray-800'],
+                                    'menunggu_verifikasi' => ['label' => 'Menunggu Verifikasi', 'color' => 'bg-yellow-100 text-yellow-800'],
+                                    'tidak_sesuai' => ['label' => 'Tidak Sesuai', 'color' => 'bg-red-100 text-red-800'],
+                                    'perlu_perbaikan' => ['label' => 'Perlu Perbaikan', 'color' => 'bg-orange-100 text-orange-800'],
+                                    'disetujui' => ['label' => 'Disetujui', 'color' => 'bg-green-100 text-green-800'],
+                                ];
+                            @endphp
+
+                            @foreach($dokumenList as $dok)
+                                @php
+                                    $statusField = 'status_' . $dok['key'];
+                                    $catatanField = 'catatan_' . $dok['key'];
+                                    $currentStatus = $this->$statusField ?? 'belum_upload';
+                                    $statusInfo = $statusOptions[$currentStatus] ?? ['label' => $currentStatus, 'color' => 'bg-gray-100 text-gray-800'];
+
+                                    // Cari dokumen yang sudah di-upload berdasarkan jenis
+                                    $uploadedDokumen = $dokumen->firstWhere('jenis_dokumen', $dok['key']);
+
+                                    // Khusus untuk rapor, cek juga field file_rapor di pendaftar
+                                    $fileRapor = null;
+                                    if ($dok['key'] === 'rapor' && $pendaftar->file_rapor) {
+                                        $fileRapor = $pendaftar->file_rapor;
+                                    }
+                                @endphp
+
+                                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                                    <div class="flex items-start justify-between mb-3">
+                                        <div class="flex-1">
+                                            <h4 class="font-semibold text-gray-900 mb-2">{{ $dok['label'] }}</h4>
+                                            <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold {{ $statusInfo['color'] }}">
+                                                {{ $statusInfo['label'] }}
+                                            </span>
+                                        </div>
+                                    </div>
+
+                                    <!-- File yang Sudah Di-upload -->
+                                    @if($uploadedDokumen || $fileRapor)
+                                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-3">
+                                            <div class="flex items-start space-x-3">
+                                                <svg class="w-8 h-8 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                                </svg>
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-medium text-gray-900 truncate">
+                                                        {{ $uploadedDokumen ? $uploadedDokumen->nama_file : basename($fileRapor) }}
+                                                    </p>
+                                                    <div class="flex items-center space-x-3 mt-1">
+                                                        @if($uploadedDokumen)
+                                                            <span class="text-xs text-gray-500">{{ number_format($uploadedDokumen->ukuran_file / 1024, 2) }} KB</span>
+                                                            <span class="text-xs text-gray-500">{{ $uploadedDokumen->tanggal_upload->format('d/m/Y H:i') }}</span>
+                                                        @endif
+                                                        <a href="{{ $uploadedDokumen ? Storage::url($uploadedDokumen->path_file) : Storage::url($fileRapor) }}"
+                                                           target="_blank"
+                                                           class="text-xs text-blue-600 hover:text-blue-800 font-medium">
+                                                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                            </svg>
+                                                            Lihat File
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <div class="bg-gray-50 border border-gray-200 rounded-lg p-3 mb-3 text-center">
+                                            <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                            </svg>
+                                            <p class="text-xs text-gray-500">Belum ada file yang di-upload</p>
+                                        </div>
+                                    @endif
+
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                        <!-- Status Dropdown -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Ubah Status</label>
+                                            <select wire:model="{{$statusField}}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 text-sm">
+                                                <option value="belum_upload">Belum Upload</option>
+                                                <option value="menunggu_verifikasi">Menunggu Verifikasi</option>
+                                                <option value="tidak_sesuai">Tidak Sesuai</option>
+                                                <option value="perlu_perbaikan">Perlu Perbaikan</option>
+                                                <option value="disetujui">Disetujui</option>
+                                            </select>
+                                        </div>
+
+                                        <!-- Catatan -->
+                                        <div>
+                                            <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
+                                            <input
+                                                type="text"
+                                                wire:model="{{$catatanField}}"
+                                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 text-sm"
+                                                placeholder="Tambahkan catatan (opsional)"
+                                            >
+                                        </div>
+                                    </div>
+
+                                    <!-- Tombol Simpan -->
+                                    <div class="mt-3">
+                                        <button
+                                            wire:click="updateStatusDokumen('{{ $dok['key'] }}')"
+                                            class="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition"
+                                        >
+                                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                            </svg>
+                                            Simpan Status {{ $dok['label'] }}
+                                        </button>
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tombol Kembali -->
+            <div class="flex justify-end">
+                <a href="{{ route('admin.pendaftar') }}" class="px-6 py-3 bg-gray-600 text-white font-medium rounded-md hover:bg-gray-700 transition">
+                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                    </svg>
+                    Kembali ke Daftar Pendaftar
+                </a>
+            </div>
+        </div>
+    @endif
+</div>

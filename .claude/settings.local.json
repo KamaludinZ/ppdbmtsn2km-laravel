@@ -1,0 +1,37 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(powershell -Command \"Get-Content C:\\ppdbmtsn2km-laravel\\storage\\logs\\laravel.log -Tail 50\")",
+      "Bash(npm run build:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(composer show:*)",
+      "Bash(composer outdated:*)",
+      "Bash(composer update:*)",
+      "Bash(composer install:*)",
+      "Bash(php artisan:*)",
+      "Bash(storage/logs/laravel.log)",
+      "Bash(psql:*)",
+      "WebSearch",
+      "WebFetch(domain:livewire.laravel.com)",
+      "Bash(php -r:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(composer remove:*)",
+      "Bash(composer require:*)",
+      "Bash(findstr:*)",
+      "Bash(powershell -Command \"Select-String -Pattern ''''indonesia''''\")",
+      "Bash(dir:*)",
+      "Bash(php:*)",
+      "Bash(del C:ppdbmtsn2km-laravelbootstrapcachepackages.php C:ppdbmtsn2km-laravelbootstrapcacheservices.php)",
+      "Bash(powershell -Command \"Get-Content ''C:\\ppdbmtsn2km-laravel\\app\\Livewire\\Admin\\Pendaftar.php'' | Measure-Object -Line\")",
+      "Bash(del:*)",
+      "Bash(powershell:*)",
+      "Bash(NUL)",
+      "Bash(Select-Object -First 150)",
+      "Bash(timeout 30 powershell:*)",
+      "Bash(test:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

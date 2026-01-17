@@ -1,0 +1,253 @@
+<?php
+
+namespace Tests\Feature;
+
+use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\User;
+use App\Models\Pendaftar;
+use App\Models\AsalSekolah;
+use App\Models\JalurPendaftaran;
+use Illuminate\Support\Facades\DB;
+
+class ScalabilityFeatureTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_application_performance_with_large_dataset()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $jalur = JalurPendaftaran::factory()->create();
+        
+        // Create large dataset
+        $start = microtime(true);
+        for ($i = 0; $i < 1000; $i++) {
+            Pendaftar::factory()->create([
+                'jalur_pendaftaran_id' => $jalur->id,
+                'nomor_pendaftaran' => 'SCALABILITY-' . str_pad($i, 6, '0', STR_PAD_LEFT),
+                'nama_lengkap' => "Pendaftar Scalability $i",
+                'email' => "pendaftar$i@example.com",
+                'nisn' => str_pad($i + 1000000000, 10, '0', STR_PAD_LEFT),
+            ]);
+        }
+        $creationTime = microtime(true) - $start;
+
+        // Test that page still loads efficiently with large dataset
+        $start = microtime(true);
+        $response = $this->actingAs($admin)->get('/admin/pendaftar');
+        $pageLoadTime = microtime(true) - $start;
+
+        $this->assertLessThan(10.0, $creationTime); // Creation should be efficient
+        $this->assertLessThan(5.0, $pageLoadTime); // Page should load efficiently with pagination
+        $response->assertStatus(200);
+    }
+
+    public function test_database_query_optimization_under_load()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $jalur = JalurPendaftaran::factory()->create();
+        
+        // Create dataset with relationships
+        for ($i = 0; $i < 500; $i++) {
+            Pendaftar::factory()->create([
+                'jalur_pendaftaran_id' => $jalur->id,
+                'nama_lengkap' => "Pendaftar Query Test $i",
+                'email' => "querytest$i@example.com",
+            ]);
+        }
+
+        // Test query with relationships - should use eager loading
+        $start = microtime(true);
+        $pendaftarWithJalur = Pendaftar::with('jalurPendaftaran')->paginate(50);
+        $queryTime = microtime(true) - $start;
+
+        // Should be efficient with eager loading
+        $this->assertLessThan(3.0, $queryTime);
+        $this->assertCount(50, $pendaftarWithJalur->items());
+    }
+
+    public function test_concurrent_user_access_scalability()
+    {
+        // Create multiple users
+        $users = User::factory(10)->create(['role' => 'admin']);
+        
+        $accessTimes = [];
+        
+        // Simulate concurrent access from multiple users
+        foreach ($users as $user) {
+            $start = microtime(true);
+            $this->actingAs($user)->get('/admin/dashboard');
+            $accessTimes[] = microtime(true) - $start;
+        }
+
+        // Calculate average response time
+        $avgTime = array_sum($accessTimes) / count($accessTimes);
+        
+        // All requests should be handled efficiently
+        $this->assertLessThan(2.0, $avgTime);
+        $this->assertCount(10, $accessTimes);
+    }
+
+    public function test_memory_usage_with_large_result_sets()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $jalur = JalurPendaftaran::factory()->create();
+        
+        // Create large dataset
+        for ($i = 0; $i < 2000; $i++) {
+            Pendaftar::factory()->create([
+                'jalur_pendaftaran_id' => $jalur->id,
+                'nama_lengkap' => "Memory Test Pendaftar $i",
+                'email' => "memorytest$i@example.com",
+            ]);
+        }
+
+        // Check memory usage before and after query
+        $memoryBefore = memory_get_usage(true);
+        $results = Pendaftar::where('jalur_pendaftaran_id', $jalur->id)->paginate(100);
+        $memoryAfter = memory_get_usage(true);
+        $memoryUsed = $memoryAfter - $memoryBefore;
+
+        // Memory usage should be reasonable
+        $this->assertLessThan(100 * 1024 * 1024, $memoryUsed); // Less than 100MB
+        $this->assertEquals(100, $results->count()); // Should return correct page size
+    }
+
+    public function test_search_performance_with_large_dataset()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        $jalur = JalurPendaftaran::factory()->create();
+        
+        // Create large dataset
+        for ($i = 0; $i < 1500; $i++) {
+            Pendaftar::factory()->create([
+                'jalur_pendaftaran_id' => $jalur->id,
+                'nama_lengkap' => $i % 2 == 0 ? "John Doe $i" : "Jane Smith $i",
+                'email' => "searchtest$i@example.com",
+            ]);
+        }
+
+        // Test search performance
+        $start = microtime(true);
+        $response = $this->actingAs($admin)->get('/admin/pendaftar?search=John');
+        $searchTime = microtime(true) - $start;
+
+        $this->assertLessThan(3.0, $searchTime); // Search should be efficient
+        $response->assertStatus(200);
+    }
+
+    public function test_bulk_operations_performance()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        
+        // Test bulk insert performance
+        $start = microtime(true);
+        $bulkData = [];
+        for ($i = 0; $i < 500; $i++) {
+            $bulkData[] = [
+                'nama_sekolah' => "Bulk Test School $i",
+                'npsn' => str_pad($i + 10000000, 8, '0', STR_PAD_LEFT),
+                'alamat' => "Bulk Test Address $i",
+                'kecamatan' => "Bulk Test Kecamatan",
+                'kabupaten_kota' => "Bulk Test Kabupaten",
+                'provinsi' => "Bulk Test Provinsi",
+                'status_sekolah' => $i % 2 == 0 ? 'negeri' : 'swasta',
+                'jenjang' => 'SD',
+                'aktif' => true,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        }
+        
+        DB::table('asal_sekolah')->insert($bulkData);
+        $bulkInsertTime = microtime(true) - $start;
+
+        // Bulk operations should be efficient
+        $this->assertLessThan(5.0, $bulkInsertTime);
+        $this->assertEquals(500, AsalSekolah::count());
+    }
+
+    public function test_aggregate_query_performance()
+    {
+        $jalur1 = JalurPendaftaran::factory()->create(['nama' => 'Reguler']);
+        $jalur2 = JalurPendaftaran::factory()->create(['nama' => 'Prestasi']);
+        
+        // Create dataset for aggregation
+        for ($i = 0; $i < 1000; $i++) {
+            Pendaftar::factory()->create([
+                'jalur_pendaftaran_id' => $i % 2 == 0 ? $jalur1->id : $jalur2->id,
+                'nama_lengkap' => "Aggregate Test $i",
+                'status_pendaftaran' => $i % 3 == 0 ? 'menunggu' : ($i % 3 == 1 ? 'diterima' : 'ditolak'),
+            ]);
+        }
+
+        // Test aggregate query performance
+        $start = microtime(true);
+        $stats = DB::table('pendaftar')
+            ->select('jalur_pendaftaran_id', DB::raw('COUNT(*) as count'), DB::raw('AVG(nilai_rata_rata) as avg_nilai'))
+            ->groupBy('jalur_pendaftaran_id')
+            ->get();
+        $aggregateTime = microtime(true) - $start;
+
+        // Aggregate queries should be efficient
+        $this->assertLessThan(2.0, $aggregateTime);
+        $this->assertGreaterThanOrEqual(2, $stats->count());
+    }
+
+    public function test_caching_performance_at_scale()
+    {
+        // Test caching with multiple keys
+        $start = microtime(true);
+        for ($i = 0; $i < 1000; $i++) {
+            \Illuminate\Support\Facades\Cache::put("scalability_test_$i", "value_$i", 3600);
+        }
+        $cacheSetTime = microtime(true) - $start;
+
+        $start = microtime(true);
+        for ($i = 0; $i < 1000; $i++) {
+            $value = \Illuminate\Support\Facades\Cache::get("scalability_test_$i");
+        }
+        $cacheGetTime = microtime(true) - $start;
+
+        // Cache operations should remain efficient at scale
+        $this->assertLessThan(10.0, $cacheSetTime);
+        $this->assertLessThan(5.0, $cacheGetTime);
+    }
+
+    public function test_session_performance_with_concurrent_users()
+    {
+        $users = User::factory(20)->create(['role' => 'admin']);
+        
+        $sessionTimes = [];
+        
+        // Test session handling with multiple concurrent users
+        foreach ($users as $user) {
+            $start = microtime(true);
+            $this->actingAs($user)->get('/admin/dashboard');
+            $sessionTimes[] = microtime(true) - $start;
+        }
+
+        $avgSessionTime = array_sum($sessionTimes) / count($sessionTimes);
+        
+        // Session handling should be efficient even with multiple concurrent users
+        $this->assertLessThan(1.5, $avgSessionTime);
+    }
+
+    public function test_file_upload_handling_at_scale()
+    {
+        $admin = User::factory()->create(['role' => 'admin']);
+        
+        // Test multiple file uploads
+        $start = microtime(true);
+        for ($i = 0; $i < 10; $i++) {
+            $image = \Illuminate\Http\UploadedFile::fake()->image("test_$i.jpg", 800, 600);
+            
+            $this->actingAs($admin)
+                ->post('/admin/upload-test', ['file' => $image]);
+        }
+        $uploadTime = microtime(true) - $start;
+
+        // File uploads should be handled efficiently
+        $this->assertLessThan(15.0, $uploadTime);
+    }
+}

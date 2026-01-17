@@ -1,0 +1,155 @@
+<?php
+
+namespace Tests\Unit;
+
+use Tests\TestCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\Pendaftar;
+use App\Models\JalurPendaftaran;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+
+class PerformanceTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_database_query_optimization()
+    {
+        // Create test data
+        $jalur = JalurPendaftaran::factory()->create();
+        
+        // Create multiple pendaftar records
+        Pendaftar::factory(100)->create([
+            'jalur_pendaftaran_id' => $jalur->id
+        ]);
+
+        // Measure query performance without eager loading
+        $startTime = microtime(true);
+        $pendaftarWithoutEagerLoading = Pendaftar::all();
+        foreach ($pendaftarWithoutEagerLoading as $p) {
+            $p->jalurPendaftaran->nama; // This would cause N+1 queries
+        }
+        $timeWithoutEagerLoading = microtime(true) - $startTime;
+
+        // Measure query performance with eager loading
+        $startTime = microtime(true);
+        $pendaftarWithEagerLoading = Pendaftar::with('jalurPendaftaran')->get();
+        foreach ($pendaftarWithEagerLoading as $p) {
+            $p->jalurPendaftaran->nama; // This won't cause N+1 queries
+        }
+        $timeWithEagerLoading = microtime(true) - $startTime;
+
+        // Eager loading should be significantly faster
+        $this->assertLessThan($timeWithoutEagerLoading, $timeWithEagerLoading * 10); // Allow some margin
+    }
+
+    public function test_pagination_performance()
+    {
+        // Create test data
+        $jalur = JalurPendaftaran::factory()->create();
+        Pendaftar::factory(200)->create([
+            'jalur_pendaftaran_id' => $jalur->id
+        ]);
+
+        // Test that pagination limits results properly
+        $startTime = microtime(true);
+        $paginatedResults = Pendaftar::paginate(10);
+        $executionTime = microtime(true) - $startTime;
+
+        // Should execute quickly and return limited results
+        $this->assertLessThan(1.0, $executionTime); // Should execute in less than 1 second
+        $this->assertCount(10, $paginatedResults->items());
+    }
+
+    public function test_database_index_usage()
+    {
+        // Create test data
+        $user = \App\Models\User::factory()->create(['email' => 'test@example.com']);
+        
+        // Measure indexed query performance
+        $startTime = microtime(true);
+        $result = \App\Models\User::where('email', 'test@example.com')->first();
+        $executionTime = microtime(true) - $startTime;
+
+        // Should execute quickly due to index on email field
+        $this->assertLessThan(0.5, $executionTime);
+        $this->assertNotNull($result);
+    }
+
+    public function test_cache_efficiency()
+    {
+        // Test cache performance vs database query
+        $startTime = microtime(true);
+        $result1 = \App\Models\Setting::get('app_name', 'Default Name');
+        $directDbTime = microtime(true) - $startTime;
+
+        // Second call should be faster due to caching
+        $startTime = microtime(true);
+        $result2 = \App\Models\Setting::get('app_name', 'Default Name');
+        $cachedTime = microtime(true) - $startTime;
+
+        // Cached query should be significantly faster
+        $this->assertLessThanOrEqual($directDbTime, $cachedTime);
+    }
+
+    public function test_model_relationship_loading_time()
+    {
+        $jalur = JalurPendaftaran::factory()->create();
+        $pendaftar = Pendaftar::factory()->create([
+            'jalur_pendaftaran_id' => $jalur->id
+        ]);
+
+        // Test relationship loading time
+        $startTime = microtime(true);
+        $pendaftar->load('jalurPendaftaran');
+        $relationshipLoadTime = microtime(true) - $startTime;
+
+        // Should load relationship in reasonable time
+        $this->assertLessThan(0.1, $relationshipLoadTime);
+        $this->assertNotNull($pendaftar->jalurPendaftaran);
+    }
+
+    public function test_large_dataset_query_performance()
+    {
+        // Create a larger dataset to test performance
+        $jalur = JalurPendaftaran::factory()->create();
+        Pendaftar::factory(500)->create([
+            'jalur_pendaftaran_id' => $jalur->id
+        ]);
+
+        // Test query with filters
+        $startTime = microtime(true);
+        $results = Pendaftar::where('jalur_pendaftaran_id', $jalur->id)
+            ->orderBy('created_at', 'desc')
+            ->limit(50)
+            ->get();
+        $executionTime = microtime(true) - $startTime;
+
+        // Should handle large dataset efficiently
+        $this->assertLessThan(2.0, $executionTime); // Should execute in less than 2 seconds
+        $this->assertCount(50, $results);
+    }
+
+    public function test_concurrent_access_simulation()
+    {
+        // Simulate concurrent access to test performance under load
+        $jalur = JalurPendaftaran::factory()->create();
+        Pendaftar::factory(50)->create([
+            'jalur_pendaftaran_id' => $jalur->id
+        ]);
+
+        // Simulate multiple simultaneous requests
+        $concurrentRequests = [];
+        for ($i = 0; $i < 5; $i++) {
+            $startTime = microtime(true);
+            $results = Pendaftar::where('jalur_pendaftaran_id', $jalur->id)->take(10)->get();
+            $concurrentRequests[] = microtime(true) - $startTime;
+        }
+
+        // Calculate average response time
+        $avgTime = array_sum($concurrentRequests) / count($concurrentRequests);
+        
+        // Should handle concurrent requests efficiently
+        $this->assertLessThan(1.0, $avgTime);
+    }
+}
