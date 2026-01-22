@@ -17,17 +17,25 @@ class EditProfil extends Component
     public $new_password = '';
     public $new_password_confirmation = '';
 
-    protected $listeners = ['openModal'];
+    // Support both Livewire v2 and v3
+    protected $listeners = ['openModal', 'open-modal' => 'openModal'];
 
     protected function rules()
     {
-        return [
+        $user = Auth::user();
+        $rules = [
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . Auth::id(),
-            'telepon_ortu' => 'nullable|string|max:20|regex:/^62[0-9]{9,13}$/',
             'current_password' => 'nullable|required_with:new_password|string',
             'new_password' => 'nullable|required_with:current_password|string|min:6|confirmed',
         ];
+
+        // Hanya validasi telepon_ortu untuk role pendaftar
+        if ($user->role === 'pendaftar') {
+            $rules['telepon_ortu'] = 'nullable|string|max:20|regex:/^62[0-9]{9,13}$/';
+        }
+
+        return $rules;
     }
 
     protected $messages = [
@@ -48,7 +56,11 @@ class EditProfil extends Component
         $user = Auth::user();
         $this->name = $user->name;
         $this->email = $user->email;
-        $this->telepon_ortu = $user->pendaftar->telepon_ortu ?? null;
+
+        // Hanya load telepon_ortu untuk role pendaftar
+        if ($user->role === 'pendaftar' && $user->pendaftar) {
+            $this->telepon_ortu = $user->pendaftar->telepon_ortu ?? null;
+        }
     }
 
     public function openModal()
@@ -57,7 +69,12 @@ class EditProfil extends Component
         $user = Auth::user();
         $this->name = $user->name;
         $this->email = $user->email;
-        $this->telepon_ortu = $user->pendaftar->telepon_ortu ?? null;
+
+        // Hanya load telepon_ortu untuk role pendaftar
+        if ($user->role === 'pendaftar' && $user->pendaftar) {
+            $this->telepon_ortu = $user->pendaftar->telepon_ortu ?? null;
+        }
+
         $this->resetPasswordFields();
     }
 
@@ -97,8 +114,8 @@ class EditProfil extends Component
             $user->email = $this->email;
         }
 
-        // Update nomor WhatsApp (untuk role pendaftar, simpan ke tabel pendaftar)
-        if ($user->pendaftar) {
+        // Update nomor WhatsApp - hanya untuk role pendaftar
+        if ($user->role === 'pendaftar' && $user->pendaftar) {
             $user->pendaftar->telepon_ortu = $this->telepon_ortu;
             $user->pendaftar->save();
         }
@@ -110,8 +127,10 @@ class EditProfil extends Component
 
         $user->save();
 
+        // Reset password fields setelah berhasil simpan
+        $this->resetPasswordFields();
+
         session()->flash('message', 'Profil berhasil diperbarui.');
-        $this->closeModal();
         $this->dispatch('profileUpdated');
     }
 

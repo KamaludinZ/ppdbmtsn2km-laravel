@@ -335,6 +335,14 @@ class Pendaftar extends Model
     }
 
     /**
+     * Alias untuk jalurPendaftaran() - untuk kemudahan penggunaan
+     */
+    public function jalur(): BelongsTo
+    {
+        return $this->belongsTo(JalurPendaftaran::class, 'jalur_pendaftaran_id');
+    }
+
+    /**
      * Get all documents for this pendaftar
      */
     public function dokumen(): HasMany
@@ -378,6 +386,30 @@ class Pendaftar extends Model
      * Get all pendidikan lain records
      */
     public function pendidikanLains(): HasMany
+    {
+        return $this->hasMany(PendidikanLain::class);
+    }
+
+    /**
+     * Alias untuk prestasis() - untuk kemudahan penggunaan
+     */
+    public function prestasi(): HasMany
+    {
+        return $this->hasMany(Prestasi::class);
+    }
+
+    /**
+     * Alias untuk beasiswas() - untuk kemudahan penggunaan
+     */
+    public function beasiswa(): HasMany
+    {
+        return $this->hasMany(Beasiswa::class);
+    }
+
+    /**
+     * Alias untuk pendidikanLains() - untuk kemudahan penggunaan
+     */
+    public function pendidikan_lain(): HasMany
     {
         return $this->hasMany(PendidikanLain::class);
     }
@@ -529,85 +561,108 @@ class Pendaftar extends Model
 
     /**
      * Get detailed EMIS data completeness breakdown by section
+     * Sesuai dengan tab formulir pendaftaran
      */
     public function getEmisCompletenessDetails(): array
     {
         $sections = [
-            'identitas_siswa' => [
-                'label' => 'Data Identitas Siswa',
+            'data_siswa' => [
+                'label' => 'Data Siswa',
                 'fields' => [
+                    // Identitas (semua wajib)
                     'nama_lengkap', 'nisn', 'jenis_kelamin', 'tempat_lahir', 'tanggal_lahir',
                     'kewarganegaraan', 'nik', 'negara_asal', 'nomor_kitas',
                     'nomor_kk', 'nama_kepala_keluarga', 'anak_ke', 'jumlah_saudara',
-                    'no_hp', 'email', 'hobi', 'yang_membiayai_sekolah',
-                    'pra_sekolah_tk', 'pra_sekolah_paud',
-                    'imunisasi_bcg', 'imunisasi_dpt', 'imunisasi_polio', 'imunisasi_campak', 'imunisasi_hepatitis_b',
-                    'nomor_kip'
+                    'hobi', 'cita_cita', 'yang_membiayai_sekolah',
+                    // No HP (wajib jika tidak check "tidak punya HP")
+                    'no_hp',
+                    // Foto
+                    'foto',
                 ],
             ],
-            'ayah' => [
+            'data_ayah' => [
                 'label' => 'Data Ayah',
                 'fields' => [
-                    'ayah_status', 'ayah_kewarganegaraan', 'ayah_nik', 'ayah_negara_asal', 'ayah_nomor_kitas',
-                    'nama_ayah', 'ayah_tempat_lahir', 'ayah_tanggal_lahir',
-                    'ayah_pendidikan', 'ayah_pekerjaan', 'ayah_penghasilan', 'ayah_no_hp'
+                    // Basic fields (always required)
+                    'nama_ayah', 'ayah_status',
+                    // Detail fields (required if ayah_status = masih_hidup)
+                    'ayah_kewarganegaraan', 'ayah_nik', 'ayah_negara_asal', 'ayah_nomor_kitas',
+                    'ayah_tempat_lahir', 'ayah_tanggal_lahir',
+                    'ayah_pekerjaan', 'ayah_pendidikan', 'ayah_penghasilan',
+                    'ayah_no_hp',
                 ],
             ],
-            'ibu' => [
+            'data_ibu' => [
                 'label' => 'Data Ibu',
                 'fields' => [
-                    'ibu_status', 'ibu_kewarganegaraan', 'ibu_nik', 'ibu_negara_asal', 'ibu_nomor_kitas',
-                    'nama_ibu', 'ibu_tempat_lahir', 'ibu_tanggal_lahir',
-                    'ibu_pendidikan', 'ibu_pekerjaan', 'ibu_penghasilan', 'ibu_no_hp'
+                    // Basic fields (always required)
+                    'nama_ibu', 'ibu_status',
+                    // Detail fields (required if ibu_status = masih_hidup)
+                    'ibu_kewarganegaraan', 'ibu_nik', 'ibu_negara_asal', 'ibu_nomor_kitas',
+                    'ibu_tempat_lahir', 'ibu_tanggal_lahir',
+                    'ibu_pekerjaan', 'ibu_pendidikan', 'ibu_penghasilan',
+                    'ibu_no_hp',
                 ],
             ],
-            'bantuan_sosial' => [
-                'label' => 'Data Bantuan Sosial',
-                'fields' => ['nomor_kks', 'nomor_pkh'],
-            ],
-            'alamat_ayah' => [
-                'label' => 'Alamat Ayah',
-                'fields' => [
-                    'ayah_status_kepemilikan_rumah', 'alamat_ayah',
-                    'ayah_provinsi', 'ayah_kabupaten', 'ayah_kecamatan', 'ayah_kelurahan',
-                    'ayah_rt', 'ayah_rw', 'ayah_kode_pos'
-                ],
-            ],
-            'alamat_ibu' => [
-                'label' => 'Alamat Ibu',
-                'fields' => [
-                    'ibu_sama_dengan_ayah', 'ibu_status_kepemilikan_rumah', 'alamat_ibu',
-                    'ibu_provinsi', 'ibu_kabupaten', 'ibu_kecamatan', 'ibu_kelurahan',
-                    'ibu_rt', 'ibu_rw', 'ibu_kode_pos'
-                ],
-            ],
-            'alamat_siswa' => [
-                'label' => 'Alamat Siswa (Tempat Tinggal Saat Ini)',
-                'fields' => [
-                    'siswa_status_kepemilikan_rumah', 'siswa_alamat',
-                    'siswa_provinsi', 'siswa_kabupaten', 'siswa_kecamatan', 'siswa_kelurahan',
-                    'siswa_rt', 'siswa_rw', 'siswa_kode_pos'
-                ],
-            ],
-            'transportasi' => [
-                'label' => 'Data Transportasi & Jarak',
-                'fields' => ['jarak_ke_sekolah', 'transportasi', 'waktu_tempuh'],
-            ],
-            // Wali sections - ALWAYS included (required to select sama dengan ayah/ibu or fill wali lainnya)
-            'wali' => [
+            'data_wali' => [
                 'label' => 'Data Wali',
                 'fields' => [
-                    'wali_status', 'wali_kewarganegaraan', 'wali_nik', 'wali_negara_asal', 'wali_nomor_kitas',
-                    'wali_nama', 'wali_tempat_lahir', 'wali_tanggal_lahir',
-                    'wali_pendidikan', 'wali_pekerjaan', 'wali_penghasilan', 'wali_no_hp'
+                    // Hubungan wali (ALWAYS REQUIRED - user must choose)
+                    'wali_hubungan',
+                    // Detail fields (required if wali_hubungan = lainnya)
+                    'wali_nama', 'wali_status',
+                    'wali_kewarganegaraan', 'wali_nik', 'wali_negara_asal', 'wali_nomor_kitas',
+                    'wali_tempat_lahir', 'wali_tanggal_lahir',
+                    'wali_pekerjaan', 'wali_pendidikan', 'wali_penghasilan',
+                    'wali_no_hp',
                 ],
             ],
-            'alamat_wali' => [
-                'label' => 'Alamat Wali',
+            'data_alamat_ayah' => [
+                'label' => 'Data Alamat Ayah',
                 'fields' => [
-                    'wali_status_wali', 'wali_sama_dengan_ayah', 'wali_status_kepemilikan_rumah', 'alamat_wali',
+                    // Checkbox (ALWAYS required if ayah_status = masih_hidup)
+                    'ayah_tinggal_luar_negeri',
+                    // Detail fields (required if ayah alive AND not living abroad)
+                    'ayah_status_kepemilikan_rumah', 'alamat_ayah',
+                    'ayah_provinsi', 'ayah_kabupaten', 'ayah_kecamatan', 'ayah_kelurahan',
+                    'ayah_rt', 'ayah_rw', 'ayah_kode_pos',
+                ],
+            ],
+            'data_alamat_ibu' => [
+                'label' => 'Data Alamat Ibu',
+                'fields' => [
+                    // Checkbox (ALWAYS required if ibu_status = masih_hidup)
+                    'ibu_sama_dengan_ayah',
+                    // Checkbox (required if ibu_status = masih_hidup AND ibu_sama_dengan_ayah = false)
+                    'ibu_tinggal_luar_negeri',
+                    // Detail fields (required if not same as ayah AND not living abroad)
+                    'ibu_status_kepemilikan_rumah', 'alamat_ibu',
+                    'ibu_provinsi', 'ibu_kabupaten', 'ibu_kecamatan', 'ibu_kelurahan',
+                    'ibu_rt', 'ibu_rw', 'ibu_kode_pos',
+                ],
+            ],
+            'data_alamat_wali' => [
+                'label' => 'Data Alamat Wali',
+                'fields' => [
+                    // Status Wali (ALWAYS REQUIRED - user must choose)
+                    'wali_status_wali',
+                    // Checkbox (required if wali_status_wali = lainnya)
+                    'wali_sama_dengan_ayah',
+                    // Checkbox (required if wali_status_wali = lainnya AND wali_sama_dengan_ayah = false)
+                    'wali_tinggal_luar_negeri',
+                    // Detail fields (required if wali_status_wali = lainnya AND not same as ayah AND not living abroad)
+                    'wali_status_kepemilikan_rumah', 'alamat_wali',
                     'wali_provinsi', 'wali_kabupaten', 'wali_kecamatan', 'wali_kelurahan',
-                    'wali_rt', 'wali_rw', 'wali_kode_pos'
+                    'wali_rt', 'wali_rw', 'wali_kode_pos',
+                ],
+            ],
+            'data_alamat_siswa' => [
+                'label' => 'Data Alamat Siswa',
+                'fields' => [
+                    // Required if status_tempat_tinggal = lainnya
+                    'status_tempat_tinggal', 'siswa_status_kepemilikan_rumah', 'siswa_alamat',
+                    'siswa_provinsi', 'siswa_kabupaten', 'siswa_kecamatan', 'siswa_kelurahan',
+                    'siswa_rt', 'siswa_rw', 'siswa_kode_pos',
                 ],
             ],
         ];
@@ -621,69 +676,153 @@ class Pendaftar extends Model
             $filledCount = 0;
 
             foreach ($section['fields'] as $field) {
-                // Check if field is applicable (conditional logic)
                 $isApplicable = true;
 
-                // Siswa - NIK only for WNI, negara_asal & nomor_kitas only for WNA
+                // ===== DATA SISWA =====
+                // NIK only for WNI, negara_asal & nomor_kitas only for WNA
                 if ($field === 'nik') {
                     $isApplicable = ($this->kewarganegaraan === 'WNI');
                 }
                 if (in_array($field, ['negara_asal', 'nomor_kitas'])) {
                     $isApplicable = ($this->kewarganegaraan === 'WNA');
                 }
-
-                // Ayah - NIK only for WNI, negara_asal & nomor_kitas only for WNA
-                if ($field === 'ayah_nik') {
-                    $isApplicable = ($this->ayah_kewarganegaraan === 'WNI');
-                }
-                if (in_array($field, ['ayah_negara_asal', 'ayah_nomor_kitas'])) {
-                    $isApplicable = ($this->ayah_kewarganegaraan === 'WNA');
+                // No HP only if tidak_punya_hp = false
+                if ($field === 'no_hp' && $key === 'data_siswa') {
+                    $isApplicable = !$this->tidak_punya_hp;
                 }
 
-                // Ibu - NIK only for WNI, negara_asal & nomor_kitas only for WNA
-                if ($field === 'ibu_nik') {
-                    $isApplicable = ($this->ibu_kewarganegaraan === 'WNI');
-                }
-                if (in_array($field, ['ibu_negara_asal', 'ibu_nomor_kitas'])) {
-                    $isApplicable = ($this->ibu_kewarganegaraan === 'WNA');
+                // ===== DATA AYAH =====
+                // Detail ayah only if ayah_status = masih_hidup
+                if ($key === 'data_ayah' && !in_array($field, ['nama_ayah', 'ayah_status'])) {
+                    $isApplicable = ($this->ayah_status === 'masih_hidup');
+
+                    // Ayah NIK only for WNI
+                    if ($field === 'ayah_nik' && $this->ayah_kewarganegaraan !== 'WNI') {
+                        $isApplicable = false;
+                    }
+                    // Ayah negara_asal & nomor_kitas only for WNA
+                    if (in_array($field, ['ayah_negara_asal', 'ayah_nomor_kitas']) && $this->ayah_kewarganegaraan !== 'WNA') {
+                        $isApplicable = false;
+                    }
+                    // Ayah no HP only if ayah_tidak_punya_hp = false
+                    if ($field === 'ayah_no_hp' && $this->ayah_tidak_punya_hp) {
+                        $isApplicable = false;
+                    }
                 }
 
-                // Wali Status - ALWAYS applicable (must select sama dengan ayah/ibu or fill wali lainnya)
-                if ($field === 'wali_status') {
-                    $isApplicable = true; // Always required to select
+                // ===== DATA IBU =====
+                // Detail ibu only if ibu_status = masih_hidup
+                if ($key === 'data_ibu' && !in_array($field, ['nama_ibu', 'ibu_status'])) {
+                    $isApplicable = ($this->ibu_status === 'masih_hidup');
+
+                    // Ibu NIK only for WNI
+                    if ($field === 'ibu_nik' && $this->ibu_kewarganegaraan !== 'WNI') {
+                        $isApplicable = false;
+                    }
+                    // Ibu negara_asal & nomor_kitas only for WNA
+                    if (in_array($field, ['ibu_negara_asal', 'ibu_nomor_kitas']) && $this->ibu_kewarganegaraan !== 'WNA') {
+                        $isApplicable = false;
+                    }
+                    // Ibu no HP only if ibu_tidak_punya_hp = false
+                    if ($field === 'ibu_no_hp' && $this->ibu_tidak_punya_hp) {
+                        $isApplicable = false;
+                    }
                 }
 
-                // Wali Pribadi Detail - Only applicable if wali_status is NOT 'sama_dengan_ayah' or 'sama_dengan_ibu'
-                if (in_array($field, ['wali_kewarganegaraan', 'wali_nik', 'wali_negara_asal', 'wali_nomor_kitas', 'wali_nama', 'wali_tempat_lahir', 'wali_tanggal_lahir', 'wali_pendidikan', 'wali_pekerjaan', 'wali_penghasilan', 'wali_no_hp'])) {
-                    // Only required if wali status is not sama dengan ayah/ibu
-                    if (!in_array($this->wali_status, ['sama_dengan_ayah', 'sama_dengan_ibu'])) {
-                        // NIK only for WNI, negara_asal & nomor_kitas only for WNA
-                        if ($field === 'wali_nik') {
-                            $isApplicable = ($this->wali_kewarganegaraan === 'WNI');
-                        } elseif (in_array($field, ['wali_negara_asal', 'wali_nomor_kitas'])) {
-                            $isApplicable = ($this->wali_kewarganegaraan === 'WNA');
+                // ===== DATA WALI =====
+                // wali_hubungan is ALWAYS REQUIRED (user must choose)
+                if ($key === 'data_wali' && $field === 'wali_hubungan') {
+                    $isApplicable = true;
+                }
+                // Detail wali only if wali_hubungan = lainnya
+                if ($key === 'data_wali' && $field !== 'wali_hubungan') {
+                    $isApplicable = ($this->wali_hubungan === 'lainnya');
+
+                    // Wali NIK only for WNI
+                    if ($field === 'wali_nik' && $this->wali_kewarganegaraan !== 'WNI') {
+                        $isApplicable = false;
+                    }
+                    // Wali negara_asal & nomor_kitas only for WNA
+                    if (in_array($field, ['wali_negara_asal', 'wali_nomor_kitas']) && $this->wali_kewarganegaraan !== 'WNA') {
+                        $isApplicable = false;
+                    }
+                    // Wali no HP only if wali_tidak_punya_hp = false
+                    if ($field === 'wali_no_hp' && $this->wali_tidak_punya_hp) {
+                        $isApplicable = false;
+                    }
+                }
+
+                // ===== DATA ALAMAT AYAH =====
+                if ($key === 'data_alamat_ayah') {
+                    // Base requirement: ayah must be alive
+                    if ($this->ayah_status !== 'masih_hidup') {
+                        $isApplicable = false;
+                    } else {
+                        // ayah_tinggal_luar_negeri checkbox is ALWAYS applicable if ayah alive
+                        if ($field === 'ayah_tinggal_luar_negeri') {
+                            $isApplicable = true;
                         }
-                        // Other fields are applicable
-                    } else {
-                        // If wali sama dengan ayah/ibu, these fields are not applicable
-                        $isApplicable = false;
+                        // Detail address fields applicable only if not living abroad
+                        else {
+                            $isApplicable = !$this->ayah_tinggal_luar_negeri;
+                        }
                     }
                 }
 
-                // Alamat Wali - wali_status_wali ALWAYS applicable (must select)
-                if ($field === 'wali_status_wali') {
-                    $isApplicable = true; // Always required to select
+                // ===== DATA ALAMAT IBU =====
+                if ($key === 'data_alamat_ibu') {
+                    // Base requirement: ibu must be alive
+                    if ($this->ibu_status !== 'masih_hidup') {
+                        $isApplicable = false;
+                    } else {
+                        // ibu_sama_dengan_ayah checkbox is ALWAYS applicable if ibu alive
+                        if ($field === 'ibu_sama_dengan_ayah') {
+                            $isApplicable = true;
+                        }
+                        // ibu_tinggal_luar_negeri applicable only if not same as ayah
+                        elseif ($field === 'ibu_tinggal_luar_negeri') {
+                            $isApplicable = !$this->ibu_sama_dengan_ayah;
+                        }
+                        // Detail address fields applicable only if not same as ayah AND not living abroad
+                        else {
+                            $isApplicable = !$this->ibu_sama_dengan_ayah && !$this->ibu_tinggal_luar_negeri;
+                        }
+                    }
                 }
 
-                // Alamat Wali Detail - Only applicable if wali_status_wali = 'lainnya' AND not sama dengan ayah
-                if (in_array($field, ['wali_sama_dengan_ayah', 'wali_status_kepemilikan_rumah', 'alamat_wali', 'wali_provinsi', 'wali_kabupaten', 'wali_kecamatan', 'wali_kelurahan', 'wali_rt', 'wali_rw', 'wali_kode_pos'])) {
-                    if ($this->wali_status_wali === 'lainnya' && !$this->wali_sama_dengan_ayah) {
-                        // All address fields are applicable
+                // ===== DATA ALAMAT WALI =====
+                if ($key === 'data_alamat_wali') {
+                    // wali_status_wali is ALWAYS applicable (user must choose)
+                    if ($field === 'wali_status_wali') {
                         $isApplicable = true;
-                    } else {
-                        // If not lainnya or sama dengan ayah, these fields are not applicable
-                        $isApplicable = false;
                     }
+                    // Other fields only applicable if wali_status_wali = 'lainnya'
+                    elseif ($this->wali_status_wali !== 'lainnya') {
+                        $isApplicable = false;
+                    } else {
+                        // wali_sama_dengan_ayah checkbox is applicable if wali_status_wali = lainnya
+                        if ($field === 'wali_sama_dengan_ayah') {
+                            $isApplicable = true;
+                        }
+                        // wali_tinggal_luar_negeri applicable only if not same as ayah
+                        elseif ($field === 'wali_tinggal_luar_negeri') {
+                            $isApplicable = !$this->wali_sama_dengan_ayah;
+                        }
+                        // Detail address fields applicable only if not same as ayah AND not living abroad
+                        else {
+                            $isApplicable = !$this->wali_sama_dengan_ayah && !$this->wali_tinggal_luar_negeri;
+                        }
+                    }
+                }
+
+                // ===== DATA ALAMAT SISWA =====
+                // status_tempat_tinggal is always required
+                if ($key === 'data_alamat_siswa' && $field === 'status_tempat_tinggal') {
+                    $isApplicable = true;
+                }
+                // Other fields required if status_tempat_tinggal = lainnya
+                if ($key === 'data_alamat_siswa' && $field !== 'status_tempat_tinggal') {
+                    $isApplicable = ($this->status_tempat_tinggal === 'lainnya');
                 }
 
                 // Only count applicable fields
@@ -712,22 +851,32 @@ class Pendaftar extends Model
         }
 
         // Add array-based fields (prestasi, beasiswa, pendidikan_lain)
+        // Sesuai dengan tab formulir pendaftaran
+        // OPTIONAL: tidak wajib diisi, jadi tidak masuk perhitungan total
         $arrayFields = [
             'prestasi' => 'Data Prestasi',
-            'beasiswa' => 'Data Beasiswa',
-            'pendidikan_lain' => 'Data Pendidikan Lain'
+            'beasiswa' => 'Data Beasiswa & Bantuan',
+            'pendidikan_lain' => 'Pendidikan Lain'
         ];
 
         foreach ($arrayFields as $field => $label) {
-            $arrayData = $this->$field;
+            // Cek relasi model jika ada
+            if (in_array($field, ['prestasi', 'beasiswa', 'pendidikan_lain'])) {
+                // Gunakan relasi untuk cek data
+                $relationData = $this->$field()->exists();
+                $hasFilled = $relationData;
+            } else {
+                // Fallback ke JSON field
+                $arrayData = $this->$field;
 
-            // Decode if JSON string
-            if (is_string($arrayData)) {
-                $arrayData = json_decode($arrayData, true);
+                // Decode if JSON string
+                if (is_string($arrayData)) {
+                    $arrayData = json_decode($arrayData, true);
+                }
+
+                // Check if array has data
+                $hasFilled = is_array($arrayData) && count($arrayData) > 0;
             }
-
-            // Check if array has data
-            $hasFilled = is_array($arrayData) && count($arrayData) > 0;
 
             $sectionStats[$field] = [
                 'label' => $label,
@@ -736,8 +885,9 @@ class Pendaftar extends Model
                 'percentage' => $hasFilled ? 100 : 0,
             ];
 
-            $totalFields += 1;
-            $totalFilled += $hasFilled ? 1 : 0;
+            // OPTIONAL fields - NOT counted in total percentage
+            // $totalFields += 1;
+            // $totalFilled += $hasFilled ? 1 : 0;
         }
 
         return [

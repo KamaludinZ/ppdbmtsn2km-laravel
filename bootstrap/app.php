@@ -34,8 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
         // Alias untuk rate limiting dan role checking
         $middleware->alias([
             'role' => CheckRole::class,
-            'throttle.login' => \Illuminate\Routing\Middleware\ThrottleRequests::class.':5,1',
-            'throttle.api' => \Illuminate\Routing\Middleware\ThrottleRequests::class.':60,1',
+            'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         ]);
     })
     ->withEvents()

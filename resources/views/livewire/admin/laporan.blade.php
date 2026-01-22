@@ -70,31 +70,35 @@
         </div>
 
         <!-- Stats Overview -->
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
-            <div class="bg-white rounded-lg shadow p-6">
-                <p class="text-sm font-medium text-gray-600">Total Pendaftar</p>
-                <p class="text-2xl font-bold text-gray-900 mt-1">{{ number_format($stats['total']) }}</p>
+        <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div class="bg-gradient-to-br from-gray-500 to-gray-700 rounded-lg shadow p-6 text-white">
+                <p class="text-sm font-medium opacity-90">Total Pendaftar</p>
+                <p class="text-3xl font-bold mt-2">{{ number_format($stats['total']) }}</p>
             </div>
-            <div class="bg-white rounded-lg shadow p-6">
-                <p class="text-sm font-medium text-gray-600">Menunggu</p>
-                <p class="text-2xl font-bold text-yellow-600 mt-1">{{ number_format($stats['menunggu']) }}</p>
+            <div class="bg-gradient-to-br from-yellow-400 to-yellow-600 rounded-lg shadow p-6 text-white">
+                <p class="text-sm font-medium opacity-90">Menunggu Verifikasi</p>
+                <p class="text-3xl font-bold mt-2">{{ number_format($stats['menunggu']) }}</p>
             </div>
-            <div class="bg-white rounded-lg shadow p-6">
-                <p class="text-sm font-medium text-gray-600">Lulus</p>
-                <p class="text-2xl font-bold text-green-600 mt-1">{{ number_format($stats['lulus']) }}</p>
+            <div class="bg-gradient-to-br from-blue-400 to-blue-600 rounded-lg shadow p-6 text-white">
+                <p class="text-sm font-medium opacity-90">Data Disetujui</p>
+                <p class="text-3xl font-bold mt-2">{{ number_format($stats['disetujui']) }}</p>
             </div>
-            <div class="bg-white rounded-lg shadow p-6">
-                <p class="text-sm font-medium text-gray-600">Tidak Lulus</p>
-                <p class="text-2xl font-bold text-red-600 mt-1">{{ number_format($stats['tidak_lulus']) }}</p>
+            <div class="bg-gradient-to-br from-green-400 to-green-600 rounded-lg shadow p-6 text-white">
+                <p class="text-sm font-medium opacity-90">Lulus Seleksi</p>
+                <p class="text-3xl font-bold mt-2">{{ number_format($stats['lulus']) }}</p>
             </div>
-            <div class="bg-white rounded-lg shadow p-6">
-                <p class="text-sm font-medium text-gray-600">Cadangan</p>
-                <p class="text-2xl font-bold text-blue-600 mt-1">{{ number_format($stats['cadangan']) }}</p>
+            <div class="bg-gradient-to-br from-purple-400 to-purple-600 rounded-lg shadow p-6 text-white">
+                <p class="text-sm font-medium opacity-90">Diterima</p>
+                <p class="text-3xl font-bold mt-2">{{ number_format($stats['diterima']) }}</p>
+            </div>
+            <div class="bg-gradient-to-br from-orange-400 to-orange-600 rounded-lg shadow p-6 text-white">
+                <p class="text-sm font-medium opacity-90">Cadangan</p>
+                <p class="text-3xl font-bold mt-2">{{ number_format($stats['cadangan']) }}</p>
             </div>
         </div>
 
         <!-- Per Jalur Statistics -->
-        <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="bg-white rounded-lg shadow overflow-hidden mt-6">
             <div class="px-6 py-4 border-b border-gray-200 bg-emerald-600 flex items-center">
                 <svg class="w-6 h-6 text-white mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
@@ -115,21 +119,38 @@
                         @foreach($jalurStats as $jalur)
                             @php
                                 $percentage = $jalur->kuota > 0 ? round(($jalur->pendaftar_count / $jalur->kuota) * 100, 1) : 0;
+
+                                // Color mapping for different jalur
+                                $colorMap = [
+                                    'emerald' => ['bg' => '#d1fae5', 'text' => '#065f46', 'bar' => '#10b981'],
+                                    'green' => ['bg' => '#d1fae5', 'text' => '#065f46', 'bar' => '#10b981'],
+                                    'blue' => ['bg' => '#dbeafe', 'text' => '#1e3a8a', 'bar' => '#3b82f6'],
+                                    'purple' => ['bg' => '#e9d5ff', 'text' => '#581c87', 'bar' => '#a855f7'],
+                                    'pink' => ['bg' => '#fce7f3', 'text' => '#831843', 'bar' => '#ec4899'],
+                                    'red' => ['bg' => '#fee2e2', 'text' => '#7f1d1d', 'bar' => '#ef4444'],
+                                    'orange' => ['bg' => '#fed7aa', 'text' => '#7c2d12', 'bar' => '#f97316'],
+                                    'yellow' => ['bg' => '#fef3c7', 'text' => '#713f12', 'bar' => '#eab308'],
+                                    'indigo' => ['bg' => '#e0e7ff', 'text' => '#312e81', 'bar' => '#6366f1'],
+                                    'teal' => ['bg' => '#ccfbf1', 'text' => '#134e4a', 'bar' => '#14b8a6'],
+                                ];
+
+                                $warna = $jalur->warna ?? 'blue';
+                                $colors = $colorMap[$warna] ?? $colorMap['blue'];
                             @endphp
                             <tr>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="px-2 py-1 text-xs font-semibold rounded-full bg-{{ $jalur->warna }}-100 text-{{ $jalur->warna }}-800">
+                                    <span class="px-2 py-1 text-xs font-semibold rounded-full" style="background-color: {{ $colors['bg'] }}; color: {{ $colors['text'] }};">
                                         {{ $jalur->nama }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ number_format($jalur->kuota) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ number_format($jalur->pendaftar_count) }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="flex items-center">
-                                        <div class="w-full bg-gray-200 rounded-full h-2.5 mr-2">
-                                            <div class="bg-{{ $jalur->warna }}-600 h-2.5 rounded-full" style="width: {{ min($percentage, 100) }}%"></div>
+                                    <div class="flex items-center gap-2">
+                                        <div class="flex-1 bg-gray-200 rounded-full h-2.5">
+                                            <div class="h-2.5 rounded-full transition-all duration-300" style="width: {{ min($percentage, 100) }}%; background-color: {{ $colors['bar'] }};"></div>
                                         </div>
-                                        <span class="text-sm text-gray-900">{{ $percentage }}%</span>
+                                        <span class="text-sm font-semibold text-gray-900 min-w-[3.5rem] text-right">{{ $percentage }}%</span>
                                     </div>
                                 </td>
                             </tr>
@@ -191,11 +212,19 @@
                         </select>
                     </div>
                     <div class="flex items-end">
-                        <button wire:click="exportDataLengkap" class="w-full bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button wire:click="exportDataLengkap"
+                                wire:loading.attr="disabled"
+                                wire:loading.class="opacity-50 cursor-wait"
+                                class="w-full bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg flex items-center justify-center">
+                            <svg wire:loading.remove wire:target="exportDataLengkap" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
-                            Export Excel
+                            <svg wire:loading wire:target="exportDataLengkap" class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span wire:loading.remove wire:target="exportDataLengkap">Export Excel</span>
+                            <span wire:loading wire:target="exportDataLengkap">Processing...</span>
                         </button>
                     </div>
                 </div>
@@ -248,11 +277,19 @@
                         </select>
                     </div>
                     <div class="flex items-end">
-                        <button wire:click="exportDaftarUlang" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button wire:click="exportDaftarUlang"
+                                wire:loading.attr="disabled"
+                                wire:loading.class="opacity-50 cursor-wait"
+                                class="w-full bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2 rounded-lg flex items-center justify-center">
+                            <svg wire:loading.remove wire:target="exportDaftarUlang" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
-                            Export Excel
+                            <svg wire:loading wire:target="exportDaftarUlang" class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span wire:loading.remove wire:target="exportDaftarUlang">Export Excel</span>
+                            <span wire:loading wire:target="exportDaftarUlang">Processing...</span>
                         </button>
                     </div>
                 </div>
@@ -305,11 +342,19 @@
                         </select>
                     </div>
                     <div class="flex items-end">
-                        <button wire:click="exportSeragam" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg flex items-center justify-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <button wire:click="exportSeragam"
+                                wire:loading.attr="disabled"
+                                wire:loading.class="opacity-50 cursor-wait"
+                                class="w-full bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg flex items-center justify-center">
+                            <svg wire:loading.remove wire:target="exportSeragam" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
-                            Export Excel
+                            <svg wire:loading wire:target="exportSeragam" class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span wire:loading.remove wire:target="exportSeragam">Export Excel</span>
+                            <span wire:loading wire:target="exportSeragam">Processing...</span>
                         </button>
                     </div>
                 </div>

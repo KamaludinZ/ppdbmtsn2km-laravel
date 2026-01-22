@@ -1,6 +1,6 @@
 <div>
     <!-- Global Loading Overlay -->
-    <div wire:loading class="fixed inset-0 bg-gray-900 bg-opacity-50 z-[9999] flex items-center justify-center">
+    <div wire:loading.delay.long class="fixed inset-0 bg-gray-900 bg-opacity-50 z-[9999] flex items-center justify-center">
         <div class="bg-white rounded-lg p-6 shadow-xl flex items-center space-x-3">
             <svg class="animate-spin h-8 w-8 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

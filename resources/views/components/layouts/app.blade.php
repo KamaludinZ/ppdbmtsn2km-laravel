@@ -13,20 +13,8 @@
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet" />
-
-    <!-- Styles & Scripts -->
-    @if(app()->environment('local'))
-        <!-- Development with Vite -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @else
-        <!-- Production Assets -->
-        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-        <script src="{{ asset('js/app.js') }}" defer></script>
-    @endif
-    @livewireStyles
+    <!-- Assets Loading -->
+    <x-asset-loader />
 </head>
 <body class="antialiased bg-gray-50">
     <div class="min-h-screen">

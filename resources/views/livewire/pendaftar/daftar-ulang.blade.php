@@ -113,7 +113,7 @@
                     <div class="ml-3">
                         <h3 class="text-sm font-medium text-blue-800">Informasi Pembayaran</h3>
                         <div class="mt-2 text-sm text-blue-700">
-                            <p>Pembayaran disesuaikan dengan kemampuan orang tua/wali. Apabila ingin berkomunikasi perihal kompensasi waktu/biaya/lainnya lebih lanjut, dapat dibicarakan dengan komite madrasah/koperasi madrasah untuk menemukan solusi secara kesepakatan bersama. Waktu sesuai jadwal yang disampaikan oleh pihak komite madrasah/koperasi madrasah.</p>
+                            <p>{{ $paymentInfoText }}</p>
                         </div>
                     </div>
                 </div>
@@ -138,6 +138,18 @@
 
                 <!-- Madrasah Tab -->
                 <div x-show="activeTab === 'madrasah'" x-transition class="p-6 space-y-6">
+                    <!-- Success/Error Messages -->
+                    @if(session()->has('message'))
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-sm font-medium text-green-800">{{ session('message') }}</span>
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- Informasi/Pengumuman dari Admin -->
                     @php
                         $madrasahInfo = \App\Models\Setting::get('daftar_ulang_madrasah_info', '');
@@ -162,6 +174,143 @@
                         <h4 class="text-lg font-semibold text-gray-900 mb-4">Daftar Ulang Madrasah</h4>
                     </div>
 
+                    @if($showPembayaranMadrasah)
+                    <!-- Biaya & Pembayaran Madrasah -->
+                    <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                        <h5 class="font-semibold text-gray-900 mb-3 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Pilih Nominal Biaya Daftar Ulang
+                        </h5>
+
+                        @php
+                            $madrasahNominals = \App\Models\Setting::get('daftar_ulang_madrasah_nominals', []);
+                        @endphp
+
+                        @if($madrasahNominals && count($madrasahNominals) > 0)
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Nominal Biaya <span class="text-red-500">*</span></label>
+                                <div class="space-y-2">
+                                    @foreach($madrasahNominals as $index => $nominal)
+                                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-emerald-50 transition-colors {{ $nominalBiaya == json_encode($nominal) ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
+                                            <input type="radio"
+                                                   wire:model="nominalBiaya"
+                                                   value="{{ json_encode($nominal) }}"
+                                                   class="text-emerald-600 focus:ring-emerald-500">
+                                            <div class="ml-3 flex-1 flex justify-between items-center">
+                                                <span class="font-medium text-gray-900">{{ $nominal['name'] ?? '-' }}</span>
+                                                <span class="font-bold text-emerald-700">Rp {{ number_format($nominal['amount'] ?? 0, 0, ',', '.') }}</span>
+                                            </div>
+                                        </label>
+                                    @endforeach
+                                </div>
+
+                                @php
+                                    $selectedNominal = $nominalBiaya ? json_decode($nominalBiaya, true) : null;
+                                @endphp
+
+                                @if($selectedNominal)
+                                    <div class="mt-3 p-3 bg-emerald-50 border border-emerald-300 rounded-lg">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm font-medium text-gray-700">Nominal yang dipilih:</span>
+                                            <span class="text-lg font-bold text-emerald-700">Rp {{ number_format($selectedNominal['amount'] ?? 0, 0, ',', '.') }}</span>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @error('nominalBiaya')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        @endif
+
+                        <!-- Opsi Pembayaran -->
+                        @php
+                            $madrasahPaymentOptions = \App\Models\Setting::get('daftar_ulang_madrasah_payment_options', ['lunas' => false, 'angsuran' => false, 'potongan' => false]);
+                            $availableMadrasahOptions = array_filter($madrasahPaymentOptions);
+                        @endphp
+
+                        @if(!empty($availableMadrasahOptions))
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Opsi Pembayaran</label>
+                                <select wire:model="opsiPembayaran" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                    <option value="">-- Pilih Opsi --</option>
+                                    @foreach($availableMadrasahOptions as $option => $enabled)
+                                        @if($enabled)
+                                            <option value="{{ $option }}">{{ ucfirst($option) }}</option>
+                                        @endif
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+
+                        <!-- Bank Selection -->
+                        @php
+                            $madrasahBanks = \App\Models\Setting::get('daftar_ulang_madrasah_banks', []);
+                        @endphp
+
+                        @if($madrasahBanks && count($madrasahBanks) > 0)
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Bank Tujuan</label>
+                                <select wire:model="bankPilihan" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                    <option value="">-- Pilih Bank --</option>
+                                    @foreach($madrasahBanks as $bank)
+                                        <option value="{{ $bank['name'] ?? '-' }}">
+                                            {{ $bank['name'] ?? '-' }} - {{ $bank['account_number'] ?? '-' }} ({{ $bank['account_name'] ?? '-' }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
+
+                        <!-- Upload Bukti Pembayaran -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Upload Bukti Pembayaran</label>
+                            @if($daftarUlang && $daftarUlang->bukti_pembayaran_madrasah)
+                                <div class="p-4 bg-green-50 border-2 border-green-200 rounded-lg mb-3">
+                                    <div class="flex items-center mb-3">
+                                        <svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <span class="text-sm font-semibold text-green-800">Bukti pembayaran telah diupload</span>
+                                    </div>
+                                    <div class="flex gap-2">
+                                        <a href="{{ route('pendaftar.daftarulang.view-file', ['type' => 'madrasah', 'file' => basename($daftarUlang->bukti_pembayaran_madrasah)]) }}" target="_blank"
+                                           class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition text-center">
+                                            Lihat Bukti
+                                        </a>
+                                        @if($daftarUlang->status == 'selesai')
+                                        <button wire:click="previewInvoiceMadrasah" class="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition">
+                                            Preview Invoice
+                                        </button>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endif
+
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center" wire:loading.class="opacity-50" wire:target="buktiPembayaran">
+                                <input type="file" wire:model="buktiPembayaran" id="bukti-madrasah" class="hidden" accept=".pdf,.jpg,.jpeg,.png">
+                                <label for="bukti-madrasah" class="cursor-pointer">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                    <p class="mt-2 text-sm text-gray-600">
+                                        @if($buktiPembayaran)
+                                            File terpilih: {{ $buktiPembayaran->getClientOriginalName() }}
+                                        @else
+                                            Klik untuk upload bukti pembayaran
+                                        @endif
+                                    </p>
+                                    <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG (Max. 2MB)</p>
+                                </label>
+                                <div wire:loading wire:target="buktiPembayaran" class="mt-2">
+                                    <span class="text-sm text-gray-600">Uploading...</span>
+                                </div>
+                            </div>
+                            @error('buktiPembayaran') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    @endif
+
                     @if($showPernyataan)
                     <!-- Surat Pernyataan -->
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -175,21 +324,22 @@
                             $templatePath = \App\Models\Setting::get('daftar_ulang_madrasah_template', null);
                         @endphp
 
-                                                    @if($templatePath)
-                                                        <a href="{{ Storage::url($templatePath) }}" download class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium mb-4">
-                                                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                                            Download Template
-                                                        </a>
-                                                    @endif
+                        @if($templatePath)
+                            <a href="{{ Storage::url($templatePath) }}" download class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium mb-4">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Download Template
+                            </a>
+                        @endif
+
                         @if($daftarUlang && $daftarUlang->surat_pernyataan_path)
                             <div class="flex items-center p-3 bg-green-50 border border-green-200 rounded mb-3">
                                 <svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
                                 <span class="text-sm text-gray-700 flex-1">Surat pernyataan telah diupload</span>
-                                <a href="{{ Storage::url($daftarUlang->surat_pernyataan_path) }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Lihat</a>
+                                <a href="{{ route('pendaftar.daftarulang.view-file', ['type' => 'pernyataan', 'file' => basename($daftarUlang->surat_pernyataan_path)]) }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Lihat</a>
                             </div>
                         @endif
 
-                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
+                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center" wire:loading.class="opacity-50" wire:target="suratPernyataan">
                             <input type="file" wire:model="suratPernyataan" id="surat-pernyataan" class="hidden" accept=".pdf">
                             <label for="surat-pernyataan" class="cursor-pointer block w-full h-full">
                                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -199,19 +349,53 @@
                                     @if($suratPernyataan)
                                         File terpilih: {{ $suratPernyataan->getClientOriginalName() }}
                                     @else
-                                        Klik untuk upload surat pernyataan (jika ingin mengubah)
+                                        Klik untuk upload surat pernyataan
                                     @endif
                                 </p>
                                 <p class="text-xs text-gray-500 mt-1">Hanya PDF (Max. 2MB)</p>
                             </label>
+                            <div wire:loading wire:target="suratPernyataan" class="mt-2">
+                                <span class="text-sm text-gray-600">Uploading...</span>
+                            </div>
                         </div>
-                        @error('suratPernyataan') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        @error('suratPernyataan') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                     </div>
                     @endif
+
+                    <!-- Tombol Simpan -->
+                    <div class="flex justify-end pt-4 border-t border-gray-200">
+                        <button
+                            wire:click="saveMadrasah"
+                            wire:loading.attr="disabled"
+                            wire:target="saveMadrasah"
+                            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <svg wire:loading.remove wire:target="saveMadrasah" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <svg wire:loading wire:target="saveMadrasah" class="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span wire:loading.remove wire:target="saveMadrasah">Simpan Data</span>
+                            <span wire:loading wire:target="saveMadrasah">Menyimpan...</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Seragam Tab -->
                 <div x-show="activeTab === 'seragam'" x-transition class="p-6 space-y-6">
+                    <!-- Success/Error Messages -->
+                    @if(session()->has('message_seragam'))
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-sm font-medium text-green-800">{{ session('message_seragam') }}</span>
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- Informasi/Pengumuman dari Admin -->
                     @php
                         $seragamInfo = \App\Models\Setting::get('daftar_ulang_seragam_info', '');
@@ -250,7 +434,7 @@
                             <div class="space-y-2">
                                 @foreach($seragamPackages as $index => $package)
                                     <label class="flex items-start p-3 border-2 border-gray-300 rounded-lg cursor-pointer hover:border-indigo-500 transition">
-                                        <input type="radio" name="paket_seragam" value="{{ $index }}" class="mt-1 text-indigo-600 focus:ring-indigo-500">
+                                        <input type="radio" wire:model="paketSeragam" name="paket_seragam" value="{{ $index }}" class="mt-1 text-indigo-600 focus:ring-indigo-500">
                                         <div class="ml-3">
                                             <p class="font-semibold text-gray-900">{{ $package['name'] ?? '-' }}</p>
                                             <p class="text-sm text-gray-600">{{ $package['description'] ?? '-' }}</p>
@@ -268,7 +452,7 @@
                     <div class="bg-green-50 border border-green-200 rounded-lg p-4">
                         <h5 class="font-semibold text-gray-900 mb-3 flex items-center">
                             <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            Biaya Seragam
+                            Pilih Nominal Biaya Seragam
                         </h5>
 
                         @php
@@ -276,19 +460,39 @@
                         @endphp
 
                         @if($seragamNominals && count($seragamNominals) > 0)
-                            <div class="space-y-2 mb-4">
-                                @php $total = 0; @endphp
-                                @foreach($seragamNominals as $nominal)
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-sm text-gray-700">{{ $nominal['name'] ?? '-' }}</span>
-                                        <span class="font-semibold text-gray-900">Rp {{ number_format($nominal['amount'] ?? 0, 0, ',', '.') }}</span>
-                                    </div>
-                                    @php $total += ($nominal['amount'] ?? 0); @endphp
-                                @endforeach
-                                <div class="pt-2 border-t-2 border-green-300 flex justify-between items-center">
-                                    <span class="font-bold text-gray-900">Total</span>
-                                    <span class="font-bold text-emerald-700 text-lg">Rp {{ number_format($total, 0, ',', '.') }}</span>
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Nominal Biaya <span class="text-red-500">*</span></label>
+                                <div class="space-y-2">
+                                    @foreach($seragamNominals as $index => $nominal)
+                                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-green-50 transition-colors {{ $nominalSeragam == json_encode($nominal) ? 'border-green-500 bg-green-50' : 'border-gray-300' }}">
+                                            <input type="radio"
+                                                   wire:model="nominalSeragam"
+                                                   value="{{ json_encode($nominal) }}"
+                                                   class="text-green-600 focus:ring-green-500">
+                                            <div class="ml-3 flex-1 flex justify-between items-center">
+                                                <span class="font-medium text-gray-900">{{ $nominal['name'] ?? '-' }}</span>
+                                                <span class="font-bold text-green-700">Rp {{ number_format($nominal['amount'] ?? 0, 0, ',', '.') }}</span>
+                                            </div>
+                                        </label>
+                                    @endforeach
                                 </div>
+
+                                @php
+                                    $selectedSeragamNominal = $nominalSeragam ? json_decode($nominalSeragam, true) : null;
+                                @endphp
+
+                                @if($selectedSeragamNominal)
+                                    <div class="mt-3 p-3 bg-green-50 border border-green-300 rounded-lg">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm font-medium text-gray-700">Nominal yang dipilih:</span>
+                                            <span class="text-lg font-bold text-green-700">Rp {{ number_format($selectedSeragamNominal['amount'] ?? 0, 0, ',', '.') }}</span>
+                                        </div>
+                                    </div>
+                                @endif
+
+                                @error('nominalSeragam')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
                         @endif
 
@@ -301,7 +505,7 @@
                         @if(!empty($availableSeragamOptions))
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Opsi Pembayaran</label>
-                                <select class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                <select wire:model="opsiPembayaranSeragam" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
                                     <option value="">-- Pilih Opsi --</option>
                                     @foreach($availableSeragamOptions as $option => $enabled)
                                         @if($enabled)
@@ -320,10 +524,10 @@
                         @if($seragamBanks && count($seragamBanks) > 0)
                             <div class="mb-4">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Bank Tujuan</label>
-                                <select class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                <select wire:model="bankSeragam" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
                                     <option value="">-- Pilih Bank --</option>
                                     @foreach($seragamBanks as $bank)
-                                        <option value="{{ json_encode($bank) }}">
+                                        <option value="{{ $bank['name'] ?? '-' }}">
                                             {{ $bank['name'] ?? '-' }} - {{ $bank['account_number'] ?? '-' }} ({{ $bank['account_name'] ?? '-' }})
                                         </option>
                                     @endforeach
@@ -374,25 +578,66 @@
                                         </div>
                                     </div>
                                 @else
-                                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center">
-                                        <input type="file" id="bukti-seragam" class="hidden" accept=".pdf,.jpg,.jpeg,.png">
+                                    <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center" wire:loading.class="opacity-50" wire:target="buktiSeragam">
+                                        <input type="file" wire:model="buktiSeragam" id="bukti-seragam" class="hidden" accept=".pdf,.jpg,.jpeg,.png">
                                         <label for="bukti-seragam" class="cursor-pointer">
                                             <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                             </svg>
-                                            <p class="mt-2 text-sm text-gray-600">Klik untuk upload bukti</p>
+                                            <p class="mt-2 text-sm text-gray-600">
+                                                @if($buktiSeragam)
+                                                    File terpilih: {{ $buktiSeragam->getClientOriginalName() }}
+                                                @else
+                                                    Klik untuk upload bukti
+                                                @endif
+                                            </p>
                                             <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG (Max. 5MB)</p>
                                         </label>
+                                        <div wire:loading wire:target="buktiSeragam" class="mt-2">
+                                            <span class="text-sm text-gray-600">Uploading...</span>
+                                        </div>
                                     </div>
+                                    @error('buktiSeragam') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 @endif
                             </div>
                         @endif
                     </div>
                     @endif
+
+                    <!-- Tombol Simpan -->
+                    <div class="flex justify-end pt-4 border-t border-gray-200">
+                        <button
+                            wire:click="saveSeragam"
+                            wire:loading.attr="disabled"
+                            wire:target="saveSeragam"
+                            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <svg wire:loading.remove wire:target="saveSeragam" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <svg wire:loading wire:target="saveSeragam" class="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span wire:loading.remove wire:target="saveSeragam">Simpan Data Seragam</span>
+                            <span wire:loading wire:target="saveSeragam">Menyimpan...</span>
+                        </button>
+                    </div>
                 </div>
 
                 <!-- Ukuran Tab -->
                 <div x-show="activeTab === 'ukuran'" x-transition class="p-6 space-y-6">
+                    <!-- Success/Error Messages -->
+                    @if(session()->has('message_ukuran'))
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="text-sm font-medium text-green-800">{{ session('message_ukuran') }}</span>
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- Informasi/Pengumuman dari Admin -->
                     @php
                         $ukuranInfo = \App\Models\Setting::get('daftar_ulang_ukuran_info', '');
@@ -421,10 +666,14 @@
                     @php
                         $ukuranJasImage = \App\Models\Setting::get('daftar_ulang_ukuran_jas_image', null);
                         $ukuranJasOptions = \App\Models\Setting::get('daftar_ulang_ukuran_jas_options', []);
-                        $ukuranAtasanImage = \App\Models\Setting::get('daftar_ulang_ukuran_atasan_image', null);
-                        $ukuranAtasanOptions = \App\Models\Setting::get('daftar_ulang_ukuran_atasan_options', []);
-                        $ukuranBawahanImage = \App\Models\Setting::get('daftar_ulang_ukuran_bawahan_image', null);
-                        $ukuranBawahanOptions = \App\Models\Setting::get('daftar_ulang_ukuran_bawahan_options', []);
+                        $ukuranBajuOlahragaImage = \App\Models\Setting::get('daftar_ulang_ukuran_baju_olahraga_image', null);
+                        $ukuranBajuOlahragaOptions = \App\Models\Setting::get('daftar_ulang_ukuran_baju_olahraga_options', []);
+                        $ukuranCelanaOlahragaImage = \App\Models\Setting::get('daftar_ulang_ukuran_celana_olahraga_image', null);
+                        $ukuranCelanaOlahragaOptions = \App\Models\Setting::get('daftar_ulang_ukuran_celana_olahraga_options', []);
+                        $ukuranBajuHarianImage = \App\Models\Setting::get('daftar_ulang_ukuran_baju_harian_image', null);
+                        $ukuranBajuHarianOptions = \App\Models\Setting::get('daftar_ulang_ukuran_baju_harian_options', []);
+                        $ukuranCelanaRokHarianImage = \App\Models\Setting::get('daftar_ulang_ukuran_celana_rok_harian_image', null);
+                        $ukuranCelanaRokHarianOptions = \App\Models\Setting::get('daftar_ulang_ukuran_celana_rok_harian_options', []);
                         $ukuranKopyahImage = \App\Models\Setting::get('daftar_ulang_ukuran_kopyah_image', null);
                         $ukuranKopyahOptions = \App\Models\Setting::get('daftar_ulang_ukuran_kopyah_options', []);
                     @endphp
@@ -437,10 +686,10 @@
                                 <img src="{{ Storage::url($ukuranJasImage) }}" alt="Panduan Ukuran Jas" class="w-full rounded-lg mb-3">
                             @endif
                             @if($ukuranJasOptions && count($ukuranJasOptions) > 0)
-                                <select class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                <select wire:model="ukuran_jas" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
                                     <option value="">-- Pilih Ukuran --</option>
                                     @foreach($ukuranJasOptions as $option)
-                                        <option value="{{ json_encode($option) }}">
+                                        <option value="{{ $option['size'] ?? '-' }}">
                                             {{ $option['size'] ?? '-' }} ({{ $option['measurement'] ?? '-' }})
                                         </option>
                                     @endforeach
@@ -450,18 +699,57 @@
                             @endif
                         </div>
 
-                        <!-- Ukuran Atasan -->
-                        @if($showUkuranAtasan)
+                        <!-- Ukuran Baju Seragam Olahraga -->
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <h5 class="font-semibold text-gray-900 mb-3">Ukuran Baju Seragam Olahraga</h5>
+                            @if($ukuranBajuOlahragaImage)
+                                <img src="{{ Storage::url($ukuranBajuOlahragaImage) }}" alt="Panduan Ukuran Baju Olahraga" class="w-full rounded-lg mb-3">
+                            @endif
+                            @if($ukuranBajuOlahragaOptions && count($ukuranBajuOlahragaOptions) > 0)
+                                <select wire:model="ukuran_baju_olahraga" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                    <option value="">-- Pilih Ukuran --</option>
+                                    @foreach($ukuranBajuOlahragaOptions as $option)
+                                        <option value="{{ $option['size'] ?? '-' }}">
+                                            {{ $option['size'] ?? '-' }} ({{ $option['measurement'] ?? '-' }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @else
+                                <p class="text-sm text-gray-500">Opsi ukuran belum tersedia</p>
+                            @endif
+                        </div>
+
+                        <!-- Ukuran Celana Seragam Olahraga -->
+                        <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                            <h5 class="font-semibold text-gray-900 mb-3">Ukuran Celana Seragam Olahraga</h5>
+                            @if($ukuranCelanaOlahragaImage)
+                                <img src="{{ Storage::url($ukuranCelanaOlahragaImage) }}" alt="Panduan Ukuran Celana Olahraga" class="w-full rounded-lg mb-3">
+                            @endif
+                            @if($ukuranCelanaOlahragaOptions && count($ukuranCelanaOlahragaOptions) > 0)
+                                <select wire:model="ukuran_celana_olahraga" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                    <option value="">-- Pilih Ukuran --</option>
+                                    @foreach($ukuranCelanaOlahragaOptions as $option)
+                                        <option value="{{ $option['size'] ?? '-' }}">
+                                            {{ $option['size'] ?? '-' }} ({{ $option['measurement'] ?? '-' }})
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @else
+                                <p class="text-sm text-gray-500">Opsi ukuran belum tersedia</p>
+                            @endif
+                        </div>
+
+                        <!-- Ukuran Baju Seragam Harian -->
                         <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                            <h5 class="font-semibold text-gray-900 mb-3">Ukuran Atasan/Baju</h5>
-                            @if($ukuranAtasanImage)
-                                <img src="{{ Storage::url($ukuranAtasanImage) }}" alt="Panduan Ukuran Atasan" class="w-full rounded-lg mb-3">
+                            <h5 class="font-semibold text-gray-900 mb-3">Ukuran Baju Seragam Harian</h5>
+                            @if($ukuranBajuHarianImage)
+                                <img src="{{ Storage::url($ukuranBajuHarianImage) }}" alt="Panduan Ukuran Baju Harian" class="w-full rounded-lg mb-3">
                             @endif
-                            @if($ukuranAtasanOptions && count($ukuranAtasanOptions) > 0)
-                                <select class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                            @if($ukuranBajuHarianOptions && count($ukuranBajuHarianOptions) > 0)
+                                <select wire:model="ukuran_baju_harian" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
                                     <option value="">-- Pilih Ukuran --</option>
-                                    @foreach($ukuranAtasanOptions as $option)
-                                        <option value="{{ json_encode($option) }}">
+                                    @foreach($ukuranBajuHarianOptions as $option)
+                                        <option value="{{ $option['size'] ?? '-' }}">
                                             {{ $option['size'] ?? '-' }} ({{ $option['measurement'] ?? '-' }})
                                         </option>
                                     @endforeach
@@ -470,20 +758,20 @@
                                 <p class="text-sm text-gray-500">Opsi ukuran belum tersedia</p>
                             @endif
                         </div>
-                        @endif
 
-                        <!-- Ukuran Bawahan -->
-                        @if($showUkuranBawahan)
+                        <!-- Ukuran Celana/Rok Seragam Harian -->
                         <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
-                            <h5 class="font-semibold text-gray-900 mb-3">Ukuran Bawahan/Rok/Celana</h5>
-                            @if($ukuranBawahanImage)
-                                <img src="{{ Storage::url($ukuranBawahanImage) }}" alt="Panduan Ukuran Bawahan" class="w-full rounded-lg mb-3">
+                            <h5 class="font-semibold text-gray-900 mb-3">
+                                Ukuran {{ $pendaftar->jenis_kelamin === 'L' ? 'Celana' : 'Rok' }} Seragam Harian
+                            </h5>
+                            @if($ukuranCelanaRokHarianImage)
+                                <img src="{{ Storage::url($ukuranCelanaRokHarianImage) }}" alt="Panduan Ukuran Celana/Rok Harian" class="w-full rounded-lg mb-3">
                             @endif
-                            @if($ukuranBawahanOptions && count($ukuranBawahanOptions) > 0)
-                                <select class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                            @if($ukuranCelanaRokHarianOptions && count($ukuranCelanaRokHarianOptions) > 0)
+                                <select wire:model="ukuran_celana_rok_harian" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
                                     <option value="">-- Pilih Ukuran --</option>
-                                    @foreach($ukuranBawahanOptions as $option)
-                                        <option value="{{ json_encode($option) }}">
+                                    @foreach($ukuranCelanaRokHarianOptions as $option)
+                                        <option value="{{ $option['size'] ?? '-' }}">
                                             {{ $option['size'] ?? '-' }} ({{ $option['measurement'] ?? '-' }})
                                         </option>
                                     @endforeach
@@ -492,20 +780,19 @@
                                 <p class="text-sm text-gray-500">Opsi ukuran belum tersedia</p>
                             @endif
                         </div>
-                        @endif
 
                         <!-- Ukuran Kopyah (Khusus Laki-laki) -->
-                        @if($showAtribut && $pendaftar->jenis_kelamin === 'L')
+                        @if($pendaftar->jenis_kelamin === 'L')
                         <div class="bg-cyan-50 border border-cyan-200 rounded-lg p-4">
                             <h5 class="font-semibold text-gray-900 mb-3">Ukuran Kopyah (Laki-laki)</h5>
                             @if($ukuranKopyahImage)
                                 <img src="{{ Storage::url($ukuranKopyahImage) }}" alt="Panduan Ukuran Kopyah" class="w-full rounded-lg mb-3">
                             @endif
                             @if($ukuranKopyahOptions && count($ukuranKopyahOptions) > 0)
-                                <select class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                <select wire:model="ukuran_kopyah" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
                                     <option value="">-- Pilih Ukuran --</option>
                                     @foreach($ukuranKopyahOptions as $option)
-                                        <option value="{{ json_encode($option) }}">
+                                        <option value="{{ $option['size'] ?? '-' }}">
                                             {{ $option['size'] ?? '-' }} ({{ $option['measurement'] ?? '-' }})
                                         </option>
                                     @endforeach
@@ -521,6 +808,25 @@
                         <p class="text-sm text-yellow-700">
                             <strong>Catatan:</strong> Pastikan Anda memilih ukuran yang sesuai dengan panduan gambar. Jika ragu, silakan hubungi panitia.
                         </p>
+                    </div>
+
+                    <!-- Tombol Simpan -->
+                    <div class="flex justify-end pt-4 border-t border-gray-200">
+                        <button
+                            wire:click="saveUkuran"
+                            wire:loading.attr="disabled"
+                            wire:target="saveUkuran"
+                            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-purple-600 hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <svg wire:loading.remove wire:target="saveUkuran" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            <svg wire:loading wire:target="saveUkuran" class="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            <span wire:loading.remove wire:target="saveUkuran">Simpan Data Ukuran</span>
+                            <span wire:loading wire:target="saveUkuran">Menyimpan...</span>
+                        </button>
                     </div>
                 </div>
             </div>

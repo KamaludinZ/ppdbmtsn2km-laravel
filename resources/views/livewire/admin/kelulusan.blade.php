@@ -1,6 +1,8 @@
 <div>
-    <!-- Global Loading Overlay -->
-    <div wire:loading class="fixed inset-0 bg-gray-900 bg-opacity-50 z-[9999] flex items-center justify-center">
+    <!-- Loading Overlay - Only for specific actions -->
+    <div wire:loading.delay.long
+         wire:target="updateStatus, bulkUpdateStatus, sendMessage, sendBulkMessage"
+         class="fixed inset-0 bg-gray-900 bg-opacity-50 z-[9999] flex items-center justify-center">
         <div class="bg-white rounded-lg p-6 shadow-xl flex items-center space-x-3">
             <svg class="animate-spin h-8 w-8 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -168,21 +170,21 @@
                         <button
                             wire:click="bulkUpdateStatus('lulus')"
                             wire:loading.attr="disabled"
-                            onclick="return confirm('Yakin ingin mengubah SEMUA data yang terfilter ({{ $stats['total'] }} pendaftar) menjadi LULUS?')"
+                            wire:confirm="⚠️ PERINGATAN: Anda akan mengubah status {{ $stats['total'] }} pendaftar menjadi LULUS. Tindakan ini tidak dapat dibatalkan. Apakah Anda yakin?"
                             class="text-white bg-green-500 hover:bg-green-600 px-2 sm:px-3 py-1 rounded text-xs font-medium transition disabled:opacity-50">
                             Tandai Lulus
                         </button>
                         <button
                             wire:click="bulkUpdateStatus('cadangan')"
                             wire:loading.attr="disabled"
-                            onclick="return confirm('Yakin ingin mengubah SEMUA data yang terfilter ({{ $stats['total'] }} pendaftar) menjadi CADANGAN?')"
+                            wire:confirm="⚠️ PERINGATAN: Anda akan mengubah status {{ $stats['total'] }} pendaftar menjadi CADANGAN. Tindakan ini tidak dapat dibatalkan. Apakah Anda yakin?"
                             class="text-white bg-orange-500 hover:bg-orange-600 px-2 sm:px-3 py-1 rounded text-xs font-medium transition disabled:opacity-50">
                             Tandai Cadangan
                         </button>
                         <button
                             wire:click="bulkUpdateStatus('tidak_lulus')"
                             wire:loading.attr="disabled"
-                            onclick="return confirm('Yakin ingin mengubah SEMUA data yang terfilter ({{ $stats['total'] }} pendaftar) menjadi TIDAK LULUS?')"
+                            wire:confirm="⚠️ PERINGATAN: Anda akan mengubah status {{ $stats['total'] }} pendaftar menjadi TIDAK LULUS. Tindakan ini tidak dapat dibatalkan. Apakah Anda yakin?"
                             class="text-white bg-red-500 hover:bg-red-600 px-2 sm:px-3 py-1 rounded text-xs font-medium transition disabled:opacity-50">
                             Tandai Tidak Lulus
                         </button>

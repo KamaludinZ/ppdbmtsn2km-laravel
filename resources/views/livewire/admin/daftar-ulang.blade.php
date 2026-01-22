@@ -202,6 +202,58 @@
                     </div>
                 </div>
 
+                <!-- 0. Pengaturan Umum Daftar Ulang -->
+                <div class="bg-white rounded-lg shadow overflow-hidden">
+                    <div class="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-between">
+                        <div class="flex items-center">
+                            <svg class="w-6 h-6 text-white mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                            </svg>
+                            <h3 class="text-lg font-bold text-white uppercase tracking-wider">Pengaturan Umum Daftar Ulang</h3>
+                        </div>
+                    </div>
+
+                    <form wire:submit.prevent="saveSettings" class="p-6">
+                        <div class="space-y-6">
+                            <!-- Informasi Pembayaran (Ditampilkan ke semua halaman) -->
+                            <div class="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-lg p-4">
+                                <div class="flex items-start space-x-2 mb-3">
+                                    <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <div class="flex-1">
+                                        <label class="block text-sm font-semibold text-blue-900">Informasi Pembayaran</label>
+                                        <p class="text-xs text-blue-700 mt-1">Informasi ini akan ditampilkan di halaman daftar ulang untuk Admin, Panitia, dan Pendaftar</p>
+                                    </div>
+                                </div>
+                                <textarea
+                                    wire:model="paymentInfoText"
+                                    rows="4"
+                                    placeholder="Contoh: Pembayaran disesuaikan dengan kemampuan orang tua/wali. Apabila ingin berkomunikasi perihal kompensasi waktu/biaya/lainnya lebih lanjut, dapat dibicarakan dengan komite madrasah..."
+                                    class="w-full rounded-lg border-blue-300 text-sm focus:border-blue-500 focus:ring-blue-500"
+                                ></textarea>
+                                <div class="mt-2 flex items-center text-xs text-blue-600">
+                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span>Teks ini muncul di bagian atas halaman daftar ulang pada semua role (Admin, Panitia, Pendaftar)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Save Button -->
+                        <div class="mt-6 flex justify-end">
+                            <button type="submit" class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 shadow-sm">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                </svg>
+                                Simpan Pengaturan Umum
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
                 <!-- 1. Pengaturan Daftar Ulang Madrasah -->
                 <div class="bg-white rounded-lg shadow overflow-hidden">
                     <div class="px-6 py-4 border-b border-gray-200 bg-emerald-600 flex items-center justify-between">
@@ -267,7 +319,10 @@
                                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                             <input type="text" wire:model="madrasahNominals.{{ $index }}.name" placeholder="Nama biaya (contoh: SPP Bulanan)" class="rounded border-gray-300 text-sm">
                                             <input type="number" wire:model="madrasahNominals.{{ $index }}.amount" placeholder="Nominal (Rp)" class="rounded border-gray-300 text-sm">
-                                            <button type="button" wire:click="removeMadrasahNominal({{ $index }})" class="text-red-600 hover:text-red-800 text-sm">Hapus</button>
+                                            <button type="button"
+                                                    wire:click="removeMadrasahNominal({{ $index }})"
+                                                    wire:confirm="Yakin ingin menghapus nominal madrasah ini?"
+                                                    class="text-red-600 hover:text-red-800 text-sm">Hapus</button>
                                         </div>
                                     </div>
                                 @endforeach
@@ -303,7 +358,10 @@
                                     <div class="bg-white border border-yellow-300 rounded-lg p-3 mb-2">
                                         <div class="flex gap-3">
                                             <input type="text" wire:model="madrasahBanks.{{ $index }}.name" placeholder="Nama Bank / Metode Pembayaran (Contoh: Transfer BCA, Tunai)" class="flex-1 rounded border-gray-300 text-sm">
-                                            <button type="button" wire:click="removeMadrasahBank({{ $index }})" class="text-red-600 hover:text-red-800 text-sm whitespace-nowrap">Hapus</button>
+                                            <button type="button"
+                                                    wire:click="removeMadrasahBank({{ $index }})"
+                                                    wire:confirm="Yakin ingin menghapus bank madrasah ini?"
+                                                    class="text-red-600 hover:text-red-800 text-sm whitespace-nowrap">Hapus</button>
                                         </div>
                                     </div>
                                 @endforeach
@@ -395,7 +453,10 @@
                                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                             <input type="text" wire:model="seragamPackages.{{ $index }}.name" placeholder="Nama Paket (contoh: Paket Lengkap)" class="rounded border-gray-300 text-sm">
                                             <textarea wire:model="seragamPackages.{{ $index }}.description" placeholder="Deskripsi paket" rows="2" class="rounded border-gray-300 text-sm"></textarea>
-                                            <button type="button" wire:click="removeSeragamPackage({{ $index }})" class="text-red-600 hover:text-red-800 text-sm">Hapus</button>
+                                            <button type="button"
+                                                    wire:click="removeSeragamPackage({{ $index }})"
+                                                    wire:confirm="Yakin ingin menghapus paket seragam ini?"
+                                                    class="text-red-600 hover:text-red-800 text-sm">Hapus</button>
                                         </div>
                                     </div>
                                 @endforeach
@@ -413,7 +474,10 @@
                                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
                                             <input type="text" wire:model="seragamNominals.{{ $index }}.name" placeholder="Nama biaya (contoh: Seragam Putih)" class="rounded border-gray-300 text-sm">
                                             <input type="number" wire:model="seragamNominals.{{ $index }}.amount" placeholder="Nominal (Rp)" class="rounded border-gray-300 text-sm">
-                                            <button type="button" wire:click="removeSeragamNominal({{ $index }})" class="text-red-600 hover:text-red-800 text-sm">Hapus</button>
+                                            <button type="button"
+                                                    wire:click="removeSeragamNominal({{ $index }})"
+                                                    wire:confirm="Yakin ingin menghapus nominal seragam ini?"
+                                                    class="text-red-600 hover:text-red-800 text-sm">Hapus</button>
                                         </div>
                                     </div>
                                 @endforeach
@@ -449,7 +513,10 @@
                                     <div class="bg-white border border-yellow-300 rounded-lg p-3 mb-2">
                                         <div class="flex gap-3">
                                             <input type="text" wire:model="seragamBanks.{{ $index }}.name" placeholder="Nama Bank / Metode Pembayaran (Contoh: Transfer BCA, Tunai)" class="flex-1 rounded border-gray-300 text-sm">
-                                            <button type="button" wire:click="removeSeragamBank({{ $index }})" class="text-red-600 hover:text-red-800 text-sm whitespace-nowrap">Hapus</button>
+                                            <button type="button"
+                                                    wire:click="removeSeragamBank({{ $index }})"
+                                                    wire:confirm="Yakin ingin menghapus bank seragam ini?"
+                                                    class="text-red-600 hover:text-red-800 text-sm whitespace-nowrap">Hapus</button>
                                         </div>
                                     </div>
                                 @endforeach
@@ -565,23 +632,94 @@
                                         <div class="flex gap-2 mb-2">
                                             <input type="text" wire:model="ukuranJasOptions.{{ $index }}.size" placeholder="Ukuran (contoh: S, M, L)" class="flex-1 rounded border-gray-300 text-sm">
                                             <input type="text" wire:model="ukuranJasOptions.{{ $index }}.measurement" placeholder="Ukuran detail (contoh: LD 50cm)" class="flex-1 rounded border-gray-300 text-sm">
-                                            <button type="button" wire:click="removeUkuranJas({{ $index }})" class="text-red-600 hover:text-red-800 text-sm px-2">Hapus</button>
+                                            <button type="button"
+                                                    wire:click="removeUkuranJas({{ $index }})"
+                                                    wire:confirm="Yakin ingin menghapus ukuran jas ini?"
+                                                    class="text-red-600 hover:text-red-800 text-sm px-2">Hapus</button>
                                         </div>
                                     @endforeach
                                 </div>
                             </div>
 
-                            <!-- 2. Ukuran Atasan/Baju -->
+                            <!-- 2. Ukuran Baju Seragam Olahraga -->
+                            <div class="bg-sky-50 border border-sky-200 rounded-lg p-4">
+                                <h5 class="text-sm font-semibold text-sky-900 mb-3">2. Ukuran Baju Seragam Olahraga</h5>
+
+                                <!-- Upload Gambar Panduan -->
+                                <div class="mb-4">
+                                    <label class="block text-xs text-gray-700 mb-2">Upload Gambar Panduan Ukuran Baju Olahraga</label>
+                                    <input type="file" wire:model="ukuranBajuOlahragaImage" accept="image/*" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white">
+                                    @if($existingUkuranBajuOlahragaImage)
+                                        <div class="mt-2">
+                                            <img src="{{ Storage::url($existingUkuranBajuOlahragaImage) }}" class="h-32 rounded border" alt="Panduan Baju Olahraga">
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <!-- CRUD Opsi Ukuran -->
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <label class="block text-xs text-gray-700">Opsi Ukuran Baju Olahraga</label>
+                                        <button type="button" wire:click="addUkuranBajuOlahraga" class="text-xs bg-sky-600 text-white px-2 py-1 rounded hover:bg-sky-700">+ Tambah</button>
+                                    </div>
+                                    @foreach($ukuranBajuOlahragaOptions as $index => $option)
+                                        <div class="flex gap-2 mb-2">
+                                            <input type="text" wire:model="ukuranBajuOlahragaOptions.{{ $index }}.size" placeholder="Ukuran (contoh: S, M, L)" class="flex-1 rounded border-gray-300 text-sm">
+                                            <input type="text" wire:model="ukuranBajuOlahragaOptions.{{ $index }}.measurement" placeholder="Ukuran detail (contoh: LD 48cm)" class="flex-1 rounded border-gray-300 text-sm">
+                                            <button type="button"
+                                                    wire:click="removeUkuranBajuOlahraga({{ $index }})"
+                                                    wire:confirm="Yakin ingin menghapus ukuran baju olahraga ini?"
+                                                    class="text-red-600 hover:text-red-800 text-sm px-2">Hapus</button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <!-- 3. Ukuran Celana Seragam Olahraga -->
+                            <div class="bg-violet-50 border border-violet-200 rounded-lg p-4">
+                                <h5 class="text-sm font-semibold text-violet-900 mb-3">3. Ukuran Celana Seragam Olahraga</h5>
+
+                                <!-- Upload Gambar Panduan -->
+                                <div class="mb-4">
+                                    <label class="block text-xs text-gray-700 mb-2">Upload Gambar Panduan Ukuran Celana Olahraga</label>
+                                    <input type="file" wire:model="ukuranCelanaOlahragaImage" accept="image/*" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white">
+                                    @if($existingUkuranCelanaOlahragaImage)
+                                        <div class="mt-2">
+                                            <img src="{{ Storage::url($existingUkuranCelanaOlahragaImage) }}" class="h-32 rounded border" alt="Panduan Celana Olahraga">
+                                        </div>
+                                    @endif
+                                </div>
+
+                                <!-- CRUD Opsi Ukuran -->
+                                <div>
+                                    <div class="flex items-center justify-between mb-2">
+                                        <label class="block text-xs text-gray-700">Opsi Ukuran Celana Olahraga</label>
+                                        <button type="button" wire:click="addUkuranCelanaOlahraga" class="text-xs bg-violet-600 text-white px-2 py-1 rounded hover:bg-violet-700">+ Tambah</button>
+                                    </div>
+                                    @foreach($ukuranCelanaOlahragaOptions as $index => $option)
+                                        <div class="flex gap-2 mb-2">
+                                            <input type="text" wire:model="ukuranCelanaOlahragaOptions.{{ $index }}.size" placeholder="Ukuran (contoh: S, M, L, 28, 30)" class="flex-1 rounded border-gray-300 text-sm">
+                                            <input type="text" wire:model="ukuranCelanaOlahragaOptions.{{ $index }}.measurement" placeholder="Ukuran detail (contoh: LP 70cm)" class="flex-1 rounded border-gray-300 text-sm">
+                                            <button type="button"
+                                                    wire:click="removeUkuranCelanaOlahraga({{ $index }})"
+                                                    wire:confirm="Yakin ingin menghapus ukuran celana olahraga ini?"
+                                                    class="text-red-600 hover:text-red-800 text-sm px-2">Hapus</button>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                            <!-- 4. Ukuran Baju Seragam Harian -->
                             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                <h5 class="text-sm font-semibold text-blue-900 mb-3">2. Ukuran Atasan/Baju</h5>
+                                <h5 class="text-sm font-semibold text-blue-900 mb-3">4. Ukuran Baju Seragam Harian</h5>
 
                                 <!-- Upload Gambar Panduan -->
                                 <div class="mb-4">
-                                    <label class="block text-xs text-gray-700 mb-2">Upload Gambar Panduan Ukuran Atasan</label>
-                                    <input type="file" wire:model="ukuranAtasanImage" accept="image/*" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white">
-                                    @if($existingUkuranAtasanImage)
+                                    <label class="block text-xs text-gray-700 mb-2">Upload Gambar Panduan Ukuran Baju Harian</label>
+                                    <input type="file" wire:model="ukuranBajuHarianImage" accept="image/*" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white">
+                                    @if($existingUkuranBajuHarianImage)
                                         <div class="mt-2">
-                                            <img src="{{ Storage::url($existingUkuranAtasanImage) }}" class="h-32 rounded border" alt="Panduan Atasan">
+                                            <img src="{{ Storage::url($existingUkuranBajuHarianImage) }}" class="h-32 rounded border" alt="Panduan Baju Harian">
                                         </div>
                                     @endif
                                 </div>
@@ -589,30 +727,33 @@
                                 <!-- CRUD Opsi Ukuran -->
                                 <div>
                                     <div class="flex items-center justify-between mb-2">
-                                        <label class="block text-xs text-gray-700">Opsi Ukuran Atasan</label>
-                                        <button type="button" wire:click="addUkuranAtasan" class="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700">+ Tambah</button>
+                                        <label class="block text-xs text-gray-700">Opsi Ukuran Baju Harian</label>
+                                        <button type="button" wire:click="addUkuranBajuHarian" class="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700">+ Tambah</button>
                                     </div>
-                                    @foreach($ukuranAtasanOptions as $index => $option)
+                                    @foreach($ukuranBajuHarianOptions as $index => $option)
                                         <div class="flex gap-2 mb-2">
-                                            <input type="text" wire:model="ukuranAtasanOptions.{{ $index }}.size" placeholder="Ukuran (contoh: S, M, L)" class="flex-1 rounded border-gray-300 text-sm">
-                                            <input type="text" wire:model="ukuranAtasanOptions.{{ $index }}.measurement" placeholder="Ukuran detail (contoh: LD 48cm)" class="flex-1 rounded border-gray-300 text-sm">
-                                            <button type="button" wire:click="removeUkuranAtasan({{ $index }})" class="text-red-600 hover:text-red-800 text-sm px-2">Hapus</button>
+                                            <input type="text" wire:model="ukuranBajuHarianOptions.{{ $index }}.size" placeholder="Ukuran (contoh: S, M, L)" class="flex-1 rounded border-gray-300 text-sm">
+                                            <input type="text" wire:model="ukuranBajuHarianOptions.{{ $index }}.measurement" placeholder="Ukuran detail (contoh: LD 48cm)" class="flex-1 rounded border-gray-300 text-sm">
+                                            <button type="button"
+                                                    wire:click="removeUkuranBajuHarian({{ $index }})"
+                                                    wire:confirm="Yakin ingin menghapus ukuran baju harian ini?"
+                                                    class="text-red-600 hover:text-red-800 text-sm px-2">Hapus</button>
                                         </div>
                                     @endforeach
                                 </div>
                             </div>
 
-                            <!-- 3. Ukuran Bawahan/Rok/Celana -->
+                            <!-- 5. Ukuran Celana/Rok Seragam Harian -->
                             <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                                <h5 class="text-sm font-semibold text-green-900 mb-3">3. Ukuran Bawahan/Rok/Celana</h5>
+                                <h5 class="text-sm font-semibold text-green-900 mb-3">5. Ukuran Celana/Rok Seragam Harian</h5>
 
                                 <!-- Upload Gambar Panduan -->
                                 <div class="mb-4">
-                                    <label class="block text-xs text-gray-700 mb-2">Upload Gambar Panduan Ukuran Bawahan</label>
-                                    <input type="file" wire:model="ukuranBawahanImage" accept="image/*" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white">
-                                    @if($existingUkuranBawahanImage)
+                                    <label class="block text-xs text-gray-700 mb-2">Upload Gambar Panduan Ukuran Celana/Rok Harian</label>
+                                    <input type="file" wire:model="ukuranCelanaRokHarianImage" accept="image/*" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white">
+                                    @if($existingUkuranCelanaRokHarianImage)
                                         <div class="mt-2">
-                                            <img src="{{ Storage::url($existingUkuranBawahanImage) }}" class="h-32 rounded border" alt="Panduan Bawahan">
+                                            <img src="{{ Storage::url($existingUkuranCelanaRokHarianImage) }}" class="h-32 rounded border" alt="Panduan Celana/Rok Harian">
                                         </div>
                                     @endif
                                 </div>
@@ -620,20 +761,23 @@
                                 <!-- CRUD Opsi Ukuran -->
                                 <div>
                                     <div class="flex items-center justify-between mb-2">
-                                        <label class="block text-xs text-gray-700">Opsi Ukuran Bawahan</label>
-                                        <button type="button" wire:click="addUkuranBawahan" class="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700">+ Tambah</button>
+                                        <label class="block text-xs text-gray-700">Opsi Ukuran Celana/Rok Harian</label>
+                                        <button type="button" wire:click="addUkuranCelanaRokHarian" class="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700">+ Tambah</button>
                                     </div>
-                                    @foreach($ukuranBawahanOptions as $index => $option)
+                                    @foreach($ukuranCelanaRokHarianOptions as $index => $option)
                                         <div class="flex gap-2 mb-2">
-                                            <input type="text" wire:model="ukuranBawahanOptions.{{ $index }}.size" placeholder="Ukuran (contoh: S, M, L, 28, 30)" class="flex-1 rounded border-gray-300 text-sm">
-                                            <input type="text" wire:model="ukuranBawahanOptions.{{ $index }}.measurement" placeholder="Ukuran detail (contoh: LP 70cm)" class="flex-1 rounded border-gray-300 text-sm">
-                                            <button type="button" wire:click="removeUkuranBawahan({{ $index }})" class="text-red-600 hover:text-red-800 text-sm px-2">Hapus</button>
+                                            <input type="text" wire:model="ukuranCelanaRokHarianOptions.{{ $index }}.size" placeholder="Ukuran (contoh: S, M, L, 28, 30)" class="flex-1 rounded border-gray-300 text-sm">
+                                            <input type="text" wire:model="ukuranCelanaRokHarianOptions.{{ $index }}.measurement" placeholder="Ukuran detail (contoh: LP 70cm)" class="flex-1 rounded border-gray-300 text-sm">
+                                            <button type="button"
+                                                    wire:click="removeUkuranCelanaRokHarian({{ $index }})"
+                                                    wire:confirm="Yakin ingin menghapus ukuran celana/rok harian ini?"
+                                                    class="text-red-600 hover:text-red-800 text-sm px-2">Hapus</button>
                                         </div>
                                     @endforeach
                                 </div>
                             </div>
 
-                            <!-- 4. Kopyah (Khusus Laki-laki) -->
+                            <!-- 6. Kopyah (Khusus Laki-laki) -->
                             <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
                                 <h5 class="text-sm font-semibold text-indigo-900 mb-3">4. Kopyah (Khusus Laki-laki)</h5>
 
@@ -658,7 +802,10 @@
                                         <div class="flex gap-2 mb-2">
                                             <input type="text" wire:model="ukuranKopyahOptions.{{ $index }}.size" placeholder="Ukuran (contoh: 6, 7, 8)" class="flex-1 rounded border-gray-300 text-sm">
                                             <input type="text" wire:model="ukuranKopyahOptions.{{ $index }}.measurement" placeholder="Ukuran detail (contoh: Lingkar 54cm)" class="flex-1 rounded border-gray-300 text-sm">
-                                            <button type="button" wire:click="removeUkuranKopyah({{ $index }})" class="text-red-600 hover:text-red-800 text-sm px-2">Hapus</button>
+                                            <button type="button"
+                                                    wire:click="removeUkuranKopyah({{ $index }})"
+                                                    wire:confirm="Yakin ingin menghapus ukuran kopyah ini?"
+                                                    class="text-red-600 hover:text-red-800 text-sm px-2">Hapus</button>
                                         </div>
                                     @endforeach
                                 </div>
@@ -691,7 +838,7 @@
                     <div class="ml-3">
                         <h3 class="text-sm font-medium text-blue-800">Informasi Pembayaran</h3>
                         <div class="mt-2 text-sm text-blue-700">
-                            <p>Pembayaran disesuaikan dengan kemampuan orang tua/wali. Apabila ingin berkomunikasi perihal kompensasi waktu/biaya/lainnya lebih lanjut, dapat dibicarakan dengan komite madrasah untuk menemukan solusi secara kesepakatan bersama. Waktu sesuai jadwal yang disampaikan oleh pihak komite madrasah.</p>
+                            <p>{{ $paymentInfoText ?: 'Pembayaran disesuaikan dengan kemampuan orang tua/wali. Apabila ingin berkomunikasi perihal kompensasi waktu/biaya/lainnya lebih lanjut, dapat dibicarakan dengan komite madrasah untuk menemukan solusi secara kesepakatan bersama. Waktu sesuai jadwal yang disampaikan oleh pihak komite madrasah.' }}</p>
                         </div>
                     </div>
                 </div>
@@ -907,22 +1054,14 @@
                                     </td>
                                     <!-- Biaya & Pembayaran -->
                                     <td class="px-6 py-4">
-                                        @if($item->daftarUlang && $item->daftarUlang->biaya_items)
-                                            @php $biayaItems = json_decode($item->daftarUlang->biaya_items, true); @endphp
-                                            @if($biayaItems)
-                                                @foreach($biayaItems as $biaya)
-                                                    <div class="text-xs text-gray-900">
-                                                        {{ $biaya['name'] }}: <span class="font-semibold">Rp {{ number_format($biaya['amount'], 0, ',', '.') }}</span>
-                                                    </div>
-                                                @endforeach
-                                                <div class="text-xs font-bold text-emerald-700 mt-1 pt-1 border-t">
-                                                    Total: Rp {{ number_format(array_sum(array_column($biayaItems, 'amount')), 0, ',', '.') }}
-                                                </div>
-                                            @else
-                                                <span class="text-xs text-gray-500">Belum ada data</span>
-                                            @endif
+                                        @if($item->daftarUlang && $item->daftarUlang->nominal_biaya)
+                                            @php $nominalBiaya = $item->daftarUlang->nominal_biaya; @endphp
+                                            <div class="text-xs text-gray-900">
+                                                <div class="font-medium text-gray-700 mb-1">{{ $nominalBiaya['name'] ?? '-' }}</div>
+                                                <div class="font-bold text-emerald-700">Rp {{ number_format($nominalBiaya['amount'] ?? 0, 0, ',', '.') }}</div>
+                                            </div>
                                         @else
-                                            <span class="text-xs text-gray-500">Belum ada data</span>
+                                            <span class="text-xs text-gray-500">Belum pilih nominal</span>
                                         @endif
                                     </td>
                                     <!-- Opsi Pembayaran -->
@@ -979,22 +1118,14 @@
                                     </td>
                                     <!-- Biaya & Pembayaran -->
                                     <td class="px-6 py-4">
-                                        @if($item->seragam && $item->seragam->biaya_items)
-                                            @php $biayaItems = json_decode($item->seragam->biaya_items, true); @endphp
-                                            @if($biayaItems)
-                                                @foreach($biayaItems as $biaya)
-                                                    <div class="text-xs text-gray-900">
-                                                        {{ $biaya['name'] }}: <span class="font-semibold">Rp {{ number_format($biaya['amount'], 0, ',', '.') }}</span>
-                                                    </div>
-                                                @endforeach
-                                                <div class="text-xs font-bold text-emerald-700 mt-1 pt-1 border-t">
-                                                    Total: Rp {{ number_format(array_sum(array_column($biayaItems, 'amount')), 0, ',', '.') }}
-                                                </div>
-                                            @else
-                                                <span class="text-xs text-gray-500">Belum ada data</span>
-                                            @endif
+                                        @if($item->seragam && $item->seragam->nominal_seragam)
+                                            @php $nominalSeragam = $item->seragam->nominal_seragam; @endphp
+                                            <div class="text-xs text-gray-900">
+                                                <div class="font-medium text-gray-700 mb-1">{{ $nominalSeragam['name'] ?? '-' }}</div>
+                                                <div class="font-bold text-emerald-700">Rp {{ number_format($nominalSeragam['amount'] ?? 0, 0, ',', '.') }}</div>
+                                            </div>
                                         @else
-                                            <span class="text-xs text-gray-500">Belum ada data</span>
+                                            <span class="text-xs text-gray-500">Belum pilih nominal</span>
                                         @endif
                                     </td>
                                     <!-- Opsi Pembayaran -->

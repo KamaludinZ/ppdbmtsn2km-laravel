@@ -46,6 +46,7 @@ class DaftarUlang extends Component
     public $madrasahInfo = '';  // Informasi untuk pendaftar - Madrasah
     public $seragamInfo = '';   // Informasi untuk pendaftar - Seragam
     public $ukuranInfo = '';    // Informasi untuk pendaftar - Ukuran
+    public $paymentInfoText = ''; // Informasi Pembayaran untuk semua halaman daftar ulang
     public $showPernyataan = true;
     public $showPembayaranMadrasah = true;
     public $showPembayaranSeragam = true;
@@ -77,15 +78,28 @@ class DaftarUlang extends Component
     public $ukuranJasImage = null;
     public $existingUkuranJasImage = null;
     public $ukuranJasOptions = [];
+    public $ukuranBajuOlahragaImage = null;
+    public $existingUkuranBajuOlahragaImage = null;
+    public $ukuranBajuOlahragaOptions = [];
+    public $ukuranCelanaOlahragaImage = null;
+    public $existingUkuranCelanaOlahragaImage = null;
+    public $ukuranCelanaOlahragaOptions = [];
+    public $ukuranBajuHarianImage = null;
+    public $existingUkuranBajuHarianImage = null;
+    public $ukuranBajuHarianOptions = [];
+    public $ukuranCelanaRokHarianImage = null;
+    public $existingUkuranCelanaRokHarianImage = null;
+    public $ukuranCelanaRokHarianOptions = [];
+    public $ukuranKopyahImage = null;
+    public $existingUkuranKopyahImage = null;
+    public $ukuranKopyahOptions = [];
+    // Legacy properties for backward compatibility
     public $ukuranAtasanImage = null;
     public $existingUkuranAtasanImage = null;
     public $ukuranAtasanOptions = [];
     public $ukuranBawahanImage = null;
     public $existingUkuranBawahanImage = null;
     public $ukuranBawahanOptions = [];
-    public $ukuranKopyahImage = null;
-    public $existingUkuranKopyahImage = null;
-    public $ukuranKopyahOptions = [];
 
     public function mount()
     {
@@ -101,7 +115,8 @@ class DaftarUlang extends Component
         $this->madrasahInfo = \App\Models\Setting::get('daftar_ulang_madrasah_info', '');
         $this->seragamInfo = \App\Models\Setting::get('daftar_ulang_seragam_info', '');
         $this->ukuranInfo = \App\Models\Setting::get('daftar_ulang_ukuran_info', '');
-        
+        $this->paymentInfoText = \App\Models\Setting::get('daftar_ulang_payment_info_text', 'Pembayaran disesuaikan dengan kemampuan orang tua/wali. Apabila ingin berkomunikasi perihal kompensasi waktu/biaya/lainnya lebih lanjut, dapat dibicarakan dengan komite madrasah untuk menemukan solusi secara kesepakatan bersama. Waktu sesuai jadwal yang disampaikan oleh pihak komite madrasah.');
+
         $this->showPernyataan = \App\Models\Setting::get('daftar_ulang_show_pernyataan', true);
         $this->showPembayaranMadrasah = \App\Models\Setting::get('daftar_ulang_show_pembayaran_madrasah', true);
         $this->showPembayaranSeragam = \App\Models\Setting::get('daftar_ulang_show_pembayaran_seragam', true);
@@ -130,14 +145,24 @@ class DaftarUlang extends Component
         // Ukuran JSON/Array Settings
         $this->ukuranByGender = \App\Models\Setting::get('ukuran_by_gender', false);
         $this->existingUkuranJasImage = \App\Models\Setting::get('daftar_ulang_ukuran_jas_image');
+        $this->existingUkuranBajuOlahragaImage = \App\Models\Setting::get('daftar_ulang_ukuran_baju_olahraga_image');
+        $this->existingUkuranCelanaOlahragaImage = \App\Models\Setting::get('daftar_ulang_ukuran_celana_olahraga_image');
+        $this->existingUkuranBajuHarianImage = \App\Models\Setting::get('daftar_ulang_ukuran_baju_harian_image');
+        $this->existingUkuranCelanaRokHarianImage = \App\Models\Setting::get('daftar_ulang_ukuran_celana_rok_harian_image');
+        $this->existingUkuranKopyahImage = \App\Models\Setting::get('daftar_ulang_ukuran_kopyah_image');
+        // Legacy compatibility
         $this->existingUkuranAtasanImage = \App\Models\Setting::get('daftar_ulang_ukuran_atasan_image');
         $this->existingUkuranBawahanImage = \App\Models\Setting::get('daftar_ulang_ukuran_bawahan_image');
-        $this->existingUkuranKopyahImage = \App\Models\Setting::get('daftar_ulang_ukuran_kopyah_image');
-        
+
         $this->ukuranJasOptions = \App\Models\Setting::get('daftar_ulang_ukuran_jas_options', []);
+        $this->ukuranBajuOlahragaOptions = \App\Models\Setting::get('daftar_ulang_ukuran_baju_olahraga_options', []);
+        $this->ukuranCelanaOlahragaOptions = \App\Models\Setting::get('daftar_ulang_ukuran_celana_olahraga_options', []);
+        $this->ukuranBajuHarianOptions = \App\Models\Setting::get('daftar_ulang_ukuran_baju_harian_options', []);
+        $this->ukuranCelanaRokHarianOptions = \App\Models\Setting::get('daftar_ulang_ukuran_celana_rok_harian_options', []);
+        $this->ukuranKopyahOptions = \App\Models\Setting::get('daftar_ulang_ukuran_kopyah_options', []);
+        // Legacy compatibility
         $this->ukuranAtasanOptions = \App\Models\Setting::get('daftar_ulang_ukuran_atasan_options', []);
         $this->ukuranBawahanOptions = \App\Models\Setting::get('daftar_ulang_ukuran_bawahan_options', []);
-        $this->ukuranKopyahOptions = \App\Models\Setting::get('daftar_ulang_ukuran_kopyah_options', []);
     }
 
     public function render()
@@ -269,11 +294,13 @@ class DaftarUlang extends Component
             'madrasahContent' => 'nullable|string',
             'seragamContent' => 'nullable|string',
             'ukuranContent' => 'nullable|string',
+            'paymentInfoText' => 'nullable|string',
         ]);
 
         \App\Models\Setting::set('daftar_ulang_madrasah_content', $this->madrasahContent, 'text', 'Konten Daftar Ulang Madrasah');
         \App\Models\Setting::set('daftar_ulang_seragam_content', $this->seragamContent, 'text', 'Konten Daftar Ulang Seragam');
         \App\Models\Setting::set('daftar_ulang_ukuran_content', $this->ukuranContent, 'text', 'Konten Ukuran Seragam & Atribut');
+        \App\Models\Setting::set('daftar_ulang_payment_info_text', $this->paymentInfoText, 'text', 'Informasi Pembayaran Daftar Ulang');
         \App\Models\Setting::set('daftar_ulang_show_pernyataan', $this->showPernyataan, 'boolean', 'Tampilkan Form Pernyataan');
         \App\Models\Setting::set('daftar_ulang_show_pembayaran_madrasah', $this->showPembayaranMadrasah, 'boolean', 'Tampilkan Form Pembayaran Madrasah');
         \App\Models\Setting::set('daftar_ulang_show_pembayaran_seragam', $this->showPembayaranSeragam, 'boolean', 'Tampilkan Form Pembayaran Seragam');
@@ -489,6 +516,50 @@ class DaftarUlang extends Component
         $this->ukuranKopyahOptions = array_values($this->ukuranKopyahOptions);
     }
 
+    public function addUkuranBajuOlahraga()
+    {
+        $this->ukuranBajuOlahragaOptions[] = ['size' => '', 'measurement' => ''];
+    }
+
+    public function removeUkuranBajuOlahraga($index)
+    {
+        unset($this->ukuranBajuOlahragaOptions[$index]);
+        $this->ukuranBajuOlahragaOptions = array_values($this->ukuranBajuOlahragaOptions);
+    }
+
+    public function addUkuranCelanaOlahraga()
+    {
+        $this->ukuranCelanaOlahragaOptions[] = ['size' => '', 'measurement' => ''];
+    }
+
+    public function removeUkuranCelanaOlahraga($index)
+    {
+        unset($this->ukuranCelanaOlahragaOptions[$index]);
+        $this->ukuranCelanaOlahragaOptions = array_values($this->ukuranCelanaOlahragaOptions);
+    }
+
+    public function addUkuranBajuHarian()
+    {
+        $this->ukuranBajuHarianOptions[] = ['size' => '', 'measurement' => ''];
+    }
+
+    public function removeUkuranBajuHarian($index)
+    {
+        unset($this->ukuranBajuHarianOptions[$index]);
+        $this->ukuranBajuHarianOptions = array_values($this->ukuranBajuHarianOptions);
+    }
+
+    public function addUkuranCelanaRokHarian()
+    {
+        $this->ukuranCelanaRokHarianOptions[] = ['size' => '', 'measurement' => ''];
+    }
+
+    public function removeUkuranCelanaRokHarian($index)
+    {
+        unset($this->ukuranCelanaRokHarianOptions[$index]);
+        $this->ukuranCelanaRokHarianOptions = array_values($this->ukuranCelanaRokHarianOptions);
+    }
+
     public function saveUkuranSettings()
     {
         // Handle Image Uploads
@@ -498,6 +569,37 @@ class DaftarUlang extends Component
             $this->existingUkuranJasImage = $path;
             $this->ukuranJasImage = null;
         }
+        if ($this->ukuranBajuOlahragaImage) {
+            $path = $this->ukuranBajuOlahragaImage->store('panduan-ukuran', 'public');
+            \App\Models\Setting::set('daftar_ulang_ukuran_baju_olahraga_image', $path);
+            $this->existingUkuranBajuOlahragaImage = $path;
+            $this->ukuranBajuOlahragaImage = null;
+        }
+        if ($this->ukuranCelanaOlahragaImage) {
+            $path = $this->ukuranCelanaOlahragaImage->store('panduan-ukuran', 'public');
+            \App\Models\Setting::set('daftar_ulang_ukuran_celana_olahraga_image', $path);
+            $this->existingUkuranCelanaOlahragaImage = $path;
+            $this->ukuranCelanaOlahragaImage = null;
+        }
+        if ($this->ukuranBajuHarianImage) {
+            $path = $this->ukuranBajuHarianImage->store('panduan-ukuran', 'public');
+            \App\Models\Setting::set('daftar_ulang_ukuran_baju_harian_image', $path);
+            $this->existingUkuranBajuHarianImage = $path;
+            $this->ukuranBajuHarianImage = null;
+        }
+        if ($this->ukuranCelanaRokHarianImage) {
+            $path = $this->ukuranCelanaRokHarianImage->store('panduan-ukuran', 'public');
+            \App\Models\Setting::set('daftar_ulang_ukuran_celana_rok_harian_image', $path);
+            $this->existingUkuranCelanaRokHarianImage = $path;
+            $this->ukuranCelanaRokHarianImage = null;
+        }
+        if ($this->ukuranKopyahImage) {
+            $path = $this->ukuranKopyahImage->store('panduan-ukuran', 'public');
+            \App\Models\Setting::set('daftar_ulang_ukuran_kopyah_image', $path);
+            $this->existingUkuranKopyahImage = $path;
+            $this->ukuranKopyahImage = null;
+        }
+        // Legacy compatibility
         if ($this->ukuranAtasanImage) {
             $path = $this->ukuranAtasanImage->store('panduan-ukuran', 'public');
             \App\Models\Setting::set('daftar_ulang_ukuran_atasan_image', $path);
@@ -510,20 +612,19 @@ class DaftarUlang extends Component
             $this->existingUkuranBawahanImage = $path;
             $this->ukuranBawahanImage = null;
         }
-        if ($this->ukuranKopyahImage) {
-            $path = $this->ukuranKopyahImage->store('panduan-ukuran', 'public');
-            \App\Models\Setting::set('daftar_ulang_ukuran_kopyah_image', $path);
-            $this->existingUkuranKopyahImage = $path;
-            $this->ukuranKopyahImage = null;
-        }
 
         // Save Settings
         \App\Models\Setting::set('daftar_ulang_ukuran_info', $this->ukuranInfo);
         \App\Models\Setting::set('ukuran_by_gender', $this->ukuranByGender, 'boolean');
         \App\Models\Setting::set('daftar_ulang_ukuran_jas_options', $this->ukuranJasOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_ukuran_baju_olahraga_options', $this->ukuranBajuOlahragaOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_ukuran_celana_olahraga_options', $this->ukuranCelanaOlahragaOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_ukuran_baju_harian_options', $this->ukuranBajuHarianOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_ukuran_celana_rok_harian_options', $this->ukuranCelanaRokHarianOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_ukuran_kopyah_options', $this->ukuranKopyahOptions, 'json');
+        // Legacy compatibility
         \App\Models\Setting::set('daftar_ulang_ukuran_atasan_options', $this->ukuranAtasanOptions, 'json');
         \App\Models\Setting::set('daftar_ulang_ukuran_bawahan_options', $this->ukuranBawahanOptions, 'json');
-        \App\Models\Setting::set('daftar_ulang_ukuran_kopyah_options', $this->ukuranKopyahOptions, 'json');
 
         $this->dispatch('saved', message: 'Pengaturan ukuran seragam berhasil disimpan.');
     }

@@ -10,6 +10,7 @@ use App\Models\Pendaftar;
 use App\Models\RecentPendaftar;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Livewire\Component;
 
@@ -35,43 +36,63 @@ class Dashboard extends Component
 
     public function loadStats()
     {
-        // Load data from materialized views for better performance
-        $dashboardStats = DashboardStats::getStats();
-        $panitiaStats = PanitiaStats::getStats();
+        // Query langsung dari database untuk akurasi real-time
+        $totalPendaftar = Pendaftar::count();
 
-        $totalPendaftar = $dashboardStats['total_pendaftar'] ?? 0;
-        $menungguVerifikasi = $dashboardStats['menunggu_verifikasi'] ?? 0;
-        $diterima = $dashboardStats['diterima'] ?? 0;
-        $panitiaAktif = $panitiaStats['panitia_aktif'] ?? 0;
+        // Hitung berdasarkan status_pendaftaran
+        $menungguVerifikasi = Pendaftar::where('status_pendaftaran', 'menunggu_verifikasi')->count();
+        $lengkapiData = Pendaftar::where('status_pendaftaran', 'lengkapi_data')->count();
+        $perbaikiData = Pendaftar::where('status_pendaftaran', 'perbaiki_data')->count();
+        $dataDisetujui = Pendaftar::where('status_pendaftaran', 'data_disetujui')->count();
+        $lulus = Pendaftar::where('status_pendaftaran', 'lulus')->count();
+        $tidakLulus = Pendaftar::where('status_pendaftaran', 'tidak_lulus')->count();
+        $cadangan = Pendaftar::where('status_pendaftaran', 'cadangan')->count();
+        $dataDitolak = Pendaftar::where('status_pendaftaran', 'data_ditolak')->count();
+
+        // Panitia aktif
+        $panitiaAktif = User::whereIn('role', ['panitia', 'panitia_pendaftaran', 'panitia_daftarulang'])->count();
 
         // Calculate percentage vs last year (mocked for now)
         $lastYearTotal = 1084; // This should come from last year's data
         $increasePercentage = $lastYearTotal > 0 ? round((($totalPendaftar - $lastYearTotal) / $lastYearTotal) * 100, 1) : 0;
 
-        $diterimaPercentage = $totalPendaftar > 0 ? round(($diterima / $totalPendaftar) * 100, 1) : 0;
+        $dataDisetujuiPercentage = $totalPendaftar > 0 ? round(($dataDisetujui / $totalPendaftar) * 100, 1) : 0;
+        $lengkapiDataPercentage = $totalPendaftar > 0 ? round(($lengkapiData / $totalPendaftar) * 100, 1) : 0;
+        $perbaikiDataPercentage = $totalPendaftar > 0 ? round(($perbaikiData / $totalPendaftar) * 100, 1) : 0;
 
         $this->stats = [
             'total_pendaftar' => $totalPendaftar,
             'total_pendaftar_increase' => $increasePercentage,
             'menunggu_verifikasi' => $menungguVerifikasi,
-            'diterima' => $diterima,
-            'diterima_percentage' => $diterimaPercentage,
+            'lengkapi_data' => $lengkapiData,
+            'lengkapi_data_percentage' => $lengkapiDataPercentage,
+            'perbaiki_data' => $perbaikiData,
+            'perbaiki_data_percentage' => $perbaikiDataPercentage,
+            'data_disetujui' => $dataDisetujui,
+            'data_disetujui_percentage' => $dataDisetujuiPercentage,
+            'lulus' => $lulus,
+            'tidak_lulus' => $tidakLulus,
+            'cadangan' => $cadangan,
+            'data_ditolak' => $dataDitolak,
             'panitia_aktif' => $panitiaAktif,
         ];
     }
 
     public function loadRecentPendaftar()
     {
-        // Load from materialized view for better performance
-        $recentData = RecentPendaftar::getRecent(5);
+        // Load directly from database dengan join untuk mendapatkan info jalur
+        $recentData = Pendaftar::with('jalur')
+            ->orderBy('tanggal_daftar', 'desc')
+            ->take(5)
+            ->get();
 
         $this->recentPendaftar = $recentData->map(function ($pendaftar) {
             return [
                 'nomor_pendaftaran' => $pendaftar->nomor_pendaftaran ?? '-',
                 'nama' => $pendaftar->nama_lengkap,
-                'nisn' => $pendaftar->nisn,
-                'jalur' => $pendaftar->jalur_nama ?? '-',
-                'jalur_warna' => $pendaftar->jalur_warna ?? 'blue',
+                'nisn' => $pendaftar->nisn ?? '-',
+                'jalur' => $pendaftar->jalur->nama ?? '-',
+                'jalur_warna' => $pendaftar->jalur->warna ?? 'blue',
                 'status' => $pendaftar->status_pendaftaran,
                 'status_label' => $this->getStatusLabel($pendaftar->status_pendaftaran),
                 'status_color' => $this->getStatusColor($pendaftar->status_pendaftaran),
@@ -83,17 +104,20 @@ class Dashboard extends Component
 
     public function loadJalurStats()
     {
-        // Load from materialized view for better performance
-        $dashboardStats = DashboardStats::getStats();
-        $totalPendaftar = $dashboardStats['total_pendaftar'] ?? 0;
+        // Hanya load jalur yang aktif dengan jumlah pendaftar
+        $jalurAktif = JalurPendaftaran::where('aktif', true)
+            ->orderBy('urutan', 'asc')
+            ->get();
 
-        $jalurStatsData = JalurStats::getAll();
+        $totalPendaftar = Pendaftar::count();
 
-        $this->jalurStats = $jalurStatsData->map(function ($jalur) use ($totalPendaftar) {
-            $percentage = $totalPendaftar > 0 ? round(($jalur->pendaftar_count / $totalPendaftar) * 100) : 0;
+        $this->jalurStats = $jalurAktif->map(function ($jalur) use ($totalPendaftar) {
+            $count = $jalur->pendaftar()->count();
+            $percentage = $totalPendaftar > 0 ? round(($count / $totalPendaftar) * 100) : 0;
+
             return [
                 'nama' => $jalur->nama,
-                'count' => $jalur->pendaftar_count,
+                'count' => $count,
                 'percentage' => $percentage,
                 'warna' => $jalur->warna,
             ];
@@ -113,39 +137,37 @@ class Dashboard extends Component
     private function getStatusLabel($status)
     {
         $labels = [
-            'menunggu' => 'Menunggu Verifikasi',
-            'lulus' => 'Diterima',
+            'menunggu_verifikasi' => 'Menunggu Verifikasi',
+            'lengkapi_data' => 'Lengkapi Data',
+            'perbaiki_data' => 'Perbaiki Data',
+            'data_ditolak' => 'Data Ditolak',
+            'data_disetujui' => 'Data Disetujui',
+            'lulus' => 'Lulus',
             'tidak_lulus' => 'Tidak Lulus',
             'cadangan' => 'Cadangan',
+            'diterima' => 'Diterima',
+            'ditolak' => 'Ditolak',
         ];
 
-        return $labels[$status] ?? $status;
+        return $labels[$status] ?? ucfirst(str_replace('_', ' ', $status));
     }
 
     private function getStatusColor($status)
     {
         $colors = [
-            'menunggu' => 'yellow',
+            'menunggu_verifikasi' => 'yellow',
+            'lengkapi_data' => 'orange',
+            'perbaiki_data' => 'orange',
+            'data_ditolak' => 'red',
+            'data_disetujui' => 'blue',
             'lulus' => 'green',
             'tidak_lulus' => 'red',
             'cadangan' => 'blue',
+            'diterima' => 'green',
+            'ditolak' => 'red',
         ];
 
         return $colors[$status] ?? 'gray';
-    }
-
-    private function getColorClasses($color)
-    {
-        $classes = [
-            'blue' => 'bg-blue-600',
-            'emerald' => 'bg-emerald-600',
-            'purple' => 'bg-purple-600',
-            'yellow' => 'bg-yellow-600',
-            'red' => 'bg-red-600',
-            'orange' => 'bg-orange-600',
-        ];
-
-        return $classes[$color] ?? 'bg-blue-600';
     }
 
     public function render()

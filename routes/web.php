@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\ExportController;
+use App\Http\Controllers\SecureFileController;
 use App\Livewire\Auth\Login;
 use App\Livewire\Auth\Register;
 use Illuminate\Support\Facades\Auth;
@@ -37,7 +38,16 @@ Route::get('/', function () {
     $loginCaptcha = sprintf('%06d', rand(100000, 999999));
     session(['login_captcha' => $loginCaptcha]);
 
-    return view('public.home', compact('isOpen', 'startDate', 'endDate', 'registrationPhase', 'registrationPhaseLabel', 'registrationPhaseDescription', 'jalurPendaftaran', 'timelinePendaftaran', 'videoPanduan', 'infografis', 'testimoni', 'loginEnabled', 'loginCaptcha'));
+    // Add missing variables for the view
+    $appAcronym = \App\Models\Setting::get('app_acronym', 'PPDB');
+    $appFullName = \App\Models\Setting::get('app_full_name', 'Penerimaan Peserta Didik Baru');
+    $appName = \App\Models\Setting::get('app_name', 'PPDB MTsN 2 Kota Malang');
+
+    // Brosur settings
+    $brosurActive = \App\Models\Setting::get('brosur_active', false);
+    $brosurFilePath = \App\Models\Setting::get('brosur_file_path');
+
+    return view('public.home', compact('isOpen', 'startDate', 'endDate', 'registrationPhase', 'registrationPhaseLabel', 'registrationPhaseDescription', 'jalurPendaftaran', 'timelinePendaftaran', 'videoPanduan', 'infografis', 'testimoni', 'loginEnabled', 'loginCaptcha', 'appAcronym', 'appFullName', 'appName', 'brosurActive', 'brosurFilePath'));
 });
 
 // Jalur Pendaftaran Detail
@@ -83,7 +93,11 @@ Route::get('/informasi', function () {
     // Ambil FAQ yang aktif
     $faqs = \App\Models\Faq::aktif()->ordered()->get();
 
-    return view('public.informasi', compact('registrationPhase', 'registrationPhaseLabel', 'registrationPhaseDescription', 'kontenInformasi', 'faqs'));
+    // Brosur settings
+    $brosurActive = \App\Models\Setting::get('brosur_active', false);
+    $brosurFilePath = \App\Models\Setting::get('brosur_file_path');
+
+    return view('public.informasi', compact('registrationPhase', 'registrationPhaseLabel', 'registrationPhaseDescription', 'kontenInformasi', 'faqs', 'brosurActive', 'brosurFilePath'));
 })->name('informasi');
 
 // Semua Jalur Pendaftaran
@@ -147,7 +161,7 @@ Route::get('/cek-nsm-npsn', function () {
             \DB::raw('COUNT(*) as jumlah_pendaftar')
         )
         ->whereNotNull('jenis_sekolah_asal')
-        ->where('status_pendaftaran', '!=', 'draft')
+        ->where('status_pendaftaran', '!=', 'menunggu_verifikasi')
         ->where(function($query) {
             $query->whereNotNull('nsm_sekolah_asal')
                   ->orWhereNotNull('npsn_sekolah_asal');
@@ -159,6 +173,15 @@ Route::get('/cek-nsm-npsn', function () {
 
     return view('public.cek-nsm-npsn', compact('registrationPhase', 'registrationPhaseLabel', 'registrationPhaseDescription', 'sekolahList'));
 })->name('cek.nsm.npsn');
+
+// Cek NISN
+Route::get('/cek-nisn', function () {
+    $registrationPhase = \App\Models\Setting::get('registration_phase', 'belum_dibuka');
+    $registrationPhaseLabel = \App\Models\Setting::get('registration_phase_label', 'Pendaftaran Belum Dibuka');
+    $registrationPhaseDescription = \App\Models\Setting::get('registration_phase_description', 'Pendaftaran akan segera dibuka.');
+
+    return view('public.cek-nisn', compact('registrationPhase', 'registrationPhaseLabel', 'registrationPhaseDescription'));
+})->name('cek.nisn');
 
 // Pengumuman
 Route::get('/pengumuman', function () {
@@ -214,7 +237,8 @@ Route::post('/login', function (\Illuminate\Http\Request $request) {
     return back()->withErrors(['email' => 'Email atau password salah, atau akun tidak aktif.'])->withInput(['email' => $credentials['email']]);
 })->name('login.process');
 Route::get('/login/admin', \App\Livewire\Auth\AdminLogin::class)->name('login.admin'); // Login untuk Admin/Panitia
-Route::get('/daftar', Register::class)->name('register');
+// Gunakan RegisterFixed untuk performa dan interaktivitas yang optimal
+Route::get('/daftar', \App\Livewire\Auth\RegisterFixed::class)->name('register');
 Route::post('/logout', function () {
     Auth::logout();
     request()->session()->invalidate();
@@ -226,6 +250,9 @@ Route::post('/logout', function () {
 Route::get('/welcome', function () {
     return view('welcome');
 });
+
+// Test Livewire functionality
+Route::get('/test-livewire', \App\Livewire\TestLivewire::class)->name('test.livewire');
 
 // Dashboard Routes - Admin Only
 Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
@@ -252,6 +279,15 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/monitoring', \App\Livewire\Admin\Monitoring::class)->name('admin.monitoring');
     Route::get('/security', \App\Livewire\Admin\Security::class)->name('admin.security');
     Route::get('/backup-restore', \App\Livewire\Admin\BackupRestore::class)->name('admin.backup-restore');
+    Route::get('/backup-restore/download/{filename}', function($filename) {
+        $path = storage_path("app/backups/{$filename}");
+
+        if (!file_exists($path)) {
+            abort(404, 'File backup tidak ditemukan.');
+        }
+
+        return response()->download($path);
+    })->name('admin.backup.download');
     Route::get('/emis-input', \App\Livewire\Admin\EmisInput::class)->name('admin.emis-input');
     Route::get('/tes-psikologi', \App\Livewire\Admin\TesPsikologi::class)->name('admin.tes-psikologi');
 });
@@ -313,6 +349,18 @@ Route::middleware(['auth', 'role:admin,panitia_pendaftaran,panitia_daftarulang']
     Route::get('/export/excel', [ExportController::class, 'generateExcel'])->name('export.excel');
 });
 
+// Secure File Download Routes - Protected with Authorization via SecureFileController
+Route::middleware(['auth'])->group(function () {
+    Route::get('/download/dokumen/{id}', [\App\Http\Controllers\SecureFileController::class, 'downloadDokumen'])
+        ->name('download.dokumen');
+
+    Route::get('/view/dokumen/{id}', [\App\Http\Controllers\SecureFileController::class, 'viewDokumen'])
+        ->name('view.dokumen');
+
+    Route::get('/download/bukti-bayar/{pendaftar}/{type}', [\App\Http\Controllers\SecureFileController::class, 'downloadBuktiBayar'])
+        ->name('download.bukti-bayar');
+});
+
 // Dokumen download route - Protected dengan authorization
 Route::get('/dokumen/{id}/download', function ($id) {
     $dokumen = \App\Models\Dokumen::findOrFail($id);
@@ -372,20 +420,83 @@ Route::get('/dokumen/{id}/view', function ($id) {
         abort(403, 'Anda tidak memiliki akses ke dokumen ini.');
     }
 
-    // Check if file exists
-    if (!Storage::exists($dokumen->path_file)) {
+    // Check if file exists in private storage
+    if (!Storage::disk('private')->exists($dokumen->path_file)) {
         abort(404, 'File tidak ditemukan.');
     }
 
-    // Return file for viewing in browser (inline)
+    // Return file for viewing in browser (inline) from private storage
     return response()->file(
-        storage_path('app/' . $dokumen->path_file),
+        storage_path('app/private/' . $dokumen->path_file),
         [
             'Content-Type' => $dokumen->mime_type ?? 'application/pdf',
             'Content-Disposition' => 'inline; filename="' . $dokumen->nama_file . '"'
         ]
     );
 })->middleware('auth')->name('dokumen.view');
+
+// Daftar Ulang file view route - Protected untuk pendaftar melihat file mereka
+Route::get('/pendaftar/daftarulang/view-file/{type}/{file}', function ($type, $file) {
+    $user = auth()->user();
+
+    // Authorization check
+    if (!$user || $user->role !== 'pendaftar') {
+        abort(403, 'Anda tidak memiliki akses ke file ini.');
+    }
+
+    $pendaftar = $user->pendaftar;
+
+    // Determine file path based on type
+    $filePath = null;
+    $displayName = $file;
+
+    if ($type === 'madrasah') {
+        // Bukti pembayaran madrasah
+        $daftarUlang = $pendaftar->daftarUlang;
+        if ($daftarUlang && $daftarUlang->bukti_pembayaran_madrasah) {
+            $filePath = $daftarUlang->bukti_pembayaran_madrasah;
+        }
+    } elseif ($type === 'pernyataan') {
+        // Surat pernyataan
+        $daftarUlang = $pendaftar->daftarUlang;
+        if ($daftarUlang && $daftarUlang->surat_pernyataan_path) {
+            $filePath = $daftarUlang->surat_pernyataan_path;
+        }
+    } elseif ($type === 'seragam') {
+        // Bukti pembayaran seragam
+        $seragam = $pendaftar->seragam;
+        if ($seragam && $seragam->bukti_pembayaran) {
+            $filePath = $seragam->bukti_pembayaran;
+        }
+    }
+
+    if (!$filePath) {
+        abort(404, 'File tidak ditemukan.');
+    }
+
+    // Check if file exists in private storage
+    if (!Storage::disk('private')->exists($filePath)) {
+        abort(404, 'File tidak ditemukan di storage.');
+    }
+
+    // Get full path to file
+    $fullPath = storage_path('app/private/' . $filePath);
+
+    // Determine mime type based on extension
+    $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+    $mimeType = match(strtolower($extension)) {
+        'pdf' => 'application/pdf',
+        'jpg', 'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        default => 'application/octet-stream',
+    };
+
+    // Return file for viewing in browser (inline)
+    return response()->file($fullPath, [
+        'Content-Type' => $mimeType,
+        'Content-Disposition' => 'inline; filename="' . $displayName . '"'
+    ]);
+})->middleware('auth')->name('pendaftar.daftarulang.view-file');
 
 // API untuk auto-fill nama sekolah berdasarkan NSM/NPSN
 Route::get('/api/cek-sekolah', function () {

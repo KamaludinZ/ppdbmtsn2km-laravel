@@ -176,7 +176,9 @@
                             <button wire:click="manageOptions({{ $question->id }})" class="text-purple-600 hover:text-purple-900">Opsi</button>
                             <button wire:click="editQuestion({{ $question->id }})" class="text-blue-600 hover:text-blue-900">Edit</button>
                             @if(Auth::user()->role === 'admin')
-                                <button onclick="confirm('Apakah Anda yakin ingin menghapus pertanyaan ini?') || event.stopImmediatePropagation()" wire:click="deleteQuestion({{ $question->id }})" class="text-red-600 hover:text-red-900">Hapus</button>
+                                <button wire:click="deleteQuestion({{ $question->id }})"
+                                        wire:confirm="Apakah Anda yakin ingin menghapus pertanyaan ini?"
+                                        class="text-red-600 hover:text-red-900">Hapus</button>
                             @endif
                         </td>
                     </tr>
@@ -239,7 +241,9 @@
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                             <button wire:click="editOption({{ $option->id }})" class="text-blue-600 hover:text-blue-900">Edit</button>
                             @if(Auth::user()->role === 'admin')
-                                <button onclick="confirm('Apakah Anda yakin ingin menghapus opsi ini?') || event.stopImmediatePropagation()" wire:click="deleteOption({{ $option->id }})" class="text-red-600 hover:text-red-900">Hapus</button>
+                                <button wire:click="deleteOption({{ $option->id }})"
+                                        wire:confirm="Apakah Anda yakin ingin menghapus opsi ini?"
+                                        class="text-red-600 hover:text-red-900">Hapus</button>
                             @endif
                         </td>
                     </tr>

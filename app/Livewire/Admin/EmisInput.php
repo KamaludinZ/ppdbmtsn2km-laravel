@@ -37,8 +37,18 @@ class EmisInput extends Component
 
     public function loadAcceptedApplicants()
     {
-        // Get applicants who have completed daftar ulang
-        $query = Pendaftar::with(['jalurPendaftaran', 'daftarUlang'])
+        // Get applicants who have completed daftar ulang with complete relationships
+        $query = Pendaftar::with([
+            'jalurPendaftaran',
+            'daftarUlang',
+            'seragam',
+            'dokumen',
+            'verifikasiBerkas',
+            'tesPsikologiPendaftar.opsi',
+            'prestasis',
+            'beasiswas',
+            'user'
+        ])
             ->where('status_pendaftaran', 'data_disetujui') // Only students with approved data
             ->whereHas('daftarUlang', function($q) {
                 // Only students who have started daftar ulang
@@ -49,6 +59,7 @@ class EmisInput extends Component
             $query->where(function($q) {
                 $q->where('nama_lengkap', 'like', '%' . $this->search . '%')
                   ->orWhere('nisn', 'like', '%' . $this->search . '%')
+                  ->orWhere('nomor_pendaftaran', 'like', '%' . $this->search . '%')
                   ->orWhere('email', 'like', '%' . $this->search . '%');
             });
         }

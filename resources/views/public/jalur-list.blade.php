@@ -156,7 +156,7 @@
                                 ],
                             ];
                             $colors = $colorClasses[$jalur->warna] ?? $colorClasses['blue'];
-                            $isPopular = $jalur->kode === 'reguler';
+                            $isPopular = $jalur->paling_populer;
                         @endphp
 
                         <!-- Jalur Card -->

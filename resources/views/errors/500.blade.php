@@ -4,10 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>500 - Server Error</title>
-        <!-- Production Assets -->
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    <script src="{{ asset('js/app.js') }}" defer></script>
-    @livewireStyles
+    {{-- Using compiled CSS for production-ready error pages --}}
+    <link rel="stylesheet" href="{{ asset('css/errors.css') }}">
 </head>
 <body class="antialiased bg-gradient-to-br from-purple-50 to-pink-100 min-h-screen flex items-center justify-center p-4">
     <div class="max-w-2xl w-full">
@@ -90,11 +88,12 @@
 
             <!-- Footer -->
             <div class="bg-gray-50 px-8 py-4 text-center text-sm text-gray-600">
-                &copy; {{ date('Y') }} MTsN 2 Kota Malang. All rights reserved.
+                @php
+                    $appAcronym = \App\Models\Setting::get('app_acronym', 'PPDB');
+                @endphp
+                &copy; {{ date('Y') }} {{ $appAcronym }} MTsN 2 Kota Malang. Hak Cipta Dilindungi.
             </div>
         </div>
     </div>
-    @livewireScripts
-    <script src="{{ asset('js/livewire.js') }}" defer></script>
 </body>
 </html>

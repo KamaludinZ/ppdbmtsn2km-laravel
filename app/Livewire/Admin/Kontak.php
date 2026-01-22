@@ -170,6 +170,7 @@ class Kontak extends Component
             'aktif' => $this->aktif ?? true,
         ]);
 
+        $this->resetErrorBag();
         $this->closeModal();
         $this->dispatch('kontak-saved', message: 'Kontak panitia berhasil ditambahkan.');
     }
@@ -197,6 +198,7 @@ class Kontak extends Component
             }
         }
 
+        $this->resetErrorBag();
         $this->closeModal();
         $this->dispatch('kontak-saved', message: 'Kontak panitia berhasil diperbarui.');
     }
@@ -206,6 +208,7 @@ class Kontak extends Component
         $data = KontakPanitia::find($id);
         if ($data) {
             $data->delete();
+            $this->resetErrorBag();
             $this->dispatch('kontak-saved', message: 'Kontak panitia berhasil dihapus.');
         }
     }
@@ -213,6 +216,7 @@ class Kontak extends Component
     public function closeModal()
     {
         $this->showModal = false;
+        $this->resetErrorBag();
         $this->resetFields();
     }
 
@@ -263,6 +267,7 @@ class Kontak extends Component
             'aktif' => $this->link_aktif ?? true,
         ]);
 
+        $this->resetErrorBag();
         $this->closeModalLink();
         $this->dispatch('kontak-saved', message: 'Link terkait berhasil ditambahkan.');
     }
@@ -288,6 +293,7 @@ class Kontak extends Component
             }
         }
 
+        $this->resetErrorBag();
         $this->closeModalLink();
         $this->dispatch('kontak-saved', message: 'Link terkait berhasil diperbarui.');
     }
@@ -297,6 +303,7 @@ class Kontak extends Component
         $data = LinkTerkait::find($id);
         if ($data) {
             $data->delete();
+            $this->resetErrorBag();
             $this->dispatch('kontak-saved', message: 'Link terkait berhasil dihapus.');
         }
     }
@@ -304,6 +311,7 @@ class Kontak extends Component
     public function closeModalLink()
     {
         $this->showModalLink = false;
+        $this->resetErrorBag();
         $this->resetFieldsLink();
     }
 

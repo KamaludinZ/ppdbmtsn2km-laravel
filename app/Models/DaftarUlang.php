@@ -12,6 +12,10 @@ class DaftarUlang extends Model
     protected $fillable = [
         'pendaftar_id',
         'status',
+        'opsi_pembayaran',
+        'metode_pembayaran',
+        'bukti_pembayaran_madrasah',
+        'surat_pernyataan_path',
         'pembayaran_lunas',
         'seragam_diukur',
         'berkas_lengkap',
@@ -22,6 +26,7 @@ class DaftarUlang extends Model
     ];
 
     protected $casts = [
+        'nominal_biaya' => 'array',
         'pembayaran_lunas' => 'boolean',
         'seragam_diukur' => 'boolean',
         'berkas_lengkap' => 'boolean',

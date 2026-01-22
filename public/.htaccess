@@ -1,9 +1,61 @@
-<IfModule mod_rewrite.c>
-    <IfModule mod_negotiation.c>
-        Options -MultiViews -Indexes
-    </IfModule>
+# Apache Configuration for Laravel - Shared Hosting Optimized
+# Security Hardened for Production
 
+<IfModule mod_negotiation.c>
+    Options -MultiViews -Indexes
+</IfModule>
+
+# Disable Directory Browsing
+Options -Indexes
+
+# Prevent access to sensitive files
+<FilesMatch "^\.env|^\.git|composer\.(json|lock)|package(-lock)?\.json|artisan|webpack\.mix\.js|vite\.config\.js|phpunit\.xml|\.md$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Block debug, test, and temporary files
+<FilesMatch "(debug|test|fix|verify|check|show|cleanup).*\.php$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Block backup and zip files
+<FilesMatch "\.(zip|rar|tar|gz|sql|bak|backup)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Block access to specific folders from parent directory
+<IfModule mod_rewrite.c>
     RewriteEngine On
+
+    # Block access to vendor folder
+    RewriteRule ^vendor/.*$ - [F,L]
+
+    # Block access to storage (except via symlink)
+    RewriteRule ^\.\.\/storage/(?!app/public).*$ - [F,L]
+
+    # Block access to bootstrap cache
+    RewriteRule ^\.\.\/bootstrap/cache/.*$ - [F,L]
+
+    # Block access to .git folder
+    RewriteRule ^\.\.\/\.git/.*$ - [F,L]
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
@@ -14,9 +66,16 @@
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
-    # Force HTTPS
+    # Force HTTPS (Comment out if tidak ada SSL)
     RewriteCond %{HTTPS} off
     RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
+
+    # Block SQL injection attempts
+    RewriteCond %{QUERY_STRING} union([^s]*s)+elect [NC,OR]
+    RewriteCond %{QUERY_STRING} union([^a]*a)+ll([^s]*s)+elect [NC,OR]
+    RewriteCond %{QUERY_STRING} (NULL|OUTFILE|LOAD_FILE) [OR]
+    RewriteCond %{QUERY_STRING} (<|>|'|%0A|%0D|%27|%3C|%3E|%00) [NC]
+    RewriteRule ^(.*)$ - [F,L]
 
     # Send Requests To Front Controller...
     RewriteCond %{REQUEST_FILENAME} !-d
@@ -24,13 +83,30 @@
     RewriteRule ^ index.php [L]
 </IfModule>
 
-# Security Headers
+# Security Headers (Enhanced)
 <IfModule mod_headers.c>
-    Header set X-Content-Type-Options "nosniff"
-    Header set X-Frame-Options "SAMEORIGIN"
-    Header set X-XSS-Protection "1; mode=block"
-    Header set Referrer-Policy "strict-origin-when-cross-origin"
+    # Prevent clickjacking
+    Header always set X-Frame-Options "SAMEORIGIN"
+
+    # Prevent MIME-sniffing
+    Header always set X-Content-Type-Options "nosniff"
+
+    # Enable XSS filter
+    Header always set X-XSS-Protection "1; mode=block"
+
+    # Referrer Policy
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Remove server signature
+    Header always unset X-Powered-By
+    Header always unset Server
+
+    # Permissions Policy
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
 </IfModule>
+
+# Disable server signature
+ServerSignature Off
 
 # Compression
 <IfModule mod_deflate.c>
@@ -70,3 +146,22 @@
     php_value max_input_time 300
     php_value memory_limit 256M
 </IfModule>
+
+# PHP Security Settings (shared hosting compatible)
+<IfModule mod_php7.c>
+    php_flag display_errors Off
+    php_flag log_errors On
+    php_value error_log ../storage/logs/php_errors.log
+    php_flag expose_php Off
+</IfModule>
+
+# Protect specific files
+<FilesMatch "(^#.*#|\.(bak|conf|dist|fla|in[ci]|log|psd|sh|sql|sw[op])|~)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>

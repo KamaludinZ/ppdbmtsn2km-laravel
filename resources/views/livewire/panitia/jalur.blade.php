@@ -74,6 +74,9 @@
                         <x-sortable-header field="kode" :sort-field="$sortField" :sort-direction="$sortDirection" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Kode
                         </x-sortable-header>
+                        <x-sortable-header field="urutan" :sort-field="$sortField" :sort-direction="$sortDirection" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Urutan
+                        </x-sortable-header>
                         <x-sortable-header field="prefix_nomor" :sort-field="$sortField" :sort-direction="$sortDirection" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Prefix
                         </x-sortable-header>
@@ -94,6 +97,11 @@
                     <tr>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{{ $jalur->nama }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $jalur->kode }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-800 font-bold text-sm">
+                                {{ $jalur->urutan }}
+                            </span>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             @if($jalur->prefix_nomor)
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-emerald-100 text-emerald-800">
@@ -203,7 +211,7 @@
     <!-- Persyaratan Form Modal -->
     @if($showSyaratForm)
         <div class="fixed inset-0 overflow-y-auto" aria-labelledby="syarat-modal" role="dialog" aria-modal="true">
-            <div class="fixed inset-0 bg-black/10 backdrop-blur-sm transition-opacity z-[9998]" aria-hidden="true" wire:click="cancelSyarat"></div>
+            <div class="fixed inset-0 bg-black/10 backdrop-blur-sm transition-opacity z-[9998]" aria-hidden="true"></div>
             <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-0">
                 <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full z-[10000]" role="dialog">
                     <div class="bg-white px-6 pt-5 pb-4 sm:p-6 sm:pb-4">
@@ -325,6 +333,17 @@
                                     <input type="number" step="0.01" wire:model="nilai_minimum" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="0.00">
                                     @error('nilai_minimum') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                     <p class="text-xs text-gray-500 mt-1">Nilai rata-rata minimum untuk mendaftar (0-100)</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Urutan Tampilan <span class="text-red-500">*</span></label>
+                                    <input type="number" wire:model="urutan" min="1" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="1">
+                                    @error('urutan') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        Urutan jalur untuk ditampilkan di halaman beranda dan jalur pendaftaran
+                                    </p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Warna Tema <span class="text-red-500">*</span></label>

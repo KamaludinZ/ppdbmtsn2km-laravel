@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Display Test - PPDB MTsN 2</title>
+
+    <!-- Test 1: CDN Tailwind -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+
+    <!-- Test 2: Local app.css -->
+    <link rel="stylesheet" href="/css/app.css">
+
+    <!-- Test 3: Fonts -->
+    <link href="https://fonts.bunny.net/css?family=figtree:400,600&display=swap" rel="stylesheet">
+
+    <style>
+        /* Debug styles */
+        .debug-box {
+            border: 2px solid #000;
+            padding: 20px;
+            margin: 20px;
+            background: #f0f0f0;
+        }
+        .status-ok { background: #d4edda; color: #155724; }
+        .status-error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+
+<!-- Test Basic CSS -->
+<div class="debug-box">
+    <h1>🔍 CSS & Display Test Page</h1>
+    <p>If you can read this, HTML is loading correctly.</p>
+</div>
+
+<!-- Test Tailwind Classes -->
+<div class="container mx-auto p-8">
+    <h2 class="text-3xl font-bold mb-4">1. Tailwind CSS Test</h2>
+
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div class="bg-green-500 text-white p-4 rounded">
+            <h3 class="text-xl font-semibold">Green Box</h3>
+            <p>If this is GREEN with white text, Tailwind works!</p>
+        </div>
+
+        <div class="bg-blue-500 text-white p-4 rounded">
+            <h3 class="text-xl font-semibold">Blue Box</h3>
+            <p>If this is BLUE with white text, Tailwind works!</p>
+        </div>
+
+        <div class="bg-red-500 text-white p-4 rounded">
+            <h3 class="text-xl font-semibold">Red Box</h3>
+            <p>If this is RED with white text, Tailwind works!</p>
+        </div>
+    </div>
+
+    <div class="mt-8 p-6 bg-white rounded-lg shadow-lg">
+        <h2 class="text-2xl font-bold text-gray-800 mb-4">2. Component Test</h2>
+
+        <!-- Buttons -->
+        <div class="space-y-4">
+            <div>
+                <button class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+                    Primary Button
+                </button>
+                <button class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded ml-2">
+                    Secondary Button
+                </button>
+            </div>
+
+            <!-- Form -->
+            <div>
+                <label class="block text-gray-700 text-sm font-bold mb-2">
+                    Test Input
+                </label>
+                <input class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" type="text" placeholder="Type here...">
+            </div>
+
+            <!-- Alert -->
+            <div class="bg-blue-100 border-l-4 border-blue-500 text-blue-700 p-4">
+                <p class="font-bold">Info Alert</p>
+                <p>This should have blue styling.</p>
+            </div>
+
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4">
+                <p class="font-bold">Error Alert</p>
+                <p>This should have red styling.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Test -->
+    <div class="mt-8 overflow-hidden shadow-lg rounded-lg">
+        <table class="min-w-full">
+            <thead class="bg-gray-100">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Feature
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        Status
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="bg-white divide-y divide-gray-200">
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">Tailwind CSS</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            Working
+                        </span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="px-6 py-4 whitespace-nowrap">Responsive Grid</td>
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            Working
+                        </span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Alpine.js Test -->
+    <div class="mt-8 p-6 bg-gray-100 rounded-lg">
+        <h2 class="text-2xl font-bold mb-4">3. Alpine.js Test</h2>
+        <div x-data="{ open: false }">
+            <button @click="open = !open" class="bg-purple-500 text-white px-4 py-2 rounded">
+                Toggle Content
+            </button>
+            <div x-show="open" class="mt-4 p-4 bg-white rounded shadow">
+                <p>✅ Alpine.js is working! This content toggles.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Font Test -->
+    <div class="mt-8 p-6 bg-white rounded-lg shadow">
+        <h2 class="text-2xl font-bold mb-4">4. Font Test</h2>
+        <p style="font-family: 'Figtree', sans-serif;" class="text-lg">
+            This text uses Figtree font (from Bunny CDN)
+        </p>
+        <p style="font-family: 'Inter', sans-serif;" class="text-lg">
+            This text uses Inter font
+        </p>
+        <p class="text-lg">
+            This text uses default font stack
+        </p>
+    </div>
+</div>
+
+<!-- JavaScript Tests -->
+<div class="container mx-auto p-8">
+    <div class="bg-white rounded-lg shadow-lg p-6">
+        <h2 class="text-2xl font-bold mb-4">5. JavaScript Test</h2>
+        <div id="js-test" class="p-4 bg-gray-100 rounded">
+            <p>JavaScript status: <span id="js-status">Checking...</span></p>
+        </div>
+
+        <div class="mt-4">
+            <h3 class="font-bold">Console Check:</h3>
+            <p>Open browser console (F12) and check for errors</p>
+            <button onclick="runJsTest()" class="bg-blue-500 text-white px-4 py-2 rounded mt-2">
+                Run JS Test
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Load Alpine.js -->
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.3/cdn.min.js"></script>
+
+<!-- Test Scripts -->
+<script>
+    // Check if JavaScript is working
+    document.getElementById('js-status').innerHTML = '<span style="color: green;">✅ Working</span>';
+
+    function runJsTest() {
+        console.log('=== JavaScript Test Results ===');
+
+        // Test various features
+        const tests = {
+            'DOM Loaded': document.readyState === 'complete' || document.readyState === 'interactive',
+            'Alpine.js': typeof Alpine !== 'undefined',
+            'Fetch API': typeof fetch !== 'undefined',
+            'LocalStorage': typeof localStorage !== 'undefined',
+            'CSS Loaded': document.styleSheets.length > 0
+        };
+
+        console.table(tests);
+
+        // Check for specific CSS files
+        console.log('=== Stylesheets Loaded ===');
+        for (let i = 0; i < document.styleSheets.length; i++) {
+            const sheet = document.styleSheets[i];
+            console.log(`${i + 1}. ${sheet.href || 'Inline styles'}`);
+        }
+
+        // Check for console errors
+        console.log('=== Check for Errors Above ===');
+
+        alert('Check browser console for detailed results!');
+    }
+
+    // Auto-run basic test on load
+    window.addEventListener('DOMContentLoaded', function() {
+        console.log('Page loaded successfully');
+
+        // Check critical resources
+        if (typeof Alpine === 'undefined') {
+            console.error('❌ Alpine.js not loaded!');
+        } else {
+            console.log('✅ Alpine.js loaded');
+        }
+    });
+</script>
+
+<!-- Status Summary -->
+<div class="fixed bottom-4 right-4 bg-white rounded-lg shadow-lg p-4" style="min-width: 200px;">
+    <h3 class="font-bold text-sm mb-2">Quick Status:</h3>
+    <div class="text-xs space-y-1">
+        <div>CSS: <span id="css-check" class="font-semibold">Checking...</span></div>
+        <div>JS: <span id="js-check" class="font-semibold">Checking...</span></div>
+        <div>Alpine: <span id="alpine-check" class="font-semibold">Checking...</span></div>
+    </div>
+</div>
+
+<script>
+    // Quick status check
+    setTimeout(() => {
+        // Check CSS
+        const hasStyles = document.querySelector('.bg-green-500');
+        const cssStatus = hasStyles && window.getComputedStyle(hasStyles).backgroundColor !== 'rgba(0, 0, 0, 0)';
+        document.getElementById('css-check').innerHTML = cssStatus ? '✅ OK' : '❌ Failed';
+        document.getElementById('css-check').style.color = cssStatus ? 'green' : 'red';
+
+        // Check JS
+        document.getElementById('js-check').innerHTML = '✅ OK';
+        document.getElementById('js-check').style.color = 'green';
+
+        // Check Alpine
+        const alpineStatus = typeof Alpine !== 'undefined';
+        document.getElementById('alpine-check').innerHTML = alpineStatus ? '✅ OK' : '❌ Failed';
+        document.getElementById('alpine-check').style.color = alpineStatus ? 'green' : 'red';
+    }, 1000);
+</script>
+
+</body>
+</html>

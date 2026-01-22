@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Register Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6">
+        <h1 class="text-2xl font-bold mb-4">Test Register Form</h1>
+
+        <div class="mb-6">
+            <h2 class="text-lg font-semibold mb-2">Test Checklist:</h2>
+            <ol class="list-decimal list-inside space-y-2">
+                <li>Buka halaman /daftar</li>
+                <li>Klik salah satu jalur pendaftaran</li>
+                <li>Pastikan jalur yang diklik ter-highlight dengan warna dan tanda centang</li>
+                <li>Pastikan tombol "Lanjutkan" berubah dari abu-abu ke hijau</li>
+                <li>Klik tombol "Lanjutkan"</li>
+                <li>Jika berhasil, Anda akan pindah ke Step 2 (Input Nilai)</li>
+            </ol>
+        </div>
+
+        <div class="mb-6">
+            <h2 class="text-lg font-semibold mb-2">Troubleshooting:</h2>
+            <ul class="list-disc list-inside space-y-2">
+                <li>Jika tombol masih abu-abu setelah pilih jalur, refresh halaman (F5)</li>
+                <li>Buka Console browser (F12) dan lihat apakah ada error</li>
+                <li>Pastikan JavaScript tidak diblokir oleh browser</li>
+                <li>Clear browser cache (Ctrl+Shift+Delete)</li>
+            </ul>
+        </div>
+
+        <div class="mb-6">
+            <h2 class="text-lg font-semibold mb-2">Debug Info:</h2>
+            <div class="bg-gray-100 p-4 rounded">
+                <p>Untuk melihat debug info di browser console:</p>
+                <ol class="list-decimal list-inside mt-2">
+                    <li>Buka Console (F12)</li>
+                    <li>Saat klik jalur, akan muncul: "Selected Jalur ID: [nomor]"</li>
+                    <li>Cek tab Network untuk melihat request Livewire</li>
+                </ol>
+            </div>
+        </div>
+
+        <a href="/daftar" class="inline-block bg-blue-500 text-white px-6 py-2 rounded hover:bg-blue-600">
+            Test Halaman Daftar
+        </a>
+    </div>
+</body>
+</html>

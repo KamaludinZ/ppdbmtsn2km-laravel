@@ -1,0 +1,109 @@
+{{-- Flexible Asset Loader Component --}}
+@php
+    $assetMode = config('assets.mode', 'local');
+    $isLocal = app()->environment('local');
+
+    // FORCE disable Vite in production
+    $useVite = false; // Disabled for production readiness
+
+    // Uncomment below ONLY if you want Vite in local development
+    // $useVite = $isLocal && config('assets.use_vite_in_dev', false);
+@endphp
+
+{{-- Preconnect untuk performa --}}
+<link rel="preconnect" href="https://cdnjs.cloudflare.com">
+<link rel="preconnect" href="https://fonts.bunny.net">
+
+{{-- Font Loading (selalu dari CDN untuk konsistensi) --}}
+<link href="https://fonts.bunny.net/css?family=figtree:300,400,500,600,700&display=swap" rel="stylesheet">
+<link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700&display=swap" rel="stylesheet">
+
+{{-- CSS Loading --}}
+@if($useVite)
+    {{-- Development dengan Vite --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+@else
+    {{-- Production atau Non-Vite Mode --}}
+    @if($assetMode === 'cdn' || $assetMode === 'mixed')
+        {{-- Tailwind dari Cloudflare CDN --}}
+        <link rel="stylesheet" href="{{ config('assets.cdn.tailwind') }}">
+    @endif
+
+    {{-- Local Production CSS --}}
+    <link rel="stylesheet" href="{{ asset(config('assets.local.css')) }}?v={{ config('assets.version') }}">
+
+    {{-- Additional CSS files if they exist --}}
+    @if(file_exists(public_path('css/display-fix.css')))
+        <link rel="stylesheet" href="{{ asset('css/display-fix.css') }}?v={{ config('assets.version') }}">
+    @endif
+
+    @if(file_exists(public_path('css/enhanced-display-fix.css')))
+        <link rel="stylesheet" href="{{ asset('css/enhanced-display-fix.css') }}?v={{ config('assets.version') }}">
+    @endif
+@endif
+
+{{-- Alpine.js (sebelum Livewire) --}}
+@if(!$useVite)
+    @if($assetMode === 'cdn' || $assetMode === 'mixed')
+        <script defer src="{{ config('assets.cdn.alpine') }}"></script>
+    @else
+        <script defer src="{{ asset('js/alpine.min.js') }}"></script>
+    @endif
+@endif
+
+{{-- Livewire Styles --}}
+@livewireStyles
+
+{{-- Additional inline styles untuk critical CSS --}}
+<style>
+    /* Critical CSS untuk prevent FOUC */
+    [x-cloak] { display: none !important; }
+    [wire\:loading] { display: inline-block; }
+    [wire\:loading].hidden { display: none !important; }
+
+    /* Loading state */
+    .livewire-loading {
+        opacity: 0.5;
+        pointer-events: none;
+        transition: opacity 0.3s ease;
+    }
+</style>
+
+{{-- JavaScript Loading --}}
+@if(!$useVite)
+    {{-- Countdown function untuk Alpine.js --}}
+    @if(file_exists(public_path('js/countdown-function.js')))
+        <script src="{{ asset('js/countdown-function.js') }}?v={{ config('assets.version') }}"></script>
+    @endif
+
+    {{-- Main application JS --}}
+    <script src="{{ asset(config('assets.local.js')) }}?v={{ config('assets.version') }}" defer></script>
+@endif
+
+{{-- Fallback untuk CDN failure --}}
+@if(config('assets.enable_fallback') && ($assetMode === 'cdn' || $assetMode === 'mixed'))
+<script>
+    // Tailwind CSS fallback
+    (function() {
+        var link = document.querySelector('link[href*="tailwindcss"]');
+        if (link) {
+            link.onerror = function() {
+                var fallback = document.createElement('link');
+                fallback.rel = 'stylesheet';
+                fallback.href = '{{ asset('css/tailwind.min.css') }}';
+                document.head.appendChild(fallback);
+            };
+        }
+    })();
+
+    // Alpine.js fallback
+    window.addEventListener('DOMContentLoaded', function() {
+        if (typeof Alpine === 'undefined') {
+            var script = document.createElement('script');
+            script.src = '{{ asset('js/alpine.min.js') }}';
+            script.defer = true;
+            document.head.appendChild(script);
+        }
+    });
+</script>
+@endif

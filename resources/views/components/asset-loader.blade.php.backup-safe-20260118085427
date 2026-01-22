@@ -1,0 +1,87 @@
+{{-- Smart Asset Loader Component --}}
+{{-- Automatically switches between Vite (dev) and static assets (production) --}}
+@php
+    $assetMode = config('assets.mode', 'local');
+    $isLocal = app()->environment('local');
+
+    // FORCE disable Vite in production
+    $useVite = false; // Disabled for production readiness
+
+    // Uncomment below ONLY if you want Vite in local development
+    // $useVite = $isLocal && config('assets.use_vite_in_dev', false);
+@endphp
+
+{{-- Preconnect for performance --}}
+<link rel="preconnect" href="https://fonts.bunny.net">
+@if(!$useVite)
+    <link rel="preconnect" href="https://cdn.jsdelivr.net">
+@endif
+
+{{-- Fonts (always from CDN for consistency) --}}
+<link href="https://fonts.bunny.net/css?family=figtree:300,400,500,600,700&display=swap" rel="stylesheet">
+<link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700&display=swap" rel="stylesheet">
+
+@if($useVite)
+    {{-- Development Mode with Vite --}}
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
+@else
+    {{-- Production Mode with Static Assets --}}
+
+    {{-- CSS Loading --}}
+    @if($isProduction && file_exists(public_path('css/app-production-final.css')))
+        <link rel="stylesheet" href="{{ asset('css/app-production-final.css') }}?v={{ filemtime(public_path('css/app-production-final.css')) }}">
+    @elseif(file_exists(public_path('css/app-production.css')))
+        <link rel="stylesheet" href="{{ asset('css/app-production.css') }}?v={{ filemtime(public_path('css/app-production.css')) }}">
+    @elseif(file_exists(public_path('css/app.css')))
+        <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
+    @else
+        {{-- Fallback to CDN Tailwind --}}
+        <script src="https://cdn.tailwindcss.com"></script>
+    @endif
+
+    {{-- Additional CSS fixes if they exist --}}
+    @if(file_exists(public_path('css/display-fix.css')))
+        <link rel="stylesheet" href="{{ asset('css/display-fix.css') }}">
+    @endif
+
+    {{-- Alpine.js --}}
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
+    {{-- Axios (if needed) --}}
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+    {{-- JavaScript Loading --}}
+    @if($isProduction && file_exists(public_path('js/app-production-final.js')))
+        <script src="{{ asset('js/app-production-final.js') }}?v={{ filemtime(public_path('js/app-production-final.js')) }}" defer></script>
+    @elseif(file_exists(public_path('js/app.js')))
+        <script src="{{ asset('js/app.js') }}?v={{ filemtime(public_path('js/app.js')) }}" defer></script>
+    @endif
+
+    {{-- Countdown function --}}
+    @if(file_exists(public_path('js/countdown-function.js')))
+        <script src="{{ asset('js/countdown-function.js') }}"></script>
+    @endif
+@endif
+
+{{-- Livewire Styles (always needed) --}}
+@livewireStyles
+
+{{-- Critical CSS --}}
+<style>
+    [x-cloak] { display: none !important; }
+    [wire\:loading] { display: inline-block; }
+    [wire\:loading].hidden { display: none !important; }
+    body { font-family: 'Figtree', system-ui, sans-serif; }
+</style>
+
+{{-- Development Helper --}}
+@if($isLocal && !$isProduction)
+    <script>
+        console.log('Asset Loader Mode:', @json([
+            'environment' => $appEnv,
+            'useVite' => $useVite,
+            'hotFileExists' => file_exists(public_path('hot')),
+            'productionAssets' => $useProductionAssets
+        ]));
+    </script>
+@endif

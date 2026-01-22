@@ -6,6 +6,10 @@ use App\Models\Pendaftar;
 use App\Models\JalurPendaftaran;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
+use App\Exports\PendaftarExport;
+use App\Exports\DaftarUlangExport;
+use App\Exports\SeragamExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class Laporan extends Component
 {
@@ -59,9 +63,11 @@ class Laporan extends Component
         $stats = [
             'total' => $totalPendaftar,
             'menunggu' => (clone $query)->where('status_pendaftaran', 'menunggu_verifikasi')->count(),
-            'lulus' => (clone $query)->where('status_pendaftaran', 'data_disetujui')->count(),
-            'tidak_lulus' => (clone $query)->where('status_pendaftaran', 'data_ditolak')->count(),
-            'cadangan' => (clone $query)->where('status_pendaftaran', 'lengkapi_data')->count(),
+            'disetujui' => (clone $query)->where('status_pendaftaran', 'data_disetujui')->count(),
+            'lulus' => (clone $query)->where('status_pendaftaran', 'lulus')->count(),
+            'tidak_lulus' => (clone $query)->where('status_pendaftaran', 'tidak_lulus')->count(),
+            'cadangan' => (clone $query)->where('status_pendaftaran', 'cadangan')->count(),
+            'diterima' => (clone $query)->where('status_pendaftaran', 'diterima')->count(),
         ];
 
         // Get per jalur statistics
@@ -109,16 +115,44 @@ class Laporan extends Component
 
     public function exportDataLengkap()
     {
-        session()->flash('message', 'Export Data Lengkap sedang diproses...');
+        // Export complete data of applicants
+        $fileName = 'data_pendaftar_lengkap_' . date('Y-m-d_His') . '.xlsx';
+
+        return Excel::download(
+            new PendaftarExport(
+                $this->filterJalur,
+                $this->filterStatus,
+                null
+            ),
+            $fileName
+        );
     }
 
     public function exportDaftarUlang()
     {
-        session()->flash('message', 'Export Daftar Ulang sedang diproses...');
+        // Export re-registration data
+        $fileName = 'data_daftar_ulang_' . date('Y-m-d_His') . '.xlsx';
+
+        return Excel::download(
+            new DaftarUlangExport(
+                $this->filterStatus,
+                null
+            ),
+            $fileName
+        );
     }
 
     public function exportSeragam()
     {
-        session()->flash('message', 'Export Data Seragam sedang diproses...');
+        // Export uniform size data
+        $fileName = 'data_seragam_' . date('Y-m-d_His') . '.xlsx';
+
+        return Excel::download(
+            new SeragamExport(
+                $this->filterStatus,
+                null
+            ),
+            $fileName
+        );
     }
 }

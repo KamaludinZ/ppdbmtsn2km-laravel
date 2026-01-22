@@ -8,6 +8,7 @@ use App\Models\User;
 use App\Models\Setting;
 use App\Services\EmailService;
 use App\Services\WhatsAppGatewayService;
+use App\Services\FileNamingService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Component;
@@ -17,25 +18,34 @@ class Register extends Component
 {
     use WithFileUploads;
 
+    protected $listeners = ['selectJalur' => 'selectJalur'];
+
     // Multi-step tracker
     public $currentStep = 1;
     public $totalSteps = 3;
 
+    // Computed property untuk status jalur
+    public function getJalurDipilihProperty()
+    {
+        return !empty($this->jalur_pendaftaran_id);
+    }
+
     // Step 1: Pilih Jalur
     public $jalur_pendaftaran_id;
     public $selectedJalur;
+    public $hasSelectedJalur = false;
 
     // Step 2: Nilai Rapor
-    public $nilai_b_indo_5_1;
-    public $nilai_matematika_5_1;
-    public $nilai_ipa_5_1;
-    public $nilai_b_indo_5_2;
-    public $nilai_matematika_5_2;
-    public $nilai_ipa_5_2;
-    public $nilai_b_indo_6_1;
-    public $nilai_matematika_6_1;
-    public $nilai_ipa_6_1;
-    public $file_rapor;
+    public $nilai_b_indo_5_1 = null;
+    public $nilai_matematika_5_1 = null;
+    public $nilai_ipa_5_1 = null;
+    public $nilai_b_indo_5_2 = null;
+    public $nilai_matematika_5_2 = null;
+    public $nilai_ipa_5_2 = null;
+    public $nilai_b_indo_6_1 = null;
+    public $nilai_matematika_6_1 = null;
+    public $nilai_ipa_6_1 = null;
+    public $file_rapor = null;
     public $rata_rata_nilai = 0;
 
     // Step 3: Validasi (automatic)
@@ -43,23 +53,23 @@ class Register extends Component
     public $validationMessage = '';
 
     // Step 4: Data Pribadi
-    public $nisn;
-    public $nama_lengkap;
-    public $tempat_lahir;
-    public $tanggal_lahir;
-    public $jenis_kelamin;
+    public $nisn = '';
+    public $nama_lengkap = '';
+    public $tempat_lahir = '';
+    public $tanggal_lahir = '';
+    public $jenis_kelamin = '';
     public $agama = 'Islam';
-    public $alamat;
-    public $telepon_ortu;
-    public $email;
-    public $password;
-    public $password_confirmation;
+    public $alamat = '';
+    public $telepon_ortu = '';
+    public $email = '';
+    public $password = '';
+    public $password_confirmation = '';
 
     // Data Sekolah Asal
-    public $jenis_sekolah_asal;
-    public $nsm_sekolah_asal;
-    public $npsn_sekolah_asal;
-    public $asal_sekolah;
+    public $jenis_sekolah_asal = '';
+    public $nsm_sekolah_asal = '';
+    public $npsn_sekolah_asal = '';
+    public $asal_sekolah = '';
 
     protected function rules()
     {
@@ -118,8 +128,8 @@ class Register extends Component
                 ],
                 'password' => 'required|min:8|confirmed',
                 'jenis_sekolah_asal' => 'required|in:madrasah,umum',
-                'nsm_sekolah_asal' => 'nullable|string|size:12',
-                'npsn_sekolah_asal' => 'nullable|string|size:8',
+                'nsm_sekolah_asal' => 'nullable|digits:12',
+                'npsn_sekolah_asal' => 'nullable|digits:8',
                 'asal_sekolah' => 'required|string|max:255',
             ];
         }
@@ -155,6 +165,24 @@ class Register extends Component
             session()->flash('error', 'Pendaftaran belum dibuka atau sudah ditutup');
             return redirect()->to('/');
         }
+
+        // Initialize properties
+        $this->currentStep = 1;
+        $this->jalur_pendaftaran_id = null;
+        $this->selectedJalur = null;
+        $this->hasSelectedJalur = false;
+
+        // Initialize nilai properties
+        $this->nilai_b_indo_5_1 = null;
+        $this->nilai_matematika_5_1 = null;
+        $this->nilai_ipa_5_1 = null;
+        $this->nilai_b_indo_5_2 = null;
+        $this->nilai_matematika_5_2 = null;
+        $this->nilai_ipa_5_2 = null;
+        $this->nilai_b_indo_6_1 = null;
+        $this->nilai_matematika_6_1 = null;
+        $this->nilai_ipa_6_1 = null;
+        $this->rata_rata_nilai = 0;
     }
 
     public function updated($propertyName)
@@ -168,6 +196,33 @@ class Register extends Component
 
     public function nextStep()
     {
+        // Log for debugging
+        \Log::info('nextStep called', [
+            'currentStep' => $this->currentStep,
+            'jalur_pendaftaran_id' => $this->jalur_pendaftaran_id,
+        ]);
+
+        // Validate step 1 - Must select jalur
+        if ($this->currentStep == 1) {
+            // Pastikan jalur_pendaftaran_id telah diisi
+            if (!$this->jalur_pendaftaran_id) {
+                $this->addError('jalur_pendaftaran_id', 'Silahkan pilih jalur pendaftaran terlebih dahulu.');
+                session()->flash('error', 'Silahkan pilih jalur pendaftaran terlebih dahulu.');
+                return;
+            }
+
+            // Verifikasi bahwa jalur yang dipilih benar-benar ada di database
+            $jalur = JalurPendaftaran::find($this->jalur_pendaftaran_id);
+            if (!$jalur) {
+                $this->addError('jalur_pendaftaran_id', 'Jalur yang dipilih tidak valid.');
+                session()->flash('error', 'Jalur yang dipilih tidak valid.');
+                return;
+            }
+
+            // Load selected jalur data
+            $this->selectedJalur = $jalur;
+        }
+
         if ($this->currentStep == 2) {
             // Validate nilai rapor and file upload
             $this->validate([
@@ -191,16 +246,19 @@ class Register extends Component
                 session()->flash('error', 'Nilai Anda belum memenuhi syarat minimum jalur yang dipilih.');
                 return; // Don't proceed if validation fails
             }
-        } else {
+        } else if ($this->currentStep != 1) {
             $this->validate();
         }
 
-        if ($this->currentStep == 1) {
-            // Load selected jalur data
-            $this->selectedJalur = JalurPendaftaran::find($this->jalur_pendaftaran_id);
+        // Pastikan tidak melewati batas jumlah langkah
+        if ($this->currentStep < $this->totalSteps) {
+            $this->currentStep++;
         }
 
-        $this->currentStep++;
+        // Log perubahan langkah
+        \Log::info('nextStep completed', [
+            'newCurrentStep' => $this->currentStep,
+        ]);
     }
 
     public function previousStep()
@@ -255,21 +313,66 @@ class Register extends Component
 
     public $showConfirmationModal = false;
 
+    public function updatedJalurPendaftaranId($value)
+    {
+        \Log::info('updatedJalurPendaftaranId called', ['value' => $value]);
+
+        if ($value) {
+            $this->hasSelectedJalur = true;
+            $this->selectedJalur = JalurPendaftaran::find($value);
+
+            // Clear any errors
+            $this->resetErrorBag('jalur_pendaftaran_id');
+
+            \Log::info('Jalur loaded', ['jalur' => $this->selectedJalur?->nama]);
+        } else {
+            $this->hasSelectedJalur = false;
+            $this->selectedJalur = null;
+        }
+    }
+
     public function selectJalur($jalurId)
     {
+        // Set the selected jalur ID
         $this->jalur_pendaftaran_id = $jalurId;
+
+        // Set flag that jalur has been selected
+        $this->hasSelectedJalur = true;
+
+        // Load the complete jalur object
         $this->selectedJalur = JalurPendaftaran::find($jalurId);
 
-        // Reset nilai-nilai rapor ketika jalur berubah
-        $this->reset(['nilai_b_indo_5_1', 'nilai_matematika_5_1', 'nilai_ipa_5_1',
-                     'nilai_b_indo_5_2', 'nilai_matematika_5_2', 'nilai_ipa_5_2',
-                     'nilai_b_indo_6_1', 'nilai_matematika_6_1', 'nilai_ipa_6_1',
-                     'file_rapor']);
+        // Clear any existing errors on jalur_pendaftaran_id
+        $this->resetErrorBag('jalur_pendaftaran_id');
 
-        // Reset status validasi
-        $this->isValid = false;
-        $this->validationMessage = '';
-        $this->rata_rata_nilai = 0;
+        // Log for debugging
+        \Log::info('selectJalur method called', [
+            'jalurId' => $jalurId,
+            'jalur_pendaftaran_id' => $this->jalur_pendaftaran_id,
+            'hasSelectedJalur' => $this->hasSelectedJalur,
+            'selectedJalur' => $this->selectedJalur?->nama
+        ]);
+    }
+
+    public function testMethod()
+    {
+        $this->jalur_pendaftaran_id = 999;
+        session()->flash('debug', 'Test method called successfully!');
+    }
+
+    public function setJalurPendaftaran($id)
+    {
+        $this->jalur_pendaftaran_id = $id;
+        $this->hasSelectedJalur = true;
+        $this->selectedJalur = JalurPendaftaran::find($id);
+
+        // Log untuk debugging
+        \Log::info('setJalurPendaftaran called', [
+            'id' => $id,
+            'jalur_pendaftaran_id' => $this->jalur_pendaftaran_id,
+            'hasSelectedJalur' => $this->hasSelectedJalur,
+            'selectedJalur' => $this->selectedJalur?->nama
+        ]);
     }
 
     public function confirmSubmit()
@@ -356,18 +459,11 @@ class Register extends Component
                 'role' => 'pendaftar',
             ]);
 
-            // Upload file rapor
-            $raporPath = null;
-            if ($this->file_rapor) {
-                // Store with original extension
-                $raporPath = $this->file_rapor->store('rapor', 'public');
-            }
-
             // Generate nomor pendaftaran
             $jalur = JalurPendaftaran::find($this->jalur_pendaftaran_id);
             $nomorPendaftaran = $jalur->generateNomorPendaftaran();
 
-            // Create Pendaftar
+            // Create Pendaftar first to get ID
             $pendaftar = Pendaftar::create([
                 'user_id' => $user->id,
                 'jalur_pendaftaran_id' => $this->jalur_pendaftaran_id,
@@ -379,6 +475,7 @@ class Register extends Component
                 'jenis_kelamin' => $this->jenis_kelamin,
                 'agama' => $this->agama,
                 'alamat' => $this->alamat,
+                'telepon' => $this->telepon_ortu, // Field telepon diisi dengan nilai telepon_ortu
                 'telepon_ortu' => $this->telepon_ortu,
                 'email' => $this->email,
                 'jenis_sekolah_asal' => $this->jenis_sekolah_asal,
@@ -394,11 +491,31 @@ class Register extends Component
                 'nilai_b_indo_6_1' => $this->nilai_b_indo_6_1,
                 'nilai_matematika_6_1' => $this->nilai_matematika_6_1,
                 'nilai_ipa_6_1' => $this->nilai_ipa_6_1,
-                'file_rapor' => $raporPath,
+                'file_rapor' => null, // Will be updated after upload
                 'nilai_rata_rata' => $this->rata_rata_nilai,
                 'status_pendaftaran' => 'menunggu_verifikasi',
                 'tanggal_daftar' => now(),
             ]);
+
+            // Upload file rapor AFTER pendaftar created to get ID for directory
+            if ($this->file_rapor) {
+                $extension = FileNamingService::getFileExtension($this->file_rapor);
+                $customFileName = FileNamingService::generateFileName(
+                    'rapor',
+                    $pendaftar->nomor_pendaftaran,
+                    $extension
+                );
+
+                // Store to PRIVATE storage for security
+                $raporPath = $this->file_rapor->storeAs(
+                    'dokumen/' . $pendaftar->id,
+                    $customFileName,
+                    'private'
+                );
+
+                // Update pendaftar with rapor path
+                $pendaftar->update(['file_rapor' => $raporPath]);
+            }
 
             // Close the confirmation modal
             $this->showConfirmationModal = false;
@@ -560,9 +677,13 @@ class Register extends Component
     public function render()
     {
         $jalurPendaftaran = JalurPendaftaran::aktif()->ordered()->get();
+        $appAcronym = Setting::get('app_acronym', 'SPMBM');
 
         return view('livewire.auth.register', [
             'jalurPendaftaran' => $jalurPendaftaran,
+            'appAcronym' => $appAcronym,
+            'jalur_pendaftaran_id' => $this->jalur_pendaftaran_id,
+            'hasSelectedJalur' => $this->hasSelectedJalur,
         ])->layout('components.layouts.public')->layoutData(['title' => 'Pendaftaran SPMBM']);
     }
 }

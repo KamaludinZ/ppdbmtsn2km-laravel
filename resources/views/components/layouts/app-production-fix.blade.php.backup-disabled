@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+
+    <title>{{ config('app.name', 'PMBM MTsN 2 Kota Malang') }}</title>
+
+    {{-- Favicon --}}
+    @php
+        $favicon = null;
+        try {
+            $favicon = \App\Models\Setting::get('app_favicon');
+        } catch (\Exception $e) {
+            // Ignore if Settings model doesn't work
+        }
+    @endphp
+
+    @if($favicon)
+        <link rel="icon" type="image/x-icon" href="{{ $favicon }}">
+    @else
+        <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    @endif
+
+    {{-- CRITICAL: Tailwind CSS from CDN --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tailwindcss/2.2.19/tailwind.min.css">
+
+    {{-- Fonts --}}
+    <link rel="preconnect" href="https://fonts.bunny.net">
+    <link href="https://fonts.bunny.net/css?family=figtree:300,400,500,600,700&display=swap" rel="stylesheet">
+    <link href="https://fonts.bunny.net/css?family=inter:300,400,500,600,700&display=swap" rel="stylesheet">
+
+    {{-- Custom Styles --}}
+    <style>
+        /* Critical CSS */
+        [x-cloak] { display: none !important; }
+        [wire\:loading] { display: inline-block; }
+        [wire\:loading].hidden { display: none !important; }
+
+        body {
+            font-family: 'Figtree', 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        .livewire-loading {
+            opacity: 0.5;
+            pointer-events: none;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f3f4f6;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #9ca3af;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+
+        /* Animations */
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @keyframes pulse {
+            50% { opacity: .5; }
+        }
+
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        .animate-pulse {
+            animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+        }
+    </style>
+
+    {{-- Livewire Styles --}}
+    @livewireStyles
+</head>
+<body class="antialiased bg-gray-50">
+    <div class="min-h-screen">
+        <!-- Navigation -->
+        <nav class="bg-white border-b border-gray-200">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between h-16">
+                    <div class="flex">
+                        <div class="flex-shrink-0 flex items-center">
+                            <div class="flex items-center space-x-3">
+                                <div class="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center">
+                                    <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                    </svg>
+                                </div>
+                                <div>
+                                    <h1 class="text-lg font-bold text-gray-900">MTsN 2 Kota Malang</h1>
+                                    <p class="text-xs text-gray-600">PPDB 2025</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Page Content -->
+        <main>
+            {{ $slot }}
+        </main>
+    </div>
+
+    {{-- IMPORTANT: JavaScript at the bottom --}}
+
+    {{-- Define countdown function BEFORE Alpine --}}
+    <script>
+        // Countdown function for Alpine.js
+        window.countdown = function(targetDate) {
+            return {
+                days: '00',
+                hours: '00',
+                minutes: '00',
+                seconds: '00',
+                interval: null,
+
+                init() {
+                    this.updateCountdown();
+                    this.interval = setInterval(() => {
+                        this.updateCountdown();
+                    }, 1000);
+                },
+
+                updateCountdown() {
+                    const target = new Date(targetDate).getTime();
+                    const now = new Date().getTime();
+                    const distance = target - now;
+
+                    if (distance < 0) {
+                        this.days = '00';
+                        this.hours = '00';
+                        this.minutes = '00';
+                        this.seconds = '00';
+                        if (this.interval) {
+                            clearInterval(this.interval);
+                        }
+                        return;
+                    }
+
+                    this.days = String(Math.floor(distance / (1000 * 60 * 60 * 24))).padStart(2, '0');
+                    this.hours = String(Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))).padStart(2, '0');
+                    this.minutes = String(Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60))).padStart(2, '0');
+                    this.seconds = String(Math.floor((distance % (1000 * 60)) / 1000)).padStart(2, '0');
+                }
+            };
+        };
+
+        // Additional helper functions
+        console.log('App template loaded successfully');
+    </script>
+
+    {{-- Alpine.js from CDN --}}
+    <script defer src="https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.3/cdn.min.js"></script>
+
+    {{-- Livewire Scripts --}}
+    @livewireScripts
+
+    {{-- App JS if exists --}}
+    @if(file_exists(public_path('js/app.js')))
+        <script src="{{ asset('js/app.js') }}" defer></script>
+    @endif
+
+    {{-- Stack for additional scripts --}}
+    @stack('scripts')
+
+    {{-- Verification Script --}}
+    <script>
+        // Verify libraries are loaded
+        window.addEventListener('DOMContentLoaded', function() {
+            setTimeout(() => {
+                if (typeof Alpine === 'undefined') {
+                    console.error('Alpine.js not loaded! Loading fallback...');
+                    var script = document.createElement('script');
+                    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/alpinejs/3.13.3/cdn.min.js';
+                    document.head.appendChild(script);
+                }
+                console.log('Libraries check:', {
+                    Alpine: typeof Alpine !== 'undefined',
+                    Livewire: typeof Livewire !== 'undefined',
+                    countdown: typeof window.countdown === 'function'
+                });
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

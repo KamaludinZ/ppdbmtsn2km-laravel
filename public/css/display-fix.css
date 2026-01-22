@@ -1,0 +1,109 @@
+/* CSS Fix for Display Issues */
+/* This file addresses the CSS parsing errors and styling issues */
+
+/* Fix for ruleset ignored due to bad selector */
+[x-cloak] { 
+    display: none !important; 
+}
+
+/* Fix for Tailwind CSS loading issues */
+/* Ensure smooth loading without flash of unstyled content */
+body {
+    opacity: 1;
+    transition: opacity 0.1s ease-in-out;
+}
+
+/* Fix for any CSS parsing errors */
+/* Reset any problematic styles that might be causing display issues */
+* {
+    box-sizing: border-box;
+}
+
+/* Ensure proper font loading */
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 400;
+    font-display: swap;
+    src: url('https://fonts.bunny.net/inter/files/inter-latin-400-normal.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 500;
+    font-display: swap;
+    src: url('https://fonts.bunny.net/inter/files/inter-latin-500-normal.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 600;
+    font-display: swap;
+    src: url('https://fonts.bunny.net/inter/files/inter-latin-600-normal.woff2') format('woff2');
+}
+
+@font-face {
+    font-family: 'Inter';
+    font-style: normal;
+    font-weight: 700;
+    font-display: swap;
+    src: url('https://fonts.bunny.net/inter/files/inter-latin-700-normal.woff2') format('woff2');
+}
+
+/* Fix for any layout issues */
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* Ensure proper responsive behavior */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 0.5rem;
+    }
+}
+
+/* Fix for any potential conflicts with Tailwind */
+.text-gray-900 {
+    color: #1f2937;
+}
+
+.bg-white {
+    background-color: #fff;
+}
+
+.border-gray-200 {
+    border-color: #e5e7eb;
+}
+
+/* Ensure proper display of countdown elements */
+.countdown-container {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+.countdown-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 0.5rem;
+    border: 1px solid #d1d5db;
+}
+
+.countdown-value {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #1f2937;
+}
+
+.countdown-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-transform: uppercase;
+}

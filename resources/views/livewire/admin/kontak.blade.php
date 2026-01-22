@@ -166,7 +166,11 @@
                     </svg>
                     <h3 class="text-lg font-bold text-white uppercase tracking-wider">Daftar Link Terkait (Footer)</h3>
                 </div>
-                <button wire:click="createLink" class="inline-flex items-center px-4 py-2 bg-white text-emerald-600 rounded-lg font-bold uppercase tracking-wider text-xs hover:bg-emerald-50 transition shadow-sm active:scale-95">
+                <button
+                    wire:click="createLink"
+                    wire:loading.attr="disabled"
+                    wire:target="createLink, editLink, deleteLink, storeLink, updateLink"
+                    class="inline-flex items-center px-4 py-2 bg-white text-emerald-600 rounded-lg font-bold uppercase tracking-wider text-xs hover:bg-emerald-50 transition shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
@@ -186,7 +190,7 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($linkTerkaits as $link)
-                            <tr>
+                            <tr wire:key="link-{{ $link->id }}">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $link->urutan }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $link->nama }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-blue-600 italic">
@@ -198,8 +202,21 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button wire:click="editLink({{ $link->id }})" class="text-blue-600 hover:text-blue-900 mr-3 font-bold uppercase tracking-tighter">Edit</button>
-                                    <button wire:click="deleteLink({{ $link->id }})" wire:confirm="Yakin ingin menghapus link ini?" class="text-red-600 hover:text-red-900 font-bold uppercase tracking-tighter">Hapus</button>
+                                    <button
+                                        wire:click="editLink({{ $link->id }})"
+                                        wire:loading.attr="disabled"
+                                        wire:target="editLink, deleteLink, storeLink, updateLink"
+                                        class="text-blue-600 hover:text-blue-900 mr-3 font-bold uppercase tracking-tighter disabled:opacity-50 disabled:cursor-not-allowed">
+                                        Edit
+                                    </button>
+                                    <button
+                                        wire:click="deleteLink({{ $link->id }})"
+                                        wire:confirm="Yakin ingin menghapus link ini?"
+                                        wire:loading.attr="disabled"
+                                        wire:target="editLink, deleteLink, storeLink, updateLink"
+                                        class="text-red-600 hover:text-red-900 font-bold uppercase tracking-tighter disabled:opacity-50 disabled:cursor-not-allowed">
+                                        Hapus
+                                    </button>
                                 </td>
                             </tr>
                         @empty
@@ -221,7 +238,11 @@
                     </svg>
                     <h3 class="text-lg font-bold text-white uppercase tracking-wider">Daftar Kontak Panitia (WA)</h3>
                 </div>
-                <button wire:click="create" class="inline-flex items-center px-4 py-2 bg-white text-blue-600 rounded-lg font-bold uppercase tracking-wider text-xs hover:bg-blue-50 transition shadow-sm active:scale-95">
+                <button
+                    wire:click="create"
+                    wire:loading.attr="disabled"
+                    wire:target="create, edit, delete, store, update"
+                    class="inline-flex items-center px-4 py-2 bg-white text-blue-600 rounded-lg font-bold uppercase tracking-wider text-xs hover:bg-blue-50 transition shadow-sm active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
@@ -242,7 +263,7 @@
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($data as $item)
-                            <tr>
+                            <tr wire:key="kontak-{{ $item->id }}">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $item->urutan }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $item->nama }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $item->nomor_wa }}</td>
@@ -253,8 +274,21 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                    <button wire:click="edit({{ $item->id }})" class="text-blue-600 hover:text-blue-900 mr-3 font-bold uppercase tracking-tighter">Edit</button>
-                                    <button wire:click="delete({{ $item->id }})" wire:confirm="Yakin ingin menghapus kontak ini?" class="text-red-600 hover:text-red-900 font-bold uppercase tracking-tighter">Hapus</button>
+                                    <button
+                                        wire:click="edit({{ $item->id }})"
+                                        wire:loading.attr="disabled"
+                                        wire:target="edit, delete, store, update"
+                                        class="text-blue-600 hover:text-blue-900 mr-3 font-bold uppercase tracking-tighter disabled:opacity-50 disabled:cursor-not-allowed">
+                                        Edit
+                                    </button>
+                                    <button
+                                        wire:click="delete({{ $item->id }})"
+                                        wire:confirm="Yakin ingin menghapus kontak ini?"
+                                        wire:loading.attr="disabled"
+                                        wire:target="edit, delete, store, update"
+                                        class="text-red-600 hover:text-red-900 font-bold uppercase tracking-tighter disabled:opacity-50 disabled:cursor-not-allowed">
+                                        Hapus
+                                    </button>
                                 </td>
                             </tr>
                         @empty
@@ -272,9 +306,13 @@
     
     <!-- Modal Link Terkait -->
     @if($showModalLink)
-        <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-0 overflow-y-auto">
+        <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-0 overflow-y-auto" wire:key="modal-link-{{ $link_id ?? 'new' }}">
             <!-- Backdrop -->
-            <div class="fixed inset-0 bg-black/10 backdrop-blur-sm transition-opacity z-[9998]" wire:click="closeModalLink"></div>
+            <div class="fixed inset-0 bg-black/10 backdrop-blur-sm transition-opacity z-[9998]"
+                 wire:click="closeModalLink"
+                 wire:loading.attr="style"
+                 wire:loading.attr.remove="wire:click"
+                 wire:target="storeLink, updateLink"></div>
 
             <!-- Modal Box -->
             <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full z-[10000] border border-gray-100">
@@ -315,11 +353,20 @@
                         </div>
                     </div>
                     <div class="bg-gray-50 px-8 py-5 flex flex-row-reverse gap-3 border-t border-gray-100">
-                        <button type="submit" class="bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-emerald-700 shadow-lg transform hover:-translate-y-0.5 active:scale-95 transition-all">
+                        <button
+                            type="submit"
+                            wire:loading.attr="disabled"
+                            wire:target="storeLink, updateLink"
+                            class="bg-emerald-600 text-white px-8 py-3 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-emerald-700 shadow-lg transform hover:-translate-y-0.5 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                             <span wire:loading.remove wire:target="storeLink,updateLink">Simpan Link</span>
                             <span wire:loading wire:target="storeLink,updateLink">Proses...</span>
                         </button>
-                        <button type="button" wire:click="closeModalLink" class="bg-white text-gray-700 px-8 py-3 rounded-xl font-bold border border-gray-200 uppercase tracking-widest text-xs hover:bg-gray-100 transition-all active:scale-95">
+                        <button
+                            type="button"
+                            wire:click="closeModalLink"
+                            wire:loading.attr="disabled"
+                            wire:target="storeLink, updateLink"
+                            class="bg-white text-gray-700 px-8 py-3 rounded-xl font-bold border border-gray-200 uppercase tracking-widest text-xs hover:bg-gray-100 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                             Batal
                         </button>
                     </div>
@@ -330,9 +377,13 @@
 
     <!-- Modal Panitia -->
     @if($showModal)
-        <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-0 overflow-y-auto">
+        <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-0 overflow-y-auto" wire:key="modal-kontak-{{ $kontak_id ?? 'new' }}">
             <!-- Backdrop -->
-            <div class="fixed inset-0 bg-black/10 backdrop-blur-sm transition-opacity z-[9998]" wire:click="closeModal"></div>
+            <div class="fixed inset-0 bg-black/10 backdrop-blur-sm transition-opacity z-[9998]"
+                 wire:click="closeModal"
+                 wire:loading.attr="style"
+                 wire:loading.attr.remove="wire:click"
+                 wire:target="store, update"></div>
 
             <!-- Modal Box -->
             <div class="relative bg-white rounded-2xl text-left overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:max-w-lg sm:w-full z-[10000] border border-gray-100">
@@ -378,11 +429,20 @@
                         </div>
                     </div>
                     <div class="bg-gray-50 px-8 py-5 flex flex-row-reverse gap-3 border-t border-gray-100">
-                        <button type="submit" class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-blue-700 shadow-lg transform hover:-translate-y-0.5 active:scale-95 transition-all">
+                        <button
+                            type="submit"
+                            wire:loading.attr="disabled"
+                            wire:target="store, update"
+                            class="bg-blue-600 text-white px-8 py-3 rounded-xl font-bold uppercase tracking-widest text-xs hover:bg-blue-700 shadow-lg transform hover:-translate-y-0.5 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed">
                             <span wire:loading.remove wire:target="store,update">Simpan Kontak</span>
                             <span wire:loading wire:target="store,update">Proses...</span>
                         </button>
-                        <button type="button" wire:click="closeModal" class="bg-white text-gray-700 px-8 py-3 rounded-xl font-bold border border-gray-200 uppercase tracking-widest text-xs hover:bg-gray-100 transition-all active:scale-95">
+                        <button
+                            type="button"
+                            wire:click="closeModal"
+                            wire:loading.attr="disabled"
+                            wire:target="store, update"
+                            class="bg-white text-gray-700 px-8 py-3 rounded-xl font-bold border border-gray-200 uppercase tracking-widest text-xs hover:bg-gray-100 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed">
                             Batal
                         </button>
                     </div>

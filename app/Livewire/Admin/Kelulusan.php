@@ -52,12 +52,12 @@ class Kelulusan extends Component
 
     public function render()
     {
-        // Build base query
-        $baseQuery = Pendaftar::query()->with(['jalurPendaftaran', 'tesPsikologiPendaftar']);
+        // Build base query with optimized eager loading
+        $query = Pendaftar::query()
+            ->select('pendaftar.*') // Only select needed columns
+            ->with(['jalurPendaftaran:id,nama,warna']);
 
-        // Build filtered query (before pagination)
-        $query = clone $baseQuery;
-
+        // Apply filters
         if ($this->search) {
             $query->where(function($q) {
                 $q->where('nama_lengkap', 'like', '%' . $this->search . '%')
@@ -74,21 +74,41 @@ class Kelulusan extends Component
             $query->where('status_pendaftaran', $this->filterStatus);
         }
 
-        // Calculate statistics based on current filters BEFORE pagination
-        $statsQuery = clone $query;
+        // Calculate statistics using single query with groupBy
+        $statsData = Pendaftar::query()
+            ->when($this->search, function ($q) {
+                $q->where(function($subQ) {
+                    $subQ->where('nama_lengkap', 'like', '%' . $this->search . '%')
+                      ->orWhere('nisn', 'like', '%' . $this->search . '%')
+                      ->orWhere('nomor_pendaftaran', 'like', '%' . $this->search . '%');
+                });
+            })
+            ->when($this->filterJalur, fn($q) => $q->where('jalur_pendaftaran_id', $this->filterJalur))
+            ->when($this->filterStatus, fn($q) => $q->where('status_pendaftaran', $this->filterStatus))
+            ->selectRaw("
+                COUNT(*) as total,
+                SUM(CASE WHEN status_pendaftaran IN ('menunggu_verifikasi', 'data_disetujui') THEN 1 ELSE 0 END) as menunggu,
+                SUM(CASE WHEN status_pendaftaran IN ('lulus', 'diterima') THEN 1 ELSE 0 END) as lulus,
+                SUM(CASE WHEN status_pendaftaran IN ('cadangan', 'lengkapi_data') THEN 1 ELSE 0 END) as cadangan,
+                SUM(CASE WHEN status_pendaftaran IN ('tidak_lulus', 'ditolak', 'data_ditolak') THEN 1 ELSE 0 END) as tidak_lulus
+            ")
+            ->first();
 
-        // Stats untuk Status Kelulusan
         $stats = [
-            'total' => $statsQuery->count(),
-            'menunggu' => (clone $statsQuery)->whereIn('status_pendaftaran', ['menunggu_verifikasi', 'data_disetujui'])->count(),
-            'lulus' => (clone $statsQuery)->whereIn('status_pendaftaran', ['lulus', 'diterima'])->count(),
-            'cadangan' => (clone $statsQuery)->whereIn('status_pendaftaran', ['cadangan', 'lengkapi_data'])->count(),
-            'tidak_lulus' => (clone $statsQuery)->whereIn('status_pendaftaran', ['tidak_lulus', 'ditolak', 'data_ditolak'])->count(),
+            'total' => $statsData->total ?? 0,
+            'menunggu' => $statsData->menunggu ?? 0,
+            'lulus' => $statsData->lulus ?? 0,
+            'cadangan' => $statsData->cadangan ?? 0,
+            'tidak_lulus' => $statsData->tidak_lulus ?? 0,
         ];
 
         // Apply sorting and paginate results
         $pendaftar = $this->applySorting($query)->paginate(10);
-        $jalurPendaftaran = JalurPendaftaran::orderBy('nama')->get();
+
+        // Cache jalur pendaftaran
+        $jalurPendaftaran = cache()->remember('jalur_pendaftaran_kelulusan', 3600, function () {
+            return JalurPendaftaran::select('id', 'nama')->orderBy('nama')->get();
+        });
 
         return view('livewire.admin.kelulusan', [
             'pendaftar' => $pendaftar,

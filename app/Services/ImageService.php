@@ -5,6 +5,7 @@ namespace App\Services;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
 use Illuminate\Http\UploadedFile;
+use App\Services\FileNamingService;
 
 class ImageService
 {
@@ -69,16 +70,31 @@ class ImageService
      * @param string $directory
      * @param int $size Square size for profile photo
      * @param int $quality
+     * @param string|null $nomorPendaftaran Nomor pendaftaran untuk nama file sistematis
+     * @param string|null $jenisFoto Jenis foto (foto_profil, foto_3x4, dll)
      * @return string Path file yang disimpan
      */
     public function uploadProfilePhoto(
         UploadedFile $file,
         string $directory = 'photos',
         int $size = 500,
-        int $quality = 80
+        int $quality = 80,
+        ?string $nomorPendaftaran = null,
+        ?string $jenisFoto = 'foto_profil'
     ): string {
-        // Generate unique filename
-        $filename = time() . '_' . uniqid() . '.webp';
+        // Generate filename (sistematis jika nomor pendaftaran disediakan)
+        if ($nomorPendaftaran) {
+            // Format: foto_profil_{nomor_pendaftaran}_{timestamp}.webp
+            $filename = FileNamingService::generateImageFileName(
+                $jenisFoto,
+                $nomorPendaftaran,
+                'webp'
+            );
+        } else {
+            // Fallback ke random filename jika nomor pendaftaran tidak ada
+            $filename = time() . '_' . uniqid() . '.webp';
+        }
+
         $path = $directory . '/' . $filename;
 
         // Load image

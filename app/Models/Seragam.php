@@ -11,6 +11,10 @@ class Seragam extends Model
 
     protected $fillable = [
         'pendaftar_id',
+        'paket_seragam',
+        'opsi_pembayaran_seragam',
+        'bank_seragam',
+        'bukti_pembayaran',
         'tinggi_badan',
         'berat_badan',
         'ukuran_baju',
@@ -20,12 +24,21 @@ class Seragam extends Model
         'panjang_lengan',
         'ukuran_sepatu',
         'ukuran_topi',
+        // Detailed uniform sizes
+        'ukuran_jas',
+        'ukuran_baju_olahraga',
+        'ukuran_celana_olahraga',
+        'ukuran_baju_harian',
+        'ukuran_celana_rok_harian',
+        'ukuran_kopyah',
         'sudah_diukur',
         'sudah_dipesan',
         'sudah_diterima',
         'status_seragam',
         'status_ukuran',
         'catatan',
+        'catatan_seragam',
+        'catatan_ukuran',
         'tanggal_ukur',
         'tanggal_pesan',
         'tanggal_terima',
@@ -33,6 +46,7 @@ class Seragam extends Model
     ];
 
     protected $casts = [
+        'nominal_seragam' => 'array',
         'tinggi_badan' => 'integer',
         'berat_badan' => 'integer',
         'lingkar_dada' => 'integer',

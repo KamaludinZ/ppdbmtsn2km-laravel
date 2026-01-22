@@ -76,7 +76,7 @@
                     <div class="ml-3">
                         <h3 class="text-sm font-medium text-blue-800">Informasi Pembayaran</h3>
                         <div class="mt-2 text-sm text-blue-700">
-                            <p>Pembayaran disesuaikan dengan kemampuan orang tua/wali. Apabila ingin berkomunikasi perihal kompensasi waktu/biaya/lainnya lebih lanjut, dapat dibicarakan dengan komite madrasah untuk menemukan solusi secara kesepakatan bersama. Waktu sesuai jadwal yang disampaikan oleh pihak komite madrasah.</p>
+                            <p>{{ $paymentInfoText }}</p>
                         </div>
                     </div>
                 </div>

@@ -17,23 +17,10 @@
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
-
-    <!-- Styles & Scripts -->
-    <style>[x-cloak] { display: none !important; }</style>
-    @if(app()->environment('local'))
-        <!-- Development with Vite -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @else
-        <!-- Production Assets -->
-        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-        <script src="{{ asset('js/app.js') }}" defer></script>
-    @endif
-    @livewireStyles
+    <!-- Assets Loading -->
+    <x-asset-loader />
 </head>
-<body class="antialiased bg-gray-50" x-data="{ mobileMenuOpen: false }">
+<body class="antialiased bg-gray-50">
     <!-- Navigation -->
     <nav class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
         <div class="w-full px-6 lg:px-12">
@@ -80,10 +67,10 @@
                     </a>
 
                     <!-- Dropdown Cek Data -->
-                    <div class="relative" x-data="{ open: false }">
+                    <div class="relative">
                         <button
-                            @click="open = !open"
-                            @click.away="open = false"
+                            id="cekDataDropdownBtn"
+                            onclick="toggleCekDataDropdown()"
                             class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-3 py-2 text-sm font-medium rounded-lg transition inline-flex items-center"
                         >
                             Cek Data
@@ -92,15 +79,8 @@
                             </svg>
                         </button>
                         <div
-                            x-show="open"
-                            x-transition:enter="transition ease-out duration-200"
-                            x-transition:enter-start="opacity-0 scale-95"
-                            x-transition:enter-end="opacity-100 scale-100"
-                            x-transition:leave="transition ease-in duration-150"
-                            x-transition:leave-start="opacity-100 scale-100"
-                            x-transition:leave-end="opacity-0 scale-95"
-                            x-cloak
-                            class="absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5"
+                            id="cekDataDropdown"
+                            class="hidden absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 transition-all duration-200"
                         >
                             <div class="py-1">
                                 <a href="/cek-pendaftaran" class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition">
@@ -117,6 +97,14 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                         </svg>
                                         Cek NSM/NPSN
+                                    </div>
+                                </a>
+                                <a href="/cek-nisn" class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition">
+                                    <div class="flex items-center">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
+                                        </svg>
+                                        Cek NISN
                                     </div>
                                 </a>
                             </div>
@@ -146,11 +134,11 @@
                     @endif
 
                     <!-- Mobile menu button -->
-                    <button type="button" @click="mobileMenuOpen = !mobileMenuOpen" class="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition">
-                        <svg x-show="!mobileMenuOpen" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <button type="button" id="mobileMenuBtn" onclick="toggleMobileMenu()" class="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition">
+                        <svg id="menuIconOpen" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         </svg>
-                        <svg x-show="mobileMenuOpen" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" x-cloak>
+                        <svg id="menuIconClose" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                         </svg>
                     </button>
@@ -159,16 +147,8 @@
         </div>
 
         <!-- Mobile Menu Panel -->
-        <div x-show="mobileMenuOpen"
-             x-transition:enter="transition ease-out duration-200"
-             x-transition:enter-start="opacity-0 -translate-y-1"
-             x-transition:enter-end="opacity-100 translate-y-0"
-             x-transition:leave="transition ease-in duration-150"
-             x-transition:leave-start="opacity-100 translate-y-0"
-             x-transition:leave-end="opacity-0 -translate-y-1"
-             @click.away="mobileMenuOpen = false"
-             x-cloak
-             class="lg:hidden border-t border-gray-200 bg-white">
+        <div id="mobileMenuPanel"
+             class="hidden lg:hidden border-t border-gray-200 bg-white transition-all duration-200">
             <div class="px-4 pt-2 pb-3 space-y-1">
                 <a href="/" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 transition">
                     Beranda
@@ -206,6 +186,14 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                             Cek NSM/NPSN
+                        </div>
+                    </a>
+                    <a href="/cek-nisn" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 transition">
+                        <div class="flex items-center">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
+                            </svg>
+                            Cek NISN
                         </div>
                     </a>
                 </div>
@@ -351,6 +339,7 @@
                         <li><a href="/kontak-panitia" class="text-gray-400 hover:text-white text-sm transition">Kontak</a></li>
                         <li><a href="/cek-pendaftaran" class="text-gray-400 hover:text-white text-sm transition">Cek Pendaftaran</a></li>
                         <li><a href="/cek-nsm-npsn" class="text-gray-400 hover:text-white text-sm transition">Cek NSM/NPSN</a></li>
+                        <li><a href="/cek-nisn" class="text-gray-400 hover:text-white text-sm transition">Cek NISN</a></li>
                     </ul>
                 </div>
 
@@ -444,6 +433,56 @@
                     behavior: 'smooth'
                 });
             });
+        });
+    </script>
+
+    <!-- Mobile Menu & Dropdown Scripts -->
+    <script>
+        // Mobile Menu Toggle
+        function toggleMobileMenu() {
+            const mobileMenuPanel = document.getElementById('mobileMenuPanel');
+            const menuIconOpen = document.getElementById('menuIconOpen');
+            const menuIconClose = document.getElementById('menuIconClose');
+
+            if (mobileMenuPanel.classList.contains('hidden')) {
+                mobileMenuPanel.classList.remove('hidden');
+                menuIconOpen.classList.add('hidden');
+                menuIconClose.classList.remove('hidden');
+            } else {
+                mobileMenuPanel.classList.add('hidden');
+                menuIconOpen.classList.remove('hidden');
+                menuIconClose.classList.add('hidden');
+            }
+        }
+
+        // Cek Data Dropdown Toggle
+        function toggleCekDataDropdown() {
+            const dropdown = document.getElementById('cekDataDropdown');
+            dropdown.classList.toggle('hidden');
+        }
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const dropdown = document.getElementById('cekDataDropdown');
+            const dropdownBtn = document.getElementById('cekDataDropdownBtn');
+            const mobileMenuPanel = document.getElementById('mobileMenuPanel');
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+
+            // Close Cek Data dropdown if clicking outside
+            if (dropdown && dropdownBtn &&
+                !dropdown.contains(event.target) &&
+                !dropdownBtn.contains(event.target)) {
+                dropdown.classList.add('hidden');
+            }
+
+            // Close mobile menu if clicking outside
+            if (mobileMenuPanel && mobileMenuBtn &&
+                !mobileMenuPanel.contains(event.target) &&
+                !mobileMenuBtn.contains(event.target)) {
+                mobileMenuPanel.classList.add('hidden');
+                document.getElementById('menuIconOpen').classList.remove('hidden');
+                document.getElementById('menuIconClose').classList.add('hidden');
+            }
         });
     </script>
     @livewireScripts

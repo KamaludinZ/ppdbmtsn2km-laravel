@@ -8,6 +8,7 @@ use App\Models\Pendaftar;
 use App\Models\Dokumen as DokumenModel;
 use App\Models\VerifikasiBerkas;
 use App\Services\ImageService;
+use App\Services\FileNamingService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -137,21 +138,36 @@ class Dokumen extends Component
             throw $e;
         }
 
-        $filename = $file->getClientOriginalName();
         $size = $file->getSize();
         $mime = $file->getMimeType();
+        $extension = FileNamingService::getFileExtension($file);
 
-        // Simpan file PDF ke private storage (NOT public untuk security)
-        $path = $file->store('dokumen/' . $this->pendaftar->id);
+        // Clean jenis dokumen untuk nama file
+        $jenisClean = FileNamingService::cleanJenisDokumen($type);
 
-        // Save to Dokumen table
+        // Generate nama file sistematis: {jenis}_{nomor_pendaftaran}_{timestamp}.{ext}
+        // Contoh: rapor_PPDB2024001_20260119_143052.pdf
+        $customFileName = FileNamingService::generateFileName(
+            $jenisClean,
+            $this->pendaftar->nomor_pendaftaran,
+            $extension
+        );
+
+        // Simpan file PDF ke private storage dengan nama custom (NOT public untuk security)
+        $path = $file->storeAs(
+            'dokumen/' . $this->pendaftar->id,
+            $customFileName,
+            'private'
+        );
+
+        // Save to Dokumen table dengan nama file yang deskriptif
         DokumenModel::updateOrCreate(
             [
                 'pendaftar_id' => $this->pendaftar->id,
                 'jenis_dokumen' => $type,
             ],
             [
-                'nama_file' => $filename,
+                'nama_file' => $customFileName,
                 'path_file' => $path,
                 'mime_type' => $mime,
                 'ukuran_file' => $size,

@@ -22,11 +22,20 @@
                     </svg>
                     <h3 class="text-lg font-bold text-white uppercase tracking-wider">Daftar Pengumuman</h3>
                 </div>
-                <button wire:click="create" class="inline-flex items-center px-4 py-2 bg-white text-emerald-600 rounded-lg font-bold uppercase tracking-wider text-xs hover:bg-emerald-50 transition shadow-sm">
-                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button
+                    wire:click="create"
+                    wire:loading.attr="disabled"
+                    wire:loading.class="opacity-50 cursor-not-allowed"
+                    class="inline-flex items-center px-4 py-2 bg-white text-emerald-600 rounded-lg font-bold uppercase tracking-wider text-xs hover:bg-emerald-50 transition shadow-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                    <svg wire:loading.remove wire:target="create" class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                     </svg>
-                    Tambah Pengumuman
+                    <svg wire:loading wire:target="create" class="animate-spin h-4 w-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span wire:loading.remove wire:target="create">Tambah Pengumuman</span>
+                    <span wire:loading wire:target="create">Memuat...</span>
                 </button>
             </div>
             <table class="min-w-full divide-y divide-gray-200">
@@ -49,7 +58,7 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($data as $item)
-                        <tr>
+                        <tr wire:key="pengumuman-{{ $item->id }}">
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                 {{ \Carbon\Carbon::parse($item->tanggal_publikasi)->format('d M Y') }}
                             </td>
@@ -69,9 +78,34 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <button wire:click="edit({{ $item->id }})" class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                                <button
+                                    wire:click="edit({{ $item->id }})"
+                                    wire:loading.attr="disabled"
+                                    wire:loading.class="opacity-50 cursor-not-allowed"
+                                    wire:target="edit({{ $item->id }})"
+                                    class="text-blue-600 hover:text-blue-900 mr-3 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center">
+                                    <svg wire:loading wire:target="edit({{ $item->id }})" class="animate-spin h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    <span wire:loading.remove wire:target="edit({{ $item->id }})">Edit</span>
+                                    <span wire:loading wire:target="edit({{ $item->id }})">Memuat...</span>
+                                </button>
                                 @if(Auth::user()->role === 'admin')
-                                    <button wire:click="delete({{ $item->id }})" wire:confirm="Yakin ingin menghapus pengumuman ini?" class="text-red-600 hover:text-red-900">Hapus</button>
+                                    <button
+                                        wire:click="delete({{ $item->id }})"
+                                        wire:confirm="Yakin ingin menghapus pengumuman ini?"
+                                        wire:loading.attr="disabled"
+                                        wire:loading.class="opacity-50 cursor-not-allowed"
+                                        wire:target="delete({{ $item->id }})"
+                                        class="text-red-600 hover:text-red-900 disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center">
+                                        <svg wire:loading wire:target="delete({{ $item->id }})" class="animate-spin h-4 w-4 mr-1" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span wire:loading.remove wire:target="delete({{ $item->id }})">Hapus</span>
+                                        <span wire:loading wire:target="delete({{ $item->id }})">Menghapus...</span>
+                                    </button>
                                 @endif
                             </td>
                         </tr>
@@ -250,22 +284,38 @@
                         <div class="bg-gray-50 px-6 py-4 border-t border-gray-200 flex flex-col sm:flex-row-reverse gap-3">
                             <button
                                 type="submit"
-                                class="inline-flex items-center justify-center px-6 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors"
+                                wire:loading.attr="disabled"
+                                wire:loading.class="opacity-50 cursor-not-allowed"
+                                wire:target="{{ $isEdit ? 'update' : 'store' }}"
+                                class="inline-flex items-center justify-center px-6 py-2.5 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg wire:loading.remove wire:target="{{ $isEdit ? 'update' : 'store' }}" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                 </svg>
-                                {{ $isEdit ? 'Perbarui Pengumuman' : 'Simpan Pengumuman' }}
+                                <svg wire:loading wire:target="{{ $isEdit ? 'update' : 'store' }}" class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span wire:loading.remove wire:target="{{ $isEdit ? 'update' : 'store' }}">{{ $isEdit ? 'Perbarui Pengumuman' : 'Simpan Pengumuman' }}</span>
+                                <span wire:loading wire:target="{{ $isEdit ? 'update' : 'store' }}">{{ $isEdit ? 'Memperbarui...' : 'Menyimpan...' }}</span>
                             </button>
                             <button
                                 type="button"
                                 wire:click="closeModal"
-                                class="inline-flex items-center justify-center px-6 py-2.5 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors"
+                                wire:loading.attr="disabled"
+                                wire:loading.class="opacity-50 cursor-not-allowed"
+                                wire:target="closeModal"
+                                class="inline-flex items-center justify-center px-6 py-2.5 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             >
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg wire:loading.remove wire:target="closeModal" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                 </svg>
-                                Batal
+                                <svg wire:loading wire:target="closeModal" class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                </svg>
+                                <span wire:loading.remove wire:target="closeModal">Batal</span>
+                                <span wire:loading wire:target="closeModal">Menutup...</span>
                             </button>
                         </div>
                     </form>

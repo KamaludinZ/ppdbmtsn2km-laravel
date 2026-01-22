@@ -40,6 +40,14 @@
                         <a href="/informasi" class="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 border-2 border-white text-base sm:text-lg font-medium rounded-lg text-white hover:bg-emerald-700 transition-all duration-200">
                             Info Lengkap
                         </a>
+                        @if($brosurActive && $brosurFilePath)
+                        <a href="{{ Storage::url($brosurFilePath) }}" target="_blank" class="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 border-2 border-white text-base sm:text-lg font-medium rounded-lg text-white hover:bg-white hover:text-emerald-600 transition-all duration-200">
+                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            Download Brosur
+                        </a>
+                        @endif
                     </div>
                 </div>
                 <div class="hidden lg:block lg:col-span-5">

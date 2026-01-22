@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Models\VideoPanduan;
 use App\Models\Infografis;
 use App\Models\Testimoni;
+use App\Models\Setting;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
@@ -15,7 +16,7 @@ class VideoInfografis extends Component
 {
     use WithPagination, WithFileUploads;
 
-    public $activeTab = 'video'; // 'video', 'infografis', or 'testimoni'
+    public $activeTab = 'video'; // 'video', 'infografis', 'testimoni', or 'brosur'
 
     // Video fields
     public $video_id, $video_judul, $video_deskripsi, $video_url, $video_kategori, $video_aktif = true, $video_urutan = 0;
@@ -35,6 +36,11 @@ class VideoInfografis extends Component
     public $showTestimoniForm = false;
     public $isEditingTestimoni = false;
     public $foto_baru;
+
+    // Brosur fields
+    public $brosur_active = false;
+    public $brosur_file_path;
+    public $brosur_file_baru;
 
     protected $rules = [
         // Video rules
@@ -61,6 +67,10 @@ class VideoInfografis extends Component
         'testimoni_aktif' => 'boolean',
         'testimoni_urutan' => 'integer|min:0',
         'foto_baru' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+
+        // Brosur rules
+        'brosur_active' => 'boolean',
+        'brosur_file_baru' => 'nullable|file|mimes:pdf|max:10240', // Max 10MB
     ];
 
     public function mount()
@@ -70,6 +80,9 @@ class VideoInfografis extends Component
         if (!$user || $user->role !== 'admin') {
             return redirect()->to('/login/admin');
         }
+
+        // Load brosur settings
+        $this->loadBrosurSettings();
     }
 
     public function render()
@@ -388,5 +401,61 @@ class VideoInfografis extends Component
         $this->testimoni_urutan = 0;
         $this->testimoni_foto_path = '';
         $this->foto_baru = null;
+    }
+
+    // Brosur Methods
+    public function loadBrosurSettings()
+    {
+        $this->brosur_file_path = Setting::get('brosur_file_path');
+        $this->brosur_active = Setting::get('brosur_active', false);
+    }
+
+    public function saveBrosur()
+    {
+        $this->validate([
+            'brosur_active' => 'boolean',
+            'brosur_file_baru' => 'nullable|file|mimes:pdf|max:10240',
+        ], [
+            'brosur_file_baru.file' => 'File yang dipilih tidak valid. Pastikan Anda memilih file yang benar.',
+            'brosur_file_baru.mimes' => 'File harus berformat PDF.',
+            'brosur_file_baru.max' => 'Ukuran file maksimal 10 MB. File Anda terlalu besar.',
+            'brosur_file_baru.uploaded' => 'Upload gagal. File terlalu besar atau koneksi terputus. Ukuran maksimal: 10 MB. Pastikan koneksi internet stabil dan coba lagi.',
+        ]);
+
+        $filePath = $this->brosur_file_path;
+
+        // Handle file upload if provided
+        if ($this->brosur_file_baru) {
+            // Delete old file if exists
+            if ($this->brosur_file_path && Storage::disk('public')->exists($this->brosur_file_path)) {
+                Storage::disk('public')->delete($this->brosur_file_path);
+            }
+
+            $filePath = $this->brosur_file_baru->store('brosur', 'public');
+        }
+
+        // Save settings
+        Setting::set('brosur_file_path', $filePath, 'string', 'Path to brochure PDF file');
+        Setting::set('brosur_active', $this->brosur_active, 'boolean', 'Show/hide brochure download button on public pages');
+
+        $this->brosur_file_path = $filePath;
+        $this->brosur_file_baru = null;
+
+        session()->flash('message', 'Pengaturan brosur berhasil disimpan.');
+    }
+
+    public function deleteBrosur()
+    {
+        if ($this->brosur_file_path && Storage::disk('public')->exists($this->brosur_file_path)) {
+            Storage::disk('public')->delete($this->brosur_file_path);
+        }
+
+        Setting::set('brosur_file_path', null, 'string', 'Path to brochure PDF file');
+        Setting::set('brosur_active', false, 'boolean', 'Show/hide brochure download button on public pages');
+
+        $this->brosur_file_path = null;
+        $this->brosur_active = false;
+
+        session()->flash('message', 'Brosur berhasil dihapus.');
     }
 }

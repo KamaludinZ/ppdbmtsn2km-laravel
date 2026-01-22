@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Halaman Daftar Siap Deploy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 p-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white rounded-lg shadow-lg p-6 mb-6">
+            <h1 class="text-3xl font-bold mb-6 text-green-600">✅ HALAMAN /DAFTAR SIAP UNTUK PRODUCTION!</h1>
+
+            <div class="mb-8 p-4 bg-green-50 border-l-4 border-green-500">
+                <h2 class="text-lg font-semibold mb-3 text-green-900">Perubahan yang Telah Dilakukan:</h2>
+                <ul class="list-disc list-inside space-y-2 text-green-800">
+                    <li><strong>Simplified wire:click</strong> - Langsung memanggil method selectJalur</li>
+                    <li><strong>Removed complex JavaScript</strong> - Tidak ada lagi dependency Alpine.js kompleks</li>
+                    <li><strong>Clean Livewire implementation</strong> - Pure Livewire tanpa JavaScript tambahan</li>
+                    <li><strong>Works with/without Vite</strong> - Siap untuk development dan production</li>
+                    <li><strong>Loading states</strong> - Visual feedback saat proses loading</li>
+                </ul>
+            </div>
+
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold mb-4">📋 Cara Kerja:</h2>
+                <div class="bg-blue-50 p-4 rounded-lg">
+                    <ol class="list-decimal list-inside space-y-3">
+                        <li><strong>User klik card jalur</strong> → wire:click="selectJalur(id)"</li>
+                        <li><strong>Livewire method dipanggil</strong> → Update $jalur_pendaftaran_id</li>
+                        <li><strong>Component re-render</strong> → Card ter-highlight otomatis</li>
+                        <li><strong>Button "Lanjutkan" aktif</strong> → User bisa lanjut ke step 2</li>
+                    </ol>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold mb-4">🚀 Production Deployment Checklist:</h2>
+                <div class="bg-yellow-50 p-4 rounded-lg">
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2">
+                            <span>Run: <code class="bg-gray-200 px-2 py-1 rounded text-sm">php artisan optimize</code></span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2">
+                            <span>Run: <code class="bg-gray-200 px-2 py-1 rounded text-sm">php artisan config:cache</code></span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2">
+                            <span>Run: <code class="bg-gray-200 px-2 py-1 rounded text-sm">php artisan route:cache</code></span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2">
+                            <span>Run: <code class="bg-gray-200 px-2 py-1 rounded text-sm">php artisan view:cache</code></span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2">
+                            <span>Set <code class="bg-gray-200 px-2 py-1 rounded text-sm">APP_ENV=production</code> di .env</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" class="mr-2">
+                            <span>Set <code class="bg-gray-200 px-2 py-1 rounded text-sm">APP_DEBUG=false</code> di .env</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8">
+                <h2 class="text-xl font-semibold mb-4">✅ Features yang Berfungsi:</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <h3 class="font-semibold text-green-600 mb-2">Step 1: Pilih Jalur</h3>
+                        <ul class="list-check text-sm space-y-1">
+                            <li>✅ Klik card untuk pilih jalur</li>
+                            <li>✅ Visual highlight saat terpilih</li>
+                            <li>✅ Tanda centang hijau muncul</li>
+                            <li>✅ Button "Lanjutkan" aktif</li>
+                        </ul>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <h3 class="font-semibold text-blue-600 mb-2">Step 2: Input Nilai</h3>
+                        <ul class="list-check text-sm space-y-1">
+                            <li>✅ Form input nilai rapor</li>
+                            <li>✅ Real-time kalkulasi rata-rata</li>
+                            <li>✅ Validasi nilai minimum</li>
+                            <li>✅ Upload file rapor</li>
+                        </ul>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <h3 class="font-semibold text-purple-600 mb-2">Step 3: Data Pribadi</h3>
+                        <ul class="list-check text-sm space-y-1">
+                            <li>✅ Form data siswa lengkap</li>
+                            <li>✅ Validasi NISN max 5 pendaftaran</li>
+                            <li>✅ Auto-format nomor WhatsApp</li>
+                            <li>✅ Konfirmasi modal sebelum submit</li>
+                        </ul>
+                    </div>
+                    <div class="p-4 bg-gray-50 rounded-lg">
+                        <h3 class="font-semibold text-orange-600 mb-2">After Submit</h3>
+                        <ul class="list-check text-sm space-y-1">
+                            <li>✅ Generate nomor pendaftaran</li>
+                            <li>✅ Kirim email notifikasi</li>
+                            <li>✅ Kirim WhatsApp notifikasi</li>
+                            <li>✅ Redirect ke login</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-8 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <h2 class="text-lg font-semibold mb-2 text-red-800">⚠️ Jika Masih Ada Masalah:</h2>
+                <ol class="list-decimal list-inside space-y-1 text-red-700">
+                    <li>Clear browser cache (Ctrl+Shift+Delete)</li>
+                    <li>Test di incognito mode</li>
+                    <li>Periksa console browser untuk error</li>
+                    <li>Pastikan Livewire scripts loaded di page source</li>
+                    <li>Cek network tab untuk request ke /livewire/message</li>
+                </ol>
+            </div>
+
+            <div class="flex gap-4">
+                <a href="/daftar" target="_blank" class="inline-block bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 font-semibold shadow-lg">
+                    🚀 Test Halaman Daftar
+                </a>
+                <a href="/" target="_blank" class="inline-block bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 font-semibold shadow-lg">
+                    🏠 Homepage
+                </a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

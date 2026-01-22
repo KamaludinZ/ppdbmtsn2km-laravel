@@ -428,11 +428,27 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">NSM (untuk Madrasah)</label>
-                                    <input type="text" wire:model="nsm_sekolah_asal" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                    <input type="text"
+                                           wire:model="nsm_sekolah_asal"
+                                           pattern="[0-9]{12}"
+                                           inputmode="numeric"
+                                           maxlength="12"
+                                           oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                           placeholder="12 digit angka"
+                                           title="NSM harus berupa 12 digit angka"
+                                           class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">NPSN (untuk Sekolah Umum)</label>
-                                    <input type="text" wire:model="npsn_sekolah_asal" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                    <input type="text"
+                                           wire:model="npsn_sekolah_asal"
+                                           pattern="[0-9]{8}"
+                                           inputmode="numeric"
+                                           maxlength="8"
+                                           oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+                                           placeholder="8 digit angka"
+                                           title="NPSN harus berupa 8 digit angka"
+                                           class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700">Nilai Rata-Rata</label>

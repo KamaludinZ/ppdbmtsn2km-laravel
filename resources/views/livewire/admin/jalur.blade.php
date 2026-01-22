@@ -57,11 +57,16 @@
                 </svg>
                 <h3 class="text-lg font-bold text-white uppercase tracking-wider">Daftar Jalur</h3>
             </div>
-            <button wire:click="create" class="inline-flex items-center px-4 py-2 bg-white text-emerald-600 rounded-lg font-bold uppercase tracking-wider text-xs hover:bg-emerald-50 transition shadow-sm">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button wire:click="create" wire:loading.attr="disabled" wire:loading.class="opacity-50 cursor-not-allowed" class="inline-flex items-center px-4 py-2 bg-white text-emerald-600 rounded-lg font-bold uppercase tracking-wider text-xs hover:bg-emerald-50 transition shadow-sm">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" wire:loading.remove wire:target="create">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
-                Tambah Jalur
+                <svg class="animate-spin w-4 h-4 mr-2 text-emerald-600" fill="none" viewBox="0 0 24 24" wire:loading wire:target="create">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span wire:loading.remove wire:target="create">Tambah Jalur</span>
+                <span wire:loading wire:target="create">Loading...</span>
             </button>
         </div>
         <div class="overflow-x-auto">
@@ -73,6 +78,9 @@
                         </x-sortable-header>
                         <x-sortable-header field="kode" :sort-field="$sortField" :sort-direction="$sortDirection">
                             Kode
+                        </x-sortable-header>
+                        <x-sortable-header field="urutan" :sort-field="$sortField" :sort-direction="$sortDirection">
+                            Urutan
                         </x-sortable-header>
                         <x-sortable-header field="prefix_nomor" :sort-field="$sortField" :sort-direction="$sortDirection">
                             Prefix
@@ -91,9 +99,14 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach($jalurPendaftaran as $jalur)
-                    <tr>
+                    <tr wire:key="jalur-{{ $jalur->id }}">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{{ $jalur->nama }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $jalur->kode }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-blue-100 text-blue-800 font-bold text-sm">
+                                {{ $jalur->urutan }}
+                            </span>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             @if($jalur->prefix_nomor)
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-emerald-100 text-emerald-800">
@@ -124,9 +137,31 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button wire:click="edit({{ $jalur->id }})" class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                            <button wire:click="edit({{ $jalur->id }})" wire:loading.attr="disabled" wire:loading.class="opacity-50 cursor-not-allowed" class="text-blue-600 hover:text-blue-900 mr-3">
+                                <span wire:loading.remove wire:target="edit({{ $jalur->id }})">Edit</span>
+                                <span wire:loading wire:target="edit({{ $jalur->id }})" class="inline-flex items-center">
+                                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Loading...
+                                </span>
+                            </button>
                             @if(Auth::user()->role === 'admin')
-                                <button onclick="confirm('Apakah Anda yakin ingin menghapus jalur ini?') || event.stopImmediatePropagation()" wire:click="delete({{ $jalur->id }})" class="text-red-600 hover:text-red-900">Hapus</button>
+                                <button wire:click="delete({{ $jalur->id }})"
+                                        wire:confirm="Apakah Anda yakin ingin menghapus jalur ini?"
+                                        wire:loading.attr="disabled"
+                                        wire:loading.class="opacity-50 cursor-not-allowed"
+                                        class="text-red-600 hover:text-red-900">
+                                    <span wire:loading.remove wire:target="delete({{ $jalur->id }})">Hapus</span>
+                                    <span wire:loading wire:target="delete({{ $jalur->id }})" class="inline-flex items-center">
+                                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-red-600" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Loading...
+                                    </span>
+                                </button>
                             @endif
                         </td>
                     </tr>
@@ -148,11 +183,16 @@
                 </svg>
                 <h3 class="text-lg font-bold text-white uppercase tracking-wider">Persyaratan Umum</h3>
             </div>
-            <button wire:click="createSyarat" class="inline-flex items-center px-4 py-2 bg-white text-blue-600 rounded-lg font-bold uppercase tracking-wider text-xs hover:bg-blue-50 transition shadow-sm">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <button wire:click="createSyarat" wire:loading.attr="disabled" wire:loading.class="opacity-50 cursor-not-allowed" class="inline-flex items-center px-4 py-2 bg-white text-blue-600 rounded-lg font-bold uppercase tracking-wider text-xs hover:bg-blue-50 transition shadow-sm">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" wire:loading.remove wire:target="createSyarat">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                 </svg>
-                Tambah Persyaratan
+                <svg class="animate-spin w-4 h-4 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" wire:loading wire:target="createSyarat">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <span wire:loading.remove wire:target="createSyarat">Tambah Persyaratan</span>
+                <span wire:loading wire:target="createSyarat">Loading...</span>
             </button>
         </div>
         <div class="p-4 bg-blue-50 border-b border-blue-100">
@@ -176,7 +216,7 @@
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($persyaratanUmum as $index => $syarat)
-                    <tr class="hover:bg-gray-50">
+                    <tr wire:key="syarat-{{ $syarat->id }}" class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ $persyaratanUmum->firstItem() + $index }}
                         </td>
@@ -192,9 +232,31 @@
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <button wire:click="editSyarat({{ $syarat->id }})" class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>
+                            <button wire:click="editSyarat({{ $syarat->id }})" wire:loading.attr="disabled" wire:loading.class="opacity-50 cursor-not-allowed" class="text-blue-600 hover:text-blue-900 mr-3">
+                                <span wire:loading.remove wire:target="editSyarat({{ $syarat->id }})">Edit</span>
+                                <span wire:loading wire:target="editSyarat({{ $syarat->id }})" class="inline-flex items-center">
+                                    <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-blue-600" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                    Loading...
+                                </span>
+                            </button>
                             @if(Auth::user()->role === 'admin')
-                                <button wire:click="deleteSyarat({{ $syarat->id }})" wire:confirm="Yakin ingin menghapus persyaratan ini?" class="text-red-600 hover:text-red-900">Hapus</button>
+                                <button wire:click="deleteSyarat({{ $syarat->id }})"
+                                        wire:confirm="Yakin ingin menghapus persyaratan ini?"
+                                        wire:loading.attr="disabled"
+                                        wire:loading.class="opacity-50 cursor-not-allowed"
+                                        class="text-red-600 hover:text-red-900">
+                                    <span wire:loading.remove wire:target="deleteSyarat({{ $syarat->id }})">Hapus</span>
+                                    <span wire:loading wire:target="deleteSyarat({{ $syarat->id }})" class="inline-flex items-center">
+                                        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-red-600" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Loading...
+                                    </span>
+                                </button>
                             @endif
                         </td>
                     </tr>
@@ -284,21 +346,21 @@
     @endif
 
     <!-- Modal Form -->
-    <div x-data="{ open: @entangle('showModal') }" x-show="open" x-cloak>
-        <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-0 overflow-y-auto">
-            <div x-show="open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100" class="fixed inset-0 transition-opacity bg-black/10 backdrop-blur-sm z-[9998]" @click="open = false"></div>
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div x-show="open" x-transition:enter="ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95" x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100" class="inline-block w-full max-w-5xl overflow-hidden text-left align-bottom transition-all transform bg-white rounded-xl shadow-xl sm:my-8 sm:align-middle z-[10000]" role="dialog" aria-modal="true">
-                <div class="bg-white">
-                    <!-- Modal Header -->
-                    <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                        <h3 class="text-xl font-bold text-gray-900">{{ $isEdit ? 'Edit Jalur Pendaftaran' : 'Tambah Jalur Baru' }}</h3>
-                        <button @click="open = false" class="text-gray-400 hover:text-gray-500">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
+    @if($showModal)
+        <div class="fixed inset-0 overflow-y-auto" aria-labelledby="jalur-modal" role="dialog" aria-modal="true">
+            <div class="fixed inset-0 bg-black/10 backdrop-blur-sm transition-opacity z-[9998]" aria-hidden="true" wire:click="closeModal"></div>
+            <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-0">
+                <div class="inline-block w-full max-w-5xl overflow-hidden text-left align-bottom transition-all transform bg-white rounded-xl shadow-xl sm:my-8 sm:align-middle z-[10000]" role="dialog">
+                    <div class="bg-white">
+                        <!-- Modal Header -->
+                        <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                            <h3 class="text-xl font-bold text-gray-900" id="jalur-modal">{{ $isEdit ? 'Edit Jalur Pendaftaran' : 'Tambah Jalur Baru' }}</h3>
+                            <button wire:click="closeModal" class="text-gray-400 hover:text-gray-500">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                            </button>
+                        </div>
 
                     <!-- Tabs -->
                     <div class="flex border-b border-gray-100 overflow-x-auto">
@@ -348,6 +410,17 @@
                                     <input type="number" step="0.01" wire:model="nilai_minimum" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="0.00">
                                     @error('nilai_minimum') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                     <p class="text-xs text-gray-500 mt-1">Nilai rata-rata minimum untuk mendaftar (0-100)</p>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Urutan Tampilan <span class="text-red-500">*</span></label>
+                                    <input type="number" wire:model="urutan" min="1" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="1">
+                                    @error('urutan') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                    <p class="text-xs text-gray-500 mt-1">
+                                        <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        Urutan jalur untuk ditampilkan di halaman beranda dan jalur pendaftaran
+                                    </p>
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Warna Tema <span class="text-red-500">*</span></label>
@@ -417,7 +490,7 @@
                                 <div class="space-y-2">
                                     <h4 class="text-sm font-semibold text-gray-700 mb-3">Daftar Persyaratan Khusus ({{ count($persyaratan_khusus) }})</h4>
                                     @foreach($persyaratan_khusus as $index => $syarat)
-                                    <div class="flex items-start gap-3 bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition group">
+                                    <div wire:key="persyaratan-khusus-{{ $index }}" class="flex items-start gap-3 bg-white border border-gray-200 rounded-lg p-3 hover:shadow-md transition group">
                                         <div class="flex-shrink-0 mt-0.5">
                                             <div class="w-6 h-6 bg-emerald-600 rounded-full flex items-center justify-center">
                                                 <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
@@ -454,8 +527,8 @@
 
                     <!-- Modal Footer -->
                     <div class="px-6 py-4 border-t border-gray-100 flex justify-end gap-3 bg-gray-50">
-                        <button @click="open = false" class="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">Batal</button>
-                        <button wire:click="{{ $isEdit ? 'update' : 'store' }}" class="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition shadow-md">
+                        <button wire:click="closeModal" type="button" class="px-4 py-2 text-sm font-semibold text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition">Batal</button>
+                        <button wire:click="{{ $isEdit ? 'update' : 'store' }}" type="button" class="px-4 py-2 text-sm font-semibold text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition shadow-md">
                             <span wire:loading.remove wire:target="{{ $isEdit ? 'update' : 'store' }}">Simpan Perubahan</span>
                             <span wire:loading wire:target="{{ $isEdit ? 'update' : 'store' }}">Menyimpan...</span>
                         </button>
@@ -463,6 +536,6 @@
                 </div>
             </div>
         </div>
-    </div>
+    @endif
 
 </div>

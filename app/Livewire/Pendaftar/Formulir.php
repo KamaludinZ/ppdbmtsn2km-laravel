@@ -12,6 +12,7 @@ use App\Models\PendidikanLain;
 use App\Models\VerifikasiBerkas;
 use App\Models\Dokumen;
 use App\Services\ImageService;
+use App\Services\FileNamingService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
@@ -319,15 +320,11 @@ class Formulir extends Component
     public $berkebutuhan_khusus;
     public $jenis_kebutuhan_khusus = [];
 
-    // EMIS - File uploads
+    // EMIS - File uploads (read-only properties, actual upload handled in Dokumen.php)
     public $file_ijazah_sd;
     public $file_skhun_sd;
     public $file_kartu_keluarga;
     public $file_akta_kelahiran;
-    public $newFileIjazahSd;
-    public $newFileSkhunSd;
-    public $newFileKartuKeluarga;
-    public $newFileAktaKelahiran;
 
     // Magic methods for dynamic survey answer properties
     public function __get($property)
@@ -902,8 +899,16 @@ class Formulir extends Component
                 // Hapus foto lama jika ada
                 $imageService->deleteOldFile($this->pendaftar->foto);
 
-                // Upload dan konversi ke WebP
-                $fotoPath = $imageService->uploadProfilePhoto($this->newFoto, 'photos', 500, 80);
+                // Upload dan konversi ke WebP dengan nama file sistematis
+                // Format: foto_profil_{nomor_pendaftaran}_{timestamp}.webp
+                $fotoPath = $imageService->uploadProfilePhoto(
+                    $this->newFoto,
+                    'photos',
+                    500,
+                    80,
+                    $this->pendaftar->nomor_pendaftaran,
+                    'foto_profil'
+                );
                 $dataToUpdate['foto'] = $fotoPath;
                 $this->foto = $fotoPath;
                 \Log::info('Photo uploaded successfully: ' . $fotoPath);
@@ -1748,8 +1753,6 @@ class Formulir extends Component
             'nomor_kip' => 'nullable|string|max:17',
             'layak_pip' => 'nullable|boolean',
             'alasan_layak_pip' => 'nullable|string|required_if:layak_pip,true',
-            'newFileKartuKeluarga' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
-            'newFileAktaKelahiran' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
         ]);
 
         // Auto set penerima_kip to true if nomor_kip is filled
@@ -1764,28 +1767,7 @@ class Formulir extends Component
             'alasan_layak_pip' => $this->alasan_layak_pip,
         ];
 
-        // Handle file uploads
-        if ($this->newFileKartuKeluarga) {
-            if ($this->pendaftar->file_kartu_keluarga) {
-                Storage::disk('public')->delete($this->pendaftar->file_kartu_keluarga);
-            }
-            $kkPath = $this->newFileKartuKeluarga->store('dokumen/kk', 'public');
-            $dataToUpdate['file_kartu_keluarga'] = $kkPath;
-            $this->file_kartu_keluarga = $kkPath;
-        }
-
-        if ($this->newFileAktaKelahiran) {
-            if ($this->pendaftar->file_akta_kelahiran) {
-                Storage::disk('public')->delete($this->pendaftar->file_akta_kelahiran);
-            }
-            $aktaPath = $this->newFileAktaKelahiran->store('dokumen/akta', 'public');
-            $dataToUpdate['file_akta_kelahiran'] = $aktaPath;
-            $this->file_akta_kelahiran = $aktaPath;
-        }
-
         $this->pendaftar->update($dataToUpdate);
-        $this->newFileKartuKeluarga = null;
-        $this->newFileAktaKelahiran = null;
         $this->editModeBeasiswa = false;
         $this->dispatch('statusUpdated', ['type' => 'success', 'message' => 'Data beasiswa & bantuan berhasil diperbarui.']);
     }
@@ -1824,29 +1806,7 @@ class Formulir extends Component
             'jenis_kebutuhan_khusus' => $this->jenis_kebutuhan_khusus,
         ];
 
-        // Upload Ijazah SD
-        if ($this->newFileIjazahSd) {
-            if ($this->pendaftar->file_ijazah_sd) {
-                Storage::disk('public')->delete($this->pendaftar->file_ijazah_sd);
-            }
-            $ijazahPath = $this->newFileIjazahSd->store('dokumen/ijazah', 'public');
-            $dataToUpdate['file_ijazah_sd'] = $ijazahPath;
-            $this->file_ijazah_sd = $ijazahPath;
-        }
-
-        // Upload SKHUN SD
-        if ($this->newFileSkhunSd) {
-            if ($this->pendaftar->file_skhun_sd) {
-                Storage::disk('public')->delete($this->pendaftar->file_skhun_sd);
-            }
-            $skhunPath = $this->newFileSkhunSd->store('dokumen/skhun', 'public');
-            $dataToUpdate['file_skhun_sd'] = $skhunPath;
-            $this->file_skhun_sd = $skhunPath;
-        }
-
         $this->pendaftar->update($dataToUpdate);
-        $this->newFileIjazahSd = null;
-        $this->newFileSkhunSd = null;
         $this->editModePendidikan = false;
         $this->dispatch('statusUpdated', ['type' => 'success', 'message' => 'Data pendidikan lain berhasil diperbarui.']);
     }

@@ -1,6 +1,6 @@
 <div>
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <!-- Total Pendaftar -->
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
@@ -35,13 +35,45 @@
             </div>
         </div>
 
-        <!-- Diterima -->
+        <!-- Lengkapi Data -->
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600">Diterima</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['diterima']) }}</p>
-                    <p class="text-sm text-green-600 mt-2">{{ $stats['diterima_percentage'] }}% dari total</p>
+                    <p class="text-sm font-medium text-gray-600">Lengkapi Data</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['lengkapi_data']) }}</p>
+                    <p class="text-sm text-orange-600 mt-2">{{ $stats['lengkapi_data_percentage'] }}% dari total</p>
+                </div>
+                <div class="w-14 h-14 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Perbaiki Data -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Perbaiki Data</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['perbaiki_data']) }}</p>
+                    <p class="text-sm text-red-600 mt-2">{{ $stats['perbaiki_data_percentage'] }}% dari total</p>
+                </div>
+                <div class="w-14 h-14 bg-red-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Disetujui -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Data Disetujui</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['data_disetujui']) }}</p>
+                    <p class="text-sm text-green-600 mt-2">{{ $stats['data_disetujui_percentage'] }}% dari total</p>
                 </div>
                 <div class="w-14 h-14 bg-green-100 rounded-lg flex items-center justify-center">
                     <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

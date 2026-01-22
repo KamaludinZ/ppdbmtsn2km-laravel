@@ -1,4 +1,14 @@
-<div class="min-h-screen bg-gradient-to-br from-emerald-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
+<style>
+    /* Ensure wire:loading directives work properly */
+    [wire\:loading], [wire\:loading\.delay], [wire\:loading\.inline-block], [wire\:loading\.inline], [wire\:loading\.block], [wire\:loading\.flex], [wire\:loading\.table], [wire\:loading\.grid], [wire\:loading\.inline-flex] {
+        display: none;
+    }
+    [wire\:loading\.delay\.none], [wire\:loading\.delay\.shortest], [wire\:loading\.delay\.shorter], [wire\:loading\.delay\.short], [wire\:loading\.delay\.default], [wire\:loading\.delay\.long], [wire\:loading\.delay\.longer], [wire\:loading\.delay\.longest] {
+        display: none;
+    }
+</style>
+
+<div class="min-h-screen bg-linear-to-br from-emerald-50 to-blue-50 py-12 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto">
         <!-- Header -->
         <div class="text-center mb-8">
@@ -83,42 +93,44 @@
 
         <!-- Form Container -->
         <div class="bg-white rounded-2xl shadow-xl overflow-hidden">
-            <form wire:submit.prevent="{{ $currentStep == 4 ? 'register' : 'nextStep' }}">
+            <form wire:submit.prevent="{{ $currentStep == 3 ? 'register' : 'nextStep' }}" method="POST">
                 <!-- Step 1: Pilih Jalur -->
                 @if($currentStep == 1)
                     <div class="p-8">
                         <h2 class="text-2xl font-bold text-gray-900 mb-2">Pilih Jalur Pendaftaran</h2>
                         <p class="text-gray-600 mb-6">Pilih jalur pendaftaran yang sesuai dengan kualifikasi Anda</p>
 
+
+                        @if(session()->has('error'))
+                            <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+                                {{ session('error') }}
+                            </div>
+                        @endif
+
+                        @error('jalur_pendaftaran_id')
+                            <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+                                {{ $message }}
+                            </div>
+                        @enderror
                         @if($jalurPendaftaran->count() > 0)
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 @foreach($jalurPendaftaran as $jalur)
-                                    @php
-                                        $colorClasses = [
-                                            'blue' => ['border' => 'border-blue-300', 'bg' => 'bg-blue-50', 'text' => 'text-blue-600', 'ring' => 'ring-blue-500'],
-                                            'emerald' => ['border' => 'border-emerald-300', 'bg' => 'bg-emerald-50', 'text' => 'text-emerald-600', 'ring' => 'ring-emerald-500'],
-                                            'purple' => ['border' => 'border-purple-300', 'bg' => 'bg-purple-50', 'text' => 'text-purple-600', 'ring' => 'ring-purple-500'],
-                                            'indigo' => ['border' => 'border-indigo-300', 'bg' => 'bg-indigo-50', 'text' => 'text-indigo-600', 'ring' => 'ring-indigo-500'],
-                                            'orange' => ['border' => 'border-orange-300', 'bg' => 'bg-orange-50', 'text' => 'text-orange-600', 'ring' => 'ring-orange-500'],
-                                            'teal' => ['border' => 'border-teal-300', 'bg' => 'bg-teal-50', 'text' => 'text-teal-600', 'ring' => 'ring-teal-500'],
-                                        ];
-                                        $colors = $colorClasses[$jalur->warna] ?? $colorClasses['blue'];
-                                    @endphp
-
                                     <div
-                                        wire:click.debounce.100ms="selectJalur({{ $jalur->id }})"
-                                        class="relative border-2 {{ $jalur_pendaftaran_id == $jalur->id ? $colors['border'] . ' ' . $colors['bg'] . ' ring-2 ' . $colors['ring'] : 'border-gray-200 hover:border-gray-300' }} rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg"
+                                        wire:click="selectJalur({{ $jalur->id }})"
+                                        wire:loading.class="opacity-50"
+                                        wire:target="selectJalur"
+                                        class="relative border-2 rounded-xl p-6 cursor-pointer transition-all hover:shadow-lg @if($jalur_pendaftaran_id == $jalur->id) border-emerald-300 bg-emerald-50 ring-2 ring-emerald-500 @else border-gray-200 hover:border-gray-300 @endif"
                                     >
                                         @if($jalur_pendaftaran_id == $jalur->id)
-                                            <div class="absolute -top-2 -right-2 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
-                                                <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                                </svg>
-                                            </div>
+                                        <div class="absolute -top-2 -right-2 w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center">
+                                            <svg class="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
                                         @endif
 
-                                        <h3 class="font-bold text-lg text-gray-900 mb-2">{{ $jalur->nama }}</h3>
-                                        <p class="text-sm text-gray-600 mb-4">{{ $jalur->deskripsi }}</p>
+                                            <h3 class="font-bold text-lg text-gray-900 mb-2">{{ $jalur->nama }}</h3>
+                                            <p class="text-sm text-gray-600 mb-4">{{ $jalur->deskripsi }}</p>
 
                                         <div class="flex flex-wrap gap-2">
                                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
@@ -284,7 +296,7 @@
                             </div>
 
                             <!-- Rata-rata Keseluruhan -->
-                            <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg p-4 text-white">
+                            <div class="bg-linear-to-r from-emerald-500 to-emerald-600 rounded-lg p-4 text-white">
                                 <div class="flex justify-between items-center">
                                     <div>
                                         <div class="text-sm opacity-90">Rata-rata Keseluruhan</div>
@@ -326,7 +338,7 @@
                                 <!-- Tampilan ketika file sudah diupload -->
                                 <div class="p-5 bg-green-50 border border-green-200 rounded-xl">
                                     <div class="flex items-start">
-                                        <div class="flex-shrink-0">
+                                        <div class="shrink-0">
                                             <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                                                 <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -369,7 +381,7 @@
                             @error('file_rapor')
                                 <div class="mt-3 p-3 bg-red-50 border border-red-200 rounded-lg">
                                     <div class="flex items-start">
-                                        <svg class="w-5 h-5 text-red-600 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-5 h-5 text-red-600 mr-2 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
                                         <span class="text-sm text-red-600">{{ $message }}</span>
@@ -380,7 +392,7 @@
                             <!-- Petunjuk Upload -->
                             <div class="mt-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                                 <div class="flex">
-                                    <svg class="w-5 h-5 text-blue-600 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-5 h-5 text-blue-600 mr-2 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                     <div>
@@ -413,7 +425,15 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-2">NISN <span class="text-red-500">*</span></label>
-                                    <input type="text" wire:model="nisn" maxlength="10" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500" placeholder="10 digit">
+                                    <input type="text"
+                                           wire:model="nisn"
+                                           maxlength="10"
+                                           pattern="[0-9]*"
+                                           inputmode="numeric"
+                                           oninput="this.value = this.value.replace(/[^0-9]/g, '').slice(0, 10);"
+                                           onkeypress="return event.charCode >= 48 && event.charCode <= 57"
+                                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                           placeholder="10 digit angka">
                                     @error('nisn') <span class="text-sm text-red-600">{{ $message }}</span> @enderror
                                 </div>
 
@@ -530,9 +550,13 @@
                                         type="text"
                                         x-model="nomorSekolah"
                                         @input.debounce.500ms="cekSekolah()"
+                                        @input="nomorSekolah = nomorSekolah.replace(/[^0-9]/g, '')"
+                                        pattern="[0-9]{12}"
+                                        inputmode="numeric"
                                         maxlength="12"
                                         placeholder="Contoh: 121135740001"
                                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                        title="NSM harus berupa 12 digit angka"
                                     >
                                     <div class="mt-1 flex items-center gap-2">
                                         <span x-show="loading" class="text-xs text-gray-500">Mencari sekolah...</span>
@@ -583,9 +607,13 @@
                                         type="text"
                                         x-model="nomorSekolah"
                                         @input.debounce.500ms="cekSekolah()"
+                                        @input="nomorSekolah = nomorSekolah.replace(/[^0-9]/g, '')"
+                                        pattern="[0-9]{8}"
+                                        inputmode="numeric"
                                         maxlength="8"
                                         placeholder="Contoh: 20536326"
                                         class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
+                                        title="NPSN harus berupa 8 digit angka"
                                     >
                                     <div class="mt-1 flex items-center gap-2">
                                         <span x-show="loading" class="text-xs text-gray-500">Mencari sekolah...</span>
@@ -692,7 +720,7 @@
                             <!-- Peringatan penting -->
                             <div class="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                                 <div class="flex">
-                                    <svg class="w-5 h-5 text-blue-600 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-5 h-5 text-blue-600 mr-3 mt-0.5 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                     <div>
@@ -727,21 +755,23 @@
                     @if($currentStep < 3)
                         @if($currentStep == 1)
                             <button
-                                type="button"
-                                wire:click="nextStep"
+                                type="submit"
                                 wire:loading.attr="disabled"
-                                class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white transition disabled:opacity-50 disabled:cursor-not-allowed"
-                                :class="
-                                    $wire.jalur_pendaftaran_id
-                                        ? 'bg-emerald-600 hover:bg-emerald-700'
-                                        : 'bg-gray-400 cursor-not-allowed'
-                                "
-                                :disabled="!$wire.jalur_pendaftaran_id"
+                                @if(!$jalur_pendaftaran_id) disabled @endif
+                                class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white transition disabled:opacity-50 disabled:cursor-not-allowed {{ $jalur_pendaftaran_id ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-gray-400 cursor-not-allowed' }}"
                             >
-                                Lanjutkan
-                                <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                </svg>
+                                <span wire:loading.remove wire:target="nextStep">
+                                    Lanjutkan
+                                    <svg class="w-5 h-5 ml-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                    </svg>
+                                </span>
+                                <span wire:loading wire:target="nextStep">
+                                    <svg class="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                    </svg>
+                                </span>
                             </button>
                         @elseif($currentStep == 2)
                             <button
@@ -817,13 +847,13 @@
                     <div x-data="{ show: @entangle('showConfirmationModal') }"
                          x-show="show"
                          x-cloak
-                         class="fixed inset-0 z-[9999] overflow-y-auto"
+                         class="fixed inset-0 z-9999 overflow-y-auto"
                          aria-labelledby="modal-title"
                          role="dialog"
                          aria-modal="true">
                         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                             <div x-show="show"
-                                 class="fixed inset-0 bg-black/10 backdrop-blur-sm z-[9998]"
+                                 class="fixed inset-0 bg-black/10 backdrop-blur-sm z-9998"
                                  aria-hidden="true"
                                  @click="$wire.cancelSubmit()">
                             </div>
@@ -831,12 +861,12 @@
                             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
                             <div x-show="show"
-                                 class="inline-block align-bottom bg-white rounded-lg text-left overflow-visible shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full z-[9999]"
+                                 class="inline-block align-bottom bg-white rounded-lg text-left overflow-visible shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full z-9999"
                                  style="position: relative; margin: auto; margin-top: 2rem; margin-bottom: 2rem;"
                                  @click.outside="$wire.cancelSubmit()">
                                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                                     <div class="sm:flex sm:items-start">
-                                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
+                                        <div class="mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
                                             <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                             </svg>
@@ -863,16 +893,15 @@
                                         type="button"
                                         wire:click="register"
                                         wire:loading.attr="disabled"
-                                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                                        wire:loading.class="opacity-75"
+                                        class="w-full inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-opacity duration-200"
                                     >
+                                        <svg wire:loading wire:target="register" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
                                         <span wire:loading.remove wire:target="register">Ya, Kirim Pendaftaran</span>
-                                        <span wire:loading wire:target="register" class="flex items-center">
-                                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                            Memproses...
-                                        </span>
+                                        <span wire:loading wire:target="register">Memproses...</span>
                                     </button>
                                     <button
                                         type="button"
@@ -892,7 +921,7 @@
         <!-- Info Box -->
         <div class="mt-6 bg-blue-50 border-l-4 border-blue-500 p-4 rounded">
             <div class="flex">
-                <svg class="w-5 h-5 text-blue-500 mr-3 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                <svg class="w-5 h-5 text-blue-500 mr-3 shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                 </svg>
                 <div class="text-sm text-blue-700">
@@ -906,6 +935,7 @@
             </div>
         </div>
     </div>
+
 
     <script>
         /**

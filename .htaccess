@@ -1,0 +1,76 @@
+# Root Directory Protection
+# This file prevents direct access to Laravel's root directory files
+
+# Disable directory browsing
+Options -Indexes
+
+# Block sensitive files explicitly
+<FilesMatch "^(\.env.*|\.git.*|composer\.(json|lock)|package.*\.json|artisan|phpunit\.xml|\.editorconfig|\.gitignore|\.gitattributes|README\.md)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Block all PHP files in root (except those in public/)
+<FilesMatch "\.php$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Block all Markdown documentation files
+<FilesMatch "\.md$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Block all backup and archive files
+<FilesMatch "\.(zip|rar|tar|gz|sql|bak|backup|old)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Block all batch and shell scripts
+<FilesMatch "\.(bat|sh|cmd)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Redirect all requests to public directory
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+# Security headers
+<IfModule mod_headers.c>
+    Header set X-Frame-Options "SAMEORIGIN"
+    Header set X-Content-Type-Options "nosniff"
+    Header set X-XSS-Protection "1; mode=block"
+    Header unset X-Powered-By
+    Header unset Server
+</IfModule>

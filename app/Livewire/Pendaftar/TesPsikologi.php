@@ -7,6 +7,7 @@ use App\Models\TesPsikologiOpsi;
 use App\Models\TesPsikologiBank;
 use App\Models\TesPsikologiPendaftar;
 use App\Models\Setting;
+use App\Services\FileNamingService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -86,11 +87,23 @@ class TesPsikologi extends Component
         try {
             // Delete old file if exists
             if ($this->tesPsikologiData->bukti_transfer) {
-                Storage::delete('public/' . $this->tesPsikologiData->bukti_transfer);
+                Storage::disk('private')->delete($this->tesPsikologiData->bukti_transfer);
             }
 
-            // Convert and upload image as webp
-            $path = $this->convertAndStoreAsWebp($this->buktiTransfer, 'tes-psikologi');
+            // Generate nama file sistematis: bukti_psikologi_{nomor_pendaftaran}_{timestamp}.{ext}
+            $extension = FileNamingService::getFileExtension($this->buktiTransfer);
+            $customFileName = FileNamingService::generateBuktiBayarFileName(
+                'psikologi',
+                $this->pendaftar->nomor_pendaftaran,
+                $extension
+            );
+
+            // Simpan ke private storage untuk keamanan dokumen keuangan
+            $path = $this->buktiTransfer->storeAs(
+                'bukti_bayar/' . $this->pendaftar->id,
+                $customFileName,
+                'private'
+            );
 
             // Update data
             $this->tesPsikologiData->update([
@@ -122,9 +135,9 @@ class TesPsikologi extends Component
             return;
         }
 
-        // Delete file
+        // Delete file from private storage
         if ($this->tesPsikologiData->bukti_transfer) {
-            Storage::delete('public/' . $this->tesPsikologiData->bukti_transfer);
+            Storage::disk('private')->delete($this->tesPsikologiData->bukti_transfer);
         }
 
         // Reset data

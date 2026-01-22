@@ -99,7 +99,6 @@
                                         <div class="text-sm font-medium text-emerald-700 hover:text-emerald-900 cursor-pointer underline">
                                             {{ $sekolah->nama_sekolah }}
                                         </div>
-                                        <div class="text-sm text-gray-500">{{ $sekolah->nsm ? 'NSM: ' . $sekolah->nsm : '' }}</div>
                                     </button>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">

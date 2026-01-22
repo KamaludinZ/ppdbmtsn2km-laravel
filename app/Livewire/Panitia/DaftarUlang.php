@@ -36,6 +36,7 @@ class DaftarUlang extends Component
     public $madrasahContent = '';
     public $seragamContent = '';
     public $ukuranContent = '';
+    public $paymentInfoText = '';
     public $showPernyataan = true;
     public $showPembayaranMadrasah = true;
     public $showPembayaranSeragam = true;
@@ -53,6 +54,7 @@ class DaftarUlang extends Component
         $this->madrasahContent = \App\Models\Setting::get('daftar_ulang_madrasah_content', '');
         $this->seragamContent = \App\Models\Setting::get('daftar_ulang_seragam_content', '');
         $this->ukuranContent = \App\Models\Setting::get('daftar_ulang_ukuran_content', '');
+        $this->paymentInfoText = \App\Models\Setting::get('daftar_ulang_payment_info_text', 'Pembayaran disesuaikan dengan kemampuan orang tua/wali. Apabila ingin berkomunikasi perihal kompensasi waktu/biaya/lainnya lebih lanjut, dapat dibicarakan dengan komite madrasah untuk menemukan solusi secara kesepakatan bersama. Waktu sesuai jadwal yang disampaikan oleh pihak komite madrasah.');
         $this->showPernyataan = \App\Models\Setting::get('daftar_ulang_show_pernyataan', true);
         $this->showPembayaranMadrasah = \App\Models\Setting::get('daftar_ulang_show_pembayaran_madrasah', true);
         $this->showPembayaranSeragam = \App\Models\Setting::get('daftar_ulang_show_pembayaran_seragam', true);

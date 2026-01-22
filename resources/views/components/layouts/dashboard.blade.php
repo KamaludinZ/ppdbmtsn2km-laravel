@@ -15,14 +15,10 @@
         <link rel="icon" type="image/x-icon" href="/favicon.ico">
     @endif
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=inter:400,500,600,700&display=swap" rel="stylesheet" />
+    <!-- Assets Loading -->
+    <x-asset-loader />
 
-    <!-- Styles & Scripts -->
-    <style>[x-cloak] { display: none !important; }</style>
-
-    <!-- Trix Editor -->
+    <!-- Trix Editor (for admin forms) -->
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/trix/1.3.1/trix.min.css">
     <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/trix/1.3.1/trix.min.js"></script>
 
@@ -68,17 +64,6 @@
             flex-grow: 1 !important;
         }
     </style>
-
-        <!-- Production Assets -->
-    @if(app()->environment('local'))
-        <!-- Development with Vite -->
-        @vite(['resources/css/app.css', 'resources/js/app.js'])
-    @else
-        <!-- Production Assets -->
-        <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-        <script src="{{ asset('js/app.js') }}" defer></script>
-    @endif
-    @livewireStyles
 </head>
 <body class="antialiased bg-gray-50" x-data="{ sidebarOpen: false }">
     <div class="min-h-screen flex">
@@ -429,12 +414,6 @@
                             </svg>
                             Laporan
                         </a>
-                        <a href="/panitia/emis-input" class="flex items-center px-4 py-3 text-sm rounded-lg transition {{ request()->is('panitia/emis-input*') ? $activeClass : $inactiveClass }}">
-                            <svg class="w-5 h-5 mr-3 {{ request()->is('panitia/emis-input*') ? 'text-emerald-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                            </svg>
-                            Input EMIS
-                        </a>
                     @endif
                 </nav>
             </div>
@@ -619,7 +598,10 @@
 
                             <!-- Menu Items -->
                             <div class="py-2">
-                                <button @click="Livewire.dispatch('openModal'); profilOpen = false" class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition">
+                                <button
+                                    type="button"
+                                    @click="profilOpen = false; $dispatch('open-edit-profil')"
+                                    class="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition">
                                     <svg class="w-5 h-5 mr-3 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                     </svg>

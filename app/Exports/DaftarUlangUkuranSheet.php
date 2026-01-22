@@ -1,0 +1,131 @@
+<?php
+
+namespace App\Exports;
+
+use App\Models\Seragam;
+use Maatwebsite\Excel\Concerns\FromQuery;
+use Maatwebsite\Excel\Concerns\WithHeadings;
+use Maatwebsite\Excel\Concerns\WithMapping;
+use Maatwebsite\Excel\Concerns\WithStyles;
+use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
+use Maatwebsite\Excel\Concerns\WithTitle;
+use Carbon\Carbon;
+
+class DaftarUlangUkuranSheet implements FromQuery, WithHeadings, WithMapping, WithStyles, ShouldAutoSize, WithTitle
+{
+    protected $status;
+    protected $search;
+
+    public function __construct($status = null, $search = null)
+    {
+        $this->status = $status;
+        $this->search = $search;
+    }
+
+    public function query()
+    {
+        $query = Seragam::with(['pendaftar.jalurPendaftaran', 'pendaftar.user', 'pendaftar.daftarUlang']);
+
+        // Only show records with size data
+        $query->whereNotNull('ukuran_atasan')
+              ->orWhereNotNull('ukuran_bawahan')
+              ->orWhereNotNull('ukuran_jas')
+              ->orWhereNotNull('ukuran_kopyah');
+
+        // Filter based on daftar ulang status if provided
+        if ($this->status) {
+            $query->whereHas('pendaftar.daftarUlang', function($q) {
+                $q->where('status_daftar_ulang', $this->status);
+            });
+        }
+
+        if ($this->search) {
+            $query->whereHas('pendaftar', function($q) {
+                $q->where('nama_lengkap', 'like', '%' . $this->search . '%')
+                  ->orWhere('nomor_pendaftaran', 'like', '%' . $this->search . '%');
+            });
+        }
+
+        return $query->orderBy('created_at', 'desc');
+    }
+
+    public function map($seragam): array
+    {
+        $pendaftar = $seragam->pendaftar;
+
+        return [
+            $pendaftar->nomor_pendaftaran ?? '',
+            $pendaftar->nisn ?? '',
+            $pendaftar->nama_lengkap ?? '',
+            $pendaftar->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan',
+            $pendaftar->tinggi_badan ? $pendaftar->tinggi_badan . ' cm' : '-',
+            $pendaftar->berat_badan ? $pendaftar->berat_badan . ' kg' : '-',
+            $seragam->paket ?? '-',
+            $seragam->ukuran_jas ?? '-',
+            $seragam->ukuran_atasan ?? '-',
+            $seragam->ukuran_bawahan ?? '-',
+            $seragam->ukuran_kopyah ?? '-',
+            $pendaftar->telepon_ortu ?? $pendaftar->no_hp ?? '',
+            $pendaftar->alamat ?? '',
+            $this->getStatusLabel($seragam->status),
+            $seragam->catatan ?? '',
+            $seragam->created_at ? Carbon::parse($seragam->created_at)->format('d-m-Y H:i') : '',
+        ];
+    }
+
+    public function headings(): array
+    {
+        return [
+            'No. Pendaftaran',
+            'NISN',
+            'Nama Lengkap',
+            'Jenis Kelamin',
+            'Tinggi Badan',
+            'Berat Badan',
+            'Paket Seragam',
+            'Ukuran Jas',
+            'Ukuran Atasan',
+            'Ukuran Bawahan',
+            'Ukuran Kopyah',
+            'No. Telepon',
+            'Alamat',
+            'Status',
+            'Catatan',
+            'Tanggal Pemesanan',
+        ];
+    }
+
+    public function styles(Worksheet $sheet)
+    {
+        return [
+            1 => [
+                'font' => ['bold' => true, 'size' => 11],
+                'fill' => [
+                    'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                    'startColor' => ['rgb' => '9C27B0']
+                ],
+                'font' => ['color' => ['rgb' => 'FFFFFF'], 'bold' => true],
+            ],
+        ];
+    }
+
+    public function title(): string
+    {
+        return 'Ukuran Seragam & Atribut';
+    }
+
+    private function getStatusLabel($status)
+    {
+        $statusLabels = [
+            'menunggu_pembayaran' => 'Menunggu Pembayaran',
+            'menunggu_verifikasi' => 'Menunggu Verifikasi',
+            'pembayaran_diterima' => 'Pembayaran Diterima',
+            'seragam_disiapkan' => 'Seragam Disiapkan',
+            'selesai' => 'Selesai',
+            'dibatalkan' => 'Dibatalkan'
+        ];
+
+        return $statusLabels[$status] ?? ucfirst(str_replace('_', ' ', $status));
+    }
+}

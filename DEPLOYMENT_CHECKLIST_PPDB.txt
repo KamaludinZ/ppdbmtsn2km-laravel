@@ -1,0 +1,114 @@
+DEPLOYMENT CHECKLIST untuk PPDB MTsN 2 Kota Malang
+===================================================
+
+PRE-DEPLOYMENT (Di Local):
+--------------------------
+✅ Build assets telah dijalankan (npm run build)
+✅ Blade templates telah di-fix (tidak ada @vite)
+✅ File .env.production telah disiapkan
+✅ Database production telah disiapkan
+
+FILES UNTUK UPLOAD:
+-------------------
+Folder WAJIB:
+✅ app/
+✅ bootstrap/
+✅ config/
+✅ database/
+✅ public/ (TERMASUK public/build/)
+✅ resources/
+✅ routes/
+✅ storage/ (struktur folder saja, isi akan di-generate)
+✅ vendor/ (atau install via composer di server)
+
+Files WAJIB:
+✅ .env.production (rename jadi .env di server)
+✅ composer.json
+✅ composer.lock
+✅ artisan
+
+Files TIDAK PERLU (jangan upload):
+❌ node_modules/
+❌ package.json
+❌ package-lock.json
+❌ vite.config.js
+❌ tailwind.config.js
+❌ postcss.config.js
+❌ .git/
+❌ tests/
+❌ .env (local)
+❌ *.log
+❌ storage/app/public/* (user uploads)
+❌ storage/framework/cache/*
+❌ storage/framework/sessions/*
+❌ storage/framework/views/*
+
+COMMANDS DI PRODUCTION:
+-----------------------
+1. Install dependencies (jika vendor belum di-upload):
+   composer install --optimize-autoloader --no-dev
+
+2. Setup environment:
+   mv .env.production .env
+   php artisan key:generate
+
+3. Setup database:
+   php artisan migrate --force
+   php artisan db:seed --force
+
+4. Create storage link:
+   php artisan storage:link
+
+5. Set permissions:
+   chmod -R 775 storage/
+   chmod -R 775 bootstrap/cache/
+
+6. Clear & optimize:
+   php artisan config:cache
+   php artisan route:cache
+   php artisan view:cache
+   php artisan optimize
+
+7. Test aplikasi:
+   php artisan --version
+   curl https://pmbm.mtsn2kotamalang.sch.id/
+
+STRUKTUR FOLDER PRODUCTION:
+---------------------------
+pmbm.mtsn2kotamalang.sch.id/
+├── app/
+├── bootstrap/
+├── config/
+├── database/
+├── public/
+│   ├── build/           ← Compiled assets
+│   │   ├── manifest.json
+│   │   └── assets/
+│   ├── css/            ← Custom CSS (jika ada)
+│   ├── js/             ← Custom JS (jika ada)
+│   └── index.php
+├── resources/
+│   └── views/          ← 100+ blade templates
+├── routes/
+├── storage/
+│   ├── app/
+│   ├── framework/
+│   └── logs/
+├── vendor/             ← PHP dependencies
+├── .env               ← Production config
+├── composer.json
+└── artisan
+
+TROUBLESHOOTING:
+----------------
+Problem: Vite manifest not found
+Solution: Pastikan folder public/build/ ter-upload dengan lengkap
+
+Problem: Style berantakan
+Solution: Clear browser cache & pastikan CSS ter-load
+
+Problem: 500 Internal Server Error
+Solution: Check storage/logs/laravel.log & set permissions
+
+Problem: Database connection refused
+Solution: Check .env credentials & PostgreSQL service

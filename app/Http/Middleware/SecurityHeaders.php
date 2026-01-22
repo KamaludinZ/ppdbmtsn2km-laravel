@@ -24,12 +24,17 @@ class SecurityHeaders
         $response->headers->set('Referrer-Policy', 'strict-origin-when-cross-origin');
         $response->headers->set('Permissions-Policy', 'geolocation=(), microphone=(), camera=()');
 
+        // Remove server identification headers (hide Laravel/PHP version)
+        $response->headers->remove('X-Powered-By');
+        $response->headers->remove('Server');
+        $response->headers->remove('X-Laravel-Version');
+
         // Strict-Transport-Security (HSTS) - hanya untuk HTTPS
         if ($request->secure()) {
             $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
         }
 
-        // Content Security Policy (CSP) - disesuaikan dengan kebutuhan
+        // Content Security Policy (CSP) - Cloudflare-compatible
         // Determine Vite URL dynamically from the hot file or use default
         $viteUrl = '';
         $wsUrl = '';
@@ -55,14 +60,14 @@ class SecurityHeaders
         }
 
         $csp = "default-src 'self'; ";
-        $csp .= "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.tiny.cloud https://*.tinymce.com https://cdnjs.cloudflare.com{$viteUrl}; ";
-        $csp .= "style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://cdn.jsdelivr.net https://cdn.tiny.cloud https://cdnjs.cloudflare.com{$viteUrl}; ";
-        $csp .= "font-src 'self' https://fonts.bunny.net https://cdn.tiny.cloud data:; ";
-        $csp .= "img-src 'self' data: https:; ";
-        $csp .= "connect-src 'self' https://*.tiny.cloud https://*.tinymce.com{$viteUrl}{$wsUrl}; ";
+        $csp .= "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net https://cdn.tiny.cloud https://*.tinymce.com https://cdnjs.cloudflare.com https://unpkg.com https://static.cloudflareinsights.com https://*.cloudflareinsights.com https://challenges.cloudflare.com{$viteUrl}; ";
+        $csp .= "style-src 'self' 'unsafe-inline' https://fonts.bunny.net https://cdn.jsdelivr.net https://cdn.tiny.cloud https://cdnjs.cloudflare.com https://unpkg.com https://fonts.googleapis.com{$viteUrl}; ";
+        $csp .= "font-src 'self' https://fonts.bunny.net https://fonts.gstatic.com https://fonts.googleapis.com data:; ";
+        $csp .= "img-src 'self' data: https: http:; ";
+        $csp .= "connect-src 'self' https://*.googleapis.com https://*.gstatic.com https://*.cloudflareinsights.com https://cdn.jsdelivr.net https://cdnjs.cloudflare.com https://unpkg.com{$viteUrl}{$wsUrl}; ";
         $csp .= "worker-src 'self' blob:; ";
-        $csp .= "frame-src 'self' https://www.google.com https://maps.google.com https://www.google.co.id https://maps.google.co.id https://www.googleapis.com https://www.youtube.com https://youtube.com https://*.youtube.com; ";
-        $csp .= "frame-ancestors 'self';";
+        $csp .= "frame-src 'self' https://www.google.com https://maps.google.com https://www.google.co.id https://maps.google.co.id https://www.googleapis.com https://www.youtube.com https://youtube.com https://*.youtube.com https://challenges.cloudflare.com; ";
+        $csp .= "frame-ancestors 'self';";  // Changed from 'none' to 'self' for Cloudflare compatibility
 
         $response->headers->set('Content-Security-Policy', $csp);
 

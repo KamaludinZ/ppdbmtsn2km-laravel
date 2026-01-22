@@ -1,6 +1,6 @@
 <div>
     <!-- Stats Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <!-- Total Pendaftar -->
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
@@ -35,13 +35,45 @@
             </div>
         </div>
 
-        <!-- Diterima -->
+        <!-- Lengkapi Data -->
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-sm font-medium text-gray-600">Diterima</p>
-                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['diterima']) }}</p>
-                    <p class="text-sm text-green-600 mt-2">{{ $stats['diterima_percentage'] }}% dari total</p>
+                    <p class="text-sm font-medium text-gray-600">Lengkapi Data</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['lengkapi_data']) }}</p>
+                    <p class="text-sm text-orange-600 mt-2">{{ $stats['lengkapi_data_percentage'] }}% dari total</p>
+                </div>
+                <div class="w-14 h-14 bg-orange-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-8 h-8 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Perbaiki Data -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Perbaiki Data</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['perbaiki_data']) }}</p>
+                    <p class="text-sm text-red-600 mt-2">{{ $stats['perbaiki_data_percentage'] }}% dari total</p>
+                </div>
+                <div class="w-14 h-14 bg-red-100 rounded-lg flex items-center justify-center">
+                    <svg class="w-8 h-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Data Disetujui -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-600">Data Disetujui</p>
+                    <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['data_disetujui']) }}</p>
+                    <p class="text-sm text-green-600 mt-2">{{ $stats['data_disetujui_percentage'] }}% dari total</p>
                 </div>
                 <div class="w-14 h-14 bg-green-100 rounded-lg flex items-center justify-center">
                     <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -287,11 +319,16 @@
                     </div>
                 </div>
 
-                <!-- Section Breakdown -->
+                <!-- Section Breakdown - Sesuai Tab Formulir -->
                 <div>
-                    <h4 class="text-sm font-semibold text-gray-900 mb-4">Kelengkapan Per Seksi Data</h4>
+                    <h4 class="text-sm font-semibold text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Kelengkapan Per Seksi Data
+                    </h4>
                     @if(isset($emisCompletenessStats['section_averages']) && count($emisCompletenessStats['section_averages']) > 0)
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             @foreach($emisCompletenessStats['section_averages'] as $key => $section)
                                 @php
                                     $percentage = $section['average'];
@@ -300,36 +337,50 @@
                                         $borderColor = 'border-green-200';
                                         $textColor = 'text-green-900';
                                         $barColor = 'bg-green-600';
+                                        $icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
                                     } elseif ($percentage >= 50) {
                                         $bgColor = 'bg-yellow-50';
                                         $borderColor = 'border-yellow-200';
                                         $textColor = 'text-yellow-900';
                                         $barColor = 'bg-yellow-600';
+                                        $icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>';
                                     } elseif ($percentage > 0) {
                                         $bgColor = 'bg-orange-50';
                                         $borderColor = 'border-orange-200';
                                         $textColor = 'text-orange-900';
                                         $barColor = 'bg-orange-600';
+                                        $icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
                                     } else {
                                         $bgColor = 'bg-red-50';
                                         $borderColor = 'border-red-200';
                                         $textColor = 'text-red-900';
                                         $barColor = 'bg-red-600';
+                                        $icon = '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
                                     }
                                 @endphp
-                                <div class="{{ $bgColor }} {{ $borderColor }} border p-4 rounded-lg">
-                                    <div class="flex justify-between items-center mb-2">
-                                        <p class="text-xs font-medium {{ $textColor }}">{{ $section['label'] }}</p>
-                                        <span class="text-sm font-bold {{ $textColor }}">{{ $percentage }}%</span>
+                                <div class="{{ $bgColor }} {{ $borderColor }} border-l-4 p-4 rounded-r-lg shadow-sm hover:shadow-md transition-shadow">
+                                    <div class="flex items-start justify-between mb-3">
+                                        <div class="flex items-center flex-1">
+                                            <svg class="w-5 h-5 mr-2 {{ $textColor }} flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                {!! $icon !!}
+                                            </svg>
+                                            <p class="text-sm font-semibold {{ $textColor }}">{{ $section['label'] }}</p>
+                                        </div>
+                                        <span class="text-lg font-bold {{ $textColor }} ml-2">{{ $percentage }}%</span>
                                     </div>
-                                    <div class="w-full bg-white bg-opacity-60 rounded-full h-2">
-                                        <div class="{{ $barColor }} h-2 rounded-full transition-all duration-300" style="width: {{ $percentage }}%"></div>
+                                    <div class="w-full bg-white bg-opacity-70 rounded-full h-2.5 shadow-inner">
+                                        <div class="{{ $barColor }} h-2.5 rounded-full transition-all duration-500 ease-out" style="width: {{ $percentage }}%"></div>
                                     </div>
                                 </div>
                             @endforeach
                         </div>
                     @else
-                        <p class="text-sm text-gray-500 text-center py-4">Belum ada data kelengkapan EMIS</p>
+                        <div class="text-center py-8">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <p class="text-sm text-gray-500 mt-2">Belum ada data kelengkapan EMIS</p>
+                        </div>
                     @endif
                 </div>
             </div>
