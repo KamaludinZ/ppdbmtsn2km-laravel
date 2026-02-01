@@ -45,6 +45,16 @@ class DaftarUlangMadrasahSheet implements FromQuery, WithHeadings, WithMapping, 
     {
         $pendaftar = $daftarUlang->pendaftar;
 
+        // Get nominal biaya (supports both predefined and custom "opsi lainnya")
+        $nominalBiaya = $daftarUlang->nominal_biaya;
+        $nominalBiayaName = '';
+        $nominalBiayaAmount = 0;
+
+        if (is_array($nominalBiaya)) {
+            $nominalBiayaName = $nominalBiaya['name'] ?? '';
+            $nominalBiayaAmount = $nominalBiaya['amount'] ?? 0;
+        }
+
         return [
             $pendaftar->nomor_pendaftaran ?? '',
             $pendaftar->nisn ?? '',
@@ -56,13 +66,16 @@ class DaftarUlangMadrasahSheet implements FromQuery, WithHeadings, WithMapping, 
             $pendaftar->telepon_ortu ?? $pendaftar->no_hp ?? '',
             $pendaftar->user->email ?? '',
             $pendaftar->jalurPendaftaran->nama ?? '',
+            $this->getStatusPersetujuanLabel($pendaftar->status_persetujuan_daftar_ulang),
+            $pendaftar->alasan_tidak_setuju ?? '-',
             $pendaftar->asal_sekolah ?? '',
             $pendaftar->nsm_sekolah_asal ?? $pendaftar->npsn_sekolah_asal ?? '',
             $this->getStatusLabel($daftarUlang->status_daftar_ulang),
-            $daftarUlang->tanggal_bayar ? Carbon::parse($daftarUlang->tanggal_bayar)->format('d-m-Y H:i') : '',
-            'Rp ' . number_format($daftarUlang->nominal_bayar ?? 0, 0, ',', '.'),
-            $daftarUlang->bukti_bayar ? 'Sudah Upload' : 'Belum Upload',
-            $daftarUlang->tanggal_verifikasi ? Carbon::parse($daftarUlang->tanggal_verifikasi)->format('d-m-Y H:i') : '',
+            $nominalBiayaName,
+            'Rp ' . number_format($nominalBiayaAmount, 0, ',', '.'),
+            $daftarUlang->opsi_pembayaran ?? '',
+            $daftarUlang->metode_pembayaran ?? '',
+            $daftarUlang->bukti_pembayaran_madrasah ? 'Sudah Upload' : 'Belum Upload',
             $daftarUlang->catatan ?? '',
             $daftarUlang->created_at ? Carbon::parse($daftarUlang->created_at)->format('d-m-Y H:i') : '',
         ];
@@ -81,13 +94,16 @@ class DaftarUlangMadrasahSheet implements FromQuery, WithHeadings, WithMapping, 
             'No. Telepon',
             'Email',
             'Jalur Pendaftaran',
+            'Status Persetujuan',
+            'Alasan Tidak Melanjutkan',
             'Asal Sekolah',
             'NSM/NPSN Sekolah',
             'Status Daftar Ulang',
-            'Tanggal Bayar',
-            'Nominal Bayar',
+            'Jenis Nominal Biaya',
+            'Nominal Biaya',
+            'Opsi Pembayaran',
+            'Metode Pembayaran',
             'Status Bukti Bayar',
-            'Tanggal Verifikasi',
             'Catatan',
             'Tanggal Daftar Ulang',
         ];
@@ -122,5 +138,16 @@ class DaftarUlangMadrasahSheet implements FromQuery, WithHeadings, WithMapping, 
         ];
 
         return $statusLabels[$status] ?? ucfirst($status);
+    }
+
+    private function getStatusPersetujuanLabel($status)
+    {
+        $statusLabels = [
+            'belum_memilih' => 'Belum Memilih',
+            'setuju' => 'Setuju Daftar Ulang',
+            'tidak_setuju' => 'Tidak Melanjutkan',
+        ];
+
+        return $statusLabels[$status] ?? 'Belum Memilih';
     }
 }

@@ -238,17 +238,35 @@
                                 </div>
                             @else
                                 <!-- Normal upload section -->
+                                @php
+                                    $isApproved = $pendaftar->status_pendaftaran === 'data_disetujui';
+                                @endphp
                                 <div class="mt-2">
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">
-                                        {{ $uploaded ? 'Ganti File (PDF)' : 'Upload File (PDF)' }}
-                                    </label>
-                                    <div class="space-y-2">
-                                        <div class="relative">
-                                            <input
-                                                type="file"
-                                                wire:model.live="file_{{ $key }}"
-                                                accept=".pdf,application/pdf"
-                                                class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
+                                    @if($isApproved)
+                                        <div class="p-3 bg-green-50 border border-green-200 rounded-lg">
+                                            <div class="flex items-start">
+                                                <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                <div class="flex-1">
+                                                    <p class="text-sm text-green-800 font-medium">Data Sudah Disetujui</p>
+                                                    <p class="text-xs text-green-600 mt-1">
+                                                        Upload dokumen tidak dapat dilakukan karena data pendaftaran sudah disetujui.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                                            {{ $uploaded ? 'Ganti File (PDF)' : 'Upload File (PDF)' }}
+                                        </label>
+                                        <div class="space-y-2">
+                                            <div class="relative">
+                                                <input
+                                                    type="file"
+                                                    wire:model.live="file_{{ $key }}"
+                                                    accept=".pdf,application/pdf"
+                                                    class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
 
                                             <!-- Loading overlay during upload -->
                                             <div wire:loading.delay wire:target="file_{{ $key }}" class="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center rounded z-10">
@@ -269,6 +287,7 @@
                                             ⏳ Sedang memproses upload...
                                         </div>
                                     </div>
+                                @endif
                                 </div>
                             @endif
                         </div>

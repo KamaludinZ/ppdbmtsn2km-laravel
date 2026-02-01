@@ -48,6 +48,16 @@ class DaftarUlangSeragamSheet implements FromQuery, WithHeadings, WithMapping, W
     {
         $pendaftar = $seragam->pendaftar;
 
+        // Get nominal seragam (supports both predefined and custom "opsi lainnya")
+        $nominalSeragam = $seragam->nominal_seragam;
+        $nominalSeragamName = '';
+        $nominalSeragamAmount = 0;
+
+        if (is_array($nominalSeragam)) {
+            $nominalSeragamName = $nominalSeragam['name'] ?? '';
+            $nominalSeragamAmount = $nominalSeragam['amount'] ?? 0;
+        }
+
         return [
             $pendaftar->nomor_pendaftaran ?? '',
             $pendaftar->nisn ?? '',
@@ -55,13 +65,16 @@ class DaftarUlangSeragamSheet implements FromQuery, WithHeadings, WithMapping, W
             $pendaftar->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan',
             $pendaftar->telepon_ortu ?? $pendaftar->no_hp ?? '',
             $pendaftar->user->email ?? '',
-            $seragam->paket ?? '-',
-            'Rp ' . number_format($seragam->total_bayar ?? 0, 0, ',', '.'),
-            $this->getStatusLabel($seragam->status),
-            $seragam->tanggal_bayar ? Carbon::parse($seragam->tanggal_bayar)->format('d-m-Y H:i') : '',
-            $seragam->bukti_bayar ? 'Sudah Upload' : 'Belum Upload',
-            $seragam->tanggal_verifikasi ? Carbon::parse($seragam->tanggal_verifikasi)->format('d-m-Y H:i') : '',
-            $seragam->catatan ?? '',
+            $this->getStatusPersetujuanLabel($pendaftar->status_persetujuan_daftar_ulang),
+            $pendaftar->alasan_tidak_setuju ?? '-',
+            $seragam->paket_seragam ?? '-',
+            $nominalSeragamName,
+            'Rp ' . number_format($nominalSeragamAmount, 0, ',', '.'),
+            $seragam->opsi_pembayaran_seragam ?? '',
+            $seragam->bank_seragam ?? '',
+            $this->getStatusLabel($seragam->status_seragam),
+            $seragam->bukti_pembayaran ? 'Sudah Upload' : 'Belum Upload',
+            $seragam->catatan_seragam ?? '',
             $seragam->created_at ? Carbon::parse($seragam->created_at)->format('d-m-Y H:i') : '',
         ];
     }
@@ -75,14 +88,17 @@ class DaftarUlangSeragamSheet implements FromQuery, WithHeadings, WithMapping, W
             'Jenis Kelamin',
             'No. Telepon',
             'Email',
+            'Status Persetujuan',
+            'Alasan Tidak Melanjutkan',
             'Paket Seragam',
-            'Total Bayar',
+            'Jenis Nominal Seragam',
+            'Nominal Seragam',
+            'Opsi Pembayaran',
+            'Bank',
             'Status Pembayaran',
-            'Tanggal Bayar',
             'Status Bukti Bayar',
-            'Tanggal Verifikasi',
             'Catatan',
-            'Tanggal Pemesanan',
+            'Tanggal Input',
         ];
     }
 
@@ -117,5 +133,16 @@ class DaftarUlangSeragamSheet implements FromQuery, WithHeadings, WithMapping, W
         ];
 
         return $statusLabels[$status] ?? ucfirst(str_replace('_', ' ', $status));
+    }
+
+    private function getStatusPersetujuanLabel($status)
+    {
+        $statusLabels = [
+            'belum_memilih' => 'Belum Memilih',
+            'setuju' => 'Setuju Daftar Ulang',
+            'tidak_setuju' => 'Tidak Melanjutkan',
+        ];
+
+        return $statusLabels[$status] ?? 'Belum Memilih';
     }
 }

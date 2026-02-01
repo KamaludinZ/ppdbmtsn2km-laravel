@@ -7,10 +7,12 @@ use App\Models\KartuKendali;
 use App\Models\Setting;
 use Livewire\Component;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Url;
 
 #[Layout('components.layouts.dashboard')]
 class PengaturanKartu extends Component
 {
+    #[Url(keep: true)]
     public $activeTab = 'jadwal-tes';
 
     // JadwalTes properties
@@ -77,7 +79,7 @@ class PengaturanKartu extends Component
         ]);
 
         Setting::set('catatan_kartu_ujian', $this->catatan_kartu_ujian);
-        session()->flash('message', 'Catatan kartu ujian berhasil disimpan.');
+        session()->flash('message', 'Catatan kartu tes seleksi berhasil disimpan.');
     }
 
     public function saveJadwalTes()

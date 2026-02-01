@@ -20,9 +20,18 @@
             <button wire:click="toggleEdit('OrangTua')" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm transition">Batal</button>
         </div>
     @else
-        <button wire:click="toggleEdit('OrangTua')" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition">
+        @php
+            $isApproved = $pendaftar->status_pendaftaran === 'data_disetujui';
+            $isPendaftar = Auth::user()->role === 'pendaftar';
+            // Hanya disable untuk role Pendaftar, Admin/Panitia tetap bisa edit
+            $shouldDisable = $isApproved && $isPendaftar;
+        @endphp
+        <button
+            wire:click="toggleEdit('OrangTua')"
+            @if($shouldDisable) disabled title="Data sudah disetujui, tidak dapat diubah" @endif
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition {{ $shouldDisable ? 'opacity-50 cursor-not-allowed' : '' }}">
             <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-            Edit Data
+            {{ $shouldDisable ? 'Data Sudah Disetujui' : 'Edit Data' }}
         </button>
     @endif
 </div>
@@ -42,7 +51,7 @@
                 <!-- Nama Lengkap -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
-                    <input type="text" wire:model="nama_ayah" pattern="[A-Za-z\s.,'-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" required>
+                    <input type="text" wire:model="nama_ayah" pattern="[A-Za-z\s.,'\-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" required>
                     @error('nama_ayah') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                 </div>
 
@@ -96,7 +105,7 @@
                     <!-- Tempat Lahir -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tempat Lahir <span class="text-red-500">*</span></label>
-                        <input type="text" wire:model="ayah_tempat_lahir" pattern="[A-Za-z\s.,'-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" required>
+                        <input type="text" wire:model="ayah_tempat_lahir" pattern="[A-Za-z\s.,'\-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" required>
                         @error('ayah_tempat_lahir') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                     </div>
 
@@ -204,7 +213,7 @@
                 <!-- Nama Lengkap -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
-                    <input type="text" wire:model="nama_ibu" pattern="[A-Za-z\s.,'-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" required>
+                    <input type="text" wire:model="nama_ibu" pattern="[A-Za-z\s.,'\-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" required>
                     @error('nama_ibu') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                 </div>
 
@@ -258,7 +267,7 @@
                     <!-- Tempat Lahir -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tempat Lahir <span class="text-red-500">*</span></label>
-                        <input type="text" wire:model="ibu_tempat_lahir" pattern="[A-Za-z\s.,'-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" required>
+                        <input type="text" wire:model="ibu_tempat_lahir" pattern="[A-Za-z\s.,'\-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" required>
                         @error('ibu_tempat_lahir') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                     </div>
 
@@ -380,7 +389,7 @@
                     <!-- Nama Lengkap -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
-                        <input type="text" wire:model="wali_nama" pattern="[A-Za-z\s.,'-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200" required>
+                        <input type="text" wire:model="wali_nama" pattern="[A-Za-z\s.,'\-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200" required>
                         @error('wali_nama') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                     </div>
 
@@ -434,7 +443,7 @@
                         <!-- Tempat Lahir -->
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-1">Tempat Lahir <span class="text-red-500">*</span></label>
-                            <input type="text" wire:model="wali_tempat_lahir" pattern="[A-Za-z\s.,'-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200" required>
+                            <input type="text" wire:model="wali_tempat_lahir" pattern="[A-Za-z\s.,'\-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200" required>
                             @error('wali_tempat_lahir') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
 
@@ -572,16 +581,16 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <p class="text-xs text-blue-700 font-medium mb-1">Nama Lengkap</p>
-                    <p class="text-gray-900 font-medium">{{ $nama_ayah ?: '-' }}</p>
+                    <p class="text-gray-900 font-medium">{{ $pendaftar->nama_ayah ?: '-' }}</p>
                 </div>
                 <div>
                     <p class="text-xs text-blue-700 font-medium mb-1">Status</p>
                     <p class="text-gray-900">
-                        @if($ayah_status === 'masih_hidup')
+                        @if($pendaftar->ayah_status === 'masih_hidup')
                             <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">Masih Hidup</span>
-                        @elseif($ayah_status === 'meninggal')
+                        @elseif($pendaftar->ayah_status === 'meninggal')
                             <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-sm">Sudah Meninggal</span>
-                        @elseif($ayah_status === 'tidak_diketahui')
+                        @elseif($pendaftar->ayah_status === 'tidak_diketahui')
                             <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm">Tidak Diketahui</span>
                         @else
                             -
@@ -589,55 +598,55 @@
                     </p>
                 </div>
 
-                @if($ayah_status === 'masih_hidup')
+                @if($pendaftar->ayah_status === 'masih_hidup')
                     <div>
                         <p class="text-xs text-blue-700 font-medium mb-1">Kewarganegaraan</p>
-                        <p class="text-gray-900">{{ $ayah_kewarganegaraan ?: '-' }}</p>
+                        <p class="text-gray-900">{{ $pendaftar->ayah_kewarganegaraan ?: '-' }}</p>
                     </div>
 
-                    @if($ayah_kewarganegaraan === 'WNI')
+                    @if($pendaftar->ayah_kewarganegaraan === 'WNI')
                         <div>
                             <p class="text-xs text-blue-700 font-medium mb-1">NIK</p>
-                            <p class="text-gray-900 font-mono">{{ $ayah_nik ?: '-' }}</p>
+                            <p class="text-gray-900 font-mono">{{ $pendaftar->ayah_nik ?: '-' }}</p>
                         </div>
-                    @elseif($ayah_kewarganegaraan === 'WNA')
+                    @elseif($pendaftar->ayah_kewarganegaraan === 'WNA')
                         <div>
                             <p class="text-xs text-blue-700 font-medium mb-1">Asal Negara</p>
-                            <p class="text-gray-900">{{ $ayah_negara_asal ?: '-' }}</p>
+                            <p class="text-gray-900">{{ $pendaftar->ayah_negara_asal ?: '-' }}</p>
                         </div>
                         <div>
                             <p class="text-xs text-blue-700 font-medium mb-1">Nomor KITAS</p>
-                            <p class="text-gray-900 font-mono">{{ $ayah_nomor_kitas ?: '-' }}</p>
+                            <p class="text-gray-900 font-mono">{{ $pendaftar->ayah_nomor_kitas ?: '-' }}</p>
                         </div>
                     @endif
 
                     <div>
                         <p class="text-xs text-blue-700 font-medium mb-1">Tempat Lahir</p>
-                        <p class="text-gray-900">{{ $ayah_tempat_lahir ?: '-' }}</p>
+                        <p class="text-gray-900">{{ $pendaftar->ayah_tempat_lahir ?: '-' }}</p>
                     </div>
                     <div>
                         <p class="text-xs text-blue-700 font-medium mb-1">Tanggal Lahir</p>
-                        <p class="text-gray-900">{{ $ayah_tanggal_lahir ? \Carbon\Carbon::parse($ayah_tanggal_lahir)->format('d/m/Y') : '-' }}</p>
+                        <p class="text-gray-900">{{ $pendaftar->ayah_tanggal_lahir ? \Carbon\Carbon::parse($pendaftar->ayah_tanggal_lahir)->format('d/m/Y') : '-' }}</p>
                     </div>
                     <div>
                         <p class="text-xs text-blue-700 font-medium mb-1">Pendidikan Terakhir</p>
-                        <p class="text-gray-900">{{ $ayah_pendidikan ?: '-' }}</p>
+                        <p class="text-gray-900">{{ $pendaftar->ayah_pendidikan ?: '-' }}</p>
                     </div>
                     <div>
                         <p class="text-xs text-blue-700 font-medium mb-1">Pekerjaan Utama</p>
-                        <p class="text-gray-900">{{ $ayah_pekerjaan ?: '-' }}</p>
+                        <p class="text-gray-900">{{ $pendaftar->ayah_pekerjaan ?: '-' }}</p>
                     </div>
                     <div>
                         <p class="text-xs text-blue-700 font-medium mb-1">Penghasilan Bulanan</p>
-                        <p class="text-gray-900">{{ $ayah_penghasilan ? 'Rp ' . $ayah_penghasilan : '-' }}</p>
+                        <p class="text-gray-900">{{ $pendaftar->ayah_penghasilan ?: '-' }}</p>
                     </div>
                     <div>
                         <p class="text-xs text-blue-700 font-medium mb-1">Nomor HP</p>
                         <p class="text-gray-900">
-                            @if($ayah_tidak_punya_hp)
+                            @if($pendaftar->ayah_tidak_punya_hp)
                                 <span class="text-gray-500 italic">Tidak memiliki nomor HP</span>
                             @else
-                                {{ $ayah_no_hp ?: '-' }}
+                                {{ $pendaftar->ayah_no_hp ?: '-' }}
                             @endif
                         </p>
                     </div>
@@ -654,16 +663,16 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <p class="text-xs text-pink-700 font-medium mb-1">Nama Lengkap</p>
-                    <p class="text-gray-900 font-medium">{{ $nama_ibu ?: '-' }}</p>
+                    <p class="text-gray-900 font-medium">{{ $pendaftar->nama_ibu ?: '-' }}</p>
                 </div>
                 <div>
                     <p class="text-xs text-pink-700 font-medium mb-1">Status</p>
                     <p class="text-gray-900">
-                        @if($ibu_status === 'masih_hidup')
+                        @if($pendaftar->ibu_status === 'masih_hidup')
                             <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">Masih Hidup</span>
-                        @elseif($ibu_status === 'meninggal')
+                        @elseif($pendaftar->ibu_status === 'meninggal')
                             <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-sm">Sudah Meninggal</span>
-                        @elseif($ibu_status === 'tidak_diketahui')
+                        @elseif($pendaftar->ibu_status === 'tidak_diketahui')
                             <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm">Tidak Diketahui</span>
                         @else
                             -
@@ -671,55 +680,55 @@
                     </p>
                 </div>
 
-                @if($ibu_status === 'masih_hidup')
+                @if($pendaftar->ibu_status === 'masih_hidup')
                     <div>
                         <p class="text-xs text-pink-700 font-medium mb-1">Kewarganegaraan</p>
-                        <p class="text-gray-900">{{ $ibu_kewarganegaraan ?: '-' }}</p>
+                        <p class="text-gray-900">{{ $pendaftar->ibu_kewarganegaraan ?: '-' }}</p>
                     </div>
 
-                    @if($ibu_kewarganegaraan === 'WNI')
+                    @if($pendaftar->ibu_kewarganegaraan === 'WNI')
                         <div>
                             <p class="text-xs text-pink-700 font-medium mb-1">NIK</p>
-                            <p class="text-gray-900 font-mono">{{ $ibu_nik ?: '-' }}</p>
+                            <p class="text-gray-900 font-mono">{{ $pendaftar->ibu_nik ?: '-' }}</p>
                         </div>
-                    @elseif($ibu_kewarganegaraan === 'WNA')
+                    @elseif($pendaftar->ibu_kewarganegaraan === 'WNA')
                         <div>
                             <p class="text-xs text-pink-700 font-medium mb-1">Asal Negara</p>
-                            <p class="text-gray-900">{{ $ibu_negara_asal ?: '-' }}</p>
+                            <p class="text-gray-900">{{ $pendaftar->ibu_negara_asal ?: '-' }}</p>
                         </div>
                         <div>
                             <p class="text-xs text-pink-700 font-medium mb-1">Nomor KITAS</p>
-                            <p class="text-gray-900 font-mono">{{ $ibu_nomor_kitas ?: '-' }}</p>
+                            <p class="text-gray-900 font-mono">{{ $pendaftar->ibu_nomor_kitas ?: '-' }}</p>
                         </div>
                     @endif
 
                     <div>
                         <p class="text-xs text-pink-700 font-medium mb-1">Tempat Lahir</p>
-                        <p class="text-gray-900">{{ $ibu_tempat_lahir ?: '-' }}</p>
+                        <p class="text-gray-900">{{ $pendaftar->ibu_tempat_lahir ?: '-' }}</p>
                     </div>
                     <div>
                         <p class="text-xs text-pink-700 font-medium mb-1">Tanggal Lahir</p>
-                        <p class="text-gray-900">{{ $ibu_tanggal_lahir ? \Carbon\Carbon::parse($ibu_tanggal_lahir)->format('d/m/Y') : '-' }}</p>
+                        <p class="text-gray-900">{{ $pendaftar->ibu_tanggal_lahir ? \Carbon\Carbon::parse($pendaftar->ibu_tanggal_lahir)->format('d/m/Y') : '-' }}</p>
                     </div>
                     <div>
                         <p class="text-xs text-pink-700 font-medium mb-1">Pendidikan Terakhir</p>
-                        <p class="text-gray-900">{{ $ibu_pendidikan ?: '-' }}</p>
+                        <p class="text-gray-900">{{ $pendaftar->ibu_pendidikan ?: '-' }}</p>
                     </div>
                     <div>
                         <p class="text-xs text-pink-700 font-medium mb-1">Pekerjaan Utama</p>
-                        <p class="text-gray-900">{{ $ibu_pekerjaan ?: '-' }}</p>
+                        <p class="text-gray-900">{{ $pendaftar->ibu_pekerjaan ?: '-' }}</p>
                     </div>
                     <div>
                         <p class="text-xs text-pink-700 font-medium mb-1">Penghasilan Bulanan</p>
-                        <p class="text-gray-900">{{ $ibu_penghasilan ? 'Rp ' . $ibu_penghasilan : '-' }}</p>
+                        <p class="text-gray-900">{{ $pendaftar->ibu_penghasilan ?: '-' }}</p>
                     </div>
                     <div>
                         <p class="text-xs text-pink-700 font-medium mb-1">Nomor HP</p>
                         <p class="text-gray-900">
-                            @if($ibu_tidak_punya_hp)
+                            @if($pendaftar->ibu_tidak_punya_hp)
                                 <span class="text-gray-500 italic">Tidak memiliki nomor HP</span>
                             @else
-                                {{ $ibu_no_hp ?: '-' }}
+                                {{ $pendaftar->ibu_no_hp ?: '-' }}
                             @endif
                         </p>
                     </div>
@@ -737,11 +746,11 @@
                 <div>
                     <p class="text-xs text-purple-700 font-medium mb-1">Hubungan Wali</p>
                     <p class="text-gray-900">
-                        @if($wali_hubungan === 'sama_ayah')
+                        @if($pendaftar->wali_hubungan === 'sama_ayah')
                             <span class="px-2 py-1 bg-blue-100 text-blue-800 rounded text-sm">Sama dengan ayah kandung</span>
-                        @elseif($wali_hubungan === 'sama_ibu')
+                        @elseif($pendaftar->wali_hubungan === 'sama_ibu')
                             <span class="px-2 py-1 bg-pink-100 text-pink-800 rounded text-sm">Sama dengan ibu kandung</span>
-                        @elseif($wali_hubungan === 'lainnya')
+                        @elseif($pendaftar->wali_hubungan === 'lainnya')
                             <span class="px-2 py-1 bg-purple-100 text-purple-800 rounded text-sm">Lainnya</span>
                         @else
                             <span class="text-gray-500 italic">Tidak ada wali</span>
@@ -749,19 +758,19 @@
                     </p>
                 </div>
 
-                @if($wali_hubungan === 'lainnya')
+                @if($pendaftar->wali_hubungan === 'lainnya')
                     <div>
                         <p class="text-xs text-purple-700 font-medium mb-1">Nama Lengkap</p>
-                        <p class="text-gray-900 font-medium">{{ $wali_nama ?: '-' }}</p>
+                        <p class="text-gray-900 font-medium">{{ $pendaftar->wali_nama ?: '-' }}</p>
                     </div>
                     <div>
                         <p class="text-xs text-purple-700 font-medium mb-1">Status</p>
                         <p class="text-gray-900">
-                            @if($wali_status === 'masih_hidup')
+                            @if($pendaftar->wali_status === 'masih_hidup')
                                 <span class="px-2 py-1 bg-green-100 text-green-800 rounded text-sm">Masih Hidup</span>
-                            @elseif($wali_status === 'meninggal')
+                            @elseif($pendaftar->wali_status === 'meninggal')
                                 <span class="px-2 py-1 bg-gray-100 text-gray-800 rounded text-sm">Sudah Meninggal</span>
-                            @elseif($wali_status === 'tidak_diketahui')
+                            @elseif($pendaftar->wali_status === 'tidak_diketahui')
                                 <span class="px-2 py-1 bg-yellow-100 text-yellow-800 rounded text-sm">Tidak Diketahui</span>
                             @else
                                 -
@@ -769,60 +778,60 @@
                         </p>
                     </div>
 
-                    @if($wali_status === 'masih_hidup')
+                    @if($pendaftar->wali_status === 'masih_hidup')
                         <div>
                             <p class="text-xs text-purple-700 font-medium mb-1">Kewarganegaraan</p>
-                            <p class="text-gray-900">{{ $wali_kewarganegaraan ?: '-' }}</p>
+                            <p class="text-gray-900">{{ $pendaftar->wali_kewarganegaraan ?: '-' }}</p>
                         </div>
 
-                        @if($wali_kewarganegaraan === 'WNI')
+                        @if($pendaftar->wali_kewarganegaraan === 'WNI')
                             <div>
                                 <p class="text-xs text-purple-700 font-medium mb-1">NIK</p>
-                                <p class="text-gray-900 font-mono">{{ $wali_nik ?: '-' }}</p>
+                                <p class="text-gray-900 font-mono">{{ $pendaftar->wali_nik ?: '-' }}</p>
                             </div>
-                        @elseif($wali_kewarganegaraan === 'WNA')
+                        @elseif($pendaftar->wali_kewarganegaraan === 'WNA')
                             <div>
                                 <p class="text-xs text-purple-700 font-medium mb-1">Asal Negara</p>
-                                <p class="text-gray-900">{{ $wali_negara_asal ?: '-' }}</p>
+                                <p class="text-gray-900">{{ $pendaftar->wali_negara_asal ?: '-' }}</p>
                             </div>
                             <div>
                                 <p class="text-xs text-purple-700 font-medium mb-1">Nomor KITAS</p>
-                                <p class="text-gray-900 font-mono">{{ $wali_nomor_kitas ?: '-' }}</p>
+                                <p class="text-gray-900 font-mono">{{ $pendaftar->wali_nomor_kitas ?: '-' }}</p>
                             </div>
                         @endif
 
                         <div>
                             <p class="text-xs text-purple-700 font-medium mb-1">Tempat Lahir</p>
-                            <p class="text-gray-900">{{ $wali_tempat_lahir ?: '-' }}</p>
+                            <p class="text-gray-900">{{ $pendaftar->wali_tempat_lahir ?: '-' }}</p>
                         </div>
                         <div>
                             <p class="text-xs text-purple-700 font-medium mb-1">Tanggal Lahir</p>
-                            <p class="text-gray-900">{{ $wali_tanggal_lahir ? \Carbon\Carbon::parse($wali_tanggal_lahir)->format('d/m/Y') : '-' }}</p>
+                            <p class="text-gray-900">{{ $pendaftar->wali_tanggal_lahir ? \Carbon\Carbon::parse($pendaftar->wali_tanggal_lahir)->format('d/m/Y') : '-' }}</p>
                         </div>
                         <div>
                             <p class="text-xs text-purple-700 font-medium mb-1">Pendidikan Terakhir</p>
-                            <p class="text-gray-900">{{ $wali_pendidikan ?: '-' }}</p>
+                            <p class="text-gray-900">{{ $pendaftar->wali_pendidikan ?: '-' }}</p>
                         </div>
                         <div>
                             <p class="text-xs text-purple-700 font-medium mb-1">Pekerjaan Utama</p>
-                            <p class="text-gray-900">{{ $wali_pekerjaan ?: '-' }}</p>
+                            <p class="text-gray-900">{{ $pendaftar->wali_pekerjaan ?: '-' }}</p>
                         </div>
                         <div>
                             <p class="text-xs text-purple-700 font-medium mb-1">Penghasilan Bulanan</p>
-                            <p class="text-gray-900">{{ $wali_penghasilan ? 'Rp ' . $wali_penghasilan : '-' }}</p>
+                            <p class="text-gray-900">{{ $pendaftar->wali_penghasilan ?: '-' }}</p>
                         </div>
                         <div>
                             <p class="text-xs text-purple-700 font-medium mb-1">Nomor HP</p>
                             <p class="text-gray-900">
-                                @if($wali_tidak_punya_hp)
+                                @if($pendaftar->wali_tidak_punya_hp)
                                     <span class="text-gray-500 italic">Tidak memiliki nomor HP</span>
                                 @else
-                                    {{ $wali_no_hp ?: '-' }}
+                                    {{ $pendaftar->wali_no_hp ?: '-' }}
                                 @endif
                             </p>
                         </div>
                     @endif
-                @elseif($wali_hubungan === 'sama_ayah')
+                @elseif($pendaftar->wali_hubungan === 'sama_ayah')
                     <div class="md:col-span-2">
                         <div class="bg-blue-100 border border-blue-300 rounded-lg p-4">
                             <p class="text-blue-800 text-sm">
@@ -831,7 +840,7 @@
                             </p>
                         </div>
                     </div>
-                @elseif($wali_hubungan === 'sama_ibu')
+                @elseif($pendaftar->wali_hubungan === 'sama_ibu')
                     <div class="md:col-span-2">
                         <div class="bg-pink-100 border border-pink-300 rounded-lg p-4">
                             <p class="text-pink-800 text-sm">
@@ -854,8 +863,8 @@
                 <div>
                     <p class="text-xs text-amber-700 font-medium mb-1">Nomor KKS (Kartu Keluarga Sejahtera)</p>
                     <p class="text-gray-900 font-mono">
-                        @if($nomor_kks)
-                            {{ $nomor_kks }}
+                        @if($pendaftar->nomor_kks)
+                            {{ $pendaftar->nomor_kks }}
                             <span class="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded">Terdaftar</span>
                         @else
                             <span class="text-gray-500 italic">Tidak memiliki</span>
@@ -865,8 +874,8 @@
                 <div>
                     <p class="text-xs text-amber-700 font-medium mb-1">Nomor PKH (Program Keluarga Harapan)</p>
                     <p class="text-gray-900 font-mono">
-                        @if($nomor_pkh)
-                            {{ $nomor_pkh }}
+                        @if($pendaftar->nomor_pkh)
+                            {{ $pendaftar->nomor_pkh }}
                             <span class="ml-2 px-2 py-0.5 bg-green-100 text-green-700 text-xs rounded">Terdaftar</span>
                         @else
                             <span class="text-gray-500 italic">Tidak memiliki</span>
@@ -875,7 +884,7 @@
                 </div>
             </div>
 
-            @if($nomor_kks || $nomor_pkh)
+            @if($pendaftar->nomor_kks || $pendaftar->nomor_pkh)
                 <div class="mt-4 pt-4 border-t border-amber-300">
                     <p class="text-xs text-amber-700">
                         <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>

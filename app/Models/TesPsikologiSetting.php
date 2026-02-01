@@ -12,11 +12,14 @@ class TesPsikologiSetting extends Model
         'rekening_nomor',
         'rekening_atas_nama',
         'rekening_keterangan',
-        'aktif'
+        'aktif',
+        'survey_aktif',
+        'survey_informasi',
     ];
 
     protected $casts = [
         'aktif' => 'boolean',
+        'survey_aktif' => 'boolean',
     ];
 
     // Static method to get single setting
@@ -28,7 +31,9 @@ class TesPsikologiSetting extends Model
             'rekening_nomor' => null,
             'rekening_atas_nama' => null,
             'rekening_keterangan' => null,
-            'aktif' => false
+            'aktif' => false,
+            'survey_aktif' => false,
+            'survey_informasi' => null,
         ]);
     }
 }

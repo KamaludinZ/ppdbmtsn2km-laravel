@@ -1,0 +1,77 @@
+================================================================================
+  QUICK GUIDE - UPLOAD KE PRODUCTION (23 Jan 2026) - UPDATED
+================================================================================
+
+FITUR:
+  1. Riwayat Pesan + Template Auto-fill (ALL Admin & Panitia) ✅
+  2. Update Template Dropdown (7 Kategori, 24 Template) ✅
+  3. Contextual Template - Template otomatis sesuai halaman/tab ✅
+  4. Fix DaftarUlang - Shared Partial Dynamic Rendering ✅✅ (FIXED!)
+  5. Fix TesPsikologi - Full Template Modal Support ✅✅ (FIXED!)
+
+================================================================================
+FILE YANG PERLU DIUPLOAD (12 FILES TOTAL)
+================================================================================
+
+FILE BARU (2):
+  1. database/migrations/2026_01_23_102510_create_riwayat_pesan_table.php
+  2. app/Models/RiwayatPesan.php
+
+FILE UPDATE - COMPONENTS (5):
+  3. app/Models/Pendaftar.php
+  4. app/Livewire/Admin/Pendaftar.php ⭐ (+ CONTEXTUAL TEMPLATE)
+  5. app/Livewire/Admin/DaftarUlang.php ⭐ (+ CONTEXTUAL TEMPLATE DYNAMIC)
+  6. app/Livewire/Admin/Kelulusan.php ⭐ (+ CONTEXTUAL TEMPLATE)
+  7. app/Livewire/Admin/TesPsikologi.php ⭐⭐⭐ (+ FULL TEMPLATE MODAL SUPPORT - FIXED!)
+  8. app/Livewire/Panitia/TesPsikologi.php ⭐⭐⭐ (+ FULL TEMPLATE MODAL SUPPORT - FIXED!)
+
+FILE UPDATE - VIEWS (5):
+  9. resources/views/livewire/admin/pendaftar.blade.php ⭐ (+ DYNAMIC DROPDOWN)
+  10. resources/views/livewire/admin/partials/send-message-modal.blade.php ⭐⭐⭐ (+ DYNAMIC RENDERING - FIXED!)
+  11. resources/views/livewire/admin/partials/tes-psikologi-data.blade.php ⭐⭐ (+ BUTTON UPDATE - NEW!)
+  12. resources/views/livewire/admin/tes-psikologi.blade.php ⭐⭐ (+ MODAL INCLUDE - NEW!)
+  13. resources/views/livewire/panitia/tes-psikologi.blade.php ⭐⭐ (+ BUTTON UPDATE & MODAL - NEW!)
+
+================================================================================
+LANGKAH CEPAT
+================================================================================
+
+STEP 1: BACKUP DATABASE (WAJIB!)
+  ssh mtsnkot4@103.30.244.77
+  cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id
+  php artisan db:backup
+
+STEP 2: UPLOAD 13 FILES VIA FTP
+  Upload semua file ke lokasi yang sama di server (2 baru + 11 update)
+
+STEP 3: JALANKAN MIGRATION
+  ssh mtsnkot4@103.30.244.77
+  cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id
+  php artisan migrate
+  php artisan optimize:clear
+
+STEP 4: TEST
+  - Login admin
+  - Kirim email/WA
+  - Cek kolom "Riwayat Pesan"
+
+================================================================================
+COMMAND LENGKAP (Copy-Paste)
+================================================================================
+
+ssh mtsnkot4@103.30.244.77
+cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id
+php artisan migrate && php artisan optimize:clear
+
+================================================================================
+ROLLBACK (Jika Ada Masalah)
+================================================================================
+
+php artisan migrate:rollback --step=1
+php artisan optimize:clear
+
+================================================================================
+
+Dokumentasi lengkap: UPLOAD_PRODUCTION_RIWAYAT_PESAN.md
+
+================================================================================

@@ -67,6 +67,7 @@ class Pendaftar extends Model
         'status_pendaftaran',
         'setuju_daftar_ulang',
         'status_persetujuan_daftar_ulang',
+        'alasan_tidak_setuju',
         'tanggal_setuju_daftar_ulang',
         'tanggal_pilihan_daftar_ulang',
         'diperbarui_oleh',
@@ -415,11 +416,43 @@ class Pendaftar extends Model
     }
 
     /**
+     * Get all keahlian records
+     */
+    public function keahlians(): HasMany
+    {
+        return $this->hasMany(Keahlian::class);
+    }
+
+    /**
+     * Alias untuk keahlians() - untuk kemudahan penggunaan
+     */
+    public function keahlian(): HasMany
+    {
+        return $this->hasMany(Keahlian::class);
+    }
+
+    /**
+     * Get tahfidz record
+     */
+    public function tahfidz(): HasOne
+    {
+        return $this->hasOne(Tahfidz::class);
+    }
+
+    /**
      * Get all survey answers
      */
     public function surveyAnswers(): HasMany
     {
         return $this->hasMany(SurveyAnswer::class);
+    }
+
+    /**
+     * Get all message history (riwayat pesan)
+     */
+    public function riwayatPesan(): HasMany
+    {
+        return $this->hasMany(RiwayatPesan::class);
     }
 
     /**

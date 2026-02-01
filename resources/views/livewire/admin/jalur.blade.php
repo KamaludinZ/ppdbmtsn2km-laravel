@@ -94,6 +94,12 @@
                         <x-sortable-header field="aktif" :sort-field="$sortField" :sort-direction="$sortDirection">
                             Status
                         </x-sortable-header>
+                        <x-sortable-header field="tampil_di_daftar" :sort-field="$sortField" :sort-direction="$sortDirection">
+                            Status Daftar
+                        </x-sortable-header>
+                        <x-sortable-header field="paling_populer" :sort-field="$sortField" :sort-direction="$sortDirection">
+                            Paling Populer
+                        </x-sortable-header>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
@@ -135,6 +141,22 @@
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $jalur->aktif ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                 {{ $jalur->aktif ? 'Aktif' : 'Nonaktif' }}
                             </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $jalur->tampil_di_daftar ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800' }}">
+                                {{ $jalur->tampil_di_daftar ? 'Tampil' : 'Tersembunyi' }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($jalur->paling_populer)
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                    ⭐ Ya
+                                </span>
+                            @else
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-600">
+                                    Tidak
+                                </span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button wire:click="edit({{ $jalur->id }})" wire:loading.attr="disabled" wire:loading.class="opacity-50 cursor-not-allowed" class="text-blue-600 hover:text-blue-900 mr-3">
@@ -446,6 +468,10 @@
                                     <label class="inline-flex items-center">
                                         <input type="checkbox" wire:model="aktif" class="w-4 h-4 text-emerald-600 rounded">
                                         <span class="ml-2 text-sm text-gray-700">Jalur Aktif</span>
+                                    </label>
+                                    <label class="inline-flex items-center">
+                                        <input type="checkbox" wire:model="tampil_di_daftar" class="w-4 h-4 text-blue-600 rounded">
+                                        <span class="ml-2 text-sm text-gray-700">Tampil di Halaman Daftar</span>
                                     </label>
                                     <label class="inline-flex items-center">
                                         <input type="checkbox" wire:model="paling_populer" class="w-4 h-4 text-emerald-600 rounded">

@@ -7,6 +7,8 @@ use App\Models\TesPsikologiOpsi;
 use App\Models\TesPsikologiBank;
 use App\Models\TesPsikologiPendaftar;
 use App\Models\Setting;
+use App\Models\SurveyQuestion;
+use App\Models\SurveyAnswer;
 use App\Services\FileNamingService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -30,6 +32,11 @@ class TesPsikologi extends Component
     public $waktuTransfer;
     public $buktiTransfer;
     public $uploadProgress = false;
+
+    // Survey properties
+    public $surveyQuestions;
+    public $surveyAnswers = [];
+    public $surveyCompleted = false;
 
     public function mount()
     {
@@ -63,24 +70,137 @@ class TesPsikologi extends Component
         $this->selectedBank = $this->tesPsikologiData->bank_id;
         $this->selectedOpsi = $this->tesPsikologiData->opsi_id;
         $this->waktuTransfer = $this->tesPsikologiData->waktu_transfer ? $this->tesPsikologiData->waktu_transfer->format('Y-m-d\TH:i') : null;
+
+        // Load survey if active
+        if ($this->setting->survey_aktif) {
+            // PENTING: Filter by context 'tes_psikologi' untuk Survey Tes Psikologi
+            $this->surveyQuestions = SurveyQuestion::tesPsikologi()->with('options')->aktif()->ordered()->get();
+
+            // Load existing answers - PENTING: Filter hanya jawaban untuk survey tes psikologi
+            $existingAnswers = SurveyAnswer::where('pendaftar_id', $this->pendaftar->id)
+                ->whereHas('question', function($q) {
+                    $q->tesPsikologi();
+                })
+                ->get();
+            foreach ($existingAnswers as $answer) {
+                $this->surveyAnswers[$answer->survey_question_id] = $answer->jawaban;
+            }
+
+            // Check if survey is completed
+            $this->checkSurveyCompletion();
+        } else {
+            $this->surveyCompleted = true; // If survey not active, consider it completed
+        }
+    }
+
+    public function checkSurveyCompletion()
+    {
+        if (!$this->setting->survey_aktif || !$this->surveyQuestions) {
+            $this->surveyCompleted = true;
+            return;
+        }
+
+        // Check if all required questions are answered
+        foreach ($this->surveyQuestions as $question) {
+            if ($question->wajib_diisi) {
+                $answer = $this->surveyAnswers[$question->id] ?? null;
+
+                if (empty($answer)) {
+                    $this->surveyCompleted = false;
+                    return;
+                }
+
+                // For checkbox, answer is array - check if not empty
+                if (is_array($answer) && count($answer) === 0) {
+                    $this->surveyCompleted = false;
+                    return;
+                }
+            }
+        }
+
+        $this->surveyCompleted = true;
+    }
+
+    public function simpanSurvey()
+    {
+        if (!$this->setting->survey_aktif) {
+            session()->flash('error', 'Survey tidak aktif');
+            return;
+        }
+
+        // Validate required questions
+        foreach ($this->surveyQuestions as $question) {
+            if ($question->wajib_diisi) {
+                $answer = $this->surveyAnswers[$question->id] ?? null;
+
+                if (empty($answer) || (is_array($answer) && count($answer) === 0)) {
+                    session()->flash('error', 'Harap lengkapi semua pertanyaan wajib');
+                    return;
+                }
+            }
+        }
+
+        try {
+            // Save each answer
+            foreach ($this->surveyAnswers as $questionId => $answer) {
+                if (!empty($answer)) {
+                    // Convert array to JSON for checkbox answers
+                    $answerValue = is_array($answer) ? $answer : [$answer];
+
+                    SurveyAnswer::updateOrCreate(
+                        [
+                            'pendaftar_id' => $this->pendaftar->id,
+                            'survey_question_id' => $questionId
+                        ],
+                        [
+                            'jawaban' => $answerValue
+                        ]
+                    );
+                }
+            }
+
+            $this->checkSurveyCompletion();
+
+            // Refresh component to update UI
+            $this->dispatch('survey-saved');
+
+            session()->flash('message', 'Survey berhasil disimpan. Anda sekarang dapat melanjutkan ke upload bukti transfer.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Gagal menyimpan survey: ' . $e->getMessage());
+        }
     }
 
     public function uploadBukti()
     {
-        $this->validate([
-            'selectedOpsi' => 'required|exists:tes_psikologi_opsi,id',
-            'waktuTransfer' => 'required|date',
-            'selectedBank' => 'required|exists:tes_psikologi_bank,id',
-            'buktiTransfer' => 'required|image|max:2048'
-        ], [
-            'selectedOpsi.required' => 'Pilih biaya tes psikologi terlebih dahulu',
-            'waktuTransfer.required' => 'Waktu transfer harus diisi',
-            'waktuTransfer.date' => 'Format waktu transfer tidak valid',
-            'selectedBank.required' => 'Pilih bank terlebih dahulu',
-            'buktiTransfer.required' => 'Upload bukti transfer terlebih dahulu',
-            'buktiTransfer.image' => 'File harus berupa gambar',
-            'buktiTransfer.max' => 'Ukuran file maksimal 2MB'
-        ]);
+        // Reset upload progress state
+        $this->uploadProgress = false;
+
+        // Check survey completion first if survey is active
+        if ($this->setting->survey_aktif && !$this->surveyCompleted) {
+            session()->flash('error', 'Harap lengkapi survey terlebih dahulu sebelum upload bukti pembayaran');
+            return;
+        }
+
+        try {
+            $this->validate([
+                'selectedOpsi' => 'required|exists:tes_psikologi_opsi,id',
+                'waktuTransfer' => 'required|date',
+                'selectedBank' => 'required|exists:tes_psikologi_bank,id',
+                'buktiTransfer' => 'required|image|max:2048'
+            ], [
+                'selectedOpsi.required' => 'Pilih biaya tes psikologi terlebih dahulu',
+                'waktuTransfer.required' => 'Waktu transfer harus diisi',
+                'waktuTransfer.date' => 'Format waktu transfer tidak valid',
+                'selectedBank.required' => 'Pilih bank terlebih dahulu',
+                'buktiTransfer.required' => 'Upload bukti transfer terlebih dahulu',
+                'buktiTransfer.image' => 'File harus berupa gambar',
+                'buktiTransfer.max' => 'Ukuran file maksimal 2MB'
+            ]);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Reset progress on validation error
+            $this->uploadProgress = false;
+            throw $e;
+        }
 
         $this->uploadProgress = true;
 
@@ -90,12 +210,13 @@ class TesPsikologi extends Component
                 Storage::disk('private')->delete($this->tesPsikologiData->bukti_transfer);
             }
 
-            // Generate nama file sistematis: bukti_psikologi_{nomor_pendaftaran}_{timestamp}.{ext}
+            // Generate nama file sistematis: bukti_psikologi-{nomor_pendaftaran}-{nama_pendaftar}-{timestamp}.{ext}
             $extension = FileNamingService::getFileExtension($this->buktiTransfer);
             $customFileName = FileNamingService::generateBuktiBayarFileName(
                 'psikologi',
                 $this->pendaftar->nomor_pendaftaran,
-                $extension
+                $extension,
+                $this->pendaftar->nama_lengkap
             );
 
             // Simpan ke private storage untuk keamanan dokumen keuangan
@@ -122,9 +243,15 @@ class TesPsikologi extends Component
             $this->buktiTransfer = null;
             $this->uploadProgress = false;
 
+            // Dispatch event to ensure UI update
+            $this->dispatch('upload-complete');
+
         } catch (\Exception $e) {
             session()->flash('error', 'Terjadi kesalahan: ' . $e->getMessage());
             $this->uploadProgress = false;
+
+            // Dispatch event on error too
+            $this->dispatch('upload-error');
         }
     }
 

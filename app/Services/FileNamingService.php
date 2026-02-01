@@ -8,7 +8,7 @@ use Illuminate\Support\Str;
  * File Naming Service
  *
  * Service untuk generate nama file yang sistematis dan mudah dicari
- * Format: {jenis_dokumen}_{nomor_pendaftaran}_{timestamp}.{ext}
+ * Format: {jenis_dokumen}-{nomor_pendaftaran}-{nama_pendaftar}-{timestamp}.{ext}
  */
 class FileNamingService
 {
@@ -18,28 +18,45 @@ class FileNamingService
      * @param string $jenisFile Jenis file (rapor, ktp, kk, foto, dll)
      * @param string $nomorPendaftaran Nomor pendaftaran
      * @param string $extension Extension file (pdf, jpg, png, dll)
+     * @param string|null $namaPendaftar Nama pendaftar (optional)
      * @return string Nama file yang sudah di-format
      *
      * @example
-     * generateFileName('rapor', 'PPDB2024001', 'pdf')
-     * // Output: rapor_PPDB2024001_20260119_143052.pdf
+     * generateFileName('rapor', 'PPDB2024001', 'pdf', 'Ahmad Fulan')
+     * // Output: rapor-PPDB2024001-Ahmad_Fulan-20260131.pdf
      */
-    public static function generateFileName(string $jenisFile, string $nomorPendaftaran, string $extension): string
+    public static function generateFileName(string $jenisFile, string $nomorPendaftaran, string $extension, ?string $namaPendaftar = null): string
     {
-        // Clean jenis file (remove spaces, convert to lowercase)
+        // Clean jenis file (remove spaces, convert to lowercase, use dash as separator)
         $jenisFile = Str::slug($jenisFile, '_');
 
         // Clean nomor pendaftaran (remove special chars except dash and underscore)
         $nomorPendaftaran = preg_replace('/[^A-Za-z0-9\-_]/', '', $nomorPendaftaran);
 
+        // Clean nama pendaftar (replace spaces with underscore, remove special chars)
+        $namaPendaftarClean = '';
+        if ($namaPendaftar) {
+            // Replace spaces with underscore
+            $namaPendaftarClean = preg_replace('/\s+/', '_', trim($namaPendaftar));
+            // Remove special chars except underscore
+            $namaPendaftarClean = preg_replace('/[^A-Za-z0-9_]/', '', $namaPendaftarClean);
+            // Limit to 50 chars
+            $namaPendaftarClean = substr($namaPendaftarClean, 0, 50);
+        }
+
         // Clean extension (remove dots)
         $extension = str_replace('.', '', $extension);
         $extension = strtolower($extension);
 
-        // Generate timestamp (format: YYYYMMDD_HHMMSS)
-        $timestamp = now()->format('Ymd_His');
+        // Generate timestamp (format: YYYYMMDD for date only)
+        $timestamp = now()->format('Ymd');
 
-        // Format: {jenis}_{nomor}_{timestamp}.{ext}
+        // Format: {jenis}-{nomor}-{nama}-{timestamp}.{ext}
+        if ($namaPendaftarClean) {
+            return "{$jenisFile}-{$nomorPendaftaran}-{$namaPendaftarClean}-{$timestamp}.{$extension}";
+        }
+
+        // Fallback to old format if nama pendaftar not provided
         return "{$jenisFile}_{$nomorPendaftaran}_{$timestamp}.{$extension}";
     }
 
@@ -72,18 +89,20 @@ class FileNamingService
      * @param string $jenisGambar Jenis gambar (foto_profil, foto_3x4, dll)
      * @param string $nomorPendaftaran Nomor pendaftaran
      * @param string $extension Extension file (jpg, png, dll)
+     * @param string|null $namaPendaftar Nama pendaftar (optional)
      * @return string Nama file yang sudah di-format
      *
      * @example
-     * generateImageFileName('foto_profil', 'PPDB2024001', 'jpg')
-     * // Output: foto_profil_PPDB2024001_20260119_143052.jpg
+     * generateImageFileName('foto_profil', 'PPDB2024001', 'jpg', 'Ahmad Fulan')
+     * // Output: foto_profil-PPDB2024001-Ahmad_Fulan-20260131_143052.jpg
      */
     public static function generateImageFileName(
         string $jenisGambar,
         string $nomorPendaftaran,
-        string $extension
+        string $extension,
+        ?string $namaPendaftar = null
     ): string {
-        return self::generateFileName($jenisGambar, $nomorPendaftaran, $extension);
+        return self::generateFileName($jenisGambar, $nomorPendaftaran, $extension, $namaPendaftar);
     }
 
     /**
@@ -113,19 +132,21 @@ class FileNamingService
      * @param string $jenisPembayaran Jenis pembayaran (daftar_ulang, seragam, psikologi)
      * @param string $nomorPendaftaran Nomor pendaftaran
      * @param string $extension Extension file
+     * @param string|null $namaPendaftar Nama pendaftar (optional)
      * @return string Nama file yang sudah di-format
      *
      * @example
-     * generateBuktiBayarFileName('daftar_ulang', 'PPDB2024001', 'pdf')
-     * // Output: bukti_daftar_ulang_PPDB2024001_20260119_143052.pdf
+     * generateBuktiBayarFileName('daftar_ulang', 'PPDB2024001', 'pdf', 'Ahmad Fulan')
+     * // Output: bukti_daftar_ulang-PPDB2024001-Ahmad_Fulan-20260131_143052.pdf
      */
     public static function generateBuktiBayarFileName(
         string $jenisPembayaran,
         string $nomorPendaftaran,
-        string $extension
+        string $extension,
+        ?string $namaPendaftar = null
     ): string {
         $jenisFile = "bukti_{$jenisPembayaran}";
-        return self::generateFileName($jenisFile, $nomorPendaftaran, $extension);
+        return self::generateFileName($jenisFile, $nomorPendaftaran, $extension, $namaPendaftar);
     }
 
     /**

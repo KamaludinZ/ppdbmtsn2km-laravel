@@ -121,17 +121,90 @@
 
                 <!-- Right Side -->
                 <div class="flex items-center space-x-3">
-                    <a href="/login" class="hidden lg:inline-flex items-center px-4 py-2 border border-emerald-600 text-sm font-medium rounded-lg text-emerald-600 hover:bg-emerald-50 transition">
-                        Login Pendaftar
-                    </a>
-                    <a href="/login/admin" class="hidden lg:inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition shadow-sm">
-                        Login Panitia
-                    </a>
-                    @if(\App\Models\Setting::get('registration_phase') === 'dibuka')
-                    <a href="/daftar" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm">
-                        Daftar Sekarang
-                    </a>
-                    @endif
+                    @auth
+                        <!-- User Avatar Dropdown -->
+                        <div class="relative" x-data="{ open: false }">
+                            <button @click="open = !open" @click.away="open = false" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition">
+                                <div class="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                </div>
+                                <span class="hidden lg:block text-sm font-medium text-gray-700">{{ auth()->user()->name }}</span>
+                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                </svg>
+                            </button>
+
+                            <!-- Dropdown Menu -->
+                            <div x-show="open" x-transition class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 border border-gray-200 z-50">
+                                @if(auth()->user()->isPendaftar())
+                                    <a href="/pendaftar/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                        </svg>
+                                        Dashboard
+                                    </a>
+                                @elseif(auth()->user()->isAdmin())
+                                    <a href="/admin/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                        </svg>
+                                        Dashboard Admin
+                                    </a>
+                                @elseif(auth()->user()->role === 'panitia_pendaftaran')
+                                    <a href="/panitia-pendaftaran/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                        </svg>
+                                        Dashboard Panitia
+                                    </a>
+                                @elseif(auth()->user()->role === 'panitia_daftarulang')
+                                    <a href="/panitia-daftarulang/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                        </svg>
+                                        Dashboard Panitia
+                                    </a>
+                                @elseif(auth()->user()->role === 'panitia_tes_psikologi')
+                                    <a href="/panitia-psikologi/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                        </svg>
+                                        Dashboard Panitia
+                                    </a>
+                                @elseif(auth()->user()->role === 'panitia_seragam')
+                                    <a href="/panitia-seragam/dashboard" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                                        </svg>
+                                        Dashboard Panitia
+                                    </a>
+                                @endif
+                                <hr class="my-1">
+                                <form action="/logout" method="POST">
+                                    @csrf
+                                    <button type="submit" class="block w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50">
+                                        <svg class="w-4 h-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
+                                        </svg>
+                                        Logout
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    @else
+                        <!-- Login Buttons (Guest) -->
+                        <a href="/login" class="hidden lg:inline-flex items-center px-4 py-2 border border-emerald-600 text-sm font-medium rounded-lg text-emerald-600 hover:bg-emerald-50 transition">
+                            Login Pendaftar
+                        </a>
+                        <a href="/login/admin" class="hidden lg:inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition shadow-sm">
+                            Login Panitia
+                        </a>
+                        @if(\App\Models\Setting::get('registration_phase') === 'dibuka')
+                        <a href="/daftar" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm">
+                            Daftar Sekarang
+                        </a>
+                        @endif
+                    @endauth
 
                     <!-- Mobile menu button -->
                     <button type="button" id="mobileMenuBtn" onclick="toggleMobileMenu()" class="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition">
@@ -206,12 +279,59 @@
                 </a>
             </div>
             <div class="px-4 py-3 border-t border-gray-200 space-y-2">
-                <a href="/login" class="block w-full px-4 py-2 text-center border border-emerald-600 text-sm font-medium rounded-lg text-emerald-600 hover:bg-emerald-50 transition mb-2">
-                    Login Pendaftar
-                </a>
-                <a href="/login/admin" class="block w-full px-4 py-2 text-center border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition">
-                    Login Panitia
-                </a>
+                @auth
+                    <!-- User Profile (Mobile) -->
+                    <div class="bg-gray-50 rounded-lg p-4 mb-2">
+                        <div class="flex items-center mb-3">
+                            <div class="w-10 h-10 bg-emerald-600 rounded-full flex items-center justify-center text-white font-semibold">
+                                {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
+                                <p class="text-xs text-gray-500">{{ auth()->user()->email }}</p>
+                            </div>
+                        </div>
+                        @if(auth()->user()->isPendaftar())
+                            <a href="/pendaftar/dashboard" class="block w-full px-4 py-2 text-center text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 transition mb-2">
+                                Ke Dashboard
+                            </a>
+                        @elseif(auth()->user()->isAdmin())
+                            <a href="/admin/dashboard" class="block w-full px-4 py-2 text-center text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition mb-2">
+                                Ke Dashboard Admin
+                            </a>
+                        @elseif(auth()->user()->role === 'panitia_pendaftaran')
+                            <a href="/panitia-pendaftaran/dashboard" class="block w-full px-4 py-2 text-center text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition mb-2">
+                                Ke Dashboard Panitia
+                            </a>
+                        @elseif(auth()->user()->role === 'panitia_daftarulang')
+                            <a href="/panitia-daftarulang/dashboard" class="block w-full px-4 py-2 text-center text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition mb-2">
+                                Ke Dashboard Panitia
+                            </a>
+                        @elseif(auth()->user()->role === 'panitia_tes_psikologi')
+                            <a href="/panitia-psikologi/dashboard" class="block w-full px-4 py-2 text-center text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition mb-2">
+                                Ke Dashboard Panitia
+                            </a>
+                        @elseif(auth()->user()->role === 'panitia_seragam')
+                            <a href="/panitia-seragam/dashboard" class="block w-full px-4 py-2 text-center text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition mb-2">
+                                Ke Dashboard Panitia
+                            </a>
+                        @endif
+                        <form action="/logout" method="POST">
+                            @csrf
+                            <button type="submit" class="block w-full px-4 py-2 text-center text-sm font-medium rounded-lg text-red-600 border border-red-600 hover:bg-red-50 transition">
+                                Logout
+                            </button>
+                        </form>
+                    </div>
+                @else
+                    <!-- Login Buttons (Guest - Mobile) -->
+                    <a href="/login" class="block w-full px-4 py-2 text-center border border-emerald-600 text-sm font-medium rounded-lg text-emerald-600 hover:bg-emerald-50 transition mb-2">
+                        Login Pendaftar
+                    </a>
+                    <a href="/login/admin" class="block w-full px-4 py-2 text-center border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition">
+                        Login Panitia
+                    </a>
+                @endauth
             </div>
         </div>
     </nav>
@@ -485,6 +605,21 @@
             }
         });
     </script>
+
+    {{-- Livewire Scripts --}}
     @livewireScripts
+
+    {{-- Alpine.js - Only load if not already loaded (prevent double loading) --}}
+    <script>
+        // Check if Alpine is already loaded (from Vite or other source)
+        if (typeof window.Alpine === 'undefined') {
+            // Load Alpine.js from CDN
+            var script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js';
+            document.body.appendChild(script);
+        } else {
+            console.log('Alpine.js already loaded, skipping CDN');
+        }
+    </script>
 </body>
 </html>

@@ -140,36 +140,36 @@
                     <tr wire:key="question-{{ $question->id }}">
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
-                                {{ $question->order }}
+                                {{ $question->urutan }}
                             </span>
                         </td>
                         <td class="px-6 py-4 text-sm font-medium text-gray-900">
-                            <div class="max-w-md">{{ $question->question_text }}</div>
-                            @if($question->description)
-                                <p class="text-xs text-gray-500 mt-1">{{ $question->description }}</p>
+                            <div class="max-w-md">{{ $question->pertanyaan }}</div>
+                            @if($question->deskripsi)
+                                <p class="text-xs text-gray-500 mt-1">{{ $question->deskripsi }}</p>
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium
-                                {{ $question->question_type === 'dropdown' ? 'bg-blue-100 text-blue-800' : '' }}
-                                {{ $question->question_type === 'radio' ? 'bg-purple-100 text-purple-800' : '' }}
-                                {{ $question->question_type === 'checkbox' ? 'bg-green-100 text-green-800' : '' }}
-                                {{ $question->question_type === 'text' ? 'bg-yellow-100 text-yellow-800' : '' }}
+                                {{ $question->tipe_input === 'select' ? 'bg-blue-100 text-blue-800' : '' }}
+                                {{ $question->tipe_input === 'radio' ? 'bg-purple-100 text-purple-800' : '' }}
+                                {{ $question->tipe_input === 'checkbox' ? 'bg-green-100 text-green-800' : '' }}
+                                {{ $question->tipe_input === 'text' || $question->tipe_input === 'textarea' ? 'bg-yellow-100 text-yellow-800' : '' }}
                             ">
-                                {{ ucfirst($question->question_type) }}
+                                {{ ucfirst($question->tipe_input) }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ $question->options->count() }} opsi
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $question->is_required ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800' }}">
-                                {{ $question->is_required ? 'Ya' : 'Tidak' }}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $question->wajib_diisi ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800' }}">
+                                {{ $question->wajib_diisi ? 'Ya' : 'Tidak' }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $question->is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
-                                {{ $question->is_active ? 'Aktif' : 'Nonaktif' }}
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $question->aktif ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                {{ $question->aktif ? 'Aktif' : 'Nonaktif' }}
                             </span>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
@@ -210,7 +210,7 @@
                 </button>
                 <div>
                     <h3 class="text-lg font-bold text-white uppercase tracking-wider">Kelola Opsi</h3>
-                    <p class="text-sm text-blue-100 mt-1">{{ $questions->where('id', $managingOptionsForQuestion)->first()->question_text ?? '' }}</p>
+                    <p class="text-sm text-blue-100 mt-1">{{ $questions->where('id', $managingOptionsForQuestion)->first()->pertanyaan ?? '' }}</p>
                 </div>
             </div>
             <button wire:click="createOption" class="inline-flex items-center px-4 py-2 bg-white text-blue-600 rounded-lg font-bold uppercase tracking-wider text-xs hover:bg-blue-50 transition shadow-sm">
@@ -234,10 +234,10 @@
                     <tr wire:key="option-{{ $option->id }}">
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-gray-100 text-gray-800">
-                                {{ $option->order }}
+                                {{ $option->urutan }}
                             </span>
                         </td>
-                        <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $option->option_text }}</td>
+                        <td class="px-6 py-4 text-sm font-medium text-gray-900">{{ $option->label }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                             <button wire:click="editOption({{ $option->id }})" class="text-blue-600 hover:text-blue-900">Edit</button>
                             @if(Auth::user()->role === 'admin')
@@ -274,44 +274,45 @@
                     </div>
                     <div class="space-y-4">
                         <div>
-                            <label for="question_text" class="block text-sm font-medium text-gray-700 mb-2">Teks Pertanyaan <span class="text-red-500">*</span></label>
-                            <input type="text" id="question_text" wire:model="question_text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="Masukkan pertanyaan">
-                            @error('question_text') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            <label for="pertanyaan" class="block text-sm font-medium text-gray-700 mb-2">Teks Pertanyaan <span class="text-red-500">*</span></label>
+                            <input type="text" id="pertanyaan" wire:model="pertanyaan" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="Masukkan pertanyaan">
+                            @error('pertanyaan') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="grid grid-cols-2 gap-4">
                             <div>
-                                <label for="question_type" class="block text-sm font-medium text-gray-700 mb-2">Tipe Pertanyaan <span class="text-red-500">*</span></label>
-                                <select id="question_type" wire:model="question_type" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
-                                    <option value="dropdown">Dropdown</option>
+                                <label for="tipe_input" class="block text-sm font-medium text-gray-700 mb-2">Tipe Pertanyaan <span class="text-red-500">*</span></label>
+                                <select id="tipe_input" wire:model="tipe_input" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500">
+                                    <option value="select">Select/Dropdown</option>
                                     <option value="radio">Radio Button</option>
                                     <option value="checkbox">Checkbox</option>
                                     <option value="text">Text Input</option>
+                                    <option value="textarea">Textarea</option>
                                 </select>
-                                @error('question_type') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                @error('tipe_input') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
 
                             <div>
-                                <label for="order" class="block text-sm font-medium text-gray-700 mb-2">Urutan</label>
-                                <input type="number" id="order" wire:model="order" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" min="0">
-                                @error('order') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                <label for="urutan" class="block text-sm font-medium text-gray-700 mb-2">Urutan</label>
+                                <input type="number" id="urutan" wire:model="urutan" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" min="0">
+                                @error('urutan') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                         </div>
 
                         <div>
-                            <label for="description" class="block text-sm font-medium text-gray-700 mb-2">Deskripsi (Opsional)</label>
-                            <textarea id="description" wire:model="description" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="Deskripsi atau keterangan tambahan"></textarea>
-                            @error('description') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            <label for="deskripsi" class="block text-sm font-medium text-gray-700 mb-2">Deskripsi (Opsional)</label>
+                            <textarea id="deskripsi" wire:model="deskripsi" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" placeholder="Deskripsi atau keterangan tambahan"></textarea>
+                            @error('deskripsi') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
 
                         <div class="flex items-center space-x-6">
                             <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" wire:model.boolean="is_required" class="rounded border-gray-300 text-emerald-600 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                                <input type="checkbox" wire:model.boolean="wajib_diisi" class="rounded border-gray-300 text-emerald-600 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
                                 <span class="ml-2 text-sm text-gray-700">Wajib diisi</span>
                             </label>
 
                             <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" wire:model.boolean="is_active" class="rounded border-gray-300 text-emerald-600 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                                <input type="checkbox" wire:model.boolean="aktif" class="rounded border-gray-300 text-emerald-600 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
                                 <span class="ml-2 text-sm text-gray-700">Aktif</span>
                             </label>
                         </div>
@@ -364,15 +365,21 @@
                     </div>
                     <div class="space-y-4">
                         <div>
-                            <label for="option_text" class="block text-sm font-medium text-gray-700 mb-2">Teks Opsi <span class="text-red-500">*</span></label>
-                            <input type="text" id="option_text" wire:model="option_text" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Masukkan teks opsi">
-                            @error('option_text') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            <label for="label" class="block text-sm font-medium text-gray-700 mb-2">Label Opsi <span class="text-red-500">*</span></label>
+                            <input type="text" id="label" wire:model="label" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: Sangat Baik">
+                            @error('label') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
-                            <label for="option_order" class="block text-sm font-medium text-gray-700 mb-2">Urutan</label>
-                            <input type="number" id="option_order" wire:model="option_order" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" min="0">
-                            @error('option_order') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            <label for="value" class="block text-sm font-medium text-gray-700 mb-2">Value Opsi <span class="text-red-500">*</span></label>
+                            <input type="text" id="value" wire:model="value" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: sangat_baik">
+                            @error('value') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        </div>
+
+                        <div>
+                            <label for="option_urutan" class="block text-sm font-medium text-gray-700 mb-2">Urutan</label>
+                            <input type="number" id="option_urutan" wire:model="option_urutan" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" min="0">
+                            @error('option_urutan') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
                     </div>
                 </div>

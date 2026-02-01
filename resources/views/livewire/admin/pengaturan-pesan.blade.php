@@ -194,45 +194,234 @@
                     </div>
                 </div>
 
-                <!-- Daftar Ulang Disetujui -->
+                <!-- Kelulusan Cadangan -->
                 <div class="mb-8 pb-8 border-b border-gray-200">
                     <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                        <span class="w-8 h-8 bg-blue-100 text-blue-700 rounded-full flex items-center justify-center mr-2 text-sm">7</span>
-                        Email Daftar Ulang Disetujui
+                        <span class="w-8 h-8 bg-yellow-100 text-yellow-700 rounded-full flex items-center justify-center mr-2 text-sm">7</span>
+                        Email Kelulusan - Cadangan
                     </h3>
-                    <p class="text-sm text-gray-600 mb-4">Dikirim saat daftar ulang pendaftar disetujui</p>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat pendaftar masuk dalam daftar cadangan</p>
 
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Subject Email</label>
-                        <input type="text" wire:model="email_daftar_ulang_disetujui_subject" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                        @error('email_daftar_ulang_disetujui_subject') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        <input type="text" wire:model="email_kelulusan_cadangan_subject" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                        @error('email_kelulusan_cadangan_subject') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Isi Email</label>
-                        <textarea wire:model="email_daftar_ulang_disetujui_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
-                        @error('email_daftar_ulang_disetujui_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        <textarea wire:model="email_kelulusan_cadangan_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('email_kelulusan_cadangan_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                 </div>
 
-                <!-- Daftar Ulang Ditolak -->
-                <div class="mb-8">
+                <!-- Daftar Ulang Madrasah Disetujui -->
+                <div class="mb-8 pb-8 border-b border-gray-200">
                     <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
-                        <span class="w-8 h-8 bg-purple-100 text-purple-700 rounded-full flex items-center justify-center mr-2 text-sm">8</span>
-                        Email Daftar Ulang Ditolak
+                        <span class="w-8 h-8 bg-green-100 text-green-700 rounded-full flex items-center justify-center mr-2 text-sm">8</span>
+                        Email Daftar Ulang Madrasah Disetujui
                     </h3>
-                    <p class="text-sm text-gray-600 mb-4">Dikirim saat daftar ulang pendaftar ditolak</p>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat daftar ulang madrasah pendaftar disetujui</p>
 
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Subject Email</label>
-                        <input type="text" wire:model="email_daftar_ulang_ditolak_subject" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                        @error('email_daftar_ulang_ditolak_subject') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        <input type="text" wire:model="email_daftar_ulang_madrasah_disetujui_subject" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                        @error('email_daftar_ulang_madrasah_disetujui_subject') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
 
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Isi Email</label>
-                        <textarea wire:model="email_daftar_ulang_ditolak_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
-                        @error('email_daftar_ulang_ditolak_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                        <textarea wire:model="email_daftar_ulang_madrasah_disetujui_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('email_daftar_ulang_madrasah_disetujui_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Daftar Ulang Madrasah Ditolak -->
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center mr-2 text-sm">9</span>
+                        Email Daftar Ulang Madrasah Ditolak
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat daftar ulang madrasah pendaftar ditolak</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Subject Email</label>
+                        <input type="text" wire:model="email_daftar_ulang_madrasah_ditolak_subject" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                        @error('email_daftar_ulang_madrasah_ditolak_subject') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Isi Email</label>
+                        <textarea wire:model="email_daftar_ulang_madrasah_ditolak_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('email_daftar_ulang_madrasah_ditolak_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Daftar Ulang Madrasah Perlu Perbaikan -->
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-orange-100 text-orange-700 rounded-full flex items-center justify-center mr-2 text-sm">10</span>
+                        Email Daftar Ulang Madrasah Perlu Perbaikan
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat daftar ulang madrasah pendaftar perlu diperbaiki</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Subject Email</label>
+                        <input type="text" wire:model="email_daftar_ulang_madrasah_perbaiki_subject" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                        @error('email_daftar_ulang_madrasah_perbaiki_subject') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Isi Email</label>
+                        <textarea wire:model="email_daftar_ulang_madrasah_perbaiki_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('email_daftar_ulang_madrasah_perbaiki_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Daftar Ulang Seragam Disetujui -->
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-green-100 text-green-700 rounded-full flex items-center justify-center mr-2 text-sm">11</span>
+                        Email Daftar Ulang Seragam Disetujui
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat pembayaran daftar ulang seragam pendaftar disetujui</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Subject Email</label>
+                        <input type="text" wire:model="email_daftar_ulang_seragam_disetujui_subject" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                        @error('email_daftar_ulang_seragam_disetujui_subject') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Isi Email</label>
+                        <textarea wire:model="email_daftar_ulang_seragam_disetujui_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('email_daftar_ulang_seragam_disetujui_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Daftar Ulang Seragam Ditolak -->
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center mr-2 text-sm">12</span>
+                        Email Daftar Ulang Seragam Ditolak
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat pembayaran daftar ulang seragam pendaftar ditolak</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Subject Email</label>
+                        <input type="text" wire:model="email_daftar_ulang_seragam_ditolak_subject" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                        @error('email_daftar_ulang_seragam_ditolak_subject') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Isi Email</label>
+                        <textarea wire:model="email_daftar_ulang_seragam_ditolak_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('email_daftar_ulang_seragam_ditolak_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Daftar Ulang Seragam Perlu Perbaikan -->
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-orange-100 text-orange-700 rounded-full flex items-center justify-center mr-2 text-sm">13</span>
+                        Email Daftar Ulang Seragam Perlu Perbaikan
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat pembayaran daftar ulang seragam pendaftar perlu diperbaiki</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Subject Email</label>
+                        <input type="text" wire:model="email_daftar_ulang_seragam_perbaiki_subject" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                        @error('email_daftar_ulang_seragam_perbaiki_subject') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Isi Email</label>
+                        <textarea wire:model="email_daftar_ulang_seragam_perbaiki_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('email_daftar_ulang_seragam_perbaiki_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Ukuran Seragam Disetujui -->
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-green-100 text-green-700 rounded-full flex items-center justify-center mr-2 text-sm">14</span>
+                        Email Ukuran Seragam Disetujui
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat data ukuran seragam pendaftar disetujui</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Subject Email</label>
+                        <input type="text" wire:model="email_ukuran_seragam_disetujui_subject" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                        @error('email_ukuran_seragam_disetujui_subject') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Isi Email</label>
+                        <textarea wire:model="email_ukuran_seragam_disetujui_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('email_ukuran_seragam_disetujui_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Ukuran Seragam Ditolak -->
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center mr-2 text-sm">15</span>
+                        Email Ukuran Seragam Ditolak
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat data ukuran seragam pendaftar ditolak</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Subject Email</label>
+                        <input type="text" wire:model="email_ukuran_seragam_ditolak_subject" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                        @error('email_ukuran_seragam_ditolak_subject') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Isi Email</label>
+                        <textarea wire:model="email_ukuran_seragam_ditolak_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('email_ukuran_seragam_ditolak_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Ukuran Seragam Perlu Perbaikan -->
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-orange-100 text-orange-700 rounded-full flex items-center justify-center mr-2 text-sm">16</span>
+                        Email Ukuran Seragam Perlu Perbaikan
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat data ukuran seragam pendaftar perlu diperbaiki</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Subject Email</label>
+                        <input type="text" wire:model="email_ukuran_seragam_perbaiki_subject" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                        @error('email_ukuran_seragam_perbaiki_subject') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Isi Email</label>
+                        <textarea wire:model="email_ukuran_seragam_perbaiki_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('email_ukuran_seragam_perbaiki_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Cek Kembali Ukuran Seragam -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-yellow-100 text-yellow-700 rounded-full flex items-center justify-center mr-2 text-sm">17</span>
+                        Email Cek Kembali Ukuran Seragam
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim untuk mengingatkan pendaftar mengecek kembali data ukuran seragam</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Subject Email</label>
+                        <input type="text" wire:model="email_cek_kembali_ukuran_seragam_subject" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                        @error('email_cek_kembali_ukuran_seragam_subject') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Isi Email</label>
+                        <textarea wire:model="email_cek_kembali_ukuran_seragam_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('email_cek_kembali_ukuran_seragam_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                 </div>
 
@@ -341,6 +530,171 @@
                         <label class="block text-sm font-medium text-gray-700 mb-2">Pesan WhatsApp</label>
                         <textarea wire:model="wa_kelulusan_tidak_lulus_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
                         @error('wa_kelulusan_tidak_lulus_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Kelulusan Cadangan -->
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-yellow-100 text-yellow-700 rounded-full flex items-center justify-center mr-2 text-sm">7</span>
+                        WhatsApp Kelulusan - Cadangan
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat pendaftar masuk dalam daftar cadangan</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pesan WhatsApp</label>
+                        <textarea wire:model="wa_kelulusan_cadangan_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('wa_kelulusan_cadangan_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Daftar Ulang Madrasah Disetujui -->
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-green-100 text-green-700 rounded-full flex items-center justify-center mr-2 text-sm">8</span>
+                        WhatsApp Daftar Ulang Madrasah Disetujui
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat daftar ulang madrasah pendaftar disetujui</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pesan WhatsApp</label>
+                        <textarea wire:model="wa_daftar_ulang_madrasah_disetujui_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('wa_daftar_ulang_madrasah_disetujui_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Daftar Ulang Madrasah Ditolak -->
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center mr-2 text-sm">9</span>
+                        WhatsApp Daftar Ulang Madrasah Ditolak
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat daftar ulang madrasah pendaftar ditolak</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pesan WhatsApp</label>
+                        <textarea wire:model="wa_daftar_ulang_madrasah_ditolak_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('wa_daftar_ulang_madrasah_ditolak_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Daftar Ulang Madrasah Perlu Perbaikan -->
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-orange-100 text-orange-700 rounded-full flex items-center justify-center mr-2 text-sm">10</span>
+                        WhatsApp Daftar Ulang Madrasah Perlu Perbaikan
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat daftar ulang madrasah pendaftar perlu diperbaiki</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pesan WhatsApp</label>
+                        <textarea wire:model="wa_daftar_ulang_madrasah_perbaiki_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('wa_daftar_ulang_madrasah_perbaiki_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Daftar Ulang Seragam Disetujui -->
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-green-100 text-green-700 rounded-full flex items-center justify-center mr-2 text-sm">11</span>
+                        WhatsApp Daftar Ulang Seragam Disetujui
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat pembayaran daftar ulang seragam pendaftar disetujui</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pesan WhatsApp</label>
+                        <textarea wire:model="wa_daftar_ulang_seragam_disetujui_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('wa_daftar_ulang_seragam_disetujui_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Daftar Ulang Seragam Ditolak -->
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center mr-2 text-sm">12</span>
+                        WhatsApp Daftar Ulang Seragam Ditolak
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat pembayaran daftar ulang seragam pendaftar ditolak</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pesan WhatsApp</label>
+                        <textarea wire:model="wa_daftar_ulang_seragam_ditolak_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('wa_daftar_ulang_seragam_ditolak_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Daftar Ulang Seragam Perlu Perbaikan -->
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-orange-100 text-orange-700 rounded-full flex items-center justify-center mr-2 text-sm">13</span>
+                        WhatsApp Daftar Ulang Seragam Perlu Perbaikan
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat pembayaran daftar ulang seragam pendaftar perlu diperbaiki</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pesan WhatsApp</label>
+                        <textarea wire:model="wa_daftar_ulang_seragam_perbaiki_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('wa_daftar_ulang_seragam_perbaiki_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Ukuran Seragam Disetujui -->
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-green-100 text-green-700 rounded-full flex items-center justify-center mr-2 text-sm">14</span>
+                        WhatsApp Ukuran Seragam Disetujui
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat data ukuran seragam pendaftar disetujui</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pesan WhatsApp</label>
+                        <textarea wire:model="wa_ukuran_seragam_disetujui_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('wa_ukuran_seragam_disetujui_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Ukuran Seragam Ditolak -->
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-red-100 text-red-700 rounded-full flex items-center justify-center mr-2 text-sm">15</span>
+                        WhatsApp Ukuran Seragam Ditolak
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat data ukuran seragam pendaftar ditolak</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pesan WhatsApp</label>
+                        <textarea wire:model="wa_ukuran_seragam_ditolak_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('wa_ukuran_seragam_ditolak_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Ukuran Seragam Perlu Perbaikan -->
+                <div class="mb-8 pb-8 border-b border-gray-200">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-orange-100 text-orange-700 rounded-full flex items-center justify-center mr-2 text-sm">16</span>
+                        WhatsApp Ukuran Seragam Perlu Perbaikan
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim saat data ukuran seragam pendaftar perlu diperbaiki</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pesan WhatsApp</label>
+                        <textarea wire:model="wa_ukuran_seragam_perbaiki_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('wa_ukuran_seragam_perbaiki_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                    </div>
+                </div>
+
+                <!-- Cek Kembali Ukuran Seragam -->
+                <div class="mb-8">
+                    <h3 class="text-lg font-bold text-gray-900 mb-4 flex items-center">
+                        <span class="w-8 h-8 bg-yellow-100 text-yellow-700 rounded-full flex items-center justify-center mr-2 text-sm">17</span>
+                        WhatsApp Cek Kembali Ukuran Seragam
+                    </h3>
+                    <p class="text-sm text-gray-600 mb-4">Dikirim untuk mengingatkan pendaftar mengecek kembali data ukuran seragam</p>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Pesan WhatsApp</label>
+                        <textarea wire:model="wa_cek_kembali_ukuran_seragam_body" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 font-mono text-sm"></textarea>
+                        @error('wa_cek_kembali_ukuran_seragam_body') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                     </div>
                 </div>
 

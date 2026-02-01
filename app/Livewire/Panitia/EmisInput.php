@@ -17,7 +17,7 @@ class EmisInput extends Component
     public function mount()
     {
         $user = Auth::user();
-        if (!$user || !in_array($user->role, ['panitia_daftarulang', 'panitia'])) {
+        if (!$user || !in_array($user->role, ['panitia_pendaftaran', 'panitia_daftarulang', 'panitia_tes_psikologi', 'panitia_seragam'])) {
             return redirect()->to('/login/admin');
         }
 

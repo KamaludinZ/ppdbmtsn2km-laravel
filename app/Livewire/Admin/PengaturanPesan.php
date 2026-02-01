@@ -4,10 +4,12 @@ namespace App\Livewire\Admin;
 
 use App\Models\Setting;
 use Livewire\Component;
+use Livewire\Attributes\Url;
 use Illuminate\Support\Facades\Auth;
 
 class PengaturanPesan extends Component
 {
+    #[Url(keep: true)]
     public $activeTab = 'email';
 
     // Email Templates
@@ -38,6 +40,32 @@ class PengaturanPesan extends Component
     public $email_verifikasi_transfer_perbaiki_subject;
     public $email_verifikasi_transfer_perbaiki_body;
 
+    // Daftar Ulang Madrasah Templates
+    public $email_daftar_ulang_madrasah_disetujui_subject;
+    public $email_daftar_ulang_madrasah_disetujui_body;
+    public $email_daftar_ulang_madrasah_ditolak_subject;
+    public $email_daftar_ulang_madrasah_ditolak_body;
+    public $email_daftar_ulang_madrasah_perbaiki_subject;
+    public $email_daftar_ulang_madrasah_perbaiki_body;
+
+    // Daftar Ulang Seragam Templates
+    public $email_daftar_ulang_seragam_disetujui_subject;
+    public $email_daftar_ulang_seragam_disetujui_body;
+    public $email_daftar_ulang_seragam_ditolak_subject;
+    public $email_daftar_ulang_seragam_ditolak_body;
+    public $email_daftar_ulang_seragam_perbaiki_subject;
+    public $email_daftar_ulang_seragam_perbaiki_body;
+
+    // Ukuran Seragam Templates
+    public $email_ukuran_seragam_disetujui_subject;
+    public $email_ukuran_seragam_disetujui_body;
+    public $email_ukuran_seragam_ditolak_subject;
+    public $email_ukuran_seragam_ditolak_body;
+    public $email_ukuran_seragam_perbaiki_subject;
+    public $email_ukuran_seragam_perbaiki_body;
+    public $email_cek_kembali_ukuran_seragam_subject;
+    public $email_cek_kembali_ukuran_seragam_body;
+
     // WhatsApp Templates
     public $wa_pendaftaran_body;
     public $wa_verifikasi_disetujui_body;
@@ -52,6 +80,22 @@ class PengaturanPesan extends Component
     public $wa_verifikasi_transfer_disetujui_body;
     public $wa_verifikasi_transfer_ditolak_body;
     public $wa_verifikasi_transfer_perbaiki_body;
+
+    // WhatsApp Daftar Ulang Madrasah
+    public $wa_daftar_ulang_madrasah_disetujui_body;
+    public $wa_daftar_ulang_madrasah_ditolak_body;
+    public $wa_daftar_ulang_madrasah_perbaiki_body;
+
+    // WhatsApp Daftar Ulang Seragam
+    public $wa_daftar_ulang_seragam_disetujui_body;
+    public $wa_daftar_ulang_seragam_ditolak_body;
+    public $wa_daftar_ulang_seragam_perbaiki_body;
+
+    // WhatsApp Ukuran Seragam
+    public $wa_ukuran_seragam_disetujui_body;
+    public $wa_ukuran_seragam_ditolak_body;
+    public $wa_ukuran_seragam_perbaiki_body;
+    public $wa_cek_kembali_ukuran_seragam_body;
 
     public function mount()
     {
@@ -119,6 +163,48 @@ class PengaturanPesan extends Component
         $this->wa_verifikasi_transfer_disetujui_body = Setting::get('wa_verifikasi_transfer_disetujui_body', $this->getDefaultWAVerifikasiTransferDisetujui());
         $this->wa_verifikasi_transfer_ditolak_body = Setting::get('wa_verifikasi_transfer_ditolak_body', $this->getDefaultWAVerifikasiTransferDitolak());
         $this->wa_verifikasi_transfer_perbaiki_body = Setting::get('wa_verifikasi_transfer_perbaiki_body', $this->getDefaultWAVerifikasiTransferPerbaiki());
+
+        // Load Daftar Ulang Madrasah Templates
+        $this->email_daftar_ulang_madrasah_disetujui_subject = Setting::get('email_daftar_ulang_madrasah_disetujui_subject', 'Daftar Ulang Madrasah Disetujui');
+        $this->email_daftar_ulang_madrasah_disetujui_body = Setting::get('email_daftar_ulang_madrasah_disetujui_body', $this->getDefaultEmailDaftarUlangMadrasahDisetujui());
+        $this->email_daftar_ulang_madrasah_ditolak_subject = Setting::get('email_daftar_ulang_madrasah_ditolak_subject', 'Daftar Ulang Madrasah Ditolak');
+        $this->email_daftar_ulang_madrasah_ditolak_body = Setting::get('email_daftar_ulang_madrasah_ditolak_body', $this->getDefaultEmailDaftarUlangMadrasahDitolak());
+        $this->email_daftar_ulang_madrasah_perbaiki_subject = Setting::get('email_daftar_ulang_madrasah_perbaiki_subject', 'Daftar Ulang Madrasah Perlu Perbaikan');
+        $this->email_daftar_ulang_madrasah_perbaiki_body = Setting::get('email_daftar_ulang_madrasah_perbaiki_body', $this->getDefaultEmailDaftarUlangMadrasahPerbaiki());
+
+        // Load Daftar Ulang Seragam Templates
+        $this->email_daftar_ulang_seragam_disetujui_subject = Setting::get('email_daftar_ulang_seragam_disetujui_subject', 'Daftar Ulang Seragam Disetujui');
+        $this->email_daftar_ulang_seragam_disetujui_body = Setting::get('email_daftar_ulang_seragam_disetujui_body', $this->getDefaultEmailDaftarUlangSeragamDisetujui());
+        $this->email_daftar_ulang_seragam_ditolak_subject = Setting::get('email_daftar_ulang_seragam_ditolak_subject', 'Daftar Ulang Seragam Ditolak');
+        $this->email_daftar_ulang_seragam_ditolak_body = Setting::get('email_daftar_ulang_seragam_ditolak_body', $this->getDefaultEmailDaftarUlangSeragamDitolak());
+        $this->email_daftar_ulang_seragam_perbaiki_subject = Setting::get('email_daftar_ulang_seragam_perbaiki_subject', 'Daftar Ulang Seragam Perlu Perbaikan');
+        $this->email_daftar_ulang_seragam_perbaiki_body = Setting::get('email_daftar_ulang_seragam_perbaiki_body', $this->getDefaultEmailDaftarUlangSeragamPerbaiki());
+
+        // Load Ukuran Seragam Templates
+        $this->email_ukuran_seragam_disetujui_subject = Setting::get('email_ukuran_seragam_disetujui_subject', 'Ukuran Seragam Disetujui');
+        $this->email_ukuran_seragam_disetujui_body = Setting::get('email_ukuran_seragam_disetujui_body', $this->getDefaultEmailUkuranSeragamDisetujui());
+        $this->email_ukuran_seragam_ditolak_subject = Setting::get('email_ukuran_seragam_ditolak_subject', 'Ukuran Seragam Ditolak');
+        $this->email_ukuran_seragam_ditolak_body = Setting::get('email_ukuran_seragam_ditolak_body', $this->getDefaultEmailUkuranSeragamDitolak());
+        $this->email_ukuran_seragam_perbaiki_subject = Setting::get('email_ukuran_seragam_perbaiki_subject', 'Ukuran Seragam Perlu Perbaikan');
+        $this->email_ukuran_seragam_perbaiki_body = Setting::get('email_ukuran_seragam_perbaiki_body', $this->getDefaultEmailUkuranSeragamPerbaiki());
+        $this->email_cek_kembali_ukuran_seragam_subject = Setting::get('email_cek_kembali_ukuran_seragam_subject', 'Cek Kembali Ukuran Seragam');
+        $this->email_cek_kembali_ukuran_seragam_body = Setting::get('email_cek_kembali_ukuran_seragam_body', $this->getDefaultEmailCekKembaliUkuranSeragam());
+
+        // Load WhatsApp Daftar Ulang Madrasah
+        $this->wa_daftar_ulang_madrasah_disetujui_body = Setting::get('wa_daftar_ulang_madrasah_disetujui_body', $this->getDefaultWADaftarUlangMadrasahDisetujui());
+        $this->wa_daftar_ulang_madrasah_ditolak_body = Setting::get('wa_daftar_ulang_madrasah_ditolak_body', $this->getDefaultWADaftarUlangMadrasahDitolak());
+        $this->wa_daftar_ulang_madrasah_perbaiki_body = Setting::get('wa_daftar_ulang_madrasah_perbaiki_body', $this->getDefaultWADaftarUlangMadrasahPerbaiki());
+
+        // Load WhatsApp Daftar Ulang Seragam
+        $this->wa_daftar_ulang_seragam_disetujui_body = Setting::get('wa_daftar_ulang_seragam_disetujui_body', $this->getDefaultWADaftarUlangSeragamDisetujui());
+        $this->wa_daftar_ulang_seragam_ditolak_body = Setting::get('wa_daftar_ulang_seragam_ditolak_body', $this->getDefaultWADaftarUlangSeragamDitolak());
+        $this->wa_daftar_ulang_seragam_perbaiki_body = Setting::get('wa_daftar_ulang_seragam_perbaiki_body', $this->getDefaultWADaftarUlangSeragamPerbaiki());
+
+        // Load WhatsApp Ukuran Seragam
+        $this->wa_ukuran_seragam_disetujui_body = Setting::get('wa_ukuran_seragam_disetujui_body', $this->getDefaultWAUkuranSeragamDisetujui());
+        $this->wa_ukuran_seragam_ditolak_body = Setting::get('wa_ukuran_seragam_ditolak_body', $this->getDefaultWAUkuranSeragamDitolak());
+        $this->wa_ukuran_seragam_perbaiki_body = Setting::get('wa_ukuran_seragam_perbaiki_body', $this->getDefaultWAUkuranSeragamPerbaiki());
+        $this->wa_cek_kembali_ukuran_seragam_body = Setting::get('wa_cek_kembali_ukuran_seragam_body', $this->getDefaultWACekKembaliUkuranSeragam());
     }
 
     public function saveEmailSettings()
@@ -150,6 +236,29 @@ class PengaturanPesan extends Component
             'email_verifikasi_transfer_ditolak_body' => 'required|string',
             'email_verifikasi_transfer_perbaiki_subject' => 'required|string|max:255',
             'email_verifikasi_transfer_perbaiki_body' => 'required|string',
+            // Daftar Ulang Madrasah
+            'email_daftar_ulang_madrasah_disetujui_subject' => 'required|string|max:255',
+            'email_daftar_ulang_madrasah_disetujui_body' => 'required|string',
+            'email_daftar_ulang_madrasah_ditolak_subject' => 'required|string|max:255',
+            'email_daftar_ulang_madrasah_ditolak_body' => 'required|string',
+            'email_daftar_ulang_madrasah_perbaiki_subject' => 'required|string|max:255',
+            'email_daftar_ulang_madrasah_perbaiki_body' => 'required|string',
+            // Daftar Ulang Seragam
+            'email_daftar_ulang_seragam_disetujui_subject' => 'required|string|max:255',
+            'email_daftar_ulang_seragam_disetujui_body' => 'required|string',
+            'email_daftar_ulang_seragam_ditolak_subject' => 'required|string|max:255',
+            'email_daftar_ulang_seragam_ditolak_body' => 'required|string',
+            'email_daftar_ulang_seragam_perbaiki_subject' => 'required|string|max:255',
+            'email_daftar_ulang_seragam_perbaiki_body' => 'required|string',
+            // Ukuran Seragam
+            'email_ukuran_seragam_disetujui_subject' => 'required|string|max:255',
+            'email_ukuran_seragam_disetujui_body' => 'required|string',
+            'email_ukuran_seragam_ditolak_subject' => 'required|string|max:255',
+            'email_ukuran_seragam_ditolak_body' => 'required|string',
+            'email_ukuran_seragam_perbaiki_subject' => 'required|string|max:255',
+            'email_ukuran_seragam_perbaiki_body' => 'required|string',
+            'email_cek_kembali_ukuran_seragam_subject' => 'required|string|max:255',
+            'email_cek_kembali_ukuran_seragam_body' => 'required|string',
         ]);
 
         Setting::set('email_pendaftaran_subject', $this->email_pendaftaran_subject, 'text', 'Subject Email Pendaftaran Berhasil');
@@ -191,6 +300,32 @@ class PengaturanPesan extends Component
         Setting::set('email_verifikasi_transfer_perbaiki_subject', $this->email_verifikasi_transfer_perbaiki_subject, 'text', 'Subject Email Verifikasi Transfer Perbaiki');
         Setting::set('email_verifikasi_transfer_perbaiki_body', $this->email_verifikasi_transfer_perbaiki_body, 'textarea', 'Body Email Verifikasi Transfer Perbaiki');
 
+        // Save Daftar Ulang Madrasah
+        Setting::set('email_daftar_ulang_madrasah_disetujui_subject', $this->email_daftar_ulang_madrasah_disetujui_subject, 'text', 'Subject Email Daftar Ulang Madrasah Disetujui');
+        Setting::set('email_daftar_ulang_madrasah_disetujui_body', $this->email_daftar_ulang_madrasah_disetujui_body, 'textarea', 'Body Email Daftar Ulang Madrasah Disetujui');
+        Setting::set('email_daftar_ulang_madrasah_ditolak_subject', $this->email_daftar_ulang_madrasah_ditolak_subject, 'text', 'Subject Email Daftar Ulang Madrasah Ditolak');
+        Setting::set('email_daftar_ulang_madrasah_ditolak_body', $this->email_daftar_ulang_madrasah_ditolak_body, 'textarea', 'Body Email Daftar Ulang Madrasah Ditolak');
+        Setting::set('email_daftar_ulang_madrasah_perbaiki_subject', $this->email_daftar_ulang_madrasah_perbaiki_subject, 'text', 'Subject Email Daftar Ulang Madrasah Perbaiki');
+        Setting::set('email_daftar_ulang_madrasah_perbaiki_body', $this->email_daftar_ulang_madrasah_perbaiki_body, 'textarea', 'Body Email Daftar Ulang Madrasah Perbaiki');
+
+        // Save Daftar Ulang Seragam
+        Setting::set('email_daftar_ulang_seragam_disetujui_subject', $this->email_daftar_ulang_seragam_disetujui_subject, 'text', 'Subject Email Daftar Ulang Seragam Disetujui');
+        Setting::set('email_daftar_ulang_seragam_disetujui_body', $this->email_daftar_ulang_seragam_disetujui_body, 'textarea', 'Body Email Daftar Ulang Seragam Disetujui');
+        Setting::set('email_daftar_ulang_seragam_ditolak_subject', $this->email_daftar_ulang_seragam_ditolak_subject, 'text', 'Subject Email Daftar Ulang Seragam Ditolak');
+        Setting::set('email_daftar_ulang_seragam_ditolak_body', $this->email_daftar_ulang_seragam_ditolak_body, 'textarea', 'Body Email Daftar Ulang Seragam Ditolak');
+        Setting::set('email_daftar_ulang_seragam_perbaiki_subject', $this->email_daftar_ulang_seragam_perbaiki_subject, 'text', 'Subject Email Daftar Ulang Seragam Perbaiki');
+        Setting::set('email_daftar_ulang_seragam_perbaiki_body', $this->email_daftar_ulang_seragam_perbaiki_body, 'textarea', 'Body Email Daftar Ulang Seragam Perbaiki');
+
+        // Save Ukuran Seragam
+        Setting::set('email_ukuran_seragam_disetujui_subject', $this->email_ukuran_seragam_disetujui_subject, 'text', 'Subject Email Ukuran Seragam Disetujui');
+        Setting::set('email_ukuran_seragam_disetujui_body', $this->email_ukuran_seragam_disetujui_body, 'textarea', 'Body Email Ukuran Seragam Disetujui');
+        Setting::set('email_ukuran_seragam_ditolak_subject', $this->email_ukuran_seragam_ditolak_subject, 'text', 'Subject Email Ukuran Seragam Ditolak');
+        Setting::set('email_ukuran_seragam_ditolak_body', $this->email_ukuran_seragam_ditolak_body, 'textarea', 'Body Email Ukuran Seragam Ditolak');
+        Setting::set('email_ukuran_seragam_perbaiki_subject', $this->email_ukuran_seragam_perbaiki_subject, 'text', 'Subject Email Ukuran Seragam Perbaiki');
+        Setting::set('email_ukuran_seragam_perbaiki_body', $this->email_ukuran_seragam_perbaiki_body, 'textarea', 'Body Email Ukuran Seragam Perbaiki');
+        Setting::set('email_cek_kembali_ukuran_seragam_subject', $this->email_cek_kembali_ukuran_seragam_subject, 'text', 'Subject Email Cek Kembali Ukuran Seragam');
+        Setting::set('email_cek_kembali_ukuran_seragam_body', $this->email_cek_kembali_ukuran_seragam_body, 'textarea', 'Body Email Cek Kembali Ukuran Seragam');
+
         session()->flash('message', 'Template email berhasil disimpan!');
     }
 
@@ -210,6 +345,19 @@ class PengaturanPesan extends Component
             'wa_verifikasi_transfer_disetujui_body' => 'required|string',
             'wa_verifikasi_transfer_ditolak_body' => 'required|string',
             'wa_verifikasi_transfer_perbaiki_body' => 'required|string',
+            // Daftar Ulang Madrasah
+            'wa_daftar_ulang_madrasah_disetujui_body' => 'required|string',
+            'wa_daftar_ulang_madrasah_ditolak_body' => 'required|string',
+            'wa_daftar_ulang_madrasah_perbaiki_body' => 'required|string',
+            // Daftar Ulang Seragam
+            'wa_daftar_ulang_seragam_disetujui_body' => 'required|string',
+            'wa_daftar_ulang_seragam_ditolak_body' => 'required|string',
+            'wa_daftar_ulang_seragam_perbaiki_body' => 'required|string',
+            // Ukuran Seragam
+            'wa_ukuran_seragam_disetujui_body' => 'required|string',
+            'wa_ukuran_seragam_ditolak_body' => 'required|string',
+            'wa_ukuran_seragam_perbaiki_body' => 'required|string',
+            'wa_cek_kembali_ukuran_seragam_body' => 'required|string',
         ]);
 
         Setting::set('wa_pendaftaran_body', $this->wa_pendaftaran_body, 'textarea', 'Template WA Pendaftaran Berhasil');
@@ -225,6 +373,22 @@ class PengaturanPesan extends Component
         Setting::set('wa_verifikasi_transfer_disetujui_body', $this->wa_verifikasi_transfer_disetujui_body, 'textarea', 'Template WA Verifikasi Transfer Disetujui');
         Setting::set('wa_verifikasi_transfer_ditolak_body', $this->wa_verifikasi_transfer_ditolak_body, 'textarea', 'Template WA Verifikasi Transfer Ditolak');
         Setting::set('wa_verifikasi_transfer_perbaiki_body', $this->wa_verifikasi_transfer_perbaiki_body, 'textarea', 'Template WA Verifikasi Transfer Perbaiki');
+
+        // Save WhatsApp Daftar Ulang Madrasah
+        Setting::set('wa_daftar_ulang_madrasah_disetujui_body', $this->wa_daftar_ulang_madrasah_disetujui_body, 'textarea', 'Template WA Daftar Ulang Madrasah Disetujui');
+        Setting::set('wa_daftar_ulang_madrasah_ditolak_body', $this->wa_daftar_ulang_madrasah_ditolak_body, 'textarea', 'Template WA Daftar Ulang Madrasah Ditolak');
+        Setting::set('wa_daftar_ulang_madrasah_perbaiki_body', $this->wa_daftar_ulang_madrasah_perbaiki_body, 'textarea', 'Template WA Daftar Ulang Madrasah Perbaiki');
+
+        // Save WhatsApp Daftar Ulang Seragam
+        Setting::set('wa_daftar_ulang_seragam_disetujui_body', $this->wa_daftar_ulang_seragam_disetujui_body, 'textarea', 'Template WA Daftar Ulang Seragam Disetujui');
+        Setting::set('wa_daftar_ulang_seragam_ditolak_body', $this->wa_daftar_ulang_seragam_ditolak_body, 'textarea', 'Template WA Daftar Ulang Seragam Ditolak');
+        Setting::set('wa_daftar_ulang_seragam_perbaiki_body', $this->wa_daftar_ulang_seragam_perbaiki_body, 'textarea', 'Template WA Daftar Ulang Seragam Perbaiki');
+
+        // Save WhatsApp Ukuran Seragam
+        Setting::set('wa_ukuran_seragam_disetujui_body', $this->wa_ukuran_seragam_disetujui_body, 'textarea', 'Template WA Ukuran Seragam Disetujui');
+        Setting::set('wa_ukuran_seragam_ditolak_body', $this->wa_ukuran_seragam_ditolak_body, 'textarea', 'Template WA Ukuran Seragam Ditolak');
+        Setting::set('wa_ukuran_seragam_perbaiki_body', $this->wa_ukuran_seragam_perbaiki_body, 'textarea', 'Template WA Ukuran Seragam Perbaiki');
+        Setting::set('wa_cek_kembali_ukuran_seragam_body', $this->wa_cek_kembali_ukuran_seragam_body, 'textarea', 'Template WA Cek Kembali Ukuran Seragam');
 
         session()->flash('message', 'Template WhatsApp berhasil disimpan!');
     }
@@ -364,6 +528,109 @@ class PengaturanPesan extends Component
     private function getDefaultWAVerifikasiTransferPerbaiki()
     {
         return "*MTsN 2 Kota Malang*\n\nKepada Bapak/Ibu {nama} ({nomor_pendaftaran}),\n\nBukti transfer biaya tes psikologi Anda *perlu diperbaiki*.\n\nCatatan: {catatan}\n\nSilakan upload ulang bukti yang benar di: {url_dashboard}";
+    }
+
+    // Default Templates - Daftar Ulang Madrasah
+    private function getDefaultEmailDaftarUlangMadrasahDisetujui()
+    {
+        return "Kepada {nama},\n\nSelamat! Verifikasi daftar ulang madrasah Anda dengan nomor pendaftaran {nomor_pendaftaran} telah disetujui.\n\nAnda dapat melanjutkan ke tahap berikutnya. Silakan cek dashboard Anda untuk informasi lebih lanjut.\n\nSalam,\nPanitia PPDB MTsN 2 Kota Malang";
+    }
+
+    private function getDefaultEmailDaftarUlangMadrasahDitolak()
+    {
+        return "Kepada {nama},\n\nMohon maaf, verifikasi daftar ulang madrasah Anda dengan nomor pendaftaran {nomor_pendaftaran} tidak dapat disetujui.\n\nCatatan: {catatan}\n\nSilakan hubungi panitia untuk informasi lebih lanjut.\n\nSalam,\nPanitia PPDB MTsN 2 Kota Malang";
+    }
+
+    private function getDefaultEmailDaftarUlangMadrasahPerbaiki()
+    {
+        return "Kepada {nama},\n\nDokumen daftar ulang madrasah Anda dengan nomor pendaftaran {nomor_pendaftaran} perlu diperbaiki.\n\nCatatan: {catatan}\n\nSilakan perbaiki dan upload ulang dokumen Anda melalui dashboard.\n\nSalam,\nPanitia PPDB MTsN 2 Kota Malang";
+    }
+
+    private function getDefaultWADaftarUlangMadrasahDisetujui()
+    {
+        return "*MTsN 2 Kota Malang*\n\nKepada Bapak/Ibu {nama} ({nomor_pendaftaran}),\n\nVerifikasi daftar ulang madrasah Anda telah *disetujui* ✅\n\nAnda dapat melanjutkan ke tahap berikutnya.\n\nSilakan cek dashboard: {url_dashboard}";
+    }
+
+    private function getDefaultWADaftarUlangMadrasahDitolak()
+    {
+        return "*MTsN 2 Kota Malang*\n\nKepada Bapak/Ibu {nama} ({nomor_pendaftaran}),\n\nMohon maaf, verifikasi daftar ulang madrasah Anda *ditolak* ❌\n\nCatatan: {catatan}\n\nSilakan hubungi panitia untuk informasi lebih lanjut.";
+    }
+
+    private function getDefaultWADaftarUlangMadrasahPerbaiki()
+    {
+        return "*MTsN 2 Kota Malang*\n\nKepada Bapak/Ibu {nama} ({nomor_pendaftaran}),\n\nDokumen daftar ulang madrasah Anda *perlu diperbaiki*.\n\nCatatan: {catatan}\n\nSilakan perbaiki dan upload ulang di: {url_dashboard}";
+    }
+
+    // Default Templates - Daftar Ulang Seragam
+    private function getDefaultEmailDaftarUlangSeragamDisetujui()
+    {
+        return "Kepada {nama},\n\nSelamat! Verifikasi pembayaran daftar ulang seragam Anda dengan nomor pendaftaran {nomor_pendaftaran} telah disetujui.\n\nAnda dapat melanjutkan ke tahap berikutnya. Silakan cek dashboard Anda untuk informasi lebih lanjut.\n\nSalam,\nPanitia PPDB MTsN 2 Kota Malang";
+    }
+
+    private function getDefaultEmailDaftarUlangSeragamDitolak()
+    {
+        return "Kepada {nama},\n\nMohon maaf, verifikasi pembayaran daftar ulang seragam Anda dengan nomor pendaftaran {nomor_pendaftaran} tidak dapat disetujui.\n\nCatatan: {catatan}\n\nSilakan hubungi panitia atau upload ulang bukti pembayaran yang benar.\n\nSalam,\nPanitia PPDB MTsN 2 Kota Malang";
+    }
+
+    private function getDefaultEmailDaftarUlangSeragamPerbaiki()
+    {
+        return "Kepada {nama},\n\nBukti pembayaran daftar ulang seragam Anda dengan nomor pendaftaran {nomor_pendaftaran} perlu diperbaiki.\n\nCatatan: {catatan}\n\nSilakan upload ulang bukti pembayaran yang benar melalui dashboard.\n\nSalam,\nPanitia PPDB MTsN 2 Kota Malang";
+    }
+
+    private function getDefaultWADaftarUlangSeragamDisetujui()
+    {
+        return "*MTsN 2 Kota Malang*\n\nKepada Bapak/Ibu {nama} ({nomor_pendaftaran}),\n\nVerifikasi pembayaran daftar ulang seragam Anda telah *disetujui* ✅\n\nAnda dapat melanjutkan ke tahap berikutnya.\n\nSilakan cek dashboard: {url_dashboard}";
+    }
+
+    private function getDefaultWADaftarUlangSeragamDitolak()
+    {
+        return "*MTsN 2 Kota Malang*\n\nKepada Bapak/Ibu {nama} ({nomor_pendaftaran}),\n\nMohon maaf, verifikasi pembayaran daftar ulang seragam Anda *ditolak* ❌\n\nCatatan: {catatan}\n\nSilakan hubungi panitia atau upload ulang bukti pembayaran yang benar.";
+    }
+
+    private function getDefaultWADaftarUlangSeragamPerbaiki()
+    {
+        return "*MTsN 2 Kota Malang*\n\nKepada Bapak/Ibu {nama} ({nomor_pendaftaran}),\n\nBukti pembayaran daftar ulang seragam Anda *perlu diperbaiki*.\n\nCatatan: {catatan}\n\nSilakan upload ulang bukti pembayaran yang benar di: {url_dashboard}";
+    }
+
+    // Default Templates - Ukuran Seragam
+    private function getDefaultEmailUkuranSeragamDisetujui()
+    {
+        return "Kepada {nama},\n\nSelamat! Data ukuran seragam Anda dengan nomor pendaftaran {nomor_pendaftaran} telah diverifikasi dan disetujui.\n\nSeragam Anda akan segera diproses. Silakan cek dashboard Anda untuk informasi lebih lanjut.\n\nSalam,\nPanitia PPDB MTsN 2 Kota Malang";
+    }
+
+    private function getDefaultEmailUkuranSeragamDitolak()
+    {
+        return "Kepada {nama},\n\nMohon maaf, data ukuran seragam Anda dengan nomor pendaftaran {nomor_pendaftaran} tidak dapat disetujui.\n\nCatatan: {catatan}\n\nSilakan hubungi panitia untuk informasi lebih lanjut.\n\nSalam,\nPanitia PPDB MTsN 2 Kota Malang";
+    }
+
+    private function getDefaultEmailUkuranSeragamPerbaiki()
+    {
+        return "Kepada {nama},\n\nData ukuran seragam Anda dengan nomor pendaftaran {nomor_pendaftaran} perlu diperbaiki.\n\nCatatan: {catatan}\n\nSilakan perbaiki data ukuran seragam Anda melalui dashboard.\n\nSalam,\nPanitia PPDB MTsN 2 Kota Malang";
+    }
+
+    private function getDefaultEmailCekKembaliUkuranSeragam()
+    {
+        return "Kepada {nama},\n\nMohon untuk mengecek kembali data ukuran seragam Anda dengan nomor pendaftaran {nomor_pendaftaran}.\n\nCatatan: {catatan}\n\nPastikan data yang Anda masukkan sudah benar dan sesuai. Silakan cek dashboard Anda.\n\nSalam,\nPanitia PPDB MTsN 2 Kota Malang";
+    }
+
+    private function getDefaultWAUkuranSeragamDisetujui()
+    {
+        return "*MTsN 2 Kota Malang*\n\nKepada Bapak/Ibu {nama} ({nomor_pendaftaran}),\n\nData ukuran seragam Anda telah *disetujui* ✅\n\nSeragam Anda akan segera diproses.\n\nSilakan cek dashboard: {url_dashboard}";
+    }
+
+    private function getDefaultWAUkuranSeragamDitolak()
+    {
+        return "*MTsN 2 Kota Malang*\n\nKepada Bapak/Ibu {nama} ({nomor_pendaftaran}),\n\nMohon maaf, data ukuran seragam Anda *ditolak* ❌\n\nCatatan: {catatan}\n\nSilakan hubungi panitia untuk informasi lebih lanjut.";
+    }
+
+    private function getDefaultWAUkuranSeragamPerbaiki()
+    {
+        return "*MTsN 2 Kota Malang*\n\nKepada Bapak/Ibu {nama} ({nomor_pendaftaran}),\n\nData ukuran seragam Anda *perlu diperbaiki*.\n\nCatatan: {catatan}\n\nSilakan perbaiki data ukuran seragam di: {url_dashboard}";
+    }
+
+    private function getDefaultWACekKembaliUkuranSeragam()
+    {
+        return "*MTsN 2 Kota Malang*\n\nKepada Bapak/Ibu {nama} ({nomor_pendaftaran}),\n\nMohon untuk *mengecek kembali* data ukuran seragam Anda.\n\nCatatan: {catatan}\n\nPastikan data yang Anda masukkan sudah benar dan sesuai.\n\nCek dashboard: {url_dashboard}";
     }
 
     public function render()

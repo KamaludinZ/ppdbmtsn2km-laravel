@@ -61,6 +61,11 @@ class Jadwal extends Component
         $this->resetPage();
     }
 
+    public function updatingPerPage()
+    {
+        $this->resetPage();
+    }
+
     public function create()
     {
         $this->resetFields();
@@ -74,16 +79,21 @@ class Jadwal extends Component
         $this->jadwal_id = $data->id;
         $this->judul_kegiatan = $data->judul_kegiatan;
         $this->deskripsi = $data->deskripsi;
-        $this->tanggal_mulai = $data->tanggal_mulai;
-        $this->tanggal_selesai = $data->tanggal_selesai;
-        $this->waktu_mulai = $data->waktu_mulai;
-        $this->waktu_selesai = $data->waktu_selesai;
+
+        // Format tanggal untuk input type="date" (YYYY-MM-DD)
+        $this->tanggal_mulai = $data->tanggal_mulai ? \Carbon\Carbon::parse($data->tanggal_mulai)->format('Y-m-d') : null;
+        $this->tanggal_selesai = $data->tanggal_selesai ? \Carbon\Carbon::parse($data->tanggal_selesai)->format('Y-m-d') : null;
+
+        // Format waktu untuk input type="time" (HH:MM)
+        $this->waktu_mulai = $data->waktu_mulai ? \Carbon\Carbon::parse($data->waktu_mulai)->format('H:i') : null;
+        $this->waktu_selesai = $data->waktu_selesai ? \Carbon\Carbon::parse($data->waktu_selesai)->format('H:i') : null;
+
         $this->tempat = $data->tempat;
         $this->jalur_kode = $data->jalur_kode;
         $this->warna = $data->warna;
         $this->aktif = $data->aktif;
         $this->urutan = $data->urutan;
-        
+
         $this->isEdit = true;
         $this->showModal = true;
     }

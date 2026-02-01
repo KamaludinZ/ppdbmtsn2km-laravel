@@ -151,6 +151,14 @@
                             <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
                             Prestasi Siswa
                         </button>
+                        <button @click="activeTab = 'keahlian'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'keahlian', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'keahlian' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                            Keahlian
+                        </button>
+                        <button @click="activeTab = 'tahfidz'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'tahfidz', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'tahfidz' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                            Tahfidz
+                        </button>
                         <button @click="activeTab = 'beasiswa'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'beasiswa', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'beasiswa' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
                             <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             Beasiswa & Bantuan
@@ -194,6 +202,16 @@
                     <!-- Tab Prestasi Siswa -->
                     <div x-show="activeTab === 'prestasi'" x-transition>
                         @include('tab_templates.tab-prestasi')
+                    </div>
+
+                    <!-- Tab Keahlian -->
+                    <div x-show="activeTab === 'keahlian'" x-transition>
+                        @include('tab_templates.tab-keahlian')
+                    </div>
+
+                    <!-- Tab Tahfidz -->
+                    <div x-show="activeTab === 'tahfidz'" x-transition>
+                        @include('tab_templates.tab-tahfidz')
                     </div>
 
                     <!-- Tab Beasiswa & Bantuan -->

@@ -28,6 +28,21 @@
                 @error('informasi') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
             </div>
 
+            <!-- Informasi untuk Admin & Panitia -->
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    <span class="flex items-center">
+                        <svg class="w-4 h-4 mr-1 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 2a6 6 0 00-6 6v3.586l-.707.707A1 1 0 004 14h12a1 1 0 00.707-1.707L16 11.586V8a6 6 0 00-6-6zM10 18a3 3 0 01-3-3h6a3 3 0 01-3 3z"></path>
+                        </svg>
+                        Box Informasi Khusus Admin & Panitia
+                    </span>
+                </label>
+                <p class="text-xs text-gray-500 mb-2">Informasi ini hanya akan ditampilkan di halaman Tes Psikologi untuk Admin dan Panitia (tidak terlihat oleh pendaftar)</p>
+                <textarea wire:model="informasi_admin_panitia" rows="4" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" placeholder="Contoh: Reminder untuk verifikasi pembayaran, catatan internal, dll..."></textarea>
+                @error('informasi_admin_panitia') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+            </div>
+
             <div class="flex justify-end">
                 <button wire:click="simpanSetting" class="px-6 py-2 bg-emerald-600 text-white rounded-lg font-semibold hover:bg-emerald-700 transition">
                     Simpan Pengaturan

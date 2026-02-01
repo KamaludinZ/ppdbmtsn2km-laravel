@@ -343,6 +343,12 @@
                             @if($showColumns['status_ukuran'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Ukuran</th>
                             @endif
+                            @if($showColumns['status_keahlian'])
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Keahlian</th>
+                            @endif
+                            @if($showColumns['status_tahfidz'])
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Tahfidz</th>
+                            @endif
                             @if($showColumns['status_daftar_ulang'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Daftar Ulang</th>
                             @endif
@@ -730,6 +736,42 @@
                                         </span>
                                     </td>
                                 @endif
+                                @if($showColumns['status_keahlian'])
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @php
+                                            $hasKeahlian = $item->keahlians && $item->keahlians->count() > 0;
+                                        @endphp
+                                        @if($hasKeahlian)
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                Terisi ({{ $item->keahlians->count() }})
+                                            </span>
+                                        @else
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-600">
+                                                Kosong
+                                            </span>
+                                        @endif
+                                    </td>
+                                @endif
+                                @if($showColumns['status_tahfidz'])
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @php
+                                            $hasTahfidz = $item->tahfidz && (
+                                                !empty($item->tahfidz->juz_alquran_dihafal) ||
+                                                !empty($item->tahfidz->file_bukti_syahadah) ||
+                                                !empty($item->tahfidz->file_bukti_tahsin)
+                                            );
+                                        @endphp
+                                        @if($hasTahfidz)
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                Terisi
+                                            </span>
+                                        @else
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-600">
+                                                Kosong
+                                            </span>
+                                        @endif
+                                    </td>
+                                @endif
                                 @if($showColumns['status_daftar_ulang'])
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if($item->daftarUlang)
@@ -821,19 +863,19 @@
                                 @if($showColumns['riwayat_pesan'])
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @php
-                                            $lastMessage = \App\Models\MessageHistory::where('pendaftar_id', $item->id)
-                                                ->orderBy('sent_at', 'desc')
+                                            $lastMessage = \App\Models\RiwayatPesan::where('pendaftar_id', $item->id)
+                                                ->orderBy('created_at', 'desc')
                                                 ->first();
                                         @endphp
                                         @if($lastMessage)
                                             <div class="text-xs">
                                                 <div class="flex items-center text-gray-700 mb-1">
-                                                    @if($lastMessage->message_type === 'email')
+                                                    @if($lastMessage->jenis_pesan === 'email')
                                                         <svg class="w-3.5 h-3.5 text-blue-600 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                                                         </svg>
                                                         <span class="font-medium">Email</span>
-                                                    @elseif($lastMessage->message_type === 'whatsapp')
+                                                    @elseif($lastMessage->jenis_pesan === 'whatsapp')
                                                         <svg class="w-3.5 h-3.5 text-green-600 mr-1" fill="currentColor" viewBox="0 0 24 24">
                                                             <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347Z"/>
                                                         </svg>
@@ -845,15 +887,28 @@
                                                         <span class="font-medium">Pesan</span>
                                                     @endif
                                                 </div>
-                                                <div class="text-gray-600">
-                                                    {{ $lastMessage->sent_at->diffForHumans() }}
+                                                <div class="mb-1">
+                                                    <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold {{ $lastMessage->getStatusBadgeClass() }}">
+                                                        {{ $lastMessage->getStatusLabel() }}
+                                                    </span>
                                                 </div>
-                                                <div class="text-gray-500 text-[10px] mt-0.5">
-                                                    {{ $lastMessage->sent_at->format('d/m/Y H:i') }}
-                                                </div>
-                                                <div class="text-gray-500 text-[10px]">
-                                                    oleh: {{ $lastMessage->sender->name ?? 'System' }}
-                                                </div>
+                                                @if($lastMessage->sent_at)
+                                                    <div class="text-gray-600">
+                                                        {{ $lastMessage->sent_at->diffForHumans() }}
+                                                    </div>
+                                                    <div class="text-gray-500 text-[10px] mt-0.5">
+                                                        {{ $lastMessage->sent_at->format('d/m/Y H:i') }}
+                                                    </div>
+                                                @else
+                                                    <div class="text-gray-500 text-[10px] mt-0.5">
+                                                        {{ $lastMessage->created_at->format('d/m/Y H:i') }}
+                                                    </div>
+                                                @endif
+                                                @if($lastMessage->user)
+                                                    <div class="text-gray-500 text-[10px]">
+                                                        oleh: {{ $lastMessage->user->name }}
+                                                    </div>
+                                                @endif
                                             </div>
                                         @else
                                             <span class="text-xs text-gray-400 italic">Belum ada</span>
@@ -1023,14 +1078,14 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Template</label>
                             <select wire:model.live="selectedMessageTemplate" wire:change="loadMessageTemplate" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
                                 <option value="">-- Pilih Template --</option>
-                                <option value="pendaftaran">Pendaftaran Berhasil</option>
-                                <option value="verifikasi_disetujui">Verifikasi Disetujui</option>
-                                <option value="verifikasi_ditolak">Verifikasi Ditolak</option>
-                                <option value="verifikasi_perbaiki">Verifikasi Perlu Perbaikan</option>
-                                <option value="kelulusan_lulus">Kelulusan - Lulus Seleksi</option>
-                                <option value="kelulusan_tidak_lulus">Kelulusan - Tidak Lulus</option>
-                                <option value="daftar_ulang_disetujui">Daftar Ulang Disetujui</option>
-                                <option value="daftar_ulang_ditolak">Daftar Ulang Ditolak</option>
+
+                                @foreach($this->getAvailableTemplates() as $group)
+                                    <optgroup label="{{ $group['label'] }}">
+                                        @foreach($group['options'] as $option)
+                                            <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
+                                        @endforeach
+                                    </optgroup>
+                                @endforeach
                             </select>
                         </div>
 

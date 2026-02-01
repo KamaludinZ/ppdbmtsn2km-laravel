@@ -20,9 +20,18 @@
             <button wire:click="toggleEdit('siswa')" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm transition">Batal</button>
         </div>
     @else
-        <button wire:click="toggleEdit('siswa')" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition">
+        @php
+            $isApproved = $pendaftar->status_pendaftaran === 'data_disetujui';
+            $isPendaftar = Auth::user()->role === 'pendaftar';
+            // Hanya disable untuk role Pendaftar, Admin/Panitia tetap bisa edit
+            $shouldDisable = $isApproved && $isPendaftar;
+        @endphp
+        <button
+            wire:click="toggleEdit('siswa')"
+            @if($shouldDisable) disabled title="Data sudah disetujui, tidak dapat diubah" @endif
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition {{ $shouldDisable ? 'opacity-50 cursor-not-allowed' : '' }}">
             <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-            Edit Data
+            {{ $shouldDisable ? 'Data Sudah Disetujui' : 'Edit Data' }}
         </button>
     @endif
 </div>
@@ -69,7 +78,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
-                    <input type="text" wire:model="nama_lengkap" pattern="[A-Za-z\s.,'-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 uppercase" placeholder="NAMA LENGKAP" required>
+                    <input type="text" wire:model="nama_lengkap" pattern="[A-Za-z\s.,'\-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 uppercase" placeholder="NAMA LENGKAP" required>
                     @error('nama_lengkap') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                     <p class="text-xs text-gray-500 mt-1">Isi dengan huruf kapital sesuai akta kelahiran</p>
                 </div>
@@ -92,7 +101,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tempat Lahir <span class="text-red-500">*</span></label>
-                    <input type="text" wire:model="tempat_lahir" pattern="[A-Za-z\s.,'-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200" placeholder="Kota/Kabupaten" required>
+                    <input type="text" wire:model="tempat_lahir" pattern="[A-Za-z\s.,'\-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200" placeholder="Kota/Kabupaten" required>
                     @error('tempat_lahir') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                 </div>
 
@@ -175,7 +184,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Kepala Keluarga <span class="text-red-500">*</span></label>
-                    <input type="text" wire:model="nama_kepala_keluarga" pattern="[A-Za-z\s.,'-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200" placeholder="Nama Kepala Keluarga" required>
+                    <input type="text" wire:model="nama_kepala_keluarga" pattern="[A-Za-z\s.,'\-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200" placeholder="Nama Kepala Keluarga" required>
                     @error('nama_kepala_keluarga') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                 </div>
             </div>

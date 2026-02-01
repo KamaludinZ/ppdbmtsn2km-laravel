@@ -11,7 +11,7 @@
         @endif
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-4">
             <div class="bg-white rounded-lg shadow p-6">
                 <p class="text-sm font-medium text-gray-600">Total Panitia</p>
                 <p class="text-2xl font-bold text-gray-900 mt-1">{{ $stats['total'] }}</p>
@@ -27,6 +27,14 @@
             <div class="bg-white rounded-lg shadow p-6">
                 <p class="text-sm font-medium text-gray-600">Panitia Daftar Ulang</p>
                 <p class="text-2xl font-bold text-gray-900 mt-1">{{ $stats['panitia_daftarulang'] }}</p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+                <p class="text-sm font-medium text-gray-600">Panitia Tes Psikologi</p>
+                <p class="text-2xl font-bold text-gray-900 mt-1">{{ $stats['panitia_tes_psikologi'] }}</p>
+            </div>
+            <div class="bg-white rounded-lg shadow p-6">
+                <p class="text-sm font-medium text-gray-600">Panitia Seragam</p>
+                <p class="text-2xl font-bold text-gray-900 mt-1">{{ $stats['panitia_seragam'] }}</p>
             </div>
         </div>
 
@@ -62,6 +70,8 @@
                             <option value="admin">Admin</option>
                             <option value="panitia_pendaftaran">Panitia Pendaftaran</option>
                             <option value="panitia_daftarulang">Panitia Daftar Ulang</option>
+                            <option value="panitia_tes_psikologi">Panitia Tes Psikologi</option>
+                            <option value="panitia_seragam">Panitia Seragam</option>
                         </select>
                     </div>
                 </div>
@@ -183,13 +193,16 @@
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Role *</label>
                                 <select
-                                    wire:model="role"
+                                    wire:model.live="role"
+                                    name="role"
                                     class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
                                 >
                                     <option value="">Pilih Role</option>
                                     <option value="admin">Admin</option>
                                     <option value="panitia_pendaftaran">Panitia Pendaftaran</option>
                                     <option value="panitia_daftarulang">Panitia Daftar Ulang</option>
+                                    <option value="panitia_tes_psikologi">Panitia Tes Psikologi</option>
+                                    <option value="panitia_seragam">Panitia Seragam</option>
                                 </select>
                                 @error('role') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>

@@ -9,6 +9,7 @@ use App\Models\Setting;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
+use Livewire\Attributes\Url;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 
@@ -16,6 +17,7 @@ class VideoInfografis extends Component
 {
     use WithPagination, WithFileUploads;
 
+    #[Url]
     public $activeTab = 'video'; // 'video', 'infografis', 'testimoni', or 'brosur'
 
     // Video fields

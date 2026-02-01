@@ -6,6 +6,9 @@ use Livewire\Component;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
+use Carbon\Carbon;
 
 class Monitoring extends Component
 {
@@ -14,12 +17,21 @@ class Monitoring extends Component
     public $applicationInfo = [];
     public $diskUsage = [];
 
+    // Log monitoring properties
+    public $logStats = [];
+    public $recentErrors = [];
+    public $selectedLogType = 'laravel';
+    public $logContent = '';
+    public $showLogViewer = false;
+
     public function mount()
     {
         $this->loadServerInfo();
         $this->loadDatabaseInfo();
         $this->loadApplicationInfo();
         $this->loadDiskUsage();
+        $this->loadLogStats();
+        $this->loadRecentErrors();
     }
 
     public function render()
@@ -29,10 +41,13 @@ class Monitoring extends Component
             'databaseInfo' => $this->databaseInfo,
             'applicationInfo' => $this->applicationInfo,
             'diskUsage' => $this->diskUsage,
+            'logStats' => $this->logStats,
+            'recentErrors' => $this->recentErrors,
+            'availableLogs' => $this->getAvailableLogs(),
         ])->layout('components.layouts.dashboard', [
             'role' => 'admin',
             'pageTitle' => 'Monitoring Sistem',
-            'pageDescription' => 'Monitoring server, database, dan aplikasi'
+            'pageDescription' => 'Monitoring server, database, aplikasi, dan logs'
         ]);
     }
 
@@ -137,7 +152,187 @@ class Monitoring extends Component
         $this->loadDatabaseInfo();
         $this->loadApplicationInfo();
         $this->loadDiskUsage();
-        
-        session()->flash('message', 'Data monitoring berhasil diperbarui.');
+        $this->loadLogStats();
+        $this->loadRecentErrors();
+
+        $this->dispatch('notify', [
+            'type' => 'success',
+            'message' => 'Data monitoring berhasil diperbarui.'
+        ]);
+    }
+
+    // Log Monitoring Methods
+
+    private function loadLogStats()
+    {
+        $logsPath = storage_path('logs');
+        $files = File::glob($logsPath . '/*.log*');
+
+        $totalSize = 0;
+        $totalFiles = count($files);
+
+        foreach ($files as $file) {
+            $totalSize += File::size($file);
+        }
+
+        $diskFreeSpace = disk_free_space(storage_path());
+        $diskTotalSpace = disk_total_space(storage_path());
+        $diskUsedPercentage = (($diskTotalSpace - $diskFreeSpace) / $diskTotalSpace) * 100;
+
+        $this->logStats = [
+            'total_files' => $totalFiles,
+            'total_size' => $this->formatBytes($totalSize),
+            'total_size_bytes' => $totalSize,
+            'disk_free' => $this->formatBytes($diskFreeSpace),
+            'disk_used_percentage' => round($diskUsedPercentage, 2),
+            'oldest_log' => $this->getOldestLogDate($files),
+            'newest_log' => $this->getNewestLogDate($files),
+        ];
+    }
+
+    private function loadRecentErrors()
+    {
+        $logsPath = storage_path('logs');
+        $logFile = $logsPath . '/laravel.log';
+
+        if (!File::exists($logFile)) {
+            $this->recentErrors = [];
+            return;
+        }
+
+        $content = File::get($logFile);
+        $lines = explode("\n", $content);
+        $errors = [];
+
+        // Get last 200 lines and filter errors/critical
+        $recentLines = array_slice($lines, -200);
+
+        foreach ($recentLines as $line) {
+            if (preg_match('/\.(ERROR|CRITICAL|EMERGENCY):/i', $line)) {
+                $errors[] = [
+                    'line' => Str::limit($line, 150),
+                    'full' => $line,
+                    'time' => $this->extractTimestamp($line),
+                ];
+            }
+        }
+
+        // Get last 5 errors
+        $this->recentErrors = array_slice($errors, -5);
+    }
+
+    private function extractTimestamp($line)
+    {
+        if (preg_match('/\[(.*?)\]/', $line, $matches)) {
+            try {
+                return Carbon::parse($matches[1])->diffForHumans();
+            } catch (\Exception $e) {
+                return 'Unknown';
+            }
+        }
+        return 'Unknown';
+    }
+
+    private function getOldestLogDate($files)
+    {
+        if (empty($files)) return 'N/A';
+
+        $oldest = null;
+        foreach ($files as $file) {
+            $time = File::lastModified($file);
+            if ($oldest === null || $time < $oldest) {
+                $oldest = $time;
+            }
+        }
+
+        return $oldest ? Carbon::createFromTimestamp($oldest)->format('Y-m-d') : 'N/A';
+    }
+
+    private function getNewestLogDate($files)
+    {
+        if (empty($files)) return 'N/A';
+
+        $newest = null;
+        foreach ($files as $file) {
+            $time = File::lastModified($file);
+            if ($newest === null || $time > $newest) {
+                $newest = $time;
+            }
+        }
+
+        return $newest ? Carbon::createFromTimestamp($newest)->format('Y-m-d') : 'N/A';
+    }
+
+    public function getAvailableLogs()
+    {
+        $logsPath = storage_path('logs');
+        $files = File::glob($logsPath . '/*.log');
+
+        $logs = [];
+        foreach ($files as $file) {
+            $filename = basename($file);
+            $baseName = str_replace('.log', '', $filename);
+
+            if (!in_array($baseName, $logs)) {
+                $logs[] = $baseName;
+            }
+        }
+
+        return $logs;
+    }
+
+    public function toggleLogViewer()
+    {
+        $this->showLogViewer = !$this->showLogViewer;
+
+        if ($this->showLogViewer) {
+            $this->loadLogContent();
+        }
+    }
+
+    public function updatedSelectedLogType()
+    {
+        $this->loadLogContent();
+    }
+
+    public function loadLogContent()
+    {
+        $logPath = storage_path('logs/' . $this->selectedLogType . '.log');
+
+        if (!File::exists($logPath)) {
+            $this->logContent = "Log file not found: " . basename($logPath);
+            return;
+        }
+
+        $content = File::get($logPath);
+
+        // Get last 100 lines for performance
+        $lines = explode("\n", $content);
+        $lines = array_slice($lines, -100);
+        $this->logContent = implode("\n", $lines);
+    }
+
+    public function viewFullLogs()
+    {
+        return redirect()->route('admin.logs');
+    }
+
+    public function runLogCleanup()
+    {
+        try {
+            $output = Artisan::call('log:cleanup', ['--days' => 30]);
+            $this->loadLogStats();
+            $this->loadRecentErrors();
+
+            $this->dispatch('notify', [
+                'type' => 'success',
+                'message' => 'Log cleanup berhasil dijalankan! Log yang lebih dari 30 hari telah dihapus.'
+            ]);
+        } catch (\Exception $e) {
+            $this->dispatch('notify', [
+                'type' => 'error',
+                'message' => 'Gagal menjalankan log cleanup: ' . $e->getMessage()
+            ]);
+        }
     }
 }

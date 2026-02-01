@@ -7,19 +7,24 @@ use App\Models\Pendaftar;
 use App\Models\Pembayaran;
 use App\Models\Seragam;
 use App\Models\Dokumen;
+use App\Models\RiwayatPesan;
 use App\Traits\WithSorting;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
+use Livewire\Attributes\Url;
 use Illuminate\Support\Facades\Auth;
 
 class DaftarUlang extends Component
 {
     use WithPagination, WithSorting, WithFileUploads;
 
+    #[Url(keep: true)]
     public $activeTab = 'madrasah';
     public $search = '';
     public $filterStatus = '';
+    public $filterJenisKelamin = '';
+    public $filterJalur = '';
 
     // For verification
     public $verificationStatus = '';
@@ -39,6 +44,12 @@ class DaftarUlang extends Component
     public $currentDocumentType = null;
     public $currentPaymentType = null;
 
+    // Modal catatan variables
+    public $showCatatanModal = false;
+    public $catatanType = '';
+    public $catatanPendaftarId = null;
+    public $catatanText = '';
+
     // Settings variables
     public $madrasahContent = '';
     public $seragamContent = '';
@@ -57,42 +68,54 @@ class DaftarUlang extends Component
     // Madrasah Settings
     public $madrasahTemplateSuratPernyataan = null;
     public $existingMadrasahTemplate = null;
-    public $madrasahNominals = [];
+    public $madrasahNominals = []; // Untuk surat pernyataan
+    public $madrasahPaymentNominals = []; // Untuk konfirmasi nominal yang dibayarkan
     public $madrasahPaymentOptions = ['lunas' => false, 'angsuran' => false, 'potongan' => false];
     public $madrasahBanks = [];
     public $madrasahPaymentStart = null;
     public $madrasahPaymentEnd = null;
     public $madrasahRequirePaymentProof = false;
+    public $madrasahEnableOpsiLainnya = false;
+    public $madrasahPaymentNominalsEnableOpsiLainnya = false; // Enable "Opsi Lainnya" for payment nominals
 
     // Seragam Settings
     public $seragamPackages = [];
-    public $seragamNominals = [];
+    public $seragamNominals = []; // Untuk surat pernyataan
+    public $seragamPaymentNominals = []; // Untuk konfirmasi nominal yang dibayarkan
     public $seragamPaymentOptions = ['lunas' => false, 'angsuran' => false, 'potongan' => false];
     public $seragamBanks = [];
     public $seragamPaymentStart = null;
     public $seragamPaymentEnd = null;
     public $seragamRequirePaymentProof = false;
+    public $seragamEnableOpsiLainnya = false;
+    public $seragamPaymentNominalsEnableOpsiLainnya = false; // Enable "Opsi Lainnya" for payment nominals
 
     // Ukuran Settings
     public $ukuranByGender = false;
     public $ukuranJasImage = null;
     public $existingUkuranJasImage = null;
     public $ukuranJasOptions = [];
+    public $ukuranJasEnableOpsiLainnya = false;
     public $ukuranBajuOlahragaImage = null;
     public $existingUkuranBajuOlahragaImage = null;
     public $ukuranBajuOlahragaOptions = [];
+    public $ukuranBajuOlahragaEnableOpsiLainnya = false;
     public $ukuranCelanaOlahragaImage = null;
     public $existingUkuranCelanaOlahragaImage = null;
     public $ukuranCelanaOlahragaOptions = [];
+    public $ukuranCelanaOlahragaEnableOpsiLainnya = false;
     public $ukuranBajuHarianImage = null;
     public $existingUkuranBajuHarianImage = null;
     public $ukuranBajuHarianOptions = [];
+    public $ukuranBajuHarianEnableOpsiLainnya = false;
     public $ukuranCelanaRokHarianImage = null;
     public $existingUkuranCelanaRokHarianImage = null;
     public $ukuranCelanaRokHarianOptions = [];
+    public $ukuranCelanaRokHarianEnableOpsiLainnya = false;
     public $ukuranKopyahImage = null;
     public $existingUkuranKopyahImage = null;
     public $ukuranKopyahOptions = [];
+    public $ukuranKopyahEnableOpsiLainnya = false;
     // Legacy properties for backward compatibility
     public $ukuranAtasanImage = null;
     public $existingUkuranAtasanImage = null;
@@ -127,20 +150,26 @@ class DaftarUlang extends Component
         // Madrasah JSON/Array Settings
         $this->existingMadrasahTemplate = \App\Models\Setting::get('daftar_ulang_madrasah_template');
         $this->madrasahNominals = \App\Models\Setting::get('daftar_ulang_madrasah_nominals', []);
+        $this->madrasahPaymentNominals = \App\Models\Setting::get('daftar_ulang_madrasah_payment_nominals', []);
         $this->madrasahPaymentOptions = \App\Models\Setting::get('daftar_ulang_madrasah_payment_options', ['lunas' => false, 'angsuran' => false, 'potongan' => false]);
         $this->madrasahBanks = \App\Models\Setting::get('daftar_ulang_madrasah_banks', []);
         $this->madrasahPaymentStart = \App\Models\Setting::get('daftar_ulang_madrasah_payment_start');
         $this->madrasahPaymentEnd = \App\Models\Setting::get('daftar_ulang_madrasah_payment_end');
         $this->madrasahRequirePaymentProof = \App\Models\Setting::get('daftar_ulang_madrasah_require_payment_proof', false);
+        $this->madrasahEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_madrasah_enable_opsi_lainnya', false);
+        $this->madrasahPaymentNominalsEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_madrasah_payment_nominals_enable_opsi_lainnya', false);
 
         // Seragam JSON/Array Settings
         $this->seragamPackages = \App\Models\Setting::get('daftar_ulang_seragam_packages', []);
         $this->seragamNominals = \App\Models\Setting::get('daftar_ulang_seragam_nominals', []);
+        $this->seragamPaymentNominals = \App\Models\Setting::get('daftar_ulang_seragam_payment_nominals', []);
         $this->seragamPaymentOptions = \App\Models\Setting::get('daftar_ulang_seragam_payment_options', ['lunas' => false, 'angsuran' => false, 'potongan' => false]);
         $this->seragamBanks = \App\Models\Setting::get('daftar_ulang_seragam_banks', []);
         $this->seragamPaymentStart = \App\Models\Setting::get('daftar_ulang_seragam_payment_start');
         $this->seragamPaymentEnd = \App\Models\Setting::get('daftar_ulang_seragam_payment_end');
         $this->seragamRequirePaymentProof = \App\Models\Setting::get('daftar_ulang_seragam_require_payment_proof', false);
+        $this->seragamEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_seragam_enable_opsi_lainnya', false);
+        $this->seragamPaymentNominalsEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_seragam_payment_nominals_enable_opsi_lainnya', false);
 
         // Ukuran JSON/Array Settings
         $this->ukuranByGender = \App\Models\Setting::get('ukuran_by_gender', false);
@@ -155,19 +184,90 @@ class DaftarUlang extends Component
         $this->existingUkuranBawahanImage = \App\Models\Setting::get('daftar_ulang_ukuran_bawahan_image');
 
         $this->ukuranJasOptions = \App\Models\Setting::get('daftar_ulang_ukuran_jas_options', []);
+        $this->ukuranJasEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_ukuran_jas_enable_opsi_lainnya', false);
         $this->ukuranBajuOlahragaOptions = \App\Models\Setting::get('daftar_ulang_ukuran_baju_olahraga_options', []);
+        $this->ukuranBajuOlahragaEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_ukuran_baju_olahraga_enable_opsi_lainnya', false);
         $this->ukuranCelanaOlahragaOptions = \App\Models\Setting::get('daftar_ulang_ukuran_celana_olahraga_options', []);
+        $this->ukuranCelanaOlahragaEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_ukuran_celana_olahraga_enable_opsi_lainnya', false);
         $this->ukuranBajuHarianOptions = \App\Models\Setting::get('daftar_ulang_ukuran_baju_harian_options', []);
+        $this->ukuranBajuHarianEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_ukuran_baju_harian_enable_opsi_lainnya', false);
         $this->ukuranCelanaRokHarianOptions = \App\Models\Setting::get('daftar_ulang_ukuran_celana_rok_harian_options', []);
+        $this->ukuranCelanaRokHarianEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_ukuran_celana_rok_harian_enable_opsi_lainnya', false);
         $this->ukuranKopyahOptions = \App\Models\Setting::get('daftar_ulang_ukuran_kopyah_options', []);
+        $this->ukuranKopyahEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_ukuran_kopyah_enable_opsi_lainnya', false);
         // Legacy compatibility
         $this->ukuranAtasanOptions = \App\Models\Setting::get('daftar_ulang_ukuran_atasan_options', []);
         $this->ukuranBawahanOptions = \App\Models\Setting::get('daftar_ulang_ukuran_bawahan_options', []);
     }
 
+    // Livewire lifecycle hook - dipanggil otomatis saat selectedMessageTemplate berubah
+    public function updatedSelectedMessageTemplate()
+    {
+        $this->loadMessageTemplate();
+    }
+
+    // Livewire lifecycle hook - dipanggil otomatis saat messageType berubah
+    public function updatedMessageType()
+    {
+        // Reset template saat ganti jenis pesan
+        $this->selectedMessageTemplate = '';
+        $this->messageSubject = '';
+        $this->messageBody = '';
+    }
+
+    /**
+     * Get available message templates based on active tab
+     * Context: Dynamic based on tab (madrasah/seragam/ukuran)
+     */
+    public function getAvailableTemplates()
+    {
+        switch ($this->activeTab) {
+            case 'madrasah':
+                return [
+                    [
+                        'label' => '🏫 Daftar Ulang Madrasah',
+                        'options' => [
+                            ['value' => 'daftar_ulang_madrasah_disetujui', 'label' => 'Daftar Ulang Madrasah Disetujui'],
+                            ['value' => 'daftar_ulang_madrasah_ditolak', 'label' => 'Daftar Ulang Madrasah Ditolak'],
+                            ['value' => 'daftar_ulang_madrasah_perbaiki', 'label' => 'Daftar Ulang Madrasah Perlu Perbaikan'],
+                        ]
+                    ]
+                ];
+
+            case 'seragam':
+                return [
+                    [
+                        'label' => '👕 Daftar Ulang Seragam',
+                        'options' => [
+                            ['value' => 'daftar_ulang_seragam_disetujui', 'label' => 'Daftar Ulang Seragam Disetujui'],
+                            ['value' => 'daftar_ulang_seragam_ditolak', 'label' => 'Daftar Ulang Seragam Ditolak'],
+                            ['value' => 'daftar_ulang_seragam_perbaiki', 'label' => 'Daftar Ulang Seragam Perlu Perbaikan'],
+                        ]
+                    ]
+                ];
+
+            case 'ukuran':
+                return [
+                    [
+                        'label' => '📏 Ukuran Seragam',
+                        'options' => [
+                            ['value' => 'ukuran_seragam_disetujui', 'label' => 'Ukuran Seragam Disetujui'],
+                            ['value' => 'ukuran_seragam_ditolak', 'label' => 'Ukuran Seragam Ditolak'],
+                            ['value' => 'ukuran_seragam_perbaiki', 'label' => 'Ukuran Seragam Perlu Perbaikan'],
+                            ['value' => 'ukuran_seragam_cek_kembali', 'label' => 'Cek Kembali Ukuran Seragam'],
+                        ]
+                    ]
+                ];
+
+            default:
+                // Fallback untuk tab yang tidak dikenali
+                return [];
+        }
+    }
+
     public function render()
     {
-        $query = Pendaftar::with(['daftarUlang', 'pembayaran', 'seragam', 'dokumen'])
+        $query = Pendaftar::with(['daftarUlang', 'pembayaran', 'seragam', 'dokumen', 'jalurPendaftaran'])
             ->whereIn('status_pendaftaran', ['data_disetujui', 'lulus', 'diterima']); // Hanya yang data disetujui (lulus)
 
         if ($this->search) {
@@ -184,6 +284,16 @@ class DaftarUlang extends Component
             });
         }
 
+        // Filter jenis kelamin (untuk tab seragam dan ukuran)
+        if ($this->filterJenisKelamin && in_array($this->activeTab, ['seragam', 'ukuran'])) {
+            $query->where('jenis_kelamin', $this->filterJenisKelamin);
+        }
+
+        // Filter jalur
+        if ($this->filterJalur) {
+            $query->where('jalur_pendaftaran_id', $this->filterJalur);
+        }
+
         $pendaftar = $this->applySorting($query)->paginate(10);
 
         // Calculate stats based on active tab
@@ -194,57 +304,96 @@ class DaftarUlang extends Component
         $stats = [];
         if ($this->activeTab === 'madrasah') {
             $stats = [
-                'total' => $allPendaftar->count(),
+                // Total pendaftar lulus
+                'total_lulus' => $allPendaftar->count(),
+
+                // Status persetujuan daftar ulang (dari pendaftar.status_persetujuan_daftar_ulang)
+                'setuju' => $allPendaftar->filter(function($p) {
+                    return $p->status_persetujuan_daftar_ulang === 'setuju';
+                })->count(),
+                'tidak_setuju' => $allPendaftar->filter(function($p) {
+                    return $p->status_persetujuan_daftar_ulang === 'tidak_setuju';
+                })->count(),
+
+                // Status proses daftar ulang (dari daftar_ulang.status)
+                'menunggu' => $allPendaftar->filter(function($p) {
+                    return !$p->daftarUlang || $p->daftarUlang->status === 'menunggu' || !$p->daftarUlang->status;
+                })->count(),
                 'disetujui' => $allPendaftar->filter(function($p) {
                     return $p->daftarUlang && $p->daftarUlang->status === 'disetujui';
                 })->count(),
                 'ditolak' => $allPendaftar->filter(function($p) {
                     return $p->daftarUlang && $p->daftarUlang->status === 'ditolak';
                 })->count(),
-                'perbaiki' => $allPendaftar->filter(function($p) {
-                    return $p->daftarUlang && $p->daftarUlang->status === 'perbaiki';
+                'perlu_perbaikan' => $allPendaftar->filter(function($p) {
+                    return $p->daftarUlang && $p->daftarUlang->status === 'perlu_perbaikan';
                 })->count(),
-                'menunggu' => $allPendaftar->filter(function($p) {
-                    return !$p->daftarUlang || $p->daftarUlang->status === 'menunggu';
+
+                // Status upload surat pernyataan
+                'upload_surat' => $allPendaftar->filter(function($p) {
+                    return $p->daftarUlang && $p->daftarUlang->surat_pernyataan_path;
                 })->count(),
             ];
         } elseif ($this->activeTab === 'seragam') {
             $stats = [
-                'total' => $allPendaftar->count(),
+                // Total pendaftar lulus
+                'total_lulus' => $allPendaftar->count(),
+
+                // Status seragam (dari seragam.status_seragam)
+                'menunggu' => $allPendaftar->filter(function($p) {
+                    return !$p->seragam || $p->seragam->status_seragam === 'menunggu' || !$p->seragam->status_seragam;
+                })->count(),
                 'disetujui' => $allPendaftar->filter(function($p) {
                     return $p->seragam && $p->seragam->status_seragam === 'disetujui';
                 })->count(),
                 'ditolak' => $allPendaftar->filter(function($p) {
                     return $p->seragam && $p->seragam->status_seragam === 'ditolak';
                 })->count(),
-                'perbaiki' => $allPendaftar->filter(function($p) {
-                    return $p->seragam && $p->seragam->status_seragam === 'perbaiki';
+                'perlu_perbaikan' => $allPendaftar->filter(function($p) {
+                    return $p->seragam && $p->seragam->status_seragam === 'perlu_perbaikan';
                 })->count(),
-                'menunggu' => $allPendaftar->filter(function($p) {
-                    return !$p->seragam || $p->seragam->status_seragam === 'menunggu' || !$p->seragam->status_seragam;
+
+                // Status ukuran (dari seragam.status_ukuran)
+                'ukuran_menunggu' => $allPendaftar->filter(function($p) {
+                    return !$p->seragam || $p->seragam->status_ukuran === 'menunggu' || !$p->seragam->status_ukuran;
+                })->count(),
+                'ukuran_disetujui' => $allPendaftar->filter(function($p) {
+                    return $p->seragam && $p->seragam->status_ukuran === 'disetujui';
+                })->count(),
+                'ukuran_ditolak' => $allPendaftar->filter(function($p) {
+                    return $p->seragam && $p->seragam->status_ukuran === 'ditolak';
                 })->count(),
             ];
         } elseif ($this->activeTab === 'ukuran') {
             $stats = [
-                'total' => $allPendaftar->count(),
+                // Total pendaftar lulus
+                'total_lulus' => $allPendaftar->count(),
+
+                // Status ukuran (dari seragam.status_ukuran)
+                'menunggu' => $allPendaftar->filter(function($p) {
+                    return !$p->seragam || $p->seragam->status_ukuran === 'menunggu' || !$p->seragam->status_ukuran;
+                })->count(),
                 'disetujui' => $allPendaftar->filter(function($p) {
                     return $p->seragam && $p->seragam->status_ukuran === 'disetujui';
                 })->count(),
                 'ditolak' => $allPendaftar->filter(function($p) {
                     return $p->seragam && $p->seragam->status_ukuran === 'ditolak';
                 })->count(),
-                'perbaiki' => $allPendaftar->filter(function($p) {
-                    return $p->seragam && $p->seragam->status_ukuran === 'perbaiki';
-                })->count(),
-                'menunggu' => $allPendaftar->filter(function($p) {
-                    return !$p->seragam || $p->seragam->status_ukuran === 'menunggu' || !$p->seragam->status_ukuran;
+                'perlu_perbaikan' => $allPendaftar->filter(function($p) {
+                    return $p->seragam && $p->seragam->status_ukuran === 'perlu_perbaikan';
                 })->count(),
             ];
         }
 
+        // Load jalur pendaftaran untuk filter
+        $jalurPendaftaran = \App\Models\JalurPendaftaran::where('aktif', true)
+            ->orderBy('urutan')
+            ->get();
+
         return view('livewire.admin.daftar-ulang', [
             'pendaftar' => $pendaftar,
-            'stats' => $stats
+            'stats' => $stats,
+            'jalurPendaftaran' => $jalurPendaftaran
         ])->layout('components.layouts.dashboard', [
             'role' => 'admin',
             'pageTitle' => 'Manajemen Daftar Ulang',
@@ -389,6 +538,17 @@ class DaftarUlang extends Component
         $this->madrasahNominals = array_values($this->madrasahNominals);
     }
 
+    public function addMadrasahPaymentNominal()
+    {
+        $this->madrasahPaymentNominals[] = ['name' => '', 'amount' => ''];
+    }
+
+    public function removeMadrasahPaymentNominal($index)
+    {
+        unset($this->madrasahPaymentNominals[$index]);
+        $this->madrasahPaymentNominals = array_values($this->madrasahPaymentNominals);
+    }
+
     public function addMadrasahBank()
     {
         $this->madrasahBanks[] = ['name' => ''];
@@ -413,11 +573,14 @@ class DaftarUlang extends Component
         // Save settings
         \App\Models\Setting::set('daftar_ulang_madrasah_info', $this->madrasahInfo);
         \App\Models\Setting::set('daftar_ulang_madrasah_nominals', $this->madrasahNominals, 'json');
+        \App\Models\Setting::set('daftar_ulang_madrasah_payment_nominals', $this->madrasahPaymentNominals, 'json');
         \App\Models\Setting::set('daftar_ulang_madrasah_payment_options', $this->madrasahPaymentOptions, 'json');
         \App\Models\Setting::set('daftar_ulang_madrasah_banks', $this->madrasahBanks, 'json');
         \App\Models\Setting::set('daftar_ulang_madrasah_payment_start', $this->madrasahPaymentStart);
         \App\Models\Setting::set('daftar_ulang_madrasah_payment_end', $this->madrasahPaymentEnd);
         \App\Models\Setting::set('daftar_ulang_madrasah_require_payment_proof', $this->madrasahRequirePaymentProof, 'boolean');
+        \App\Models\Setting::set('daftar_ulang_madrasah_enable_opsi_lainnya', $this->madrasahEnableOpsiLainnya, 'boolean');
+        \App\Models\Setting::set('daftar_ulang_madrasah_payment_nominals_enable_opsi_lainnya', $this->madrasahPaymentNominalsEnableOpsiLainnya, 'boolean');
 
         $this->dispatch('saved', message: 'Pengaturan daftar ulang madrasah berhasil disimpan.');
     }
@@ -445,6 +608,17 @@ class DaftarUlang extends Component
         $this->seragamNominals = array_values($this->seragamNominals);
     }
 
+    public function addSeragamPaymentNominal()
+    {
+        $this->seragamPaymentNominals[] = ['name' => '', 'amount' => ''];
+    }
+
+    public function removeSeragamPaymentNominal($index)
+    {
+        unset($this->seragamPaymentNominals[$index]);
+        $this->seragamPaymentNominals = array_values($this->seragamPaymentNominals);
+    }
+
     public function addSeragamBank()
     {
         $this->seragamBanks[] = ['name' => ''];
@@ -462,11 +636,14 @@ class DaftarUlang extends Component
         \App\Models\Setting::set('daftar_ulang_seragam_info', $this->seragamInfo);
         \App\Models\Setting::set('daftar_ulang_seragam_packages', $this->seragamPackages, 'json');
         \App\Models\Setting::set('daftar_ulang_seragam_nominals', $this->seragamNominals, 'json');
+        \App\Models\Setting::set('daftar_ulang_seragam_payment_nominals', $this->seragamPaymentNominals, 'json');
         \App\Models\Setting::set('daftar_ulang_seragam_payment_options', $this->seragamPaymentOptions, 'json');
         \App\Models\Setting::set('daftar_ulang_seragam_banks', $this->seragamBanks, 'json');
         \App\Models\Setting::set('daftar_ulang_seragam_payment_start', $this->seragamPaymentStart);
         \App\Models\Setting::set('daftar_ulang_seragam_payment_end', $this->seragamPaymentEnd);
         \App\Models\Setting::set('daftar_ulang_seragam_require_payment_proof', $this->seragamRequirePaymentProof, 'boolean');
+        \App\Models\Setting::set('daftar_ulang_seragam_enable_opsi_lainnya', $this->seragamEnableOpsiLainnya, 'boolean');
+        \App\Models\Setting::set('daftar_ulang_seragam_payment_nominals_enable_opsi_lainnya', $this->seragamPaymentNominalsEnableOpsiLainnya, 'boolean');
 
         $this->dispatch('saved', message: 'Pengaturan daftar ulang seragam berhasil disimpan.');
     }
@@ -617,11 +794,17 @@ class DaftarUlang extends Component
         \App\Models\Setting::set('daftar_ulang_ukuran_info', $this->ukuranInfo);
         \App\Models\Setting::set('ukuran_by_gender', $this->ukuranByGender, 'boolean');
         \App\Models\Setting::set('daftar_ulang_ukuran_jas_options', $this->ukuranJasOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_ukuran_jas_enable_opsi_lainnya', $this->ukuranJasEnableOpsiLainnya, 'boolean');
         \App\Models\Setting::set('daftar_ulang_ukuran_baju_olahraga_options', $this->ukuranBajuOlahragaOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_ukuran_baju_olahraga_enable_opsi_lainnya', $this->ukuranBajuOlahragaEnableOpsiLainnya, 'boolean');
         \App\Models\Setting::set('daftar_ulang_ukuran_celana_olahraga_options', $this->ukuranCelanaOlahragaOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_ukuran_celana_olahraga_enable_opsi_lainnya', $this->ukuranCelanaOlahragaEnableOpsiLainnya, 'boolean');
         \App\Models\Setting::set('daftar_ulang_ukuran_baju_harian_options', $this->ukuranBajuHarianOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_ukuran_baju_harian_enable_opsi_lainnya', $this->ukuranBajuHarianEnableOpsiLainnya, 'boolean');
         \App\Models\Setting::set('daftar_ulang_ukuran_celana_rok_harian_options', $this->ukuranCelanaRokHarianOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_ukuran_celana_rok_harian_enable_opsi_lainnya', $this->ukuranCelanaRokHarianEnableOpsiLainnya, 'boolean');
         \App\Models\Setting::set('daftar_ulang_ukuran_kopyah_options', $this->ukuranKopyahOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_ukuran_kopyah_enable_opsi_lainnya', $this->ukuranKopyahEnableOpsiLainnya, 'boolean');
         // Legacy compatibility
         \App\Models\Setting::set('daftar_ulang_ukuran_atasan_options', $this->ukuranAtasanOptions, 'json');
         \App\Models\Setting::set('daftar_ulang_ukuran_bawahan_options', $this->ukuranBawahanOptions, 'json');
@@ -809,16 +992,36 @@ class DaftarUlang extends Component
             $this->messageBody = \App\Models\Setting::get("wa_{$this->selectedMessageTemplate}_body", '');
         }
 
-        // Replace placeholders
+        // Replace placeholders (27 total)
         $replacements = [
-            '{nama}' => $pendaftar->nama_lengkap,
-            '{nomor_pendaftaran}' => $pendaftar->nomor_pendaftaran,
-            '{email}' => $pendaftar->email,
-            '{telepon}' => $pendaftar->no_hp,
+            '{nama}' => $pendaftar->nama_lengkap ?? '',
+            '{nomor_pendaftaran}' => $pendaftar->nomor_pendaftaran ?? '',
+            '{nisn}' => $pendaftar->nisn ?? '',
+            '{tempat_lahir}' => $pendaftar->tempat_lahir ?? '',
+            '{tanggal_lahir}' => $pendaftar->tanggal_lahir ? $pendaftar->tanggal_lahir->format('d/m/Y') : '',
+            '{jenis_kelamin}' => $pendaftar->jenis_kelamin === 'L' ? 'Laki-laki' : ($pendaftar->jenis_kelamin === 'P' ? 'Perempuan' : ''),
+            '{alamat}' => $pendaftar->alamat ?? '',
+            '{email}' => $pendaftar->email ?? '',
+            '{telepon}' => $pendaftar->no_hp ?? '',
+            '{no_hp}' => $pendaftar->no_hp ?? '',
+            '{asal_sekolah}' => $pendaftar->asal_sekolah ?? '',
             '{jalur}' => $pendaftar->jalurPendaftaran->nama ?? '',
-            '{status}' => $pendaftar->status_pendaftaran,
-            '{catatan}' => $this->messageNote,
+            '{status}' => $pendaftar->status_pendaftaran ?? '',
+            '{catatan}' => $this->messageNote ?? '',
             '{url_dashboard}' => url('/dashboard'),
+            '{password}' => '[Password telah dienkripsi, silakan reset jika lupa]',
+            // Additional fields
+            '{agama}' => $pendaftar->agama ?? '',
+            '{nama_ayah}' => $pendaftar->nama_ayah ?? '',
+            '{nama_ibu}' => $pendaftar->nama_ibu ?? '',
+            '{pekerjaan_ayah}' => $pendaftar->pekerjaan_ayah ?? '',
+            '{pekerjaan_ibu}' => $pendaftar->pekerjaan_ibu ?? '',
+            '{provinsi}' => $pendaftar->provinsi ?? '',
+            '{kabupaten}' => $pendaftar->kabupaten ?? '',
+            '{kecamatan}' => $pendaftar->kecamatan ?? '',
+            '{desa}' => $pendaftar->desa ?? '',
+            '{kode_pos}' => $pendaftar->kode_pos ?? '',
+            '{nilai_rata_rata}' => $pendaftar->nilai_rata_rata ?? '',
         ];
 
         $this->messageSubject = str_replace(array_keys($replacements), array_values($replacements), $this->messageSubject);
@@ -843,6 +1046,19 @@ class DaftarUlang extends Component
             return;
         }
 
+        $penerima = $this->messageType === 'email' ? $pendaftar->email : $pendaftar->no_hp;
+
+        // Create log record with pending status
+        $riwayatPesan = RiwayatPesan::create([
+            'pendaftar_id' => $pendaftar->id,
+            'user_id' => Auth::id(),
+            'jenis_pesan' => $this->messageType,
+            'judul' => $this->messageType === 'email' ? $this->messageSubject : null,
+            'isi_pesan' => $this->messageBody,
+            'penerima' => $penerima,
+            'status' => 'pending',
+        ]);
+
         try {
             if ($this->messageType === 'email') {
                 // Kirim email
@@ -851,13 +1067,9 @@ class DaftarUlang extends Component
                         ->subject($this->messageSubject);
                 });
 
-                // Save to message history
-                \App\Models\MessageHistory::create([
-                    'pendaftar_id' => $pendaftar->id,
-                    'sender_id' => Auth::id(),
-                    'message_type' => 'email',
-                    'context' => 'daftar_ulang_' . $this->activeTab,
-                    'message_content' => $this->messageSubject . ': ' . $this->messageBody,
+                // Update log to success
+                $riwayatPesan->update([
+                    'status' => 'terkirim',
                     'sent_at' => now(),
                 ]);
 
@@ -866,6 +1078,10 @@ class DaftarUlang extends Component
                 // Kirim WhatsApp
                 $phoneNumber = $pendaftar->no_hp;
                 if (!$phoneNumber) {
+                    $riwayatPesan->update([
+                        'status' => 'gagal',
+                        'error_message' => 'Nomor WhatsApp tidak ditemukan',
+                    ]);
                     $this->dispatch('saved', message: 'Nomor WhatsApp tidak ditemukan.');
                     return;
                 }
@@ -879,13 +1095,9 @@ class DaftarUlang extends Component
                 // Placeholder untuk integrasi WhatsApp API
                 // TODO: Implementasikan sesuai dengan service yang digunakan
 
-                // Save to message history
-                \App\Models\MessageHistory::create([
-                    'pendaftar_id' => $pendaftar->id,
-                    'sender_id' => Auth::id(),
-                    'message_type' => 'whatsapp',
-                    'context' => 'daftar_ulang_' . $this->activeTab,
-                    'message_content' => $this->messageBody,
+                // Update log to success
+                $riwayatPesan->update([
+                    'status' => 'terkirim',
                     'sent_at' => now(),
                 ]);
 
@@ -895,7 +1107,104 @@ class DaftarUlang extends Component
             $this->closeSendMessageModal();
 
         } catch (\Exception $e) {
+            // Update log to failed with error message
+            $riwayatPesan->update([
+                'status' => 'gagal',
+                'error_message' => $e->getMessage(),
+            ]);
+
             $this->dispatch('saved', message: 'Gagal mengirim pesan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Open catatan modal
+     */
+    public function openCatatanModal($type, $pendaftarId, $currentCatatan = '')
+    {
+        $this->catatanType = $type;
+        $this->catatanPendaftarId = $pendaftarId;
+        $this->catatanText = $currentCatatan;
+        $this->showCatatanModal = true;
+    }
+
+    /**
+     * Close catatan modal
+     */
+    public function closeCatatanModal()
+    {
+        $this->showCatatanModal = false;
+        $this->catatanType = '';
+        $this->catatanPendaftarId = null;
+        $this->catatanText = '';
+    }
+
+    /**
+     * Save catatan for DU Madrasah, DU Seragam, or Ukuran Seragam
+     */
+    public function saveCatatan()
+    {
+        try {
+            if ($this->catatanType === 'madrasah') {
+                // Find or create daftar ulang
+                $daftarUlang = DaftarUlangModel::firstOrNew(['pendaftar_id' => $this->catatanPendaftarId]);
+
+                // Only set default status if it's a new record
+                if (!$daftarUlang->exists) {
+                    $daftarUlang->status = 'belum';
+                }
+
+                // Update catatan
+                $daftarUlang->catatan = $this->catatanText;
+                $daftarUlang->save();
+
+                // Touch parent to trigger Livewire refresh
+                $pendaftar = Pendaftar::find($this->catatanPendaftarId);
+                if ($pendaftar) {
+                    $pendaftar->touch();
+                }
+
+                $this->dispatch('saved', message: 'Catatan DU Madrasah berhasil disimpan');
+
+            } elseif ($this->catatanType === 'seragam') {
+                // Find or create seragam
+                $seragam = Seragam::firstOrNew(['pendaftar_id' => $this->catatanPendaftarId]);
+
+                // Update catatan
+                $seragam->catatan_seragam = $this->catatanText;
+                $seragam->save();
+
+                // Touch parent to trigger Livewire refresh
+                $pendaftar = Pendaftar::find($this->catatanPendaftarId);
+                if ($pendaftar) {
+                    $pendaftar->touch();
+                }
+
+                $this->dispatch('saved', message: 'Catatan DU Seragam berhasil disimpan');
+
+            } elseif ($this->catatanType === 'ukuran') {
+                // Find or create seragam
+                $seragam = Seragam::firstOrNew(['pendaftar_id' => $this->catatanPendaftarId]);
+
+                // Update catatan
+                $seragam->catatan_ukuran = $this->catatanText;
+                $seragam->save();
+
+                // Touch parent to trigger Livewire refresh
+                $pendaftar = Pendaftar::find($this->catatanPendaftarId);
+                if ($pendaftar) {
+                    $pendaftar->touch();
+                }
+
+                $this->dispatch('saved', message: 'Catatan Ukuran Seragam berhasil disimpan');
+            }
+
+            // Close modal
+            $this->closeCatatanModal();
+
+        } catch (\Exception $e) {
+            $this->dispatch('saved', message: 'Gagal menyimpan catatan: ' . $e->getMessage());
+            \Log::error('Error saving catatan: ' . $e->getMessage());
         }
     }
 }

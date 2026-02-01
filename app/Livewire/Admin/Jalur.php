@@ -9,6 +9,7 @@ use App\Traits\WithSorting;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
+use Livewire\Attributes\Url;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -17,10 +18,11 @@ class Jalur extends Component
 {
     use WithPagination, WithFileUploads, WithSorting;
 
-    public $nama, $kode, $prefix_nomor, $deskripsi, $kuota, $nilai_minimum, $warna, $ikon, $aktif, $urutan, $paling_populer;
+    public $nama, $kode, $prefix_nomor, $deskripsi, $kuota, $nilai_minimum, $warna, $ikon, $aktif, $tampil_di_daftar, $urutan, $paling_populer;
     public $jalur_id;
     public $isEdit = false;
     public $showModal = false;
+    #[Url(keep: true)]
     public $activeTab = 'general'; // general, persyaratan, history
 
     // Persyaratan Khusus Management (untuk jalur tertentu)
@@ -91,6 +93,7 @@ class Jalur extends Component
         $this->warna = $jalur->warna;
         $this->ikon = $jalur->icon;
         $this->aktif = $jalur->aktif;
+        $this->tampil_di_daftar = $jalur->tampil_di_daftar;
         $this->urutan = $jalur->urutan;
         $this->paling_populer = $jalur->paling_populer;
         $this->persyaratan_khusus = $jalur->persyaratan ?? [];
@@ -142,6 +145,7 @@ class Jalur extends Component
             'warna' => $this->warna,
             'icon' => $this->ikon ?? 'default',
             'aktif' => $this->aktif ?? true,
+            'tampil_di_daftar' => $this->tampil_di_daftar ?? true,
             'paling_populer' => $this->paling_populer ?? false,
             'urutan' => $this->urutan ?? 0,
             'persyaratan' => $this->persyaratan_khusus,
@@ -174,6 +178,7 @@ class Jalur extends Component
                 'warna' => $this->warna,
                 'icon' => $this->ikon ?? 'default',
                 'aktif' => $this->aktif ?? true,
+                'tampil_di_daftar' => $this->tampil_di_daftar ?? true,
                 'paling_populer' => $this->paling_populer ?? false,
                 'urutan' => $this->urutan ?? 0,
                 'persyaratan' => $this->persyaratan_khusus,
@@ -216,6 +221,7 @@ class Jalur extends Component
         $this->warna = 'blue';
         $this->ikon = '';
         $this->aktif = true;
+        $this->tampil_di_daftar = true;
         $this->paling_populer = false;
         $this->urutan = 0;
         $this->jalur_id = null;

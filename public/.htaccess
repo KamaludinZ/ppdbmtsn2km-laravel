@@ -45,8 +45,8 @@ Options -Indexes
 <IfModule mod_rewrite.c>
     RewriteEngine On
 
-    # Block access to vendor folder
-    RewriteRule ^vendor/.*$ - [F,L]
+    # IMPORTANT: DO NOT block public/vendor/ - it contains Livewire and other published assets
+    # Only block access to root vendor folder (outside public) - handled by directory restrictions
 
     # Block access to storage (except via symlink)
     RewriteRule ^\.\.\/storage/(?!app/public).*$ - [F,L]

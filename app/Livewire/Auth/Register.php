@@ -52,6 +52,9 @@ class Register extends Component
     public $isValid = false;
     public $validationMessage = '';
 
+    // Modal Konfirmasi
+    public $showConfirmModal = false;
+
     // Step 4: Data Pribadi
     public $nisn = '';
     public $nama_lengkap = '';
@@ -102,12 +105,7 @@ class Register extends Component
                     'required',
                     'numeric',
                     'digits:10',
-                    function ($attribute, $value, $fail) {
-                        $existingCount = \App\Models\Pendaftar::where('nisn', $value)->count();
-                        if ($existingCount >= 5) {
-                            $fail('NISN ini telah digunakan untuk 5 kali pendaftaran. Harap gunakan NISN lain.');
-                        }
-                    },
+                    'unique:pendaftar,nisn', // NISN must be unique
                 ],
                 'nama_lengkap' => 'required|string|max:255',
                 'tempat_lahir' => 'required|string|max:255',
@@ -119,12 +117,7 @@ class Register extends Component
                 'email' => [
                     'required',
                     'email',
-                    function ($attribute, $value, $fail) {
-                        $count = \App\Models\User::where('email', $value)->count();
-                        if ($count >= 5) {
-                            $fail('Email ini sudah digunakan untuk 5 akun pendaftar.');
-                        }
-                    },
+                    'unique:users,email', // Email must be unique
                 ],
                 'password' => 'required|min:8|confirmed',
                 'jenis_sekolah_asal' => 'required|in:madrasah,umum',
@@ -149,9 +142,10 @@ class Register extends Component
             'file_rapor.max' => 'Ukuran file maksimal 2 MB',
             'nisn.required' => 'NISN wajib diisi',
             'nisn.digits' => 'NISN harus 10 digit',
-            'nisn.unique' => 'NISN sudah terdaftar',
-            'nisn.custom' => 'NISN ini telah digunakan untuk lebih dari 2 kali pendaftaran. Harap gunakan NISN lain.',
-            'email.unique' => 'Email sudah terdaftar',
+            'nisn.numeric' => 'NISN harus berupa angka',
+            'nisn.unique' => 'NISN sudah terdaftar. Gunakan NISN lain atau hubungi panitia jika ada masalah.',
+            'email.unique' => 'Email sudah terdaftar. Gunakan email lain atau login jika sudah punya akun.',
+            'email.email' => 'Format email tidak valid',
             'password.min' => 'Password minimal 8 karakter',
             'password.confirmed' => 'Konfirmasi password tidak cocok',
         ];
@@ -311,7 +305,6 @@ class Register extends Component
         }
     }
 
-    public $showConfirmationModal = false;
 
     public function updatedJalurPendaftaranId($value)
     {
@@ -375,32 +368,6 @@ class Register extends Component
         ]);
     }
 
-    public function confirmSubmit()
-    {
-        // Validasi semua field sebelum menampilkan modal konfirmasi
-        $this->validate([
-            'nisn' => 'required|numeric|digits:10',
-            'nama_lengkap' => 'required|string|max:255',
-            'tempat_lahir' => 'required|string|max:255',
-            'tanggal_lahir' => 'required|date|before:today',
-            'jenis_kelamin' => 'required|in:L,P',
-            'agama' => 'required|string',
-            'alamat' => 'required|string',
-            'telepon_ortu' => 'required|string|max:15',
-            'email' => 'required|email',
-            'password' => 'required|min:8|confirmed',
-            'jenis_sekolah_asal' => 'required|in:madrasah,umum',
-            'asal_sekolah' => 'required|string|max:255',
-        ]);
-
-        // Jika semua validasi terpenuhi, tampilkan modal konfirmasi
-        $this->showConfirmationModal = true;
-    }
-
-    public function cancelSubmit()
-    {
-        $this->showConfirmationModal = false;
-    }
 
     public function updatedNsmSekolahAsal($value)
     {
@@ -432,6 +399,18 @@ class Register extends Component
         }
     }
 
+    public function openConfirmModal()
+    {
+        // Validasi dulu sebelum buka modal
+        $this->validate();
+        $this->showConfirmModal = true;
+    }
+
+    public function closeConfirmModal()
+    {
+        $this->showConfirmModal = false;
+    }
+
     public function resetFileRapor()
     {
         $this->reset('file_rapor');
@@ -440,18 +419,22 @@ class Register extends Component
 
     public function register()
     {
-        // Validasi bahwa NISN belum digunakan lebih dari 5 kali
-        $existingNisnCount = Pendaftar::where('nisn', $this->nisn)->count();
-        if ($existingNisnCount >= 5) {
-            session()->flash('error', 'NISN ini telah digunakan untuk 5 kali pendaftaran. Harap gunakan NISN lain.');
-            $this->showConfirmationModal = false; // Close the modal
-            return;
-        }
-
+        // Validate all fields (including NISN unique constraint)
         $this->validate();
 
+        // Variables to store data
+        $user = null;
+        $pendaftar = null;
+        $jalur = null;
+        $nomorPendaftaran = null;
+        $tempFilePath = null;
+        $finalFilePath = null;
+
         try {
-            // Create User
+            // START DATABASE TRANSACTION
+            \DB::beginTransaction();
+
+            // 1. Create User
             $user = User::create([
                 'name' => $this->nama_lengkap,
                 'email' => $this->email,
@@ -459,11 +442,11 @@ class Register extends Component
                 'role' => 'pendaftar',
             ]);
 
-            // Generate nomor pendaftaran
+            // 2. Generate nomor pendaftaran
             $jalur = JalurPendaftaran::find($this->jalur_pendaftaran_id);
             $nomorPendaftaran = $jalur->generateNomorPendaftaran();
 
-            // Create Pendaftar first to get ID
+            // 3. Create Pendaftar (without file first)
             $pendaftar = Pendaftar::create([
                 'user_id' => $user->id,
                 'jalur_pendaftaran_id' => $this->jalur_pendaftaran_id,
@@ -475,7 +458,7 @@ class Register extends Component
                 'jenis_kelamin' => $this->jenis_kelamin,
                 'agama' => $this->agama,
                 'alamat' => $this->alamat,
-                'telepon' => $this->telepon_ortu, // Field telepon diisi dengan nilai telepon_ortu
+                'telepon' => $this->telepon_ortu,
                 'telepon_ortu' => $this->telepon_ortu,
                 'email' => $this->email,
                 'jenis_sekolah_asal' => $this->jenis_sekolah_asal,
@@ -491,45 +474,105 @@ class Register extends Component
                 'nilai_b_indo_6_1' => $this->nilai_b_indo_6_1,
                 'nilai_matematika_6_1' => $this->nilai_matematika_6_1,
                 'nilai_ipa_6_1' => $this->nilai_ipa_6_1,
-                'file_rapor' => null, // Will be updated after upload
+                'file_rapor' => null, // Will be set after file upload
                 'nilai_rata_rata' => $this->rata_rata_nilai,
                 'status_pendaftaran' => 'menunggu_verifikasi',
                 'tanggal_daftar' => now(),
             ]);
 
-            // Upload file rapor AFTER pendaftar created to get ID for directory
+            // 4. Upload file to TEMPORARY storage first
             if ($this->file_rapor) {
                 $extension = FileNamingService::getFileExtension($this->file_rapor);
                 $customFileName = FileNamingService::generateFileName(
                     'rapor',
                     $pendaftar->nomor_pendaftaran,
-                    $extension
+                    $extension,
+                    $pendaftar->nama_lengkap
                 );
 
-                // Store to PRIVATE storage for security
-                $raporPath = $this->file_rapor->storeAs(
-                    'dokumen/' . $pendaftar->id,
-                    $customFileName,
+                // Store to TEMPORARY location first
+                $tempFilePath = $this->file_rapor->storeAs(
+                    'temp/rapor',
+                    'temp_' . time() . '_' . $customFileName,
                     'private'
                 );
 
-                // Update pendaftar with rapor path
-                $pendaftar->update(['file_rapor' => $raporPath]);
+                // Set final file path (will be moved after commit)
+                $finalFilePath = 'dokumen/' . $pendaftar->id . '/' . $customFileName;
+
+                // Update pendaftar with FINAL path (not temp)
+                $pendaftar->update(['file_rapor' => $finalFilePath]);
+            }
+
+            // COMMIT TRANSACTION - All database changes are now permanent
+            \DB::commit();
+
+            // 5. Move file from TEMP to PERMANENT storage (after successful commit)
+            if ($tempFilePath && $finalFilePath) {
+                \Storage::disk('private')->move($tempFilePath, $finalFilePath);
+                \Log::info('File moved from temp to permanent', [
+                    'from' => $tempFilePath,
+                    'to' => $finalFilePath
+                ]);
             }
 
             // Close the confirmation modal
-            $this->showConfirmationModal = false;
+            $this->showConfirmModal = false;
 
-            // Send notification email and WhatsApp
+            // 6. Send notification email and WhatsApp (after everything is saved)
             $this->sendRegistrationNotification($pendaftar, $jalur, $this->password);
 
             session()->flash('success', "Pendaftaran berhasil! Silakan cek email dan WhatsApp Anda untuk informasi login. Nomor pendaftaran Anda: {$nomorPendaftaran}");
 
             return redirect()->to('/login');
 
+        } catch (\Illuminate\Database\QueryException $e) {
+            // ROLLBACK all database changes
+            \DB::rollBack();
+
+            // DELETE temporary file if exists
+            if ($tempFilePath && \Storage::disk('private')->exists($tempFilePath)) {
+                \Storage::disk('private')->delete($tempFilePath);
+                \Log::info('Temporary file deleted after rollback', ['file' => $tempFilePath]);
+            }
+
+            $this->showConfirmModal = false;
+
+            // Handle duplicate email error
+            if (str_contains($e->getMessage(), 'users_email_unique')) {
+                session()->flash('error', 'Email sudah terdaftar. Gunakan email lain atau login jika sudah punya akun.');
+                \Log::warning('Duplicate email registration attempt', [
+                    'email' => $this->email,
+                    'nama' => $this->nama_lengkap,
+                ]);
+            }
+            // Handle duplicate NISN error
+            elseif (str_contains($e->getMessage(), 'pendaftars_nisn')) {
+                session()->flash('error', 'NISN sudah terdaftar. Gunakan NISN lain atau hubungi panitia jika ada masalah.');
+            }
+            else {
+                session()->flash('error', 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi atau hubungi panitia.');
+                \Log::error('Registration database error', [
+                    'error' => $e->getMessage(),
+                    'email' => $this->email,
+                ]);
+            }
         } catch (\Exception $e) {
+            // ROLLBACK all database changes
+            \DB::rollBack();
+
+            // DELETE temporary file if exists
+            if ($tempFilePath && \Storage::disk('private')->exists($tempFilePath)) {
+                \Storage::disk('private')->delete($tempFilePath);
+                \Log::info('Temporary file deleted after rollback', ['file' => $tempFilePath]);
+            }
+
+            $this->showConfirmModal = false;
             session()->flash('error', 'Terjadi kesalahan: ' . $e->getMessage());
-            $this->showConfirmationModal = false; // Close the modal even if there's an error
+            \Log::error('Registration error', [
+                'error' => $e->getMessage(),
+                'email' => $this->email,
+            ]);
         }
     }
 
@@ -676,7 +719,7 @@ class Register extends Component
 
     public function render()
     {
-        $jalurPendaftaran = JalurPendaftaran::aktif()->ordered()->get();
+        $jalurPendaftaran = JalurPendaftaran::tampilDiDaftar()->ordered()->get();
         $appAcronym = Setting::get('app_acronym', 'SPMBM');
 
         return view('livewire.auth.register', [

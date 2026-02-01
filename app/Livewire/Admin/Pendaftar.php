@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use App\Models\Pendaftar as PendaftarModel;
 use App\Models\JalurPendaftaran;
+use App\Models\RiwayatPesan;
 use App\Traits\WithSorting;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -59,6 +60,8 @@ class Pendaftar extends Component
         'status_du_madrasah' => false, // Status DU Madrasah (Pembayaran)
         'status_du_seragam' => false, // Status DU Seragam
         'status_ukuran' => false, // Status Ukuran Seragam
+        'status_keahlian' => false, // Status Keahlian
+        'status_tahfidz' => false, // Status Tahfidz
         'status_daftar_ulang' => false,
         'verif_rapor' => false,
         'verif_akte' => false,
@@ -126,9 +129,14 @@ class Pendaftar extends Component
         $this->resetPage();
     }
 
+    public function updatingPerPage()
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
-        $query = PendaftarModel::with(['jalurPendaftaran', 'user', 'diperbaruiOleh', 'daftarUlang', 'verifikasiBerkas', 'tesPsikologiPendaftar'])
+        $query = PendaftarModel::with(['jalurPendaftaran', 'user', 'diperbaruiOleh', 'daftarUlang', 'seragam', 'verifikasiBerkas', 'tesPsikologiPendaftar', 'keahlians', 'tahfidz'])
             ->when($this->search, function ($q) {
                 $q->where(function ($query) {
                     $query->where('nama_lengkap', 'like', '%' . $this->search . '%')
@@ -327,6 +335,40 @@ class Pendaftar extends Component
         $this->messageNote = '';
     }
 
+    // Livewire lifecycle hook - dipanggil otomatis saat selectedMessageTemplate berubah
+    public function updatedSelectedMessageTemplate()
+    {
+        $this->loadMessageTemplate();
+    }
+
+    // Livewire lifecycle hook - dipanggil otomatis saat messageType berubah
+    public function updatedMessageType()
+    {
+        // Reset template saat ganti jenis pesan
+        $this->selectedMessageTemplate = '';
+        $this->messageSubject = '';
+        $this->messageBody = '';
+    }
+
+    /**
+     * Get available message templates for this context (Data Pendaftar)
+     * Context: Pendaftaran & Verifikasi only
+     */
+    public function getAvailableTemplates()
+    {
+        return [
+            [
+                'label' => '📋 Pendaftaran & Verifikasi',
+                'options' => [
+                    ['value' => 'pendaftaran', 'label' => 'Pendaftaran Berhasil'],
+                    ['value' => 'verifikasi_disetujui', 'label' => 'Verifikasi Disetujui'],
+                    ['value' => 'verifikasi_ditolak', 'label' => 'Verifikasi Ditolak'],
+                    ['value' => 'verifikasi_perbaiki', 'label' => 'Verifikasi Perlu Perbaikan'],
+                ]
+            ]
+        ];
+    }
+
     public function loadMessageTemplate()
     {
         if (!$this->selectedMessageTemplate) {
@@ -348,14 +390,34 @@ class Pendaftar extends Component
 
         // Replace placeholders
         $replacements = [
-            '{nama}' => $pendaftar->nama_lengkap,
-            '{nomor_pendaftaran}' => $pendaftar->nomor_pendaftaran,
-            '{email}' => $pendaftar->email,
-            '{telepon}' => $pendaftar->no_hp,
+            '{nama}' => $pendaftar->nama_lengkap ?? '',
+            '{nomor_pendaftaran}' => $pendaftar->nomor_pendaftaran ?? '',
+            '{nisn}' => $pendaftar->nisn ?? '',
+            '{tempat_lahir}' => $pendaftar->tempat_lahir ?? '',
+            '{tanggal_lahir}' => $pendaftar->tanggal_lahir ? $pendaftar->tanggal_lahir->format('d/m/Y') : '',
+            '{jenis_kelamin}' => $pendaftar->jenis_kelamin === 'L' ? 'Laki-laki' : ($pendaftar->jenis_kelamin === 'P' ? 'Perempuan' : ''),
+            '{alamat}' => $pendaftar->alamat ?? '',
+            '{email}' => $pendaftar->email ?? '',
+            '{telepon}' => $pendaftar->no_hp ?? '',
+            '{no_hp}' => $pendaftar->no_hp ?? '',
+            '{asal_sekolah}' => $pendaftar->asal_sekolah ?? '',
             '{jalur}' => $pendaftar->jalurPendaftaran->nama ?? '',
-            '{status}' => $pendaftar->status_pendaftaran,
-            '{catatan}' => $this->messageNote,
+            '{status}' => $pendaftar->status_pendaftaran ?? '',
+            '{catatan}' => $this->messageNote ?? '',
             '{url_dashboard}' => url('/dashboard'),
+            '{password}' => '[Password telah dienkripsi, silakan reset jika lupa]',
+            // Additional fields
+            '{agama}' => $pendaftar->agama ?? '',
+            '{nama_ayah}' => $pendaftar->nama_ayah ?? '',
+            '{nama_ibu}' => $pendaftar->nama_ibu ?? '',
+            '{pekerjaan_ayah}' => $pendaftar->pekerjaan_ayah ?? '',
+            '{pekerjaan_ibu}' => $pendaftar->pekerjaan_ibu ?? '',
+            '{provinsi}' => $pendaftar->provinsi ?? '',
+            '{kabupaten}' => $pendaftar->kabupaten ?? '',
+            '{kecamatan}' => $pendaftar->kecamatan ?? '',
+            '{desa}' => $pendaftar->desa ?? '',
+            '{kode_pos}' => $pendaftar->kode_pos ?? '',
+            '{nilai_rata_rata}' => $pendaftar->nilai_rata_rata ?? '',
         ];
 
         $this->messageSubject = str_replace(array_keys($replacements), array_values($replacements), $this->messageSubject);
@@ -380,6 +442,20 @@ class Pendaftar extends Component
             return;
         }
 
+        // Determine recipient based on message type
+        $penerima = $this->messageType === 'email' ? $pendaftar->email : $pendaftar->no_hp;
+
+        // Create log record with pending status
+        $riwayatPesan = RiwayatPesan::create([
+            'pendaftar_id' => $pendaftar->id,
+            'user_id' => Auth::id(),
+            'jenis_pesan' => $this->messageType,
+            'judul' => $this->messageType === 'email' ? $this->messageSubject : null,
+            'isi_pesan' => $this->messageBody,
+            'penerima' => $penerima,
+            'status' => 'pending',
+        ]);
+
         try {
             if ($this->messageType === 'email') {
                 // Kirim email
@@ -387,6 +463,12 @@ class Pendaftar extends Component
                     $message->to($pendaftar->email)
                         ->subject($this->messageSubject);
                 });
+
+                // Update log to success
+                $riwayatPesan->update([
+                    'status' => 'terkirim',
+                    'sent_at' => now(),
+                ]);
 
                 session()->flash('message', 'Email berhasil dikirim ke ' . $pendaftar->nama_lengkap);
             } else {
@@ -396,6 +478,12 @@ class Pendaftar extends Component
 
                 $phoneNumber = $pendaftar->no_hp;
                 if (!$phoneNumber) {
+                    // Update log to failed
+                    $riwayatPesan->update([
+                        'status' => 'gagal',
+                        'error_message' => 'Nomor WhatsApp tidak ditemukan',
+                    ]);
+
                     session()->flash('error', 'Nomor WhatsApp tidak ditemukan.');
                     return;
                 }
@@ -409,12 +497,24 @@ class Pendaftar extends Component
                 // Placeholder untuk integrasi WhatsApp API
                 // TODO: Implementasikan sesuai dengan service yang digunakan
 
+                // Update log to success (for now, since WhatsApp API not implemented yet)
+                $riwayatPesan->update([
+                    'status' => 'terkirim',
+                    'sent_at' => now(),
+                ]);
+
                 session()->flash('message', 'WhatsApp berhasil dikirim ke ' . $pendaftar->nama_lengkap);
             }
 
             $this->closeSendMessageModal();
 
         } catch (\Exception $e) {
+            // Update log to failed with error message
+            $riwayatPesan->update([
+                'status' => 'gagal',
+                'error_message' => $e->getMessage(),
+            ]);
+
             session()->flash('error', 'Gagal mengirim pesan: ' . $e->getMessage());
         }
     }

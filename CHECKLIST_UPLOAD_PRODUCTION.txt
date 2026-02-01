@@ -1,0 +1,167 @@
+================================================================================
+   CHECKLIST UPLOAD KE PRODUCTION - STATUS DAFTAR & PALING POPULER
+================================================================================
+
+Tanggal Upload: ___________________
+Oleh: _____________________________
+
+================================================================================
+PERSIAPAN
+================================================================================
+
+[ ] 1. Backup database production (via phpMyAdmin atau artisan)
+[ ] 2. Jalankan: prepare_production_files.bat (untuk kumpulkan semua file)
+[ ] 3. Review file di folder production_upload_xxxxx
+
+================================================================================
+UPLOAD FILE VIA FTP/SFTP
+================================================================================
+
+Koneksi FTP/SFTP:
+- Host: 103.30.244.77
+- User: mtsnkot4
+- Path: /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id
+
+FILE WAJIB:
+
+[ ] 1. database/migrations/
+       2026_01_23_053343_add_tampil_di_daftar_to_jalur_pendaftaran_table.php
+
+[ ] 2. app/Models/
+       JalurPendaftaran.php
+
+[ ] 3. app/Livewire/Admin/
+       Jalur.php
+
+[ ] 4. app/Livewire/Auth/
+       Register.php
+       RegisterFixed.php
+       RegisterOptimized.php
+
+[ ] 5. resources/views/livewire/admin/
+       jalur.blade.php
+
+FILE OPSIONAL (untuk debugging):
+
+[ ] 6. routes/
+       test_jalur.php
+
+[ ] 7. Edit routes/web.php
+       Tambah di akhir file: require __DIR__ . '/test_jalur.php';
+
+================================================================================
+EKSEKUSI DI SERVER (VIA SSH)
+================================================================================
+
+[ ] 1. SSH ke server
+       ssh mtsnkot4@103.30.244.77
+
+[ ] 2. Masuk ke directory
+       cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id
+
+[ ] 3. Jalankan migration
+       php artisan migrate
+       (Ketik 'yes' jika diminta konfirmasi)
+
+[ ] 4. Clear cache
+       php artisan optimize:clear
+
+[ ] 5. Test query via tinker
+       php artisan tinker
+       >>> \App\Models\JalurPendaftaran::tampilDiDaftar()->count()
+       >>> exit
+
+================================================================================
+TESTING DI PRODUCTION
+================================================================================
+
+[ ] 1. Test Admin Jalur
+       URL: https://pmbm.mtsn2kotamalang.sch.id/admin/jalur
+       - Kolom "Status Daftar" muncul?
+       - Kolom "Paling Populer" muncul?
+       - Edit jalur, checkbox "Tampil di Halaman Daftar" ada?
+
+[ ] 2. Test Edit Jalur
+       - Edit salah satu jalur
+       - Uncheck "Tampil di Halaman Daftar"
+       - Simpan
+       - Cek apakah badge berubah jadi "Tersembunyi"?
+
+[ ] 3. Test Halaman Daftar
+       URL: https://pmbm.mtsn2kotamalang.sch.id/daftar
+       - Hard refresh: Ctrl + Shift + R
+       - Jalur yang di-hide TIDAK muncul?
+       - Jalur yang "Tampil" MUNCUL?
+
+[ ] 4. Test Debug Page (jika upload test_jalur.php)
+       URL: https://pmbm.mtsn2kotamalang.sch.id/test-jalur-daftar
+       - Data sesuai dengan database?
+       - Jumlah jalur sesuai?
+
+================================================================================
+VERIFIKASI AKHIR
+================================================================================
+
+[ ] 1. Semua jalur existing masih bisa diakses?
+[ ] 2. Fungsi edit jalur berjalan normal?
+[ ] 3. Fungsi tambah jalur berjalan normal?
+[ ] 4. Halaman /daftar menampilkan jalur yang benar?
+[ ] 5. Console browser (F12) tidak ada error?
+[ ] 6. Tidak ada error di storage/logs/laravel.log?
+
+================================================================================
+KONFIGURASI JALUR (SETELAH UPLOAD)
+================================================================================
+
+Setelah upload berhasil, atur status jalur sesuai kebutuhan:
+
+[ ] 1. Login sebagai admin
+[ ] 2. Buka /admin/jalur
+[ ] 3. Edit setiap jalur:
+       - Set "Status Daftar" = Tampil/Tersembunyi sesuai kebutuhan
+       - Set "Paling Populer" untuk jalur yang populer
+[ ] 4. Simpan perubahan
+[ ] 5. Test di /daftar untuk verifikasi
+
+================================================================================
+ROLLBACK PLAN (Jika Ada Masalah)
+================================================================================
+
+Jika terjadi error setelah upload:
+
+[ ] 1. Rollback migration
+       php artisan migrate:rollback --step=1
+
+[ ] 2. Restore file backup (yang lama)
+
+[ ] 3. Clear cache
+       php artisan optimize:clear
+
+[ ] 4. Cek log error
+       tail -100 storage/logs/laravel.log
+
+================================================================================
+CATATAN
+================================================================================
+
+Migration ini menambahkan kolom baru ke database:
+- Kolom: tampil_di_daftar (boolean, default: true)
+- Tabel: jalur_pendaftaran
+
+Default value = true, jadi semua jalur existing akan otomatis tampil.
+
+================================================================================
+SIGN OFF
+================================================================================
+
+Upload Selesai: [ ] Ya  [ ] Tidak
+Tanggal & Waktu: ___________________
+Testing Passed: [ ] Ya  [ ] Tidak
+Catatan/Issues: _____________________________________________________
+___________________________________________________________________
+___________________________________________________________________
+
+Approved by: _____________________________
+Signature: _______________________________
+
+================================================================================

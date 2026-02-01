@@ -98,6 +98,9 @@ class Settings extends Component
         $this->registration_phase_description = Setting::get('registration_phase_description', 'Pendaftaran akan segera dibuka.');
         $this->registration_start_date = Setting::get('registration_start_date');
         $this->registration_end_date = Setting::get('registration_end_date');
+
+        // Auto-update fase pendaftaran jika kondisi terpenuhi
+        $this->autoUpdateRegistrationPhase();
         
         // Load App Identity
         $this->app_name = Setting::get('app_name', 'MTsN 2 Kota Malang');
@@ -124,6 +127,42 @@ class Settings extends Component
         }
         if ($this->registration_end_date instanceof \Carbon\Carbon) {
             $this->registration_end_date = $this->registration_end_date->format('Y-m-d');
+        }
+    }
+
+    private function autoUpdateRegistrationPhase()
+    {
+        // Auto-update hanya jika fase = 'belum_dibuka'
+        if ($this->registration_phase !== 'belum_dibuka') {
+            return;
+        }
+
+        // Cek apakah tanggal mulai sudah ada dan sudah tiba atau lewat
+        if ($this->registration_start_date) {
+            $startDate = $this->registration_start_date instanceof \Carbon\Carbon
+                ? $this->registration_start_date
+                : \Carbon\Carbon::parse($this->registration_start_date);
+
+            $now = \Carbon\Carbon::now();
+
+            // Jika tanggal sekarang >= tanggal mulai pendaftaran
+            if ($now->greaterThanOrEqualTo($startDate)) {
+                // Auto-update fase pendaftaran menjadi 'dibuka'
+                $this->registration_phase = 'dibuka';
+                $this->registration_phase_label = 'Pendaftaran Dibuka';
+                $this->registration_phase_description = 'Pendaftaran sedang berlangsung. Silakan mendaftar sekarang!';
+
+                // Simpan ke database
+                Setting::set('registration_phase', 'dibuka', 'string', 'Fase Pendaftaran');
+                Setting::set('registration_phase_label', 'Pendaftaran Dibuka', 'string', 'Label Fase Pendaftaran');
+                Setting::set('registration_phase_description', 'Pendaftaran sedang berlangsung. Silakan mendaftar sekarang!', 'string', 'Deskripsi Fase Pendaftaran');
+
+                // Log perubahan
+                \Log::info('Auto-updated registration phase to "dibuka"', [
+                    'start_date' => $startDate->format('Y-m-d H:i:s'),
+                    'current_time' => $now->format('Y-m-d H:i:s'),
+                ]);
+            }
         }
     }
 

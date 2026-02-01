@@ -27,19 +27,43 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Pilih Template</label>
                         <select wire:model.live="bulkMessageTemplate" wire:change="loadBulkMessageTemplate" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
                             <option value="">-- Pilih Template --</option>
-                            <option value="pendaftaran">Pendaftaran Berhasil</option>
-                            <option value="verifikasi_disetujui">Verifikasi Disetujui</option>
-                            <option value="verifikasi_ditolak">Verifikasi Ditolak</option>
-                            <option value="verifikasi_perbaiki">Verifikasi Perlu Perbaikan</option>
-                            <option value="verifikasi_transfer_disetujui">Verifikasi Transfer Disetujui</option>
-                            <option value="verifikasi_transfer_ditolak">Verifikasi Transfer Ditolak</option>
-                            <option value="verifikasi_transfer_perbaiki">Verifikasi Transfer Perlu Perbaikan</option>
-                            <option value="kelulusan_lulus">Kelulusan - Lulus Seleksi</option>
-                            <option value="kelulusan_tidak_lulus">Kelulusan - Tidak Lulus</option>
-                            <option value="kelulusan_cadangan">Kelulusan - Cadangan</option>
-                            <option value="daftar_ulang_disetujui">Daftar Ulang Disetujui</option>
-                            <option value="daftar_ulang_ditolak">Daftar Ulang Ditolak</option>
-                            <option value="daftar_ulang_perbaiki">Daftar Ulang Perlu Perbaikan</option>
+                            <optgroup label="Pendaftaran & Verifikasi">
+                                <option value="pendaftaran">Pendaftaran Berhasil</option>
+                                <option value="verifikasi_disetujui">Verifikasi Disetujui</option>
+                                <option value="verifikasi_ditolak">Verifikasi Ditolak</option>
+                                <option value="verifikasi_perbaiki">Verifikasi Perlu Perbaikan</option>
+                            </optgroup>
+                            <optgroup label="Verifikasi Transfer">
+                                <option value="verifikasi_transfer_disetujui">Verifikasi Transfer Disetujui</option>
+                                <option value="verifikasi_transfer_ditolak">Verifikasi Transfer Ditolak</option>
+                                <option value="verifikasi_transfer_perbaiki">Verifikasi Transfer Perlu Perbaikan</option>
+                            </optgroup>
+                            <optgroup label="Kelulusan">
+                                <option value="kelulusan_lulus">Kelulusan - Lulus Seleksi</option>
+                                <option value="kelulusan_tidak_lulus">Kelulusan - Tidak Lulus</option>
+                                <option value="kelulusan_cadangan">Kelulusan - Cadangan</option>
+                            </optgroup>
+                            <optgroup label="Daftar Ulang (Umum)">
+                                <option value="daftar_ulang_disetujui">Daftar Ulang Disetujui</option>
+                                <option value="daftar_ulang_ditolak">Daftar Ulang Ditolak</option>
+                                <option value="daftar_ulang_perbaiki">Daftar Ulang Perlu Perbaikan</option>
+                            </optgroup>
+                            <optgroup label="Daftar Ulang Madrasah">
+                                <option value="daftar_ulang_madrasah_disetujui">Daftar Ulang Madrasah Disetujui</option>
+                                <option value="daftar_ulang_madrasah_ditolak">Daftar Ulang Madrasah Ditolak</option>
+                                <option value="daftar_ulang_madrasah_perbaiki">Daftar Ulang Madrasah Perlu Perbaikan</option>
+                            </optgroup>
+                            <optgroup label="Daftar Ulang Seragam">
+                                <option value="daftar_ulang_seragam_disetujui">Daftar Ulang Seragam Disetujui</option>
+                                <option value="daftar_ulang_seragam_ditolak">Daftar Ulang Seragam Ditolak</option>
+                                <option value="daftar_ulang_seragam_perbaiki">Daftar Ulang Seragam Perlu Perbaikan</option>
+                            </optgroup>
+                            <optgroup label="Ukuran Seragam">
+                                <option value="ukuran_seragam_disetujui">Ukuran Seragam Disetujui</option>
+                                <option value="ukuran_seragam_ditolak">Ukuran Seragam Ditolak</option>
+                                <option value="ukuran_seragam_perbaiki">Ukuran Seragam Perlu Perbaikan</option>
+                                <option value="cek_kembali_ukuran_seragam">Cek Kembali Ukuran Seragam</option>
+                            </optgroup>
                         </select>
                     </div>
 

@@ -3,8 +3,8 @@
     // Support both Admin (single $editMode) and Pendaftar (per-tab $editModeSurvey)
     $isEditMode = $editModeSurvey ?? $editMode ?? false;
 
-    // Load active survey questions
-    $surveyQuestions = \App\Models\SurveyQuestion::active()->ordered()->with('options')->get();
+    // Load active survey questions - PENTING: Filter by context 'umum' untuk Survey Umum
+    $surveyQuestions = \App\Models\SurveyQuestion::umum()->aktif()->ordered()->with('options')->get();
 @endphp
 
 <div class="flex justify-between items-center mb-6">
@@ -21,7 +21,16 @@
             <button wire:click="toggleEdit('survey')" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm transition">Batal</button>
         </div>
     @else
-        <button wire:click="toggleEdit('survey')" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition">
+        @php
+            $isApproved = $pendaftar->status_pendaftaran === 'data_disetujui';
+            $isPendaftar = Auth::user()->role === 'pendaftar';
+            // Hanya disable untuk role Pendaftar, Admin/Panitia tetap bisa edit
+            $shouldDisable = $isApproved && $isPendaftar;
+        @endphp
+        <button
+            wire:click="toggleEdit('survey')"
+            @if($shouldDisable) disabled title="Data sudah disetujui, tidak dapat diubah" @endif
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition {{ $shouldDisable ? 'opacity-50 cursor-not-allowed' : '' }}">
             <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
             Edit Data
         </button>
@@ -48,49 +57,49 @@
                         </span>
                         <div class="flex-1">
                             <label class="block text-sm font-semibold text-gray-900 mb-1">
-                                {{ $question->question_text }}
-                                @if($question->is_required)
+                                {{ $question->pertanyaan }}
+                                @if($question->wajib_diisi)
                                     <span class="text-red-500">*</span>
                                 @endif
                             </label>
-                            @if($question->description)
-                                <p class="text-xs text-gray-500 mb-3">{{ $question->description }}</p>
+                            @if($question->deskripsi)
+                                <p class="text-xs text-gray-500 mb-3">{{ $question->deskripsi }}</p>
                             @endif
 
                             @php
                                 $existingAnswer = $pendaftar->surveyAnswers->where('survey_question_id', $question->id)->first();
                             @endphp
 
-                            @if($question->question_type === 'dropdown')
-                                <select wire:model="surveyAnswers.{{ $question->id }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200" {{ $question->is_required ? 'required' : '' }}>
+                            @if($question->tipe_input === 'select')
+                                <select wire:model="surveyAnswers.{{ $question->id }}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200" {{ $question->wajib_diisi ? 'required' : '' }}>
                                     <option value="">-- Pilih Jawaban --</option>
                                     @foreach($question->options as $option)
-                                        <option value="{{ $option->id }}">{{ $option->option_text }}</option>
+                                        <option value="{{ $option->value }}">{{ $option->label }}</option>
                                     @endforeach
                                 </select>
 
-                            @elseif($question->question_type === 'radio')
+                            @elseif($question->tipe_input === 'radio')
                                 <div class="space-y-2 mt-2">
                                     @foreach($question->options as $option)
                                         <label class="flex items-center space-x-2 cursor-pointer">
-                                            <input type="radio" wire:model="surveyAnswers.{{ $question->id }}" value="{{ $option->id }}" class="border-gray-300 text-emerald-600 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200" {{ $question->is_required ? 'required' : '' }}>
-                                            <span class="text-sm text-gray-700">{{ $option->option_text }}</span>
+                                            <input type="radio" wire:model="surveyAnswers.{{ $question->id }}" value="{{ $option->value }}" class="border-gray-300 text-emerald-600 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200" {{ $question->wajib_diisi ? 'required' : '' }}>
+                                            <span class="text-sm text-gray-700">{{ $option->label }}</span>
                                         </label>
                                     @endforeach
                                 </div>
 
-                            @elseif($question->question_type === 'checkbox')
+                            @elseif($question->tipe_input === 'checkbox')
                                 <div class="space-y-2 mt-2">
                                     @foreach($question->options as $option)
                                         <label class="flex items-center space-x-2 cursor-pointer">
-                                            <input type="checkbox" wire:model="surveyAnswers.{{ $question->id }}.{{ $option->id }}" class="rounded border-gray-300 text-emerald-600 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                            <span class="text-sm text-gray-700">{{ $option->option_text }}</span>
+                                            <input type="checkbox" wire:model="surveyAnswers.{{ $question->id }}" value="{{ $option->value }}" class="rounded border-gray-300 text-emerald-600 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                            <span class="text-sm text-gray-700">{{ $option->label }}</span>
                                         </label>
                                     @endforeach
                                 </div>
 
-                            @elseif($question->question_type === 'text')
-                                <textarea wire:model="surveyAnswers.{{ $question->id }}" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200" placeholder="Masukkan jawaban Anda" {{ $question->is_required ? 'required' : '' }}></textarea>
+                            @elseif($question->tipe_input === 'text' || $question->tipe_input === 'textarea')
+                                <textarea wire:model="surveyAnswers.{{ $question->id }}" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200" placeholder="Masukkan jawaban Anda" {{ $question->wajib_diisi ? 'required' : '' }}></textarea>
 
                             @endif
 
@@ -113,14 +122,10 @@
                             {{ $index + 1 }}
                         </span>
                         <div class="flex-1">
-                            <h4 class="text-sm font-semibold text-gray-900 mb-2">{{ $question->question_text }}</h4>
+                            <h4 class="text-sm font-semibold text-gray-900 mb-2">{{ $question->pertanyaan }}</h4>
                             <div class="text-sm text-gray-700">
                                 @if($existingAnswer)
-                                    @if($question->question_type === 'text')
-                                        <p class="bg-white px-3 py-2 rounded border border-gray-200">{{ $existingAnswer->answer_text ?? '-' }}</p>
-                                    @else
-                                        <p class="bg-white px-3 py-2 rounded border border-gray-200">{{ $existingAnswer->option->option_text ?? '-' }}</p>
-                                    @endif
+                                    <p class="bg-white px-3 py-2 rounded border border-gray-200">{{ $existingAnswer->getJawabanFormatted() ?? '-' }}</p>
                                 @else
                                     <p class="text-gray-400 italic">Belum diisi</p>
                                 @endif

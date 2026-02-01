@@ -15,7 +15,16 @@
             <button wire:click="toggleEdit('dataBeasiswa')" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm transition">Batal</button>
         </div>
     @else
-        <button wire:click="toggleEdit('dataBeasiswa')" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition">
+        @php
+            $isApproved = $pendaftar->status_pendaftaran === 'data_disetujui';
+            $isPendaftar = Auth::user()->role === 'pendaftar';
+            // Hanya disable untuk role Pendaftar, Admin/Panitia tetap bisa edit
+            $shouldDisable = $isApproved && $isPendaftar;
+        @endphp
+        <button
+            wire:click="toggleEdit('dataBeasiswa')"
+            @if($shouldDisable) disabled title="Data sudah disetujui, tidak dapat diubah" @endif
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition {{ $shouldDisable ? 'opacity-50 cursor-not-allowed' : '' }}">
             <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
             Edit Data
         </button>
@@ -248,7 +257,7 @@
                                         {{ $beasiswa->jangka_waktu_bulan }} bulan
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 font-medium">
-                                        Rp {{ number_format($beasiswa->nominal_beasiswa, 0, ',', '.') }}
+                                        Rp {{ number_format((float)$beasiswa->nominal_beasiswa, 0, ',', '.') }}
                                     </td>
                                 </tr>
                             @endforeach
@@ -282,7 +291,7 @@
                     </svg>
                     <div class="flex-1">
                         <p class="text-xs font-semibold text-emerald-900">Ringkasan Beasiswa</p>
-                        <p class="text-xs text-emerald-700 mt-1">Total {{ count($pendaftar->beasiswas) }} beasiswa tercatat dengan total nominal <span class="font-semibold">Rp {{ number_format($totalNominal, 0, ',', '.') }}</span></p>
+                        <p class="text-xs text-emerald-700 mt-1">Total {{ count($pendaftar->beasiswas) }} beasiswa tercatat dengan total nominal <span class="font-semibold">Rp {{ number_format((float)$totalNominal, 0, ',', '.') }}</span></p>
                     </div>
                 </div>
             </div>

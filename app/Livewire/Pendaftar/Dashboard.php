@@ -31,6 +31,11 @@ class Dashboard extends Component
         'kks' => ['label' => 'Kartu Keluarga Sejahtera (KKS)', 'keterangan' => 'Upload jika memiliki nomor KKS di formulir, format PDF maksimal 2 MB', 'wajib' => false, 'conditional' => 'nomor_kks'],
     ];
 
+    // Modal alasan tidak setuju daftar ulang
+    public $showModalAlasan = false;
+    public $alasanTidakSetuju = '';
+    public $alasanLainnya = '';
+
     public function mount()
     {
         // Get authenticated user's pendaftar data
@@ -427,11 +432,48 @@ class Dashboard extends Component
         ];
 
         // VERIFIKASI AKHIR STEP
-        $this->progress['verifikasi_akhir'] = [
-            'status' => ($daftarUlang && $daftarUlang->status === 'selesai') ? 'completed' : (($daftarUlang && $daftarUlang->status === 'proses') ? 'current' : 'pending'),
-            'label' => ($daftarUlang && $daftarUlang->status === 'selesai') ? 'Selesai' : (($daftarUlang && $daftarUlang->status === 'proses') ? 'Menunggu' : 'Terkunci'),
-            'color' => ($daftarUlang && $daftarUlang->status === 'selesai') ? 'emerald' : (($daftarUlang && $daftarUlang->status === 'proses') ? 'yellow' : 'gray')
-        ];
+        // Check status of all three: madrasah, seragam, ukuran
+        $seragam = $this->pendaftar->seragam;
+        $statusMadrasah = $daftarUlang ? $daftarUlang->status : null;
+        $statusSeragam = $seragam ? $seragam->status_seragam : null;
+        $statusUkuran = $seragam ? $seragam->status_ukuran : null;
+
+        // Check if any status is 'diperbaiki'
+        $adaDiperbaiki = in_array('diperbaiki', [$statusMadrasah, $statusSeragam, $statusUkuran]);
+
+        // Check if all three are 'disetujui'
+        $semuaDisetujui = ($statusMadrasah === 'disetujui' && $statusSeragam === 'disetujui' && $statusUkuran === 'disetujui');
+
+        // Determine status, label, and color
+        if ($semuaDisetujui) {
+            // All three approved
+            $this->progress['verifikasi_akhir'] = [
+                'status' => 'completed',
+                'label' => 'Selesai',
+                'color' => 'emerald'
+            ];
+        } elseif ($adaDiperbaiki) {
+            // At least one needs to be fixed
+            $this->progress['verifikasi_akhir'] = [
+                'status' => 'current',
+                'label' => 'Perbaiki',
+                'color' => 'red'
+            ];
+        } elseif ($daftarUlang || $seragam) {
+            // Has data but not all approved yet
+            $this->progress['verifikasi_akhir'] = [
+                'status' => 'current',
+                'label' => 'Menunggu',
+                'color' => 'yellow'
+            ];
+        } else {
+            // No data yet - locked
+            $this->progress['verifikasi_akhir'] = [
+                'status' => 'pending',
+                'label' => 'Terkunci',
+                'color' => 'gray'
+            ];
+        }
     }
 
     public function getStatusBadgesProperty()
@@ -490,10 +532,19 @@ class Dashboard extends Component
         $statusDaftarUlangMap = [
             'belum' => ['label' => 'Belum Daftar Ulang', 'color' => 'gray'],
             'proses' => ['label' => 'Sedang Proses', 'color' => 'yellow'],
+            'menunggu' => ['label' => 'Menunggu Verifikasi', 'color' => 'yellow'],
+            'perbaiki' => ['label' => 'Perlu Perbaikan', 'color' => 'orange'],
+            'disetujui' => ['label' => 'Disetujui', 'color' => 'green'],
+            'ditolak' => ['label' => 'Ditolak', 'color' => 'red'],
             'selesai' => ['label' => 'Selesai', 'color' => 'green'],
+            'batal' => ['label' => 'Dibatalkan', 'color' => 'gray'],
         ];
 
         $daftarUlangStatus = $daftarUlang ? $daftarUlang->status : 'belum';
+        // Default to 'belum' if status not in map (defensive programming)
+        if (!isset($statusDaftarUlangMap[$daftarUlangStatus])) {
+            $daftarUlangStatus = 'belum';
+        }
         $badges[] = array_merge(
             ['type' => 'Status Daftar Ulang'],
             $statusDaftarUlangMap[$daftarUlangStatus]
@@ -553,31 +604,59 @@ class Dashboard extends Component
         }
     }
 
+    public function showModalTidakSetuju()
+    {
+        // Hanya bisa memilih jika status data disetujui (lulus)
+        if (!in_array($this->pendaftar->status_pendaftaran, ['lulus', 'diterima'])) {
+            $this->dispatch('statusUpdated', [
+                'type' => 'error',
+                'message' => 'Hanya pendaftar dengan status LULUS yang dapat membuat pilihan daftar ulang'
+            ]);
+            return;
+        }
+
+        // Jika sudah memilih (setuju atau tidak setuju), tidak bisa memilih lagi
+        if ($this->pendaftar->status_persetujuan_daftar_ulang && $this->pendaftar->status_persetujuan_daftar_ulang !== 'belum_memilih') {
+            $this->dispatch('statusUpdated', [
+                'type' => 'info',
+                'message' => 'Anda sudah membuat pilihan untuk daftar ulang sebelumnya'
+            ]);
+            return;
+        }
+
+        // Tampilkan modal alasan
+        $this->showModalAlasan = true;
+    }
+
+    public function closeModalAlasan()
+    {
+        $this->showModalAlasan = false;
+        $this->alasanTidakSetuju = '';
+        $this->alasanLainnya = '';
+    }
+
     public function tidakSetujuDaftarUlang()
     {
         try {
-            // Hanya bisa memilih jika status data disetujui (lulus)
-            if (!in_array($this->pendaftar->status_pendaftaran, ['lulus', 'diterima'])) {
-                $this->dispatch('statusUpdated', [
-                    'type' => 'error',
-                    'message' => 'Hanya pendaftar dengan status LULUS yang dapat membuat pilihan daftar ulang'
-                ]);
-                return;
-            }
+            // Validasi alasan
+            $this->validate([
+                'alasanTidakSetuju' => 'required',
+                'alasanLainnya' => 'required_if:alasanTidakSetuju,lainnya',
+            ], [
+                'alasanTidakSetuju.required' => 'Silakan pilih alasan mengapa Anda tidak melanjutkan daftar ulang.',
+                'alasanLainnya.required_if' => 'Silakan isi alasan lainnya.',
+            ]);
 
-            // Jika sudah memilih (setuju atau tidak setuju), tidak bisa memilih lagi
-            if ($this->pendaftar->status_persetujuan_daftar_ulang && $this->pendaftar->status_persetujuan_daftar_ulang !== 'belum_memilih') {
-                $this->dispatch('statusUpdated', [
-                    'type' => 'info',
-                    'message' => 'Anda sudah membuat pilihan untuk daftar ulang sebelumnya'
-                ]);
-                return;
-            }
+            // Tentukan alasan final
+            $alasanFinal = $this->alasanTidakSetuju === 'lainnya'
+                ? $this->alasanLainnya
+                : $this->alasanTidakSetuju;
 
             // Update status persetujuan
             $this->pendaftar->update([
                 'setuju_daftar_ulang' => false,
                 'status_persetujuan_daftar_ulang' => 'tidak_setuju',
+                'alasan_tidak_setuju' => $alasanFinal,
                 'tanggal_pilihan_daftar_ulang' => now(),
             ]);
 
@@ -586,9 +665,12 @@ class Dashboard extends Component
             \App\Models\DaftarUlang::create([
                 'pendaftar_id' => $this->pendaftar->id,
                 'status' => 'selesai',
-                'catatan' => 'Pendaftar memilih untuk TIDAK MELANJUTKAN daftar ulang.',
+                'catatan' => 'Pendaftar memilih untuk TIDAK MELANJUTKAN daftar ulang. Alasan: ' . $alasanFinal,
                 'batas_daftar_ulang' => now(), // Selesai sekarang
             ]);
+
+            // Close modal
+            $this->closeModalAlasan();
 
             // Refresh data
             $this->pendaftar = $this->pendaftar->fresh();

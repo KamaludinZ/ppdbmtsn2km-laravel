@@ -11,6 +11,9 @@ class DaftarUlang extends Model
 
     protected $fillable = [
         'pendaftar_id',
+        'nominal_biaya',
+        'nominal_biaya_awal',
+        'waktu_pembayaran_madrasah',
         'status',
         'opsi_pembayaran',
         'metode_pembayaran',
@@ -27,6 +30,8 @@ class DaftarUlang extends Model
 
     protected $casts = [
         'nominal_biaya' => 'array',
+        'nominal_biaya_awal' => 'array',
+        'waktu_pembayaran_madrasah' => 'datetime',
         'pembayaran_lunas' => 'boolean',
         'seragam_diukur' => 'boolean',
         'berkas_lengkap' => 'boolean',

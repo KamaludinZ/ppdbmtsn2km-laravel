@@ -145,12 +145,13 @@ class Dokumen extends Component
         // Clean jenis dokumen untuk nama file
         $jenisClean = FileNamingService::cleanJenisDokumen($type);
 
-        // Generate nama file sistematis: {jenis}_{nomor_pendaftaran}_{timestamp}.{ext}
-        // Contoh: rapor_PPDB2024001_20260119_143052.pdf
+        // Generate nama file sistematis: {jenis}-{nomor_pendaftaran}-{nama_pendaftar}-{timestamp}.{ext}
+        // Contoh: rapor-PPDB2024001-Ahmad_Fulan-20260131_143052.pdf
         $customFileName = FileNamingService::generateFileName(
             $jenisClean,
             $this->pendaftar->nomor_pendaftaran,
-            $extension
+            $extension,
+            $this->pendaftar->nama_lengkap
         );
 
         // Simpan file PDF ke private storage dengan nama custom (NOT public untuk security)

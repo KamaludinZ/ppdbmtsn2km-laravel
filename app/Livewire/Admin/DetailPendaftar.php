@@ -8,10 +8,14 @@ use App\Models\Pendaftar as PendaftarModel;
 use App\Models\Prestasi;
 use App\Models\Beasiswa;
 use App\Models\PendidikanLain;
+use App\Models\Keahlian;
+use App\Models\Tahfidz;
 use App\Models\VerifikasiBerkas;
 use App\Models\Dokumen;
 use App\Models\DaftarUlang;
+use App\Models\Panitia;
 use App\Services\ImageService;
+use App\Services\FileNamingService;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use App\Models\Province;
@@ -341,6 +345,22 @@ class DetailPendaftar extends Component
 
     // Pendidikan Lain List (for structured pendidikan lain data)
     public $pendidikanLainList = [];
+
+    // Keahlian List (for structured keahlian data)
+    public $keahlianList = [];
+
+    // Tahfidz Data (single record)
+    public $tahfidz = [
+        'id' => null,
+        'juz_alquran_dihafal' => null,
+        'file_bukti_syahadah' => null,
+        'file_bukti_tahsin' => null,
+    ];
+
+    // Upload properties for Keahlian & Tahfidz
+    public $uploadKeahlianSertifikat = [];
+    public $uploadTahfidzSyahadah;
+    public $uploadTahfidzTahsin;
 
     public function mount($id)
     {
@@ -740,6 +760,12 @@ class DetailPendaftar extends Component
 
         // Load Pendidikan Lain Data
         $this->loadPendidikanLain();
+
+        // Load Keahlian Data
+        $this->loadKeahlian();
+
+        // Load Tahfidz Data
+        $this->loadTahfidz();
     }
 
     public function toggleEditMode()
@@ -757,6 +783,26 @@ class DetailPendaftar extends Component
     public function toggleEdit($section = null)
     {
         $this->toggleEditMode();
+    }
+
+    /**
+     * Get panitia ID for current user
+     * Returns panitia.id if user is panitia, null if admin
+     */
+    private function getPanitiaId()
+    {
+        $user = Auth::user();
+
+        // If user is panitia, find panitia record by user_id
+        if (in_array($user->role, ['panitia', 'panitia_pendaftaran', 'panitia_daftarulang', 'panitia_tes_psikologi', 'panitia_seragam'])) {
+            $panitia = Panitia::where('user_id', $user->id)->first();
+            if ($panitia) {
+                return $panitia->id;
+            }
+        }
+
+        // If admin or panitia record not found, return null
+        return null;
     }
 
     public function updateStatusDokumen($jenis)
@@ -777,7 +823,7 @@ class DetailPendaftar extends Component
         $this->verifikasi->update([
             $statusField => $this->$statusField,
             $catatanField => $this->$catatanField,
-            'panitia_id' => Auth::id(),
+            'panitia_id' => $this->getPanitiaId(),
             'tanggal_verifikasi' => now(),
         ]);
 
@@ -1450,7 +1496,7 @@ class DetailPendaftar extends Component
                 'catatan' => $this->du_catatan,
                 'tanggal_daftar_ulang' => $this->du_tanggal_daftar_ulang,
                 'batas_daftar_ulang' => $this->du_batas_daftar_ulang,
-                'panitia_id' => Auth::id(),
+                'panitia_id' => $this->getPanitiaId(),
             ]);
         } else {
             $this->daftarUlang = DaftarUlang::create([
@@ -1462,7 +1508,7 @@ class DetailPendaftar extends Component
                 'catatan' => $this->du_catatan,
                 'tanggal_daftar_ulang' => $this->du_tanggal_daftar_ulang,
                 'batas_daftar_ulang' => $this->du_batas_daftar_ulang,
-                'panitia_id' => Auth::id(),
+                'panitia_id' => $this->getPanitiaId(),
             ]);
         }
 
@@ -2173,6 +2219,267 @@ class DetailPendaftar extends Component
         $this->loadPendidikanLain(); // Reload data
         $this->loadPendaftar(); // Reload pendaftar untuk update relasi
         session()->flash('message', 'Data pendidikan lain berhasil diperbarui.');
+    }
+
+    // ========================================
+    // KEAHLIAN METHODS
+    // ========================================
+
+    public function loadKeahlian()
+    {
+        $keahlians = Keahlian::where('pendaftar_id', $this->pendaftar->id)->get();
+
+        if ($keahlians->isEmpty()) {
+            // Initialize with one empty entry
+            $this->keahlianList = [[
+                'id' => null,
+                'bidang_keahlian' => null,
+                'nama_keahlian' => null,
+                'sertifikasi' => null,
+                'lembaga_penyelenggara' => null,
+                'hasil_tingkat_skor' => null,
+                'file_bukti_sertifikat' => null,
+            ]];
+        } else {
+            $this->keahlianList = $keahlians->map(function ($keahlian) {
+                return [
+                    'id' => $keahlian->id,
+                    'bidang_keahlian' => $keahlian->bidang_keahlian,
+                    'nama_keahlian' => $keahlian->nama_keahlian,
+                    'sertifikasi' => $keahlian->sertifikasi,
+                    'lembaga_penyelenggara' => $keahlian->lembaga_penyelenggara,
+                    'hasil_tingkat_skor' => $keahlian->hasil_tingkat_skor,
+                    'file_bukti_sertifikat' => $keahlian->file_bukti_sertifikat,
+                ];
+            })->toArray();
+        }
+    }
+
+    public function addKeahlian()
+    {
+        $this->keahlianList[] = [
+            'id' => null,
+            'bidang_keahlian' => null,
+            'nama_keahlian' => null,
+            'sertifikasi' => null,
+            'lembaga_penyelenggara' => null,
+            'hasil_tingkat_skor' => null,
+            'file_bukti_sertifikat' => null,
+        ];
+    }
+
+    public function removeKeahlian($index)
+    {
+        // If it has an ID, delete from database
+        if (isset($this->keahlianList[$index]['id']) && $this->keahlianList[$index]['id']) {
+            $keahlian = Keahlian::find($this->keahlianList[$index]['id']);
+            if ($keahlian) {
+                // Delete file if exists
+                if ($keahlian->file_bukti_sertifikat && Storage::disk('public')->exists($keahlian->file_bukti_sertifikat)) {
+                    Storage::disk('public')->delete($keahlian->file_bukti_sertifikat);
+                }
+                $keahlian->delete();
+            }
+        }
+
+        // Remove from array
+        unset($this->keahlianList[$index]);
+        $this->keahlianList = array_values($this->keahlianList); // Re-index array
+
+        // If empty, add one empty entry
+        if (empty($this->keahlianList)) {
+            $this->addKeahlian();
+        }
+    }
+
+    public function saveDataKeahlian()
+    {
+        // Delete existing keahlian that are not in the list anymore
+        $existingIds = array_filter(array_column($this->keahlianList, 'id'));
+        if (!empty($existingIds)) {
+            Keahlian::where('pendaftar_id', $this->pendaftar->id)
+                ->whereNotIn('id', $existingIds)
+                ->get()
+                ->each(function ($keahlian) {
+                    if ($keahlian->file_bukti_sertifikat && Storage::disk('public')->exists($keahlian->file_bukti_sertifikat)) {
+                        Storage::disk('public')->delete($keahlian->file_bukti_sertifikat);
+                    }
+                    $keahlian->delete();
+                });
+        } else {
+            // If no existing IDs, delete all
+            Keahlian::where('pendaftar_id', $this->pendaftar->id)->get()->each(function ($keahlian) {
+                if ($keahlian->file_bukti_sertifikat && Storage::disk('public')->exists($keahlian->file_bukti_sertifikat)) {
+                    Storage::disk('public')->delete($keahlian->file_bukti_sertifikat);
+                }
+                $keahlian->delete();
+            });
+        }
+
+        // Save each keahlian
+        foreach ($this->keahlianList as $index => $keahlianData) {
+            // Skip if empty
+            if (empty($keahlianData['bidang_keahlian']) && empty($keahlianData['nama_keahlian'])) {
+                continue;
+            }
+
+            // Handle file upload
+            $filePath = $keahlianData['file_bukti_sertifikat'] ?? null;
+            if (isset($this->uploadKeahlianSertifikat[$index]) && $this->uploadKeahlianSertifikat[$index]) {
+                $file = $this->uploadKeahlianSertifikat[$index];
+
+                $filename = FileNamingService::generateFileName(
+                    'sertifikat_keahlian',
+                    $this->pendaftar->nomor_pendaftaran,
+                    $file->getClientOriginalExtension(),
+                    $this->pendaftar->nama_lengkap
+                );
+
+                $filePath = $file->storeAs('sertifikat_keahlian', $filename, 'public');
+
+                // Delete old file if exists and updating
+                if (isset($keahlianData['id']) && $keahlianData['id']) {
+                    $oldKeahlian = Keahlian::find($keahlianData['id']);
+                    if ($oldKeahlian && $oldKeahlian->file_bukti_sertifikat && Storage::disk('public')->exists($oldKeahlian->file_bukti_sertifikat)) {
+                        Storage::disk('public')->delete($oldKeahlian->file_bukti_sertifikat);
+                    }
+                }
+            }
+
+            if (isset($keahlianData['id']) && $keahlianData['id']) {
+                // Update existing
+                $keahlian = Keahlian::find($keahlianData['id']);
+                if ($keahlian) {
+                    $keahlian->update([
+                        'bidang_keahlian' => $keahlianData['bidang_keahlian'],
+                        'nama_keahlian' => $keahlianData['nama_keahlian'],
+                        'sertifikasi' => $keahlianData['sertifikasi'],
+                        'lembaga_penyelenggara' => $keahlianData['lembaga_penyelenggara'],
+                        'hasil_tingkat_skor' => $keahlianData['hasil_tingkat_skor'],
+                        'file_bukti_sertifikat' => $filePath,
+                    ]);
+                }
+            } else {
+                // Create new
+                Keahlian::create([
+                    'pendaftar_id' => $this->pendaftar->id,
+                    'bidang_keahlian' => $keahlianData['bidang_keahlian'],
+                    'nama_keahlian' => $keahlianData['nama_keahlian'],
+                    'sertifikasi' => $keahlianData['sertifikasi'],
+                    'lembaga_penyelenggara' => $keahlianData['lembaga_penyelenggara'],
+                    'hasil_tingkat_skor' => $keahlianData['hasil_tingkat_skor'],
+                    'file_bukti_sertifikat' => $filePath,
+                ]);
+            }
+        }
+
+        // Reset upload arrays
+        $this->uploadKeahlianSertifikat = [];
+
+        $this->loadKeahlian(); // Reload data
+        $this->loadPendaftar(); // Reload pendaftar untuk update relasi
+        session()->flash('message', 'Data keahlian berhasil diperbarui.');
+    }
+
+    // ========================================
+    // TAHFIDZ METHODS
+    // ========================================
+
+    public function loadTahfidz()
+    {
+        $tahfidz = Tahfidz::where('pendaftar_id', $this->pendaftar->id)->first();
+
+        if ($tahfidz) {
+            $this->tahfidz = [
+                'id' => $tahfidz->id,
+                'juz_alquran_dihafal' => $tahfidz->juz_alquran_dihafal,
+                'file_bukti_syahadah' => $tahfidz->file_bukti_syahadah,
+                'file_bukti_tahsin' => $tahfidz->file_bukti_tahsin,
+            ];
+        } else {
+            $this->tahfidz = [
+                'id' => null,
+                'juz_alquran_dihafal' => null,
+                'file_bukti_syahadah' => null,
+                'file_bukti_tahsin' => null,
+            ];
+        }
+    }
+
+    public function saveDataTahfidz()
+    {
+        // Handle syahadah upload
+        if ($this->uploadTahfidzSyahadah) {
+            $filename = FileNamingService::generateFileName(
+                'syahadah',
+                $this->pendaftar->nomor_pendaftaran,
+                $this->uploadTahfidzSyahadah->getClientOriginalExtension(),
+                $this->pendaftar->nama_lengkap
+            );
+
+            $syahadahPath = $this->uploadTahfidzSyahadah->storeAs('tahfidz', $filename, 'public');
+
+            // Delete old file if exists
+            if ($this->tahfidz['id']) {
+                $oldTahfidz = Tahfidz::find($this->tahfidz['id']);
+                if ($oldTahfidz && $oldTahfidz->file_bukti_syahadah && Storage::disk('public')->exists($oldTahfidz->file_bukti_syahadah)) {
+                    Storage::disk('public')->delete($oldTahfidz->file_bukti_syahadah);
+                }
+            }
+
+            $this->tahfidz['file_bukti_syahadah'] = $syahadahPath;
+        }
+
+        // Handle tahsin upload
+        if ($this->uploadTahfidzTahsin) {
+            $filename = FileNamingService::generateFileName(
+                'tahsin',
+                $this->pendaftar->nomor_pendaftaran,
+                $this->uploadTahfidzTahsin->getClientOriginalExtension(),
+                $this->pendaftar->nama_lengkap
+            );
+
+            $tahsinPath = $this->uploadTahfidzTahsin->storeAs('tahfidz', $filename, 'public');
+
+            // Delete old file if exists
+            if ($this->tahfidz['id']) {
+                $oldTahfidz = Tahfidz::find($this->tahfidz['id']);
+                if ($oldTahfidz && $oldTahfidz->file_bukti_tahsin && Storage::disk('public')->exists($oldTahfidz->file_bukti_tahsin)) {
+                    Storage::disk('public')->delete($oldTahfidz->file_bukti_tahsin);
+                }
+            }
+
+            $this->tahfidz['file_bukti_tahsin'] = $tahsinPath;
+        }
+
+        if ($this->tahfidz['id']) {
+            // Update existing
+            $tahfidz = Tahfidz::find($this->tahfidz['id']);
+            if ($tahfidz) {
+                $tahfidz->update([
+                    'juz_alquran_dihafal' => $this->tahfidz['juz_alquran_dihafal'],
+                    'file_bukti_syahadah' => $this->tahfidz['file_bukti_syahadah'],
+                    'file_bukti_tahsin' => $this->tahfidz['file_bukti_tahsin'],
+                ]);
+            }
+        } else {
+            // Create new
+            $newTahfidz = Tahfidz::create([
+                'pendaftar_id' => $this->pendaftar->id,
+                'juz_alquran_dihafal' => $this->tahfidz['juz_alquran_dihafal'],
+                'file_bukti_syahadah' => $this->tahfidz['file_bukti_syahadah'],
+                'file_bukti_tahsin' => $this->tahfidz['file_bukti_tahsin'],
+            ]);
+            $this->tahfidz['id'] = $newTahfidz->id;
+        }
+
+        // Reset upload properties
+        $this->uploadTahfidzSyahadah = null;
+        $this->uploadTahfidzTahsin = null;
+
+        $this->loadTahfidz(); // Reload data
+        $this->loadPendaftar(); // Reload pendaftar untuk update relasi
+        session()->flash('message', 'Data tahfidz berhasil diperbarui.');
     }
 
     public function render()

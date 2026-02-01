@@ -23,6 +23,7 @@ class JalurPendaftaran extends Model
         'icon',
         'warna',
         'aktif',
+        'tampil_di_daftar',
         'paling_populer',
         'urutan',
     ];
@@ -31,6 +32,7 @@ class JalurPendaftaran extends Model
         'persyaratan' => 'array',
         'aset_jalur' => 'array',
         'aktif' => 'boolean',
+        'tampil_di_daftar' => 'boolean',
         'paling_populer' => 'boolean',
         'kuota' => 'integer',
         'nilai_minimum' => 'decimal:2',
@@ -96,6 +98,14 @@ class JalurPendaftaran extends Model
     public function scopeAktif($query)
     {
         return $query->where('aktif', true);
+    }
+
+    /**
+     * Scope untuk jalur yang tampil di halaman daftar
+     */
+    public function scopeTampilDiDaftar($query)
+    {
+        return $query->where('tampil_di_daftar', true);
     }
 
     /**

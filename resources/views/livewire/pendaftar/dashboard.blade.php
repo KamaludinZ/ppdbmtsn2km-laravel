@@ -280,13 +280,12 @@
                                 <span wire:loading wire:target="setujuDaftarUlang">Memproses...</span>
                             </button>
                             <button
-                                wire:click="tidakSetujuDaftarUlang"
+                                wire:click="showModalTidakSetuju"
                                 wire:loading.attr="disabled"
                                 @if($pendaftar->status_persetujuan_daftar_ulang && $pendaftar->status_persetujuan_daftar_ulang !== 'belum_memilih') disabled @endif
-                                onclick="return confirm('Apakah Anda yakin TIDAK INGIN melanjutkan daftar ulang? Keputusan ini akan dicatat oleh sistem.')"
                                 class="bg-gray-200 text-gray-700 px-8 py-3 rounded-lg font-bold text-lg hover:bg-gray-300 transition transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
-                                <span wire:loading.remove wire:target="tidakSetujuDaftarUlang">✗ Tidak Melanjutkan Daftar Ulang</span>
-                                <span wire:loading wire:target="tidakSetujuDaftarUlang">Memproses...</span>
+                                <span wire:loading.remove wire:target="showModalTidakSetuju">✗ Tidak Melanjutkan Daftar Ulang</span>
+                                <span wire:loading wire:target="showModalTidakSetuju">Memproses...</span>
                             </button>
                         </div>
                     </div>
@@ -1079,4 +1078,109 @@
             </div>
         </div>
     </div>
+
+    <!-- Modal Alasan Tidak Setuju Daftar Ulang -->
+    @if($showModalAlasan)
+    <div class="fixed inset-0 z-[9999] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background overlay -->
+            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="closeModalAlasan"></div>
+
+            <!-- Center modal -->
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-red-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
+                            <h3 class="text-lg leading-6 font-bold text-gray-900" id="modal-title">
+                                Alasan Tidak Melanjutkan Daftar Ulang
+                            </h3>
+                            <div class="mt-4">
+                                <p class="text-sm text-gray-600 mb-4">
+                                    Mohon pilih alasan mengapa Anda tidak melanjutkan daftar ulang. Informasi ini akan membantu kami untuk perbaikan ke depannya.
+                                </p>
+
+                                <div class="space-y-3">
+                                    <label class="flex items-start p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition {{ $alasanTidakSetuju == 'Diterima di Sekolah Lain' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
+                                        <input type="radio" wire:model="alasanTidakSetuju" value="Diterima di Sekolah Lain" class="mt-1 text-emerald-600 focus:ring-emerald-500">
+                                        <span class="ml-3 text-sm font-medium text-gray-900">Diterima di Sekolah Lain</span>
+                                    </label>
+
+                                    <label class="flex items-start p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition {{ $alasanTidakSetuju == 'Perubahan Domisili atau Pindah Rumah' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
+                                        <input type="radio" wire:model="alasanTidakSetuju" value="Perubahan Domisili atau Pindah Rumah" class="mt-1 text-emerald-600 focus:ring-emerald-500">
+                                        <span class="ml-3 text-sm font-medium text-gray-900">Perubahan Domisili atau Pindah Rumah</span>
+                                    </label>
+
+                                    <label class="flex items-start p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition {{ $alasanTidakSetuju == 'Lokasi Sekolah Terlalu Jauh' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
+                                        <input type="radio" wire:model="alasanTidakSetuju" value="Lokasi Sekolah Terlalu Jauh" class="mt-1 text-emerald-600 focus:ring-emerald-500">
+                                        <span class="ml-3 text-sm font-medium text-gray-900">Lokasi Sekolah Terlalu Jauh</span>
+                                    </label>
+
+                                    <label class="flex items-start p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition {{ $alasanTidakSetuju == 'Tidak Sesuai Peminatan/Jurusan' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
+                                        <input type="radio" wire:model="alasanTidakSetuju" value="Tidak Sesuai Peminatan/Jurusan" class="mt-1 text-emerald-600 focus:ring-emerald-500">
+                                        <span class="ml-3 text-sm font-medium text-gray-900">Tidak Sesuai Peminatan/Jurusan</span>
+                                    </label>
+
+                                    <label class="flex items-start p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition {{ $alasanTidakSetuju == 'Faktor Biaya/Ekonomi' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
+                                        <input type="radio" wire:model="alasanTidakSetuju" value="Faktor Biaya/Ekonomi" class="mt-1 text-emerald-600 focus:ring-emerald-500">
+                                        <span class="ml-3 text-sm font-medium text-gray-900">Faktor Biaya/Ekonomi</span>
+                                    </label>
+
+                                    <label class="flex items-start p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition {{ $alasanTidakSetuju == 'Kesehatan atau Alasan Pribadi Keluarga' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
+                                        <input type="radio" wire:model="alasanTidakSetuju" value="Kesehatan atau Alasan Pribadi Keluarga" class="mt-1 text-emerald-600 focus:ring-emerald-500">
+                                        <span class="ml-3 text-sm font-medium text-gray-900">Kesehatan atau Alasan Pribadi Keluarga</span>
+                                    </label>
+
+                                    <label class="flex items-start p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition {{ $alasanTidakSetuju == 'lainnya' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
+                                        <input type="radio" wire:model="alasanTidakSetuju" value="lainnya" class="mt-1 text-emerald-600 focus:ring-emerald-500">
+                                        <span class="ml-3 text-sm font-medium text-gray-900">Lainnya (Isi sendiri)</span>
+                                    </label>
+
+                                    @if($alasanTidakSetuju === 'lainnya')
+                                        <div class="ml-8">
+                                            <textarea
+                                                wire:model="alasanLainnya"
+                                                rows="3"
+                                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200"
+                                                placeholder="Tuliskan alasan Anda..."></textarea>
+                                            @error('alasanLainnya')
+                                                <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                                            @enderror
+                                        </div>
+                                    @endif
+
+                                    @error('alasanTidakSetuju')
+                                        <p class="text-red-500 text-sm mt-2">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button
+                        type="button"
+                        wire:click="tidakSetujuDaftarUlang"
+                        wire:loading.attr="disabled"
+                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span wire:loading.remove wire:target="tidakSetujuDaftarUlang">Konfirmasi Tidak Melanjutkan</span>
+                        <span wire:loading wire:target="tidakSetujuDaftarUlang">Memproses...</span>
+                    </button>
+                    <button
+                        type="button"
+                        wire:click="closeModalAlasan"
+                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>

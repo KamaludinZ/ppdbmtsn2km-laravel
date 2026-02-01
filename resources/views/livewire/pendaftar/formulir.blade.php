@@ -74,24 +74,35 @@
                     <!-- Right Section: Status Badge -->
                     <div class="flex md:flex-col items-start md:items-end justify-start md:justify-center">
                         @php
+                            // Map old status (kelulusan) to new status (pendaftaran) for backward compatibility
+                            $statusPendaftaran = $pendaftar->status_pendaftaran;
+
+                            // Convert old kelulusan status to pendaftaran status
+                            if (in_array($statusPendaftaran, ['lulus', 'tidak_lulus', 'cadangan'])) {
+                                // Status kelulusan shouldn't appear here, default to menunggu_verifikasi
+                                $statusPendaftaran = 'menunggu_verifikasi';
+                            }
+
                             $statusColors = [
                                 'draft' => 'bg-gray-100 text-gray-800 border-gray-300',
                                 'menunggu' => 'bg-yellow-50 text-yellow-800 border-yellow-300',
-                                'diverifikasi' => 'bg-blue-50 text-blue-800 border-blue-300',
-                                'lulus' => 'bg-green-50 text-green-800 border-green-300',
-                                'tidak_lulus' => 'bg-red-50 text-red-800 border-red-300',
-                                'cadangan' => 'bg-blue-50 text-blue-800 border-blue-300',
+                                'menunggu_verifikasi' => 'bg-yellow-50 text-yellow-800 border-yellow-300',
+                                'lengkapi_data' => 'bg-orange-50 text-orange-800 border-orange-300',
+                                'perbaiki_data' => 'bg-red-50 text-red-800 border-red-300',
+                                'data_ditolak' => 'bg-red-50 text-red-800 border-red-300',
+                                'data_disetujui' => 'bg-green-50 text-green-800 border-green-300',
                             ];
                             $statusLabels = [
                                 'draft' => 'Draft',
                                 'menunggu' => 'Menunggu Verifikasi',
-                                'diverifikasi' => 'Diverifikasi',
-                                'lulus' => 'Lulus Seleksi',
-                                'tidak_lulus' => 'Tidak Lulus',
-                                'cadangan' => 'Cadangan',
+                                'menunggu_verifikasi' => 'Menunggu Verifikasi',
+                                'lengkapi_data' => 'Lengkapi Data',
+                                'perbaiki_data' => 'Perbaiki Data',
+                                'data_ditolak' => 'Data Ditolak',
+                                'data_disetujui' => 'Data Disetujui',
                             ];
-                            $statusClass = $statusColors[$pendaftar->status_pendaftaran] ?? 'bg-gray-100 text-gray-800 border-gray-300';
-                            $statusLabel = $statusLabels[$pendaftar->status_pendaftaran] ?? ucfirst(str_replace('_', ' ', $pendaftar->status_pendaftaran));
+                            $statusClass = $statusColors[$statusPendaftaran] ?? 'bg-gray-100 text-gray-800 border-gray-300';
+                            $statusLabel = $statusLabels[$statusPendaftaran] ?? 'Menunggu Verifikasi';
                         @endphp
                         <div class="text-left md:text-right">
                             <p class="text-emerald-100 text-xs font-semibold mb-2 uppercase tracking-wide">Status Pendaftaran</p>
@@ -112,7 +123,7 @@
         />
 
         <!-- Tab Navigation dengan 6 Tab EMIS Baru -->
-        <div x-data="{ activeTab: 'siswa' }" class="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div x-data="{ activeTab: $wire.entangle('activeTab') }" class="bg-white rounded-lg shadow-lg overflow-hidden">
             <!-- Tab Buttons -->
             <div class="border-b border-gray-200 overflow-x-auto">
                 <nav class="flex -mb-px whitespace-nowrap">
@@ -146,7 +157,19 @@
                         @endif
                     </button>
 
-                    <!-- Tab 5: Beasiswa & Bantuan -->
+                    <!-- Tab 5: Keahlian (Kursus/Club/Sanggar) -->
+                    <button @click="activeTab = 'keahlian'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'keahlian', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'keahlian' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                        Keahlian
+                    </button>
+
+                    <!-- Tab 6: Tahfidz -->
+                    <button @click="activeTab = 'tahfidz'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'tahfidz', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'tahfidz' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                        Tahfidz
+                    </button>
+
+                    <!-- Tab 7: Beasiswa & Bantuan -->
                     <button @click="activeTab = 'beasiswa'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'beasiswa', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'beasiswa' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
                         <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                         Beasiswa & Bantuan
@@ -206,6 +229,16 @@
                 <!-- Tab Prestasi -->
                 <div x-show="activeTab === 'prestasi'" x-transition>
                     @include('tab_templates.tab-prestasi')
+                </div>
+
+                <!-- Tab Keahlian -->
+                <div x-show="activeTab === 'keahlian'" x-transition>
+                    @include('tab_templates.tab-keahlian')
+                </div>
+
+                <!-- Tab Tahfidz -->
+                <div x-show="activeTab === 'tahfidz'" x-transition>
+                    @include('tab_templates.tab-tahfidz')
                 </div>
 
                 <!-- Tab Beasiswa & Bantuan -->

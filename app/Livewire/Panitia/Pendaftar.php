@@ -18,6 +18,7 @@ class Pendaftar extends Component
     public $filterJalur = '';
     public $filterStatus = '';
     public $perPage = 10;
+    public $routePrefix = 'panitia-pendaftaran'; // Default route prefix
 
     // Properties for change password modal
     public $isChangePasswordModalOpen = false;
@@ -51,6 +52,8 @@ class Pendaftar extends Component
         'status_du_madrasah' => false, // Status DU Madrasah (Pembayaran)
         'status_du_seragam' => false, // Status DU Seragam
         'status_ukuran' => false, // Status Ukuran Seragam
+        'status_keahlian' => false, // Status Keahlian
+        'status_tahfidz' => false, // Status Tahfidz
         'status_daftar_ulang' => false,
         'verif_rapor' => false,
         'verif_akte' => false,
@@ -79,8 +82,15 @@ class Pendaftar extends Component
     {
         // Check if user is panitia
         $user = Auth::user();
-        if (!$user || !in_array($user->role, ['panitia_pendaftaran', 'panitia_daftarulang', 'panitia'])) {
+        if (!$user || !in_array($user->role, ['panitia_pendaftaran', 'panitia_daftarulang', 'panitia_tes_psikologi', 'panitia_seragam'])) {
             return redirect()->to('/login/admin');
+        }
+
+        // Set route prefix based on user role
+        if ($user->role === 'panitia_daftarulang') {
+            $this->routePrefix = 'panitia-daftarulang';
+        } elseif ($user->role === 'panitia_pendaftaran' || $user->role === 'panitia') {
+            $this->routePrefix = 'panitia-pendaftaran';
         }
 
         // Clear search if it contains role names (likely from browser autocomplete)
@@ -115,9 +125,14 @@ class Pendaftar extends Component
         $this->resetPage();
     }
 
+    public function updatingPerPage()
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
-        $query = PendaftarModel::with(['jalurPendaftaran', 'user', 'diperbaruiOleh', 'daftarUlang', 'verifikasiBerkas', 'tesPsikologiPendaftar'])
+        $query = PendaftarModel::with(['jalurPendaftaran', 'user', 'diperbaruiOleh', 'daftarUlang', 'seragam', 'verifikasiBerkas', 'tesPsikologiPendaftar', 'keahlians', 'tahfidz'])
             ->when($this->search, function ($q) {
                 $q->where(function ($query) {
                     $query->where('nama_lengkap', 'like', '%' . $this->search . '%')
@@ -140,13 +155,6 @@ class Pendaftar extends Component
         // Apply sorting
         $pendaftar = $this->applySorting($query)->paginate($this->perPage);
 
-        // Initialize status selections for each pendaftar
-        foreach ($pendaftar as $item) {
-            if (!isset($this->statusSelections[$item->id])) {
-                $this->statusSelections[$item->id] = $item->status_pendaftaran;
-            }
-        }
-
         $jalurPendaftaran = JalurPendaftaran::aktif()->ordered()->get();
 
         $stats = [
@@ -163,6 +171,11 @@ class Pendaftar extends Component
                 'pageTitle' => 'Data Pendaftar',
                 'pageDescription' => 'Kelola data pendaftar PPDB MTsN 2 Kota Malang'
             ]);
+    }
+
+    public function getStatusSelection($id, $currentStatus)
+    {
+        return $this->statusSelections[$id] ?? $currentStatus;
     }
 
     public function updateStatus($id)

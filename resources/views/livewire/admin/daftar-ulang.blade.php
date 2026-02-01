@@ -61,11 +61,29 @@
                             <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari nama, NISN, atau no. pendaftaran..." class="w-full text-sm rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                         </div>
                         <div>
+                            <select wire:model.live="filterJalur" class="w-full sm:w-auto text-sm rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                <option value="">Semua Jalur</option>
+                                @foreach($jalurPendaftaran as $jalur)
+                                    <option value="{{ $jalur->id }}">{{ $jalur->nama }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        @if(in_array($activeTab, ['seragam', 'ukuran']))
+                        <div>
+                            <select wire:model.live="filterJenisKelamin" class="w-full sm:w-auto text-sm rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                <option value="">Semua Jenis Kelamin</option>
+                                <option value="L">Laki-laki</option>
+                                <option value="P">Perempuan</option>
+                            </select>
+                        </div>
+                        @endif
+                        <div>
                             <select wire:model.live="filterStatus" class="w-full sm:w-auto text-sm rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                                 <option value="">Semua Status</option>
-                                <option value="belum">Belum Daftar Ulang</option>
-                                <option value="proses">Proses Daftar Ulang</option>
-                                <option value="selesai">Selesai Daftar Ulang</option>
+                                <option value="menunggu">Menunggu</option>
+                                <option value="disetujui">Disetujui</option>
+                                <option value="ditolak">Ditolak</option>
+                                <option value="perlu_perbaikan">Perlu Perbaikan</option>
                             </select>
                         </div>
                     </div>
@@ -314,6 +332,15 @@
                                     <button type="button" wire:click="addMadrasahNominal" class="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">+ Tambah</button>
                                 </div>
 
+                                <!-- Enable Opsi Lainnya Toggle -->
+                                <div class="mb-4 p-3 bg-white rounded-lg border border-green-300">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" wire:model="madrasahEnableOpsiLainnya" class="rounded border-gray-300 text-green-600">
+                                        <span class="ml-2 text-sm font-medium text-gray-700">Aktifkan Opsi "Lainnya" (Input Manual)</span>
+                                    </label>
+                                    <p class="text-xs text-gray-600 mt-1 ml-6">Jika diaktifkan, pendaftar dapat memilih "Opsi Lainnya" dan mengisi nominal pembayaran secara manual.</p>
+                                </div>
+
                                 @foreach($madrasahNominals as $index => $nominal)
                                     <div class="bg-white border border-green-300 rounded-lg p-3 mb-2">
                                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -326,6 +353,37 @@
                                         </div>
                                     </div>
                                 @endforeach
+                            </div>
+
+                            <!-- Opsi Nominal yang Dibayarkan -->
+                            <div class="bg-cyan-50 border border-cyan-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <label class="block text-sm font-semibold text-cyan-900">Opsi Nominal yang Dibayarkan</label>
+                                    <button type="button" wire:click="addMadrasahPaymentNominal" class="text-xs bg-cyan-600 text-white px-3 py-1 rounded hover:bg-cyan-700">+ Tambah</button>
+                                </div>
+                                <p class="text-xs text-gray-600 mb-3">Opsi nominal yang muncul pada field konfirmasi nominal yang dibayarkan (terpisah dari nominal surat pernyataan)</p>
+
+                                @foreach($madrasahPaymentNominals as $index => $nominal)
+                                    <div class="bg-white border border-cyan-300 rounded-lg p-3 mb-2">
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                            <input type="text" wire:model="madrasahPaymentNominals.{{ $index }}.name" placeholder="Nama biaya (contoh: SPP Bulanan)" class="rounded border-gray-300 text-sm">
+                                            <input type="number" wire:model="madrasahPaymentNominals.{{ $index }}.amount" placeholder="Nominal (Rp)" class="rounded border-gray-300 text-sm">
+                                            <button type="button"
+                                                    wire:click="removeMadrasahPaymentNominal({{ $index }})"
+                                                    wire:confirm="Yakin ingin menghapus opsi nominal ini?"
+                                                    class="text-red-600 hover:text-red-800 text-sm">Hapus</button>
+                                        </div>
+                                    </div>
+                                @endforeach
+
+                                <!-- Checkbox untuk Opsi Lainnya -->
+                                <div class="mt-4 pt-3 border-t border-cyan-300">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" wire:model="madrasahPaymentNominalsEnableOpsiLainnya" class="rounded border-gray-300 text-cyan-600">
+                                        <span class="ml-2 text-sm text-gray-700">Aktifkan Opsi "Lainnya" (Input Manual)</span>
+                                    </label>
+                                    <p class="text-xs text-gray-500 ml-6 mt-1">Jika diaktifkan, pendaftar dapat memilih "Opsi Lainnya" dan mengisi nominal pembayaran secara manual.</p>
+                                </div>
                             </div>
 
                             <!-- Opsi Pembayaran -->
@@ -469,6 +527,15 @@
                                     <button type="button" wire:click="addSeragamNominal" class="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">+ Tambah</button>
                                 </div>
 
+                                <!-- Enable Opsi Lainnya Toggle -->
+                                <div class="mb-4 p-3 bg-white rounded-lg border border-green-300">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" wire:model="seragamEnableOpsiLainnya" class="rounded border-gray-300 text-green-600">
+                                        <span class="ml-2 text-sm font-medium text-gray-700">Aktifkan Opsi "Lainnya" (Input Manual)</span>
+                                    </label>
+                                    <p class="text-xs text-gray-600 mt-1 ml-6">Jika diaktifkan, pendaftar dapat memilih "Opsi Lainnya" dan mengisi nominal pembayaran seragam secara manual.</p>
+                                </div>
+
                                 @foreach($seragamNominals as $index => $nominal)
                                     <div class="bg-white border border-green-300 rounded-lg p-3 mb-2">
                                         <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -481,6 +548,37 @@
                                         </div>
                                     </div>
                                 @endforeach
+                            </div>
+
+                            <!-- Opsi Nominal yang Dibayarkan -->
+                            <div class="bg-cyan-50 border border-cyan-200 rounded-lg p-4">
+                                <div class="flex items-center justify-between mb-3">
+                                    <label class="block text-sm font-semibold text-cyan-900">Opsi Nominal yang Dibayarkan</label>
+                                    <button type="button" wire:click="addSeragamPaymentNominal" class="text-xs bg-cyan-600 text-white px-3 py-1 rounded hover:bg-cyan-700">+ Tambah</button>
+                                </div>
+                                <p class="text-xs text-gray-600 mb-3">Opsi nominal yang muncul pada field konfirmasi nominal yang dibayarkan (terpisah dari nominal surat pernyataan)</p>
+
+                                @foreach($seragamPaymentNominals as $index => $nominal)
+                                    <div class="bg-white border border-cyan-300 rounded-lg p-3 mb-2">
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+                                            <input type="text" wire:model="seragamPaymentNominals.{{ $index }}.name" placeholder="Nama biaya (contoh: Seragam Putih)" class="rounded border-gray-300 text-sm">
+                                            <input type="number" wire:model="seragamPaymentNominals.{{ $index }}.amount" placeholder="Nominal (Rp)" class="rounded border-gray-300 text-sm">
+                                            <button type="button"
+                                                    wire:click="removeSeragamPaymentNominal({{ $index }})"
+                                                    wire:confirm="Yakin ingin menghapus opsi nominal ini?"
+                                                    class="text-red-600 hover:text-red-800 text-sm">Hapus</button>
+                                        </div>
+                                    </div>
+                                @endforeach
+
+                                <!-- Checkbox untuk Opsi Lainnya -->
+                                <div class="mt-4 pt-3 border-t border-cyan-300">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" wire:model="seragamPaymentNominalsEnableOpsiLainnya" class="rounded border-gray-300 text-cyan-600">
+                                        <span class="ml-2 text-sm text-gray-700">Aktifkan Opsi "Lainnya" (Input Manual)</span>
+                                    </label>
+                                    <p class="text-xs text-gray-500 ml-6 mt-1">Jika diaktifkan, pendaftar dapat memilih "Opsi Lainnya" dan mengisi nominal pembayaran secara manual.</p>
+                                </div>
                             </div>
 
                             <!-- Opsi Pembayaran Seragam -->
@@ -622,6 +720,15 @@
                                     @endif
                                 </div>
 
+                                <!-- Enable Opsi Lainnya Toggle -->
+                                <div class="mb-4 p-3 bg-white rounded-lg border border-amber-300">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" wire:model="ukuranJasEnableOpsiLainnya" class="rounded border-gray-300 text-amber-600">
+                                        <span class="ml-2 text-sm font-medium text-gray-700">Aktifkan Opsi "Lainnya" (Input Manual)</span>
+                                    </label>
+                                    <p class="text-xs text-gray-600 mt-1 ml-6">Jika diaktifkan, pendaftar dapat memilih "Opsi Lainnya" dan mengisi ukuran jas secara manual.</p>
+                                </div>
+
                                 <!-- CRUD Opsi Ukuran -->
                                 <div>
                                     <div class="flex items-center justify-between mb-2">
@@ -654,6 +761,15 @@
                                             <img src="{{ Storage::url($existingUkuranBajuOlahragaImage) }}" class="h-32 rounded border" alt="Panduan Baju Olahraga">
                                         </div>
                                     @endif
+                                </div>
+
+                                <!-- Enable Opsi Lainnya Toggle -->
+                                <div class="mb-4 p-3 bg-white rounded-lg border border-sky-300">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" wire:model="ukuranBajuOlahragaEnableOpsiLainnya" class="rounded border-gray-300 text-sky-600">
+                                        <span class="ml-2 text-sm font-medium text-gray-700">Aktifkan Opsi "Lainnya" (Input Manual)</span>
+                                    </label>
+                                    <p class="text-xs text-gray-600 mt-1 ml-6">Jika diaktifkan, pendaftar dapat memilih "Opsi Lainnya" dan mengisi ukuran baju olahraga secara manual.</p>
                                 </div>
 
                                 <!-- CRUD Opsi Ukuran -->
@@ -690,6 +806,15 @@
                                     @endif
                                 </div>
 
+                                <!-- Enable Opsi Lainnya Toggle -->
+                                <div class="mb-4 p-3 bg-white rounded-lg border border-violet-300">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" wire:model="ukuranCelanaOlahragaEnableOpsiLainnya" class="rounded border-gray-300 text-violet-600">
+                                        <span class="ml-2 text-sm font-medium text-gray-700">Aktifkan Opsi "Lainnya" (Input Manual)</span>
+                                    </label>
+                                    <p class="text-xs text-gray-600 mt-1 ml-6">Jika diaktifkan, pendaftar dapat memilih "Opsi Lainnya" dan mengisi ukuran celana olahraga secara manual.</p>
+                                </div>
+
                                 <!-- CRUD Opsi Ukuran -->
                                 <div>
                                     <div class="flex items-center justify-between mb-2">
@@ -722,6 +847,15 @@
                                             <img src="{{ Storage::url($existingUkuranBajuHarianImage) }}" class="h-32 rounded border" alt="Panduan Baju Harian">
                                         </div>
                                     @endif
+                                </div>
+
+                                <!-- Enable Opsi Lainnya Toggle -->
+                                <div class="mb-4 p-3 bg-white rounded-lg border border-blue-300">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" wire:model="ukuranBajuHarianEnableOpsiLainnya" class="rounded border-gray-300 text-blue-600">
+                                        <span class="ml-2 text-sm font-medium text-gray-700">Aktifkan Opsi "Lainnya" (Input Manual)</span>
+                                    </label>
+                                    <p class="text-xs text-gray-600 mt-1 ml-6">Jika diaktifkan, pendaftar dapat memilih "Opsi Lainnya" dan mengisi ukuran baju harian secara manual.</p>
                                 </div>
 
                                 <!-- CRUD Opsi Ukuran -->
@@ -758,6 +892,15 @@
                                     @endif
                                 </div>
 
+                                <!-- Enable Opsi Lainnya Toggle -->
+                                <div class="mb-4 p-3 bg-white rounded-lg border border-green-300">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" wire:model="ukuranCelanaRokHarianEnableOpsiLainnya" class="rounded border-gray-300 text-green-600">
+                                        <span class="ml-2 text-sm font-medium text-gray-700">Aktifkan Opsi "Lainnya" (Input Manual)</span>
+                                    </label>
+                                    <p class="text-xs text-gray-600 mt-1 ml-6">Jika diaktifkan, pendaftar dapat memilih "Opsi Lainnya" dan mengisi ukuran celana/rok harian secara manual.</p>
+                                </div>
+
                                 <!-- CRUD Opsi Ukuran -->
                                 <div>
                                     <div class="flex items-center justify-between mb-2">
@@ -790,6 +933,15 @@
                                             <img src="{{ Storage::url($existingUkuranKopyahImage) }}" class="h-32 rounded border" alt="Panduan Kopyah">
                                         </div>
                                     @endif
+                                </div>
+
+                                <!-- Enable Opsi Lainnya Toggle -->
+                                <div class="mb-4 p-3 bg-white rounded-lg border border-indigo-300">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" wire:model="ukuranKopyahEnableOpsiLainnya" class="rounded border-gray-300 text-indigo-600">
+                                        <span class="ml-2 text-sm font-medium text-gray-700">Aktifkan Opsi "Lainnya" (Input Manual)</span>
+                                    </label>
+                                    <p class="text-xs text-gray-600 mt-1 ml-6">Jika diaktifkan, pendaftar dapat memilih "Opsi Lainnya" dan mengisi ukuran kopyah secara manual.</p>
                                 </div>
 
                                 <!-- CRUD Opsi Ukuran -->
@@ -825,7 +977,7 @@
             </div>
         @else
             <!-- Stats Overview -->
-            @include('livewire.admin.partials.daftar-ulang-stats')
+            @include('livewire.admin.partials.daftar-ulang-stats', ['tab' => $activeTab])
 
             <!-- Information Banner -->
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -875,8 +1027,10 @@
                             <x-sortable-header field="jenis_kelamin" :sort-field="$sortField" :sort-direction="$sortDirection" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Jenis Kelamin
                             </x-sortable-header>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jalur</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Persetujuan</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi Persetujuan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alasan</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 @if($activeTab == 'madrasah')
                                     Status DU Madrasah
@@ -888,21 +1042,30 @@
                             </th>
                             @if($activeTab == 'madrasah')
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Surat Pernyataan</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya & Pembayaran</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal Biaya</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal yang Dibayar</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opsi Pembayaran</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bank/Metode</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bukti Pembayaran</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu Pembayaran</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
                             @elseif($activeTab == 'seragam')
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paket Seragam</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya & Pembayaran</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal Biaya</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal yang Dibayar</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opsi Pembayaran</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bank/Metode</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bukti Pembayaran</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu Pembayaran</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
                             @else
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ukuran Jas</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ukuran Atasan</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ukuran Bawahan</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ukuran Kopyah</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Baju Olahraga</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Celana Olahraga</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Baju Seragam Harian</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Celana/Rok Harian</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kopyah (L)</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
                             @endif
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ubah Status</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi Pesan</th>
@@ -923,6 +1086,15 @@
                                     @if($item->jenis_kelamin)
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $item->jenis_kelamin === 'L' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800' }}">
                                             {{ $item->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' }}
+                                        </span>
+                                    @else
+                                        <span class="text-sm text-gray-500">-</span>
+                                    @endif
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($item->jalurPendaftaran)
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-white" style="background-color: {{ $item->jalurPendaftaran->warna ?? '#6B7280' }}">
+                                            {{ $item->jalurPendaftaran->nama }}
                                         </span>
                                     @else
                                         <span class="text-sm text-gray-500">-</span>
@@ -1005,15 +1177,29 @@
                                         </div>
                                     </div>
                                 </td>
+                                <td class="px-6 py-4">
+                                    @if($item->status_persetujuan_daftar_ulang === 'tidak_setuju' && $item->alasan_tidak_setuju)
+                                        <div class="max-w-xs">
+                                            <div class="text-xs text-gray-700 bg-gray-50 p-2 rounded border border-gray-200">
+                                                <span class="font-semibold text-red-600">Alasan:</span>
+                                                <p class="mt-1">{{ $item->alasan_tidak_setuju }}</p>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <span class="text-xs text-gray-400">-</span>
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @php
                                         $statusColors = [
+                                            'proses' => 'bg-blue-100 text-blue-800',
                                             'menunggu' => 'bg-yellow-100 text-yellow-800',
                                             'disetujui' => 'bg-green-100 text-green-800',
                                             'ditolak' => 'bg-red-100 text-red-800',
                                             'perbaiki' => 'bg-orange-100 text-orange-800',
                                         ];
                                         $statusLabels = [
+                                            'proses' => 'Proses',
                                             'menunggu' => 'Menunggu',
                                             'disetujui' => 'Disetujui',
                                             'ditolak' => 'Ditolak',
@@ -1039,11 +1225,11 @@
                                 @if($activeTab == 'madrasah')
                                     <!-- Surat Pernyataan -->
                                     <td class="px-6 py-4">
-                                        @if($item->dokumen->where('jenis_dokumen', 'pernyataan')->first())
+                                        @if($item->daftarUlang && $item->daftarUlang->surat_pernyataan_path)
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                 ✓ Sudah Upload
                                             </span>
-                                            <a href="{{ asset('storage/' . $item->dokumen->where('jenis_dokumen', 'pernyataan')->first()->path_file) }}"
+                                            <a href="{{ route('pendaftar.download-file', ['type' => 'surat_pernyataan', 'pendaftarId' => $item->id]) }}"
                                                target="_blank"
                                                class="block text-blue-600 hover:text-blue-900 text-xs mt-1">Lihat File</a>
                                         @else
@@ -1052,7 +1238,19 @@
                                             </span>
                                         @endif
                                     </td>
-                                    <!-- Biaya & Pembayaran -->
+                                    <!-- Nominal Biaya (Awal untuk Surat Pernyataan) -->
+                                    <td class="px-6 py-4">
+                                        @if($item->daftarUlang && $item->daftarUlang->nominal_biaya_awal)
+                                            @php $nominalBiayaAwal = $item->daftarUlang->nominal_biaya_awal; @endphp
+                                            <div class="text-xs text-gray-900">
+                                                <div class="font-medium text-gray-700 mb-1">{{ $nominalBiayaAwal['name'] ?? '-' }}</div>
+                                                <div class="font-bold text-blue-700">Rp {{ number_format($nominalBiayaAwal['amount'] ?? 0, 0, ',', '.') }}</div>
+                                            </div>
+                                        @else
+                                            <span class="text-xs text-gray-500">Belum pilih</span>
+                                        @endif
+                                    </td>
+                                    <!-- Nominal yang Dibayar (Konfirmasi) -->
                                     <td class="px-6 py-4">
                                         @if($item->daftarUlang && $item->daftarUlang->nominal_biaya)
                                             @php $nominalBiaya = $item->daftarUlang->nominal_biaya; @endphp
@@ -1061,7 +1259,7 @@
                                                 <div class="font-bold text-emerald-700">Rp {{ number_format($nominalBiaya['amount'] ?? 0, 0, ',', '.') }}</div>
                                             </div>
                                         @else
-                                            <span class="text-xs text-gray-500">Belum pilih nominal</span>
+                                            <span class="text-xs text-gray-500">Belum konfirmasi</span>
                                         @endif
                                     </td>
                                     <!-- Opsi Pembayaran -->
@@ -1078,10 +1276,7 @@
                                     <td class="px-6 py-4">
                                         @if($item->daftarUlang && $item->daftarUlang->metode_pembayaran)
                                             <div class="text-xs text-gray-900">
-                                                <span class="font-medium">{{ $item->daftarUlang->bank_name ?? 'Bank' }}</span>
-                                                @if($item->daftarUlang->account_number)
-                                                    <div class="text-gray-600">{{ $item->daftarUlang->account_number }}</div>
-                                                @endif
+                                                <span class="font-medium">{{ $item->daftarUlang->metode_pembayaran }}</span>
                                             </div>
                                         @else
                                             <span class="text-xs text-gray-500">-</span>
@@ -1089,11 +1284,11 @@
                                     </td>
                                     <!-- Bukti Pembayaran -->
                                     <td class="px-6 py-4">
-                                        @if($item->pembayaran->where('jenis_pembayaran', 'daftar_ulang')->first())
+                                        @if($item->daftarUlang && $item->daftarUlang->bukti_pembayaran_madrasah)
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                 ✓ Sudah Upload
                                             </span>
-                                            <a href="{{ asset('storage/' . $item->pembayaran->where('jenis_pembayaran', 'daftar_ulang')->first()->bukti_pembayaran) }}"
+                                            <a href="{{ route('pendaftar.download-file', ['type' => 'bukti_pembayaran_madrasah', 'pendaftarId' => $item->id]) }}"
                                                target="_blank"
                                                class="block text-blue-600 hover:text-blue-900 text-xs mt-1">Lihat File</a>
                                         @else
@@ -1101,6 +1296,39 @@
                                                 ✗ Belum Upload
                                             </span>
                                         @endif
+                                    </td>
+                                    <!-- Waktu Pembayaran -->
+                                    <td class="px-6 py-4">
+                                        @if($item->daftarUlang && $item->daftarUlang->waktu_pembayaran_madrasah)
+                                            <div class="text-xs text-gray-900">
+                                                <div class="font-medium">{{ $item->daftarUlang->waktu_pembayaran_madrasah->format('d/m/Y') }}</div>
+                                                <div class="text-gray-600">{{ $item->daftarUlang->waktu_pembayaran_madrasah->format('H:i') }} WIB</div>
+                                            </div>
+                                        @else
+                                            <span class="text-xs text-gray-500">-</span>
+                                        @endif
+                                    </td>
+                                    <!-- Catatan Madrasah -->
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2">
+                                            @if($item->daftarUlang && $item->daftarUlang->catatan)
+                                                <div class="text-xs text-gray-700 bg-yellow-50 p-2 rounded border border-yellow-200 max-w-xs">
+                                                    <div class="font-semibold text-yellow-700 mb-1">📝 Catatan:</div>
+                                                    <p class="whitespace-pre-wrap">{{ $item->daftarUlang->catatan }}</p>
+                                                </div>
+                                            @else
+                                                <span class="text-xs text-gray-400 italic">Belum ada catatan</span>
+                                            @endif
+                                            <button
+                                                wire:click="openCatatanModal('madrasah', {{ $item->id }}, '{{ addslashes($item->daftarUlang->catatan ?? '') }}')"
+                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors"
+                                                title="Edit Catatan">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                                Edit
+                                            </button>
+                                        </div>
                                     </td>
                                 @elseif($activeTab == 'seragam')
                                     <!-- Paket Seragam -->
@@ -1116,7 +1344,19 @@
                                             <span class="text-xs text-gray-500">Belum dipilih</span>
                                         @endif
                                     </td>
-                                    <!-- Biaya & Pembayaran -->
+                                    <!-- Nominal Biaya (Awal untuk Surat Pernyataan) -->
+                                    <td class="px-6 py-4">
+                                        @if($item->seragam && $item->seragam->nominal_seragam_awal)
+                                            @php $nominalSeragamAwal = $item->seragam->nominal_seragam_awal; @endphp
+                                            <div class="text-xs text-gray-900">
+                                                <div class="font-medium text-gray-700 mb-1">{{ $nominalSeragamAwal['name'] ?? '-' }}</div>
+                                                <div class="font-bold text-blue-700">Rp {{ number_format($nominalSeragamAwal['amount'] ?? 0, 0, ',', '.') }}</div>
+                                            </div>
+                                        @else
+                                            <span class="text-xs text-gray-500">Belum pilih</span>
+                                        @endif
+                                    </td>
+                                    <!-- Nominal yang Dibayar (Konfirmasi) -->
                                     <td class="px-6 py-4">
                                         @if($item->seragam && $item->seragam->nominal_seragam)
                                             @php $nominalSeragam = $item->seragam->nominal_seragam; @endphp
@@ -1125,14 +1365,14 @@
                                                 <div class="font-bold text-emerald-700">Rp {{ number_format($nominalSeragam['amount'] ?? 0, 0, ',', '.') }}</div>
                                             </div>
                                         @else
-                                            <span class="text-xs text-gray-500">Belum pilih nominal</span>
+                                            <span class="text-xs text-gray-500">Belum konfirmasi</span>
                                         @endif
                                     </td>
                                     <!-- Opsi Pembayaran -->
                                     <td class="px-6 py-4">
-                                        @if($item->seragam && $item->seragam->opsi_pembayaran)
+                                        @if($item->seragam && $item->seragam->opsi_pembayaran_seragam)
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                                {{ ucfirst($item->seragam->opsi_pembayaran) }}
+                                                {{ ucfirst($item->seragam->opsi_pembayaran_seragam) }}
                                             </span>
                                         @else
                                             <span class="text-xs text-gray-500">-</span>
@@ -1140,12 +1380,9 @@
                                     </td>
                                     <!-- Bank/Metode -->
                                     <td class="px-6 py-4">
-                                        @if($item->seragam && $item->seragam->metode_pembayaran)
+                                        @if($item->seragam && $item->seragam->bank_seragam)
                                             <div class="text-xs text-gray-900">
-                                                <span class="font-medium">{{ $item->seragam->bank_name ?? 'Bank' }}</span>
-                                                @if($item->seragam->account_number)
-                                                    <div class="text-gray-600">{{ $item->seragam->account_number }}</div>
-                                                @endif
+                                                <span class="font-medium">{{ $item->seragam->bank_seragam }}</span>
                                             </div>
                                         @else
                                             <span class="text-xs text-gray-500">-</span>
@@ -1153,11 +1390,11 @@
                                     </td>
                                     <!-- Bukti Pembayaran -->
                                     <td class="px-6 py-4">
-                                        @if($item->pembayaran->where('jenis_pembayaran', 'seragam')->first())
+                                        @if($item->seragam && $item->seragam->bukti_pembayaran)
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                 ✓ Sudah Upload
                                             </span>
-                                            <a href="{{ asset('storage/' . $item->pembayaran->where('jenis_pembayaran', 'seragam')->first()->bukti_pembayaran) }}"
+                                            <a href="{{ route('pendaftar.download-file', ['type' => 'bukti_pembayaran_seragam', 'pendaftarId' => $item->id]) }}"
                                                target="_blank"
                                                class="block text-blue-600 hover:text-blue-900 text-xs mt-1">Lihat File</a>
                                         @else
@@ -1166,54 +1403,125 @@
                                             </span>
                                         @endif
                                     </td>
+                                    <!-- Waktu Pembayaran -->
+                                    <td class="px-6 py-4">
+                                        @if($item->seragam && $item->seragam->waktu_pembayaran_seragam)
+                                            <div class="text-xs text-gray-900">
+                                                <div class="font-medium">{{ $item->seragam->waktu_pembayaran_seragam->format('d/m/Y') }}</div>
+                                                <div class="text-gray-600">{{ $item->seragam->waktu_pembayaran_seragam->format('H:i') }} WIB</div>
+                                            </div>
+                                        @else
+                                            <span class="text-xs text-gray-500">-</span>
+                                        @endif
+                                    </td>
+                                    <!-- Catatan Seragam -->
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2">
+                                            @if($item->seragam && $item->seragam->catatan_seragam)
+                                                <div class="text-xs text-gray-700 bg-yellow-50 p-2 rounded border border-yellow-200 max-w-xs">
+                                                    <div class="font-semibold text-yellow-700 mb-1">📝 Catatan:</div>
+                                                    <p class="whitespace-pre-wrap">{{ $item->seragam->catatan_seragam }}</p>
+                                                </div>
+                                            @else
+                                                <span class="text-xs text-gray-400 italic">Belum ada catatan</span>
+                                            @endif
+                                            <button
+                                                wire:click="openCatatanModal('seragam', {{ $item->id }}, '{{ addslashes($item->seragam->catatan_seragam ?? '') }}')"
+                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors"
+                                                title="Edit Catatan">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                                Edit
+                                            </button>
+                                        </div>
+                                    </td>
                                 @else
                                     <!-- Ukuran Jas -->
                                     <td class="px-6 py-4">
                                         @if($item->seragam && $item->seragam->ukuran_jas)
-                                            <div class="text-sm font-medium text-amber-900">{{ $item->seragam->ukuran_jas }}</div>
-                                            @if($item->seragam->ukuran_jas_detail)
-                                                <div class="text-xs text-gray-600">{{ $item->seragam->ukuran_jas_detail }}</div>
-                                            @endif
+                                            <span class="px-2 py-1 inline-flex text-xs font-semibold rounded-full bg-amber-100 text-amber-800">
+                                                {{ $item->seragam->ukuran_jas }}
+                                            </span>
                                         @else
-                                            <span class="text-xs text-gray-500">Belum diisi</span>
+                                            <span class="text-xs text-gray-500">-</span>
                                         @endif
                                     </td>
-                                    <!-- Ukuran Atasan -->
+                                    <!-- Baju Olahraga -->
                                     <td class="px-6 py-4">
-                                        @if($item->seragam && $item->seragam->ukuran_baju)
-                                            <div class="text-sm font-medium text-blue-900">{{ $item->seragam->ukuran_baju }}</div>
-                                            @if($item->seragam->ukuran_baju_detail)
-                                                <div class="text-xs text-gray-600">{{ $item->seragam->ukuran_baju_detail }}</div>
-                                            @endif
+                                        @if($item->seragam && $item->seragam->ukuran_baju_olahraga)
+                                            <span class="px-2 py-1 inline-flex text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                                {{ $item->seragam->ukuran_baju_olahraga }}
+                                            </span>
                                         @else
-                                            <span class="text-xs text-gray-500">Belum diisi</span>
+                                            <span class="text-xs text-gray-500">-</span>
                                         @endif
                                     </td>
-                                    <!-- Ukuran Bawahan -->
+                                    <!-- Celana Olahraga -->
                                     <td class="px-6 py-4">
-                                        @if($item->seragam && $item->seragam->ukuran_celana)
-                                            <div class="text-sm font-medium text-green-900">{{ $item->seragam->ukuran_celana }}</div>
-                                            @if($item->seragam->ukuran_celana_detail)
-                                                <div class="text-xs text-gray-600">{{ $item->seragam->ukuran_celana_detail }}</div>
-                                            @endif
+                                        @if($item->seragam && $item->seragam->ukuran_celana_olahraga)
+                                            <span class="px-2 py-1 inline-flex text-xs font-semibold rounded-full bg-cyan-100 text-cyan-800">
+                                                {{ $item->seragam->ukuran_celana_olahraga }}
+                                            </span>
                                         @else
-                                            <span class="text-xs text-gray-500">Belum diisi</span>
+                                            <span class="text-xs text-gray-500">-</span>
                                         @endif
                                     </td>
-                                    <!-- Ukuran Kopyah -->
+                                    <!-- Baju Seragam Harian -->
+                                    <td class="px-6 py-4">
+                                        @if($item->seragam && $item->seragam->ukuran_baju_harian)
+                                            <span class="px-2 py-1 inline-flex text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                                {{ $item->seragam->ukuran_baju_harian }}
+                                            </span>
+                                        @else
+                                            <span class="text-xs text-gray-500">-</span>
+                                        @endif
+                                    </td>
+                                    <!-- Celana/Rok Harian -->
+                                    <td class="px-6 py-4">
+                                        @if($item->seragam && $item->seragam->ukuran_celana_rok_harian)
+                                            <span class="px-2 py-1 inline-flex text-xs font-semibold rounded-full bg-teal-100 text-teal-800">
+                                                {{ $item->seragam->ukuran_celana_rok_harian }}
+                                            </span>
+                                        @else
+                                            <span class="text-xs text-gray-500">-</span>
+                                        @endif
+                                    </td>
+                                    <!-- Kopyah (L) -->
                                     <td class="px-6 py-4">
                                         @if($item->jenis_kelamin === 'L')
                                             @if($item->seragam && $item->seragam->ukuran_kopyah)
-                                                <div class="text-sm font-medium text-indigo-900">{{ $item->seragam->ukuran_kopyah }}</div>
-                                                @if($item->seragam->ukuran_kopyah_detail)
-                                                    <div class="text-xs text-gray-600">{{ $item->seragam->ukuran_kopyah_detail }}</div>
-                                                @endif
+                                                <span class="px-2 py-1 inline-flex text-xs font-semibold rounded-full bg-indigo-100 text-indigo-800">
+                                                    {{ $item->seragam->ukuran_kopyah }}
+                                                </span>
                                             @else
-                                                <span class="text-xs text-gray-500">Belum diisi</span>
+                                                <span class="text-xs text-gray-500">-</span>
                                             @endif
                                         @else
-                                            <span class="text-xs text-gray-400 italic">Khusus laki-laki</span>
+                                            <span class="text-xs text-gray-400 italic">Khusus L</span>
                                         @endif
+                                    </td>
+                                    <!-- Catatan Ukuran -->
+                                    <td class="px-6 py-4">
+                                        <div class="flex items-center gap-2">
+                                            @if($item->seragam && $item->seragam->catatan_ukuran)
+                                                <div class="text-xs text-gray-700 bg-yellow-50 p-2 rounded border border-yellow-200 max-w-xs">
+                                                    <div class="font-semibold text-yellow-700 mb-1">📝 Catatan:</div>
+                                                    <p class="whitespace-pre-wrap">{{ $item->seragam->catatan_ukuran }}</p>
+                                                </div>
+                                            @else
+                                                <span class="text-xs text-gray-400 italic">Belum ada catatan</span>
+                                            @endif
+                                            <button
+                                                wire:click="openCatatanModal('ukuran', {{ $item->id }}, '{{ addslashes($item->seragam->catatan_ukuran ?? '') }}')"
+                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors"
+                                                title="Edit Catatan">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                                Edit
+                                            </button>
+                                        </div>
                                     </td>
                                 @endif
 
@@ -1225,6 +1533,9 @@
                                                 class="px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
                                             >
                                                 <option value="">-- Pilih Status --</option>
+                                                <option value="menunggu" {{ ($item->daftarUlang->status ?? '') === 'menunggu' ? 'selected' : '' }}>
+                                                    Menunggu
+                                                </option>
                                                 <option value="disetujui" {{ ($item->daftarUlang->status ?? '') === 'disetujui' ? 'selected' : '' }}>
                                                     Disetujui
                                                 </option>
@@ -1252,11 +1563,15 @@
                                                 </option>
                                             </select>
                                         @else
+                                            <!-- Tab Ukuran: Update status_ukuran -->
                                             <select
                                                 wire:change="changeStatusUkuran({{ $item->id }}, $event.target.value)"
                                                 class="px-3 py-1.5 text-xs border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition"
                                             >
                                                 <option value="">-- Pilih Status --</option>
+                                                <option value="menunggu" {{ ($item->seragam->status_ukuran ?? '') === 'menunggu' ? 'selected' : '' }}>
+                                                    Menunggu
+                                                </option>
                                                 <option value="disetujui" {{ ($item->seragam->status_ukuran ?? '') === 'disetujui' ? 'selected' : '' }}>
                                                     Disetujui
                                                 </option>
@@ -1300,21 +1615,19 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @php
-                                        $context = 'daftar_ulang_' . $activeTab;
-                                        $lastMessage = \App\Models\MessageHistory::where('pendaftar_id', $item->id)
-                                            ->where('context', $context)
-                                            ->orderBy('sent_at', 'desc')
+                                        $lastMessage = \App\Models\RiwayatPesan::where('pendaftar_id', $item->id)
+                                            ->orderBy('created_at', 'desc')
                                             ->first();
                                     @endphp
                                     @if($lastMessage)
                                         <div class="text-xs">
                                             <div class="flex items-center text-gray-700 mb-1">
-                                                @if($lastMessage->message_type === 'email')
+                                                @if($lastMessage->jenis_pesan === 'email')
                                                     <svg class="w-3.5 h-3.5 text-blue-600 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                                                     </svg>
                                                     <span class="font-medium">Email</span>
-                                                @elseif($lastMessage->message_type === 'whatsapp')
+                                                @elseif($lastMessage->jenis_pesan === 'whatsapp')
                                                     <svg class="w-3.5 h-3.5 text-green-600 mr-1" fill="currentColor" viewBox="0 0 24 24">
                                                         <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347Z"/>
                                                     </svg>
@@ -1326,15 +1639,20 @@
                                                     <span class="font-medium">Pesan</span>
                                                 @endif
                                             </div>
-                                            <div class="text-gray-600">
-                                                {{ $lastMessage->sent_at->diffForHumans() }}
+                                            <div class="mb-1">
+                                                <span class="px-1.5 py-0.5 rounded text-[10px] font-semibold {{ $lastMessage->getStatusBadgeClass() }}">
+                                                    {{ $lastMessage->getStatusLabel() }}
+                                                </span>
                                             </div>
-                                            <div class="text-gray-500 text-[10px] mt-0.5">
-                                                {{ $lastMessage->sent_at->format('d/m/Y H:i') }}
-                                            </div>
-                                            <div class="text-gray-500 text-[10px]">
-                                                oleh: {{ $lastMessage->sender->name ?? 'System' }}
-                                            </div>
+                                            @if($lastMessage->sent_at)
+                                                <div class="text-gray-600">{{ $lastMessage->sent_at->diffForHumans() }}</div>
+                                                <div class="text-gray-500 text-[10px] mt-0.5">{{ $lastMessage->sent_at->format('d/m/Y H:i') }}</div>
+                                            @else
+                                                <div class="text-gray-500 text-[10px] mt-0.5">{{ $lastMessage->created_at->format('d/m/Y H:i') }}</div>
+                                            @endif
+                                            @if($lastMessage->user)
+                                                <div class="text-gray-500 text-[10px]">oleh: {{ $lastMessage->user->name }}</div>
+                                            @endif
                                         </div>
                                     @else
                                         <span class="text-xs text-gray-400 italic">Belum ada</span>
@@ -1420,4 +1738,56 @@
 
     <!-- Send Message Modal -->
     @include('livewire.admin.partials.send-message-modal')
+
+    <!-- Modal Edit Catatan -->
+    @if($showCatatanModal)
+    <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-0 overflow-y-auto">
+        <!-- Background overlay with blur -->
+        <div class="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity z-[9998]" wire:click="closeCatatanModal"></div>
+
+        <!-- Modal panel -->
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full z-[10000]">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-yellow-100 rounded-full sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900">
+                            Edit Catatan {{ $catatanType === 'madrasah' ? 'DU Madrasah' : ($catatanType === 'seragam' ? 'DU Seragam' : 'Ukuran Seragam') }}
+                        </h3>
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Catatan</label>
+                            <textarea
+                                wire:model="catatanText"
+                                rows="5"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                placeholder="Tulis catatan untuk pendaftar..."></textarea>
+                            <p class="mt-1 text-xs text-gray-500">Catatan ini hanya bisa dilihat oleh admin dan panitia</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                    type="button"
+                    wire:click="saveCatatan"
+                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Simpan Catatan
+                </button>
+                <button
+                    type="button"
+                    wire:click="closeCatatanModal"
+                    class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>

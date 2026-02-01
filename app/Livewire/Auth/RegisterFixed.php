@@ -127,7 +127,7 @@ class RegisterFixed extends Component
     public function getJalurPendaftaranProperty()
     {
         // Load fresh data from database with counts
-        return JalurPendaftaran::aktif()
+        return JalurPendaftaran::tampilDiDaftar()
             ->ordered()
             ->withCount('pendaftar')
             ->get();
@@ -183,7 +183,7 @@ class RegisterFixed extends Component
 
             // Get fresh data from database (not from cache) untuk pengecekan real-time
             $jalur = JalurPendaftaran::where('id', $jalurId)
-                ->where('aktif', true)
+                ->where('tampil_di_daftar', true)
                 ->withCount('pendaftar')
                 ->first();
 
@@ -831,7 +831,8 @@ class RegisterFixed extends Component
                 $customFileName = FileNamingService::generateFileName(
                     'rapor',
                     $pendaftar->nomor_pendaftaran,
-                    $extension
+                    $extension,
+                    $pendaftar->nama_lengkap
                 );
 
                 // Store to PRIVATE storage for security

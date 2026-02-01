@@ -2,30 +2,65 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SurveyAnswer extends Model
 {
+    use HasFactory;
+
     protected $fillable = [
         'pendaftar_id',
         'survey_question_id',
-        'survey_option_id',
-        'answer_text',
+        'jawaban',
     ];
 
-    public function pendaftar(): BelongsTo
+    protected $casts = [
+        'jawaban' => 'array', // Cast otomatis JSON ke array untuk checkbox
+    ];
+
+    /**
+     * Relationship: Jawaban milik satu pendaftar
+     */
+    public function pendaftar()
     {
         return $this->belongsTo(Pendaftar::class);
     }
 
-    public function question(): BelongsTo
+    /**
+     * Relationship: Jawaban untuk satu pertanyaan
+     */
+    public function question()
     {
         return $this->belongsTo(SurveyQuestion::class, 'survey_question_id');
     }
 
-    public function option(): BelongsTo
+    /**
+     * Helper: Get jawaban as array (for checkbox with multiple values)
+     * Jika jawaban sudah array, return as is
+     * Jika string, wrap dalam array
+     */
+    public function getJawabanArray()
     {
-        return $this->belongsTo(SurveyOption::class, 'survey_option_id');
+        if (is_array($this->jawaban)) {
+            return $this->jawaban;
+        }
+        return [$this->jawaban];
+    }
+
+    /**
+     * Helper: Get jawaban as formatted string
+     * Untuk checkbox: comma-separated
+     * Untuk lainnya: string biasa
+     */
+    public function getJawabanFormatted()
+    {
+        $jawaban = $this->getJawabanArray();
+
+        if (count($jawaban) > 1) {
+            return implode(', ', $jawaban);
+        }
+
+        return $jawaban[0] ?? '';
     }
 }

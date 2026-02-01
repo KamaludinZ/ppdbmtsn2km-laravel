@@ -73,11 +73,17 @@ class AdminLogin extends Component
 
             $user = Auth::user();
 
-            // Only allow admin and panitia roles
+            // Redirect based on role
             if ($user->isAdmin()) {
                 return redirect()->intended('/admin/dashboard');
-            } elseif ($user->role === 'panitia_pendaftaran' || $user->role === 'panitia_daftarulang' || $user->role === 'panitia') {
-                return redirect()->intended('/panitia/dashboard');
+            } elseif ($user->role === 'panitia_pendaftaran') {
+                return redirect()->intended('/panitia-pendaftaran/dashboard');
+            } elseif ($user->role === 'panitia_daftarulang') {
+                return redirect()->intended('/panitia-daftarulang/dashboard');
+            } elseif ($user->role === 'panitia_tes_psikologi') {
+                return redirect()->intended('/panitia-psikologi/dashboard');
+            } elseif ($user->role === 'panitia_seragam') {
+                return redirect()->intended('/panitia-seragam/dashboard');
             }
 
             // If not admin or panitia, logout and show error

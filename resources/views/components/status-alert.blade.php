@@ -156,9 +156,9 @@
             </div>
             @endif
 
-            @if($catatan)
+            @if($catatan && auth()->check() && in_array(auth()->user()->role, ['admin', 'panitia_pendaftaran', 'panitia_daftarulang', 'panitia_tes_psikologi', 'panitia']))
             <div class="mt-3 p-3 bg-white rounded border border-{{ $currentConfig['color'] }}-200">
-                <p class="text-xs font-semibold text-{{ $currentConfig['color'] }}-800 mb-1">Catatan dari Admin/Panitia:</p>
+                <p class="text-xs font-semibold text-{{ $currentConfig['color'] }}-800 mb-1">Catatan Internal (Admin/Panitia):</p>
                 <p class="text-sm text-gray-700">{{ $catatan }}</p>
             </div>
             @endif

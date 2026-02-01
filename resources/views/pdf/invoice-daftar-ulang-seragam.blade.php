@@ -144,6 +144,26 @@
             padding: 5px;
             margin-bottom: 10px;
         }
+        .size-table {
+            font-size: 8px;
+            line-height: 1.3;
+            width: 100%;
+        }
+        .size-table td {
+            padding: 2px 3px;
+            vertical-align: top;
+        }
+        .size-table .size-label {
+            width: 23%;
+            color: #333;
+            font-size: 8px;
+        }
+        .size-table .size-value {
+            width: 27%;
+            font-weight: bold;
+            color: #000;
+            font-size: 8px;
+        }
         .footer {
             margin-top: 15px;
             padding-top: 8px;
@@ -227,8 +247,21 @@
                         <tr>
                             <td class="label" style="width: 30%;">Status</td>
                             <td class="separator">:</td>
-                            <td class="value" style="color: green; text-transform: uppercase;">
-                                {{ $seragam->status_seragam == 'disetujui' ? 'LUNAS / DISETUJUI' : 'MENUNGGU VERIFIKASI' }}
+                            <td class="value" style="color: {{ $seragam->status_seragam == 'disetujui' ? 'green' : ($seragam->status_seragam == 'ditolak' ? 'red' : 'orange') }}; text-transform: uppercase;">
+                                @if($seragam->status_seragam == 'disetujui')
+                                    LUNAS / DISETUJUI
+                                @elseif($seragam->status_seragam == 'ditolak')
+                                    DITOLAK
+                                @else
+                                    MENUNGGU VERIFIKASI
+                                @endif
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label" style="width: 30%;">Opsi Pembayaran</td>
+                            <td class="separator">:</td>
+                            <td class="value" style="text-transform: uppercase;">
+                                {{ $seragam->opsi_pembayaran_seragam ? strtoupper($seragam->opsi_pembayaran_seragam) : 'LUNAS' }}
                             </td>
                         </tr>
                     </table>
@@ -240,18 +273,24 @@
         <div class="section">
             <div class="section-title">Ukuran Seragam & Atribut:</div>
             <div class="size-box">
-                <table class="info-table">
+                <table class="size-table">
                     <tr>
-                        <td style="width: 25%">Ukuran Jas</td>
-                        <td class="value" style="width: 25%">: {{ $seragam->ukuran_baju ?? '-' }}</td>
-                        <td style="width: 25%">Ukuran Atasan/Baju</td>
-                        <td class="value" style="width: 25%">: {{ $seragam->ukuran_baju ?? '-' }}</td>
+                        <td class="size-label">Jas</td>
+                        <td class="size-value">: {{ $seragam->ukuran_jas ?? '-' }}</td>
+                        <td class="size-label">Baju Olahraga</td>
+                        <td class="size-value">: {{ $seragam->ukuran_baju_olahraga ?? '-' }}</td>
                     </tr>
                     <tr>
-                        <td>Ukuran Bawahan</td>
-                        <td class="value">: {{ $seragam->ukuran_celana ?? '-' }}</td>
-                        <td>Ukuran Kopyah</td>
-                        <td class="value">: {{ $seragam->ukuran_topi ?? '-' }}</td>
+                        <td class="size-label">Celana Olahraga</td>
+                        <td class="size-value">: {{ $seragam->ukuran_celana_olahraga ?? '-' }}</td>
+                        <td class="size-label">Baju Harian</td>
+                        <td class="size-value">: {{ $seragam->ukuran_baju_harian ?? '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="size-label">Celana/Rok Harian</td>
+                        <td class="size-value">: {{ $seragam->ukuran_celana_rok_harian ?? '-' }}</td>
+                        <td class="size-label">Kopyah</td>
+                        <td class="size-value">: {{ $seragam->ukuran_kopyah ?? '-' }}</td>
                     </tr>
                 </table>
             </div>
@@ -263,22 +302,41 @@
             <table class="detail-table">
                 <thead>
                     <tr>
-                        <th class="col-keterangan">Keterangan</th>
-                        <th class="col-jumlah text-right">Jumlah</th>
+                        <th style="width: 40%;">Keterangan</th>
+                        <th class="text-right" style="width: 30%;">Nominal Biaya</th>
+                        <th class="text-right" style="width: 30%;">Konfirmasi Pembayaran</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @php $total = 0; @endphp
-                    @foreach($details as $item)
+                    @php
+                        // Nominal Seragam Awal (yang dipilih di "Pilih Paket Seragam")
+                        $nominalSeragamAwal = $seragam->nominal_seragam_awal ?? [];
+                        $keterangan = $nominalSeragamAwal['name'] ?? 'Biaya Seragam & Atribut';
+                        $jumlahAwal = $nominalSeragamAwal['amount'] ?? 0;
+
+                        // Nominal Seragam Konfirmasi (yang dipilih di "Konfirmasi Nominal yang Dibayarkan")
+                        $nominalSeragamKonfirmasi = $seragam->nominal_seragam ?? [];
+                        $jumlahKonfirmasi = $nominalSeragamKonfirmasi['amount'] ?? 0;
+
+                        // Hitung selisih
+                        $selisih = $jumlahKonfirmasi - $jumlahAwal;
+                        $statusPembayaran = '';
+                        if ($selisih == 0) {
+                            $statusPembayaran = 'LUNAS';
+                        } elseif ($selisih > 0) {
+                            $statusPembayaran = 'KEMBALIAN: Rp ' . number_format($selisih, 0, ',', '.');
+                        } else {
+                            $statusPembayaran = 'KEKURANGAN: Rp ' . number_format(abs($selisih), 0, ',', '.');
+                        }
+                    @endphp
                     <tr>
-                        <td>{{ $item['name'] ?? '-' }}</td>
-                        <td class="text-right">Rp {{ number_format($item['amount'] ?? 0, 0, ',', '.') }}</td>
+                        <td>{{ $keterangan }}</td>
+                        <td class="text-right">Rp {{ number_format($jumlahAwal, 0, ',', '.') }}</td>
+                        <td class="text-right">Rp {{ number_format($jumlahKonfirmasi, 0, ',', '.') }}</td>
                     </tr>
-                    @php $total += ($item['amount'] ?? 0); @endphp
-                    @endforeach
                     <tr class="bg-gray">
-                        <td style="font-weight: bold;">Total</td>
-                        <td class="text-right" style="font-weight: bold;">Rp {{ number_format($total, 0, ',', '.') }}</td>
+                        <td style="font-weight: bold;">Status Pembayaran</td>
+                        <td colspan="2" class="text-right" style="font-weight: bold;">{{ $statusPembayaran }}</td>
                     </tr>
                 </tbody>
             </table>

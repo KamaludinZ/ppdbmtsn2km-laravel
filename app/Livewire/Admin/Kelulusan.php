@@ -4,10 +4,12 @@ namespace App\Livewire\Admin;
 
 use App\Models\Pendaftar;
 use App\Models\JalurPendaftaran;
+use App\Models\RiwayatPesan;
 use App\Traits\WithSorting;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\Attributes\On;
+use Illuminate\Support\Facades\Auth;
 
 class Kelulusan extends Component
 {
@@ -33,6 +35,39 @@ class Kelulusan extends Component
     public $bulkMessageSubject = '';
     public $bulkMessageBody = '';
     public $bulkMessageNote = '';
+
+    // Livewire lifecycle hook - dipanggil otomatis saat selectedMessageTemplate berubah
+    public function updatedSelectedMessageTemplate()
+    {
+        $this->loadMessageTemplate();
+    }
+
+    // Livewire lifecycle hook - dipanggil otomatis saat messageType berubah
+    public function updatedMessageType()
+    {
+        // Reset template saat ganti jenis pesan
+        $this->selectedMessageTemplate = '';
+        $this->messageSubject = '';
+        $this->messageBody = '';
+    }
+
+    /**
+     * Get available message templates for this context (Kelulusan)
+     * Context: Kelulusan only
+     */
+    public function getAvailableTemplates()
+    {
+        return [
+            [
+                'label' => '🎓 Kelulusan',
+                'options' => [
+                    ['value' => 'kelulusan_lulus', 'label' => 'Kelulusan - Lulus Seleksi'],
+                    ['value' => 'kelulusan_tidak_lulus', 'label' => 'Kelulusan - Tidak Lulus'],
+                    ['value' => 'kelulusan_cadangan', 'label' => 'Kelulusan - Cadangan'],
+                ]
+            ]
+        ];
+    }
 
     // Reset pagination when filters change
     public function updatingSearch()
@@ -253,16 +288,36 @@ class Kelulusan extends Component
             $this->messageBody = \App\Models\Setting::get("wa_{$this->selectedMessageTemplate}_body", '');
         }
 
-        // Replace placeholders
+        // Replace placeholders (27 total)
         $replacements = [
-            '{nama}' => $pendaftar->nama_lengkap,
-            '{nomor_pendaftaran}' => $pendaftar->nomor_pendaftaran,
-            '{email}' => $pendaftar->email,
-            '{telepon}' => $pendaftar->no_hp,
+            '{nama}' => $pendaftar->nama_lengkap ?? '',
+            '{nomor_pendaftaran}' => $pendaftar->nomor_pendaftaran ?? '',
+            '{nisn}' => $pendaftar->nisn ?? '',
+            '{tempat_lahir}' => $pendaftar->tempat_lahir ?? '',
+            '{tanggal_lahir}' => $pendaftar->tanggal_lahir ? $pendaftar->tanggal_lahir->format('d/m/Y') : '',
+            '{jenis_kelamin}' => $pendaftar->jenis_kelamin === 'L' ? 'Laki-laki' : ($pendaftar->jenis_kelamin === 'P' ? 'Perempuan' : ''),
+            '{alamat}' => $pendaftar->alamat ?? '',
+            '{email}' => $pendaftar->email ?? '',
+            '{telepon}' => $pendaftar->no_hp ?? '',
+            '{no_hp}' => $pendaftar->no_hp ?? '',
+            '{asal_sekolah}' => $pendaftar->asal_sekolah ?? '',
             '{jalur}' => $pendaftar->jalurPendaftaran->nama ?? '',
-            '{status}' => $pendaftar->status_pendaftaran,
-            '{catatan}' => $this->messageNote,
+            '{status}' => $pendaftar->status_pendaftaran ?? '',
+            '{catatan}' => $this->messageNote ?? '',
             '{url_dashboard}' => url('/dashboard'),
+            '{password}' => '[Password telah dienkripsi, silakan reset jika lupa]',
+            // Additional fields
+            '{agama}' => $pendaftar->agama ?? '',
+            '{nama_ayah}' => $pendaftar->nama_ayah ?? '',
+            '{nama_ibu}' => $pendaftar->nama_ibu ?? '',
+            '{pekerjaan_ayah}' => $pendaftar->pekerjaan_ayah ?? '',
+            '{pekerjaan_ibu}' => $pendaftar->pekerjaan_ibu ?? '',
+            '{provinsi}' => $pendaftar->provinsi ?? '',
+            '{kabupaten}' => $pendaftar->kabupaten ?? '',
+            '{kecamatan}' => $pendaftar->kecamatan ?? '',
+            '{desa}' => $pendaftar->desa ?? '',
+            '{kode_pos}' => $pendaftar->kode_pos ?? '',
+            '{nilai_rata_rata}' => $pendaftar->nilai_rata_rata ?? '',
         ];
 
         $this->messageSubject = str_replace(array_keys($replacements), array_values($replacements), $this->messageSubject);
@@ -287,6 +342,19 @@ class Kelulusan extends Component
             return;
         }
 
+        $penerima = $this->messageType === 'email' ? $pendaftar->email : $pendaftar->no_hp;
+
+        // Create log record with pending status
+        $riwayatPesan = RiwayatPesan::create([
+            'pendaftar_id' => $pendaftar->id,
+            'user_id' => Auth::id(),
+            'jenis_pesan' => $this->messageType,
+            'judul' => $this->messageType === 'email' ? $this->messageSubject : null,
+            'isi_pesan' => $this->messageBody,
+            'penerima' => $penerima,
+            'status' => 'pending',
+        ]);
+
         try {
             if ($this->messageType === 'email') {
                 // Kirim email
@@ -294,6 +362,12 @@ class Kelulusan extends Component
                     $message->to($pendaftar->email)
                         ->subject($this->messageSubject);
                 });
+
+                // Update log to success
+                $riwayatPesan->update([
+                    'status' => 'terkirim',
+                    'sent_at' => now(),
+                ]);
 
                 $this->dispatch('statusUpdated', [
                     'type' => 'success',
@@ -303,6 +377,10 @@ class Kelulusan extends Component
                 // Kirim WhatsApp
                 $phoneNumber = $pendaftar->no_hp;
                 if (!$phoneNumber) {
+                    $riwayatPesan->update([
+                        'status' => 'gagal',
+                        'error_message' => 'Nomor WhatsApp tidak ditemukan',
+                    ]);
                     $this->dispatch('statusUpdated', [
                         'type' => 'error',
                         'message' => 'Nomor WhatsApp tidak ditemukan.'
@@ -319,6 +397,12 @@ class Kelulusan extends Component
                 // Placeholder untuk integrasi WhatsApp API
                 // TODO: Implementasikan sesuai dengan service yang digunakan
 
+                // Update log to success
+                $riwayatPesan->update([
+                    'status' => 'terkirim',
+                    'sent_at' => now(),
+                ]);
+
                 $this->dispatch('statusUpdated', [
                     'type' => 'success',
                     'message' => 'WhatsApp berhasil dikirim ke ' . $pendaftar->nama_lengkap
@@ -328,6 +412,12 @@ class Kelulusan extends Component
             $this->closeSendMessageModal();
 
         } catch (\Exception $e) {
+            // Update log to failed with error message
+            $riwayatPesan->update([
+                'status' => 'gagal',
+                'error_message' => $e->getMessage(),
+            ]);
+
             $this->dispatch('statusUpdated', [
                 'type' => 'error',
                 'message' => 'Gagal mengirim pesan: ' . $e->getMessage()

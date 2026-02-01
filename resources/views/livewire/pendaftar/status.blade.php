@@ -325,87 +325,150 @@
                 </a>
             @endif
         </div>
-        <div class="p-6 space-y-4">
+        <div class="p-6">
             @php
                 $isLulus = in_array($pendaftar->status_pendaftaran, ['lulus', 'diterima']);
+                $daftarUlang = $pendaftar->daftarUlang;
+                $seragam = $pendaftar->seragam;
             @endphp
 
-            <!-- Status Pembayaran Madrasah -->
-            <div class="flex flex-col p-3 border rounded-lg bg-gray-50 border-gray-200">
-                <div class="flex items-center justify-between">
-                    <span class="text-sm font-medium text-gray-900">Pembayaran Madrasah</span>
-                    @php
-                        if (!$isLulus) {
-                            $statusMadrasah = 'Terkunci';
-                            $colorMadrasah = 'bg-gray-100 text-gray-500';
-                        } else {
-                            $lunasMadrasah = $pendaftar->daftarUlang && $pendaftar->daftarUlang->pembayaran_lunas;
-                            $uploadedMadrasah = $pendaftar->daftarUlang && $pendaftar->daftarUlang->bukti_pembayaran_madrasah;
-                            
-                            $statusMadrasah = 'Belum Bayar';
-                            $colorMadrasah = 'bg-red-100 text-red-800';
-                            
-                            if ($lunasMadrasah) {
-                                $statusMadrasah = 'Lunas / Disetujui';
-                                $colorMadrasah = 'bg-green-100 text-green-800';
-                            } elseif ($uploadedMadrasah) {
-                                $statusMadrasah = 'Menunggu Verifikasi';
-                                $colorMadrasah = 'bg-yellow-100 text-yellow-800';
-                            }
-                        }
-                    @endphp
-                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ $colorMadrasah }}">
-                        @if($statusMadrasah === 'Terkunci')
-                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
-                        @endif
-                        {{ $statusMadrasah }}
-                    </span>
+            @if(!$isLulus)
+                <!-- Terkunci Message -->
+                <div class="text-center py-8">
+                    <svg class="w-16 h-16 text-gray-400 mx-auto mb-4" fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path>
+                    </svg>
+                    <p class="text-gray-600 font-medium">Daftar ulang belum dapat diakses</p>
+                    <p class="text-sm text-gray-500 mt-1">Selesaikan proses seleksi terlebih dahulu</p>
                 </div>
-            </div>
+            @else
+                <!-- 3 Status Columns -->
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <!-- Status Daftar Ulang Madrasah -->
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-center mb-2">
+                            <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                            </svg>
+                            <h4 class="text-sm font-semibold text-gray-700">Daftar Ulang Madrasah</h4>
+                        </div>
+                        @php
+                            // Determine status based on bukti pembayaran and actual status
+                            if ($daftarUlang && ($daftarUlang->status === 'disetujui' || $daftarUlang->status === 'selesai')) {
+                                $statusMadrasah = 'disetujui';
+                            } elseif ($daftarUlang && $daftarUlang->status === 'ditolak') {
+                                $statusMadrasah = 'ditolak';
+                            } elseif ($daftarUlang && $daftarUlang->status === 'perbaiki') {
+                                $statusMadrasah = 'perbaiki';
+                            } elseif ($daftarUlang && $daftarUlang->bukti_pembayaran_madrasah) {
+                                // If bukti uploaded but status not set or 'menunggu'
+                                $statusMadrasah = 'menunggu';
+                            } else {
+                                // No bukti uploaded yet
+                                $statusMadrasah = 'belum_upload';
+                            }
 
-            <!-- Status Seragam -->
-            <div class="flex flex-col p-3 border rounded-lg bg-gray-50 border-gray-200">
-                <div class="flex items-center justify-between">
-                    <span class="text-sm font-medium text-gray-900">Pembayaran Seragam</span>
-                    @php
-                        if (!$isLulus) {
-                            $labelSeragam = 'Terkunci';
-                            $colorSeragam = 'bg-gray-100 text-gray-500';
-                        } else {
-                            $statusSeragam = $pendaftar->seragam ? ($pendaftar->seragam->status_seragam ?? 'belum_bayar') : 'belum_bayar';
-                            $uploadedSeragam = $pendaftar->seragam && $pendaftar->seragam->bukti_pembayaran;
-                            
-                            $labelSeragam = 'Belum Bayar';
-                            $colorSeragam = 'bg-red-100 text-red-800';
-                            
-                            if ($statusSeragam == 'disetujui' || $statusSeragam == 'selesai') {
-                                $labelSeragam = 'Lunas / Disetujui';
-                                $colorSeragam = 'bg-green-100 text-green-800';
-                            } elseif ($uploadedSeragam) {
-                                $labelSeragam = 'Menunggu Verifikasi';
-                                $colorSeragam = 'bg-yellow-100 text-yellow-800';
-                            } elseif ($statusSeragam == 'perbaiki') {
-                                $labelSeragam = 'Perlu Perbaikan';
-                                $colorSeragam = 'bg-orange-100 text-orange-800';
-                            } elseif ($statusSeragam == 'ditolak') {
-                                $labelSeragam = 'Ditolak';
-                                $colorSeragam = 'bg-red-100 text-red-800';
-                            }
-                        }
-                    @endphp
-                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold {{ $colorSeragam }}">
-                        @if($labelSeragam === 'Terkunci')
-                            <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clip-rule="evenodd"></path></svg>
-                        @endif
-                        {{ $labelSeragam }}
-                    </span>
-                </div>
-                @if($isLulus && $pendaftar->seragam && $pendaftar->seragam->catatan_seragam && in_array($pendaftar->seragam->status_seragam, ['perbaiki', 'ditolak']))
-                    <div class="mt-2 pt-2 border-t border-gray-200">
-                        <p class="text-xs text-gray-600"><span class="font-bold">Catatan:</span> {{ $pendaftar->seragam->catatan_seragam }}</p>
+                            $statusMadrasahInfo = match($statusMadrasah) {
+                                'disetujui' => ['label' => 'DISETUJUI', 'color' => 'bg-green-100 text-green-800 border-green-300'],
+                                'ditolak' => ['label' => 'DITOLAK', 'color' => 'bg-red-100 text-red-800 border-red-300'],
+                                'perbaiki' => ['label' => 'PERLU PERBAIKI', 'color' => 'bg-orange-100 text-orange-800 border-orange-300'],
+                                'menunggu' => ['label' => 'MENUNGGU', 'color' => 'bg-yellow-100 text-yellow-800 border-yellow-300'],
+                                default => ['label' => 'BELUM UPLOAD', 'color' => 'bg-gray-100 text-gray-800 border-gray-300'],
+                            };
+                        @endphp
+                        <div class="flex items-center justify-center py-3">
+                            <span class="px-3 py-1.5 rounded-full text-xs font-bold border {{ $statusMadrasahInfo['color'] }}">
+                                {{ $statusMadrasahInfo['label'] }}
+                            </span>
+                        </div>
                     </div>
-                @endif
-            </div>
+
+                    <!-- Status Daftar Ulang Seragam -->
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-center mb-2">
+                            <svg class="w-5 h-5 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                            </svg>
+                            <h4 class="text-sm font-semibold text-gray-700">Daftar Ulang Seragam</h4>
+                        </div>
+                        @php
+                            // Determine status based on bukti pembayaran and actual status
+                            if ($seragam && ($seragam->status_seragam === 'disetujui' || $seragam->status_seragam === 'selesai')) {
+                                $statusSeragam = 'disetujui';
+                            } elseif ($seragam && $seragam->status_seragam === 'ditolak') {
+                                $statusSeragam = 'ditolak';
+                            } elseif ($seragam && $seragam->status_seragam === 'perbaiki') {
+                                $statusSeragam = 'perbaiki';
+                            } elseif ($seragam && $seragam->bukti_pembayaran) {
+                                // If bukti uploaded but status not set or 'menunggu'
+                                $statusSeragam = 'menunggu';
+                            } else {
+                                // No bukti uploaded yet
+                                $statusSeragam = 'belum_upload';
+                            }
+
+                            $statusSeragamInfo = match($statusSeragam) {
+                                'disetujui' => ['label' => 'DISETUJUI', 'color' => 'bg-green-100 text-green-800 border-green-300'],
+                                'ditolak' => ['label' => 'DITOLAK', 'color' => 'bg-red-100 text-red-800 border-red-300'],
+                                'perbaiki' => ['label' => 'PERLU PERBAIKI', 'color' => 'bg-orange-100 text-orange-800 border-orange-300'],
+                                'menunggu' => ['label' => 'MENUNGGU', 'color' => 'bg-yellow-100 text-yellow-800 border-yellow-300'],
+                                default => ['label' => 'BELUM UPLOAD', 'color' => 'bg-gray-100 text-gray-800 border-gray-300'],
+                            };
+                        @endphp
+                        <div class="flex items-center justify-center py-3">
+                            <span class="px-3 py-1.5 rounded-full text-xs font-bold border {{ $statusSeragamInfo['color'] }}">
+                                {{ $statusSeragamInfo['label'] }}
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Status Ukuran Seragam -->
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex items-center mb-2">
+                            <svg class="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                            </svg>
+                            <h4 class="text-sm font-semibold text-gray-700">Ukuran Seragam</h4>
+                        </div>
+                        @php
+                            // Determine status based on ukuran data and actual status
+                            if ($seragam && ($seragam->status_ukuran === 'disetujui' || $seragam->status_ukuran === 'selesai')) {
+                                $statusUkuran = 'disetujui';
+                            } elseif ($seragam && $seragam->status_ukuran === 'ditolak') {
+                                $statusUkuran = 'ditolak';
+                            } elseif ($seragam && $seragam->status_ukuran === 'perbaiki') {
+                                $statusUkuran = 'perbaiki';
+                            } elseif ($seragam && (
+                                $seragam->ukuran_jas ||
+                                $seragam->ukuran_baju_olahraga ||
+                                $seragam->ukuran_celana_olahraga ||
+                                $seragam->ukuran_baju_harian ||
+                                $seragam->ukuran_celana_rok_harian ||
+                                $seragam->ukuran_kopyah
+                            )) {
+                                // If any ukuran data filled but status not set or 'menunggu'
+                                $statusUkuran = 'menunggu';
+                            } else {
+                                // No ukuran data filled yet
+                                $statusUkuran = 'belum_isi';
+                            }
+
+                            $statusUkuranInfo = match($statusUkuran) {
+                                'disetujui' => ['label' => 'DISETUJUI', 'color' => 'bg-green-100 text-green-800 border-green-300'],
+                                'ditolak' => ['label' => 'DITOLAK', 'color' => 'bg-red-100 text-red-800 border-red-300'],
+                                'perbaiki' => ['label' => 'PERLU PERBAIKI', 'color' => 'bg-orange-100 text-orange-800 border-orange-300'],
+                                'menunggu' => ['label' => 'MENUNGGU', 'color' => 'bg-yellow-100 text-yellow-800 border-yellow-300'],
+                                default => ['label' => 'BELUM ISI', 'color' => 'bg-gray-100 text-gray-800 border-gray-300'],
+                            };
+                        @endphp
+                        <div class="flex items-center justify-center py-3">
+                            <span class="px-3 py-1.5 rounded-full text-xs font-bold border {{ $statusUkuranInfo['color'] }}">
+                                {{ $statusUkuranInfo['label'] }}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 </div>

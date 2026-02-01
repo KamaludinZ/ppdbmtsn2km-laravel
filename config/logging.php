@@ -54,7 +54,7 @@ return [
 
         'stack' => [
             'driver' => 'stack',
-            'channels' => explode(',', (string) env('LOG_STACK', 'single')),
+            'channels' => explode(',', (string) env('LOG_STACK', 'daily')),
             'ignore_exceptions' => false,
         ],
 
@@ -70,6 +70,70 @@ return [
             'path' => storage_path('logs/laravel.log'),
             'level' => env('LOG_LEVEL', 'debug'),
             'days' => env('LOG_DAILY_DAYS', 14),
+            'replace_placeholders' => true,
+        ],
+
+        // Production-optimized daily logging
+        'production' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/production.log'),
+            'level' => 'warning', // Only log warnings and above in production
+            'days' => 30, // Keep logs for 30 days
+            'replace_placeholders' => true,
+            'permission' => 0644,
+        ],
+
+        // Separate channel for authentication events
+        'auth' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/auth.log'),
+            'level' => 'info',
+            'days' => 90, // Keep auth logs longer for security audit
+            'replace_placeholders' => true,
+        ],
+
+        // Separate channel for database queries and slow queries
+        'database' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/database.log'),
+            'level' => 'debug',
+            'days' => 7, // Database logs can be large, keep shorter
+            'replace_placeholders' => true,
+        ],
+
+        // Separate channel for security events
+        'security' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/security.log'),
+            'level' => 'warning',
+            'days' => 90, // Keep security logs longer
+            'replace_placeholders' => true,
+        ],
+
+        // Separate channel for user activity
+        'activity' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/activity.log'),
+            'level' => 'info',
+            'days' => 30,
+            'replace_placeholders' => true,
+        ],
+
+        // Separate channel for payment/transaction logs
+        'payment' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/payment.log'),
+            'level' => 'info',
+            'days' => 365, // Keep payment logs for 1 year
+            'replace_placeholders' => true,
+        ],
+
+        // Critical errors only - for immediate attention
+        'critical' => [
+            'driver' => 'daily',
+            'path' => storage_path('logs/critical.log'),
+            'level' => 'critical',
+            'days' => 90,
             'replace_placeholders' => true,
         ],
 

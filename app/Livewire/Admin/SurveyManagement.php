@@ -3,7 +3,7 @@
 namespace App\Livewire\Admin;
 
 use App\Models\SurveyQuestion;
-use App\Models\SurveyOption;
+use App\Models\SurveyQuestionOption;
 use App\Traits\WithSorting;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -16,17 +16,19 @@ class SurveyManagement extends Component
 
     // Question fields
     public $question_id;
-    public $question_text;
-    public $question_type = 'dropdown';
-    public $is_required = true;
-    public $order = 0;
-    public $is_active = true;
-    public $description;
+    public $pertanyaan;
+    public $tipe_input = 'select';
+    public $wajib_diisi = true;
+    public $urutan = 0;
+    public $aktif = true;
+    public $deskripsi;
+    public $context = 'umum'; // Survey Umum context
 
     // Option fields
     public $option_id;
-    public $option_text;
-    public $option_order = 0;
+    public $label;
+    public $value;
+    public $option_urutan = 0;
     public $selected_question_id;
 
     // UI state
@@ -66,33 +68,41 @@ class SurveyManagement extends Component
 
     public function render()
     {
-        $query = SurveyQuestion::with('options');
+        // PENTING: Filter by context = 'umum' untuk Survey Umum
+        $query = SurveyQuestion::umum()->with('options');
         $questions = $this->applySorting($query)->paginate(10);
 
         $stats = [
-            'total_questions' => SurveyQuestion::count(),
-            'active_questions' => SurveyQuestion::where('is_active', true)->count(),
-            'total_options' => SurveyOption::count(),
-            'total_responses' => \App\Models\SurveyAnswer::distinct('pendaftar_id')->count('pendaftar_id'),
+            'total_questions' => SurveyQuestion::umum()->count(),
+            'active_questions' => SurveyQuestion::umum()->where('aktif', true)->count(),
+            'total_options' => \App\Models\SurveyQuestionOption::whereHas('question', function($q) {
+                $q->umum();
+            })->count(),
+            'total_responses' => \App\Models\SurveyAnswer::whereHas('question', function($q) {
+                $q->umum();
+            })->distinct('pendaftar_id')->count('pendaftar_id'),
         ];
 
         // Get options for the question being managed
         $questionOptions = null;
         if ($this->managingOptionsForQuestion) {
-            $questionOptions = SurveyOption::where('survey_question_id', $this->managingOptionsForQuestion)
-                ->orderBy('order')
+            $questionOptions = \App\Models\SurveyQuestionOption::where('survey_question_id', $this->managingOptionsForQuestion)
+                ->orderBy('urutan')
                 ->get();
         }
 
-        // Get survey responses
-        $allQuestions = SurveyQuestion::active()->ordered()->with('options')->get();
+        // Get survey responses - Filter by context umum
+        $allQuestions = SurveyQuestion::umum()->aktif()->ordered()->with('options')->get();
         $responses = [];
 
         if ($this->mainTab === 'responses') {
             $responsesQuery = \App\Models\Pendaftar::with([
-                'surveyAnswers.question',
-                'surveyAnswers.option'
-            ])->whereHas('surveyAnswers');
+                'surveyAnswers.question'
+            ])->whereHas('surveyAnswers', function($q) {
+                $q->whereHas('question', function($q2) {
+                    $q2->umum();
+                });
+            });
 
             $responses = $responsesQuery->paginate(15, ['*'], 'responsesPage');
         }
@@ -119,13 +129,13 @@ class SurveyManagement extends Component
         $question = SurveyQuestion::with('options')->findOrFail($id);
 
         $this->question_id = $question->id;
-        $this->question_text = $question->question_text;
-        $this->question_type = $question->question_type;
-        $this->is_required = $question->is_required;
-        $this->order = $question->order;
-        $this->is_active = $question->is_active;
-        $this->description = $question->description;
-        $this->options = $question->options->pluck('option_text', 'id')->toArray();
+        $this->pertanyaan = $question->pertanyaan;
+        $this->tipe_input = $question->tipe_input;
+        $this->wajib_diisi = $question->wajib_diisi;
+        $this->urutan = $question->urutan;
+        $this->aktif = $question->aktif;
+        $this->deskripsi = $question->deskripsi;
+        $this->options = $question->options->pluck('label', 'id')->toArray();
 
         $this->isEditQuestion = true;
         $this->showQuestionModal = true;
@@ -134,50 +144,57 @@ class SurveyManagement extends Component
     public function storeQuestion()
     {
         $this->validate([
-            'question_text' => 'required|string|max:500',
-            'question_type' => 'required|in:dropdown,radio,checkbox,text',
-            'is_required' => 'boolean',
-            'order' => 'integer|min:0',
-            'is_active' => 'boolean',
+            'pertanyaan' => 'required|string|max:500',
+            'tipe_input' => 'required|in:select,radio,checkbox,text,textarea',
+            'wajib_diisi' => 'boolean',
+            'urutan' => 'integer|min:0',
+            'aktif' => 'boolean',
         ]);
 
         SurveyQuestion::create([
-            'question_text' => $this->question_text,
-            'question_type' => $this->question_type,
-            'is_required' => $this->is_required,
-            'order' => $this->order,
-            'is_active' => $this->is_active,
-            'description' => $this->description,
+            'pertanyaan' => $this->pertanyaan,
+            'tipe_input' => $this->tipe_input,
+            'wajib_diisi' => $this->wajib_diisi,
+            'urutan' => $this->urutan,
+            'aktif' => $this->aktif,
+            'deskripsi' => $this->deskripsi,
+            'context' => 'umum', // PENTING: Set context untuk Survey Umum
         ]);
 
-        $this->closeQuestionModal();
         session()->flash('message', 'Pertanyaan survey berhasil ditambahkan.');
+        $this->closeQuestionModal();
+
+        // Force re-render untuk refresh list pertanyaan
+        $this->dispatch('questionUpdated');
     }
 
     public function updateQuestion()
     {
         $this->validate([
-            'question_text' => 'required|string|max:500',
-            'question_type' => 'required|in:dropdown,radio,checkbox,text',
-            'is_required' => 'boolean',
-            'order' => 'integer|min:0',
-            'is_active' => 'boolean',
+            'pertanyaan' => 'required|string|max:500',
+            'tipe_input' => 'required|in:select,radio,checkbox,text,textarea',
+            'wajib_diisi' => 'boolean',
+            'urutan' => 'integer|min:0',
+            'aktif' => 'boolean',
         ]);
 
         if ($this->question_id) {
             $question = SurveyQuestion::findOrFail($this->question_id);
             $question->update([
-                'question_text' => $this->question_text,
-                'question_type' => $this->question_type,
-                'is_required' => $this->is_required,
-                'order' => $this->order,
-                'is_active' => $this->is_active,
-                'description' => $this->description,
+                'pertanyaan' => $this->pertanyaan,
+                'tipe_input' => $this->tipe_input,
+                'wajib_diisi' => $this->wajib_diisi,
+                'urutan' => $this->urutan,
+                'aktif' => $this->aktif,
+                'deskripsi' => $this->deskripsi,
             ]);
         }
 
-        $this->closeQuestionModal();
         session()->flash('message', 'Pertanyaan survey berhasil diperbarui.');
+        $this->closeQuestionModal();
+
+        // Force re-render untuk refresh list pertanyaan
+        $this->dispatch('questionUpdated');
     }
 
     public function deleteQuestion($id)
@@ -192,6 +209,9 @@ class SurveyManagement extends Component
             // Options will be deleted automatically due to cascade
             $question->delete();
             session()->flash('message', 'Pertanyaan survey berhasil dihapus.');
+
+            // Force re-render untuk refresh list pertanyaan
+            $this->dispatch('questionUpdated');
         }
     }
 
@@ -205,12 +225,12 @@ class SurveyManagement extends Component
     private function resetQuestionFields()
     {
         $this->question_id = null;
-        $this->question_text = '';
-        $this->question_type = 'dropdown';
-        $this->is_required = true;
-        $this->order = 0;
-        $this->is_active = true;
-        $this->description = '';
+        $this->pertanyaan = '';
+        $this->tipe_input = 'select';
+        $this->wajib_diisi = true;
+        $this->urutan = 0;
+        $this->aktif = true;
+        $this->deskripsi = '';
         $this->options = [];
         $this->newOption = '';
     }
@@ -239,11 +259,12 @@ class SurveyManagement extends Component
     public function editOption($id)
     {
         $this->resetOptionFields();
-        $option = SurveyOption::findOrFail($id);
+        $option = SurveyQuestionOption::findOrFail($id);
 
         $this->option_id = $option->id;
-        $this->option_text = $option->option_text;
-        $this->option_order = $option->order;
+        $this->label = $option->label;
+        $this->value = $option->value;
+        $this->option_urutan = $option->urutan;
         $this->selected_question_id = $option->survey_question_id;
 
         $this->isEditOption = true;
@@ -253,40 +274,48 @@ class SurveyManagement extends Component
     public function storeOption()
     {
         $this->validate([
-            'option_text' => 'required|string|max:255',
-            'option_order' => 'integer|min:0',
+            'label' => 'required|string|max:255',
+            'value' => 'required|string|max:255',
+            'option_urutan' => 'integer|min:0',
             'selected_question_id' => 'required|exists:survey_questions,id',
         ]);
 
-        SurveyOption::create([
+        SurveyQuestionOption::create([
             'survey_question_id' => $this->selected_question_id,
-            'option_text' => $this->option_text,
-            'order' => $this->option_order,
+            'label' => $this->label,
+            'value' => $this->value,
+            'urutan' => $this->option_urutan,
         ]);
 
-        $this->closeOptionModal();
         session()->flash('message', 'Opsi berhasil ditambahkan.');
-        $this->dispatch('$refresh');
+        $this->closeOptionModal();
+
+        // Force re-render untuk refresh list opsi
+        $this->dispatch('optionUpdated');
     }
 
     public function updateOption()
     {
         $this->validate([
-            'option_text' => 'required|string|max:255',
-            'option_order' => 'integer|min:0',
+            'label' => 'required|string|max:255',
+            'value' => 'required|string|max:255',
+            'option_urutan' => 'integer|min:0',
         ]);
 
         if ($this->option_id) {
-            $option = SurveyOption::findOrFail($this->option_id);
+            $option = SurveyQuestionOption::findOrFail($this->option_id);
             $option->update([
-                'option_text' => $this->option_text,
-                'order' => $this->option_order,
+                'label' => $this->label,
+                'value' => $this->value,
+                'urutan' => $this->option_urutan,
             ]);
         }
 
-        $this->closeOptionModal();
         session()->flash('message', 'Opsi berhasil diperbarui.');
-        $this->dispatch('$refresh');
+        $this->closeOptionModal();
+
+        // Force re-render untuk refresh list opsi
+        $this->dispatch('optionUpdated');
     }
 
     public function deleteOption($id)
@@ -296,10 +325,13 @@ class SurveyManagement extends Component
             return;
         }
 
-        $option = SurveyOption::find($id);
+        $option = SurveyQuestionOption::find($id);
         if ($option) {
             $option->delete();
             session()->flash('message', 'Opsi berhasil dihapus.');
+
+            // Force re-render untuk refresh list opsi
+            $this->dispatch('optionUpdated');
         }
     }
 
@@ -313,8 +345,19 @@ class SurveyManagement extends Component
     private function resetOptionFields()
     {
         $this->option_id = null;
-        $this->option_text = '';
-        $this->option_order = 0;
+        $this->label = '';
+        $this->value = '';
+        $this->option_urutan = 0;
         $this->selected_question_id = null;
+    }
+
+    /**
+     * Get nama kabupaten from code
+     */
+    public function getNamaKabupaten($code)
+    {
+        if (!$code) return '-';
+        $city = \App\Models\Regency::where('id', $code)->first();
+        return $city ? $city->name : '-';
     }
 }

@@ -1,6 +1,6 @@
 <div>
     <!-- Global Loading Overlay -->
-    <div wire:loading class="fixed inset-0 bg-gray-900 bg-opacity-50 z-[9999] flex items-center justify-center">
+    <div wire:loading.delay.longest class="fixed inset-0 bg-gray-900 bg-opacity-50 z-[9999] flex items-center justify-center">
         <div class="bg-white rounded-lg p-6 shadow-xl flex items-center space-x-3">
             <svg class="animate-spin h-8 w-8 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -226,7 +226,12 @@
                             <!-- Checkboxes (Existing code omitted for brevity but preserved structure) -->
                             @foreach($showColumns as $key => $value)
                                 <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input type="checkbox" wire:model.live="showColumns.{{ $key }}" @change="toggleColumn('{{ $key }}', $event.target.checked)" class="rounded text-emerald-600 focus:ring-emerald-500">
+                                    <input
+                                        type="checkbox"
+                                        wire:click="toggleColumn('{{ $key }}')"
+                                        @checked($value)
+                                        class="rounded text-emerald-600 focus:ring-emerald-500"
+                                    >
                                     <span class="ml-2 text-sm text-gray-700">{{ ucwords(str_replace('_', ' ', $key)) }}</span>
                                 </label>
                             @endforeach
@@ -304,6 +309,12 @@
                             @if($showColumns['status_ukuran'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Ukuran</th>
                             @endif
+                            @if($showColumns['status_keahlian'])
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Keahlian</th>
+                            @endif
+                            @if($showColumns['status_tahfidz'])
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Tahfidz</th>
+                            @endif
                             @if($showColumns['status_daftar_ulang'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Daftar Ulang</th>
                             @endif
@@ -362,7 +373,7 @@
                                                 <span class="font-semibold">{{ strtoupper(substr($item->nama_lengkap ?? '?', 0, 2)) }}</span>
                                             </div>
                                             <div class="ml-4">
-                                                <a href="{{ route('panitia.pendaftar.detail', $item->id) }}" target="_blank" rel="noopener noreferrer" wire:navigate.hover="false" class="text-sm font-medium text-gray-900 hover:text-emerald-600 hover:underline flex items-center" onclick="event.stopPropagation();">
+                                                <a href="{{ route($routePrefix . '.pendaftar.detail', $item->id) }}" target="_blank" rel="noopener noreferrer" wire:navigate.hover="false" class="text-sm font-medium text-gray-900 hover:text-emerald-600 hover:underline flex items-center" onclick="event.stopPropagation();">
                                                     {{ $item->nama_lengkap }}
                                                     <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
@@ -677,6 +688,42 @@
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $colorUkuran }}">
                                             {{ $labelUkuran }}
                                         </span>
+                                    </td>
+                                @endif
+                                @if($showColumns['status_keahlian'])
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @php
+                                            $hasKeahlian = $item->keahlians && $item->keahlians->count() > 0;
+                                        @endphp
+                                        @if($hasKeahlian)
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                Terisi ({{ $item->keahlians->count() }})
+                                            </span>
+                                        @else
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-600">
+                                                Kosong
+                                            </span>
+                                        @endif
+                                    </td>
+                                @endif
+                                @if($showColumns['status_tahfidz'])
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @php
+                                            $hasTahfidz = $item->tahfidz && (
+                                                !empty($item->tahfidz->juz_alquran_dihafal) ||
+                                                !empty($item->tahfidz->file_bukti_syahadah) ||
+                                                !empty($item->tahfidz->file_bukti_tahsin)
+                                            );
+                                        @endphp
+                                        @if($hasTahfidz)
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                Terisi
+                                            </span>
+                                        @else
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-600">
+                                                Kosong
+                                            </span>
+                                        @endif
                                     </td>
                                 @endif
                                 @if($showColumns['status_daftar_ulang'])

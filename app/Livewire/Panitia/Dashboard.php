@@ -19,19 +19,35 @@ class Dashboard extends Component
     public $stats = [];
     public $recentPendaftar = [];
     public $jalurStats = [];
+    public $isPanitiaPsikologi = false; // Flag untuk panitia tes psikologi
+    public $isPanitiaDaftarUlang = false; // Flag untuk panitia daftar ulang
+    public $jalurSetujuDaftarUlang = []; // Data jalur dengan count setuju daftar ulang
+    public $jalurDetailStats = []; // Data statistik detail per jalur
 
     public function mount()
     {
         // Check if user is panitia
         $user = Auth::user();
 
-        if (!$user || !in_array($user->role, ['panitia_pendaftaran', 'panitia_daftarulang', 'panitia'])) {
+        if (!$user || !in_array($user->role, ['panitia_pendaftaran', 'panitia_daftarulang', 'panitia_tes_psikologi', 'panitia_seragam'])) {
             return redirect()->to('/login/admin');
         }
+
+        // Detect panitia tes psikologi role
+        $this->isPanitiaPsikologi = ($user->role === 'panitia_tes_psikologi');
+
+        // Detect panitia daftar ulang role
+        $this->isPanitiaDaftarUlang = ($user->role === 'panitia_daftarulang');
 
         $this->loadStats();
         $this->loadRecentPendaftar();
         $this->loadJalurStats();
+        $this->loadJalurDetailStats(); // Load statistik detail per jalur
+
+        // Load jalur setuju daftar ulang untuk panitia daftar ulang
+        if ($this->isPanitiaDaftarUlang) {
+            $this->loadJalurSetujuDaftarUlang();
+        }
     }
 
     public function loadStats()
@@ -49,8 +65,8 @@ class Dashboard extends Component
         $cadangan = Pendaftar::where('status_pendaftaran', 'cadangan')->count();
         $dataDitolak = Pendaftar::where('status_pendaftaran', 'data_ditolak')->count();
 
-        // Panitia aktif
-        $panitiaAktif = User::whereIn('role', ['panitia', 'panitia_pendaftaran', 'panitia_daftarulang'])->count();
+        // Pendaftar terbaru hari ini
+        $pendaftarHariIni = Pendaftar::whereDate('tanggal_daftar', now()->toDateString())->count();
 
         // Calculate percentage vs last year (mocked for now)
         $lastYearTotal = 1084; // This should come from last year's data
@@ -74,32 +90,84 @@ class Dashboard extends Component
             'tidak_lulus' => $tidakLulus,
             'cadangan' => $cadangan,
             'data_ditolak' => $dataDitolak,
-            'panitia_aktif' => $panitiaAktif,
+            'pendaftar_hari_ini' => $pendaftarHariIni,
         ];
     }
 
     public function loadRecentPendaftar()
     {
-        // Load directly from database dengan join untuk mendapatkan info jalur
-        $recentData = Pendaftar::with('jalur')
-            ->orderBy('tanggal_daftar', 'desc')
-            ->take(5)
-            ->get();
+        // Untuk Panitia Daftar Ulang: Load siswa yang sudah upload madrasah (status menunggu, perlu_perbaikan)
+        if ($this->isPanitiaDaftarUlang) {
+            $recentData = Pendaftar::with(['jalurPendaftaran', 'daftarUlang'])
+                ->whereIn('status_pendaftaran', ['data_disetujui', 'lulus', 'diterima'])
+                ->whereHas('daftarUlang', function($query) {
+                    // Hanya tampilkan yang sudah upload dan menunggu verifikasi
+                    $query->whereIn('status', ['menunggu', 'perlu_perbaikan']);
+                })
+                ->orderBy('updated_at', 'desc')
+                ->take(5)
+                ->get();
 
-        $this->recentPendaftar = $recentData->map(function ($pendaftar) {
-            return [
-                'nomor_pendaftaran' => $pendaftar->nomor_pendaftaran ?? '-',
-                'nama' => $pendaftar->nama_lengkap,
-                'nisn' => $pendaftar->nisn ?? '-',
-                'jalur' => $pendaftar->jalur->nama ?? '-',
-                'jalur_warna' => $pendaftar->jalur->warna ?? 'blue',
-                'status' => $pendaftar->status_pendaftaran,
-                'status_label' => $this->getStatusLabel($pendaftar->status_pendaftaran),
-                'status_color' => $this->getStatusColor($pendaftar->status_pendaftaran),
-                'tanggal' => \Carbon\Carbon::parse($pendaftar->tanggal_daftar)->format('d M Y'),
-                'initials' => $this->getInitials($pendaftar->nama_lengkap),
-            ];
-        });
+            $this->recentPendaftar = $recentData->map(function ($pendaftar) {
+                $statusMadrasah = 'Belum Isi';
+                $statusColor = 'gray';
+
+                if ($pendaftar->daftarUlang) {
+                    $statusMadrasah = match($pendaftar->daftarUlang->status) {
+                        'menunggu' => 'Menunggu Verifikasi',
+                        'disetujui' => 'Disetujui',
+                        'perlu_perbaikan' => 'Perlu Perbaikan',
+                        'ditolak' => 'Ditolak',
+                        default => 'Belum Isi'
+                    };
+                    $statusColor = match($pendaftar->daftarUlang->status) {
+                        'menunggu' => 'yellow',
+                        'disetujui' => 'green',
+                        'perlu_perbaikan' => 'orange',
+                        'ditolak' => 'red',
+                        default => 'gray'
+                    };
+                }
+
+                return [
+                    'nomor_pendaftaran' => $pendaftar->nomor_pendaftaran ?? '-',
+                    'nama' => $pendaftar->nama_lengkap,
+                    'nisn' => $pendaftar->nisn ?? '-',
+                    'jalur' => $pendaftar->jalurPendaftaran->nama ?? '-',
+                    'jalur_warna' => $pendaftar->jalurPendaftaran->warna ?? 'blue',
+                    'status' => $pendaftar->daftarUlang->status ?? null,
+                    'status_label' => $statusMadrasah,
+                    'status_color' => $statusColor,
+                    'tanggal' => $pendaftar->updated_at->format('d M Y'),
+                    'initials' => $this->getInitials($pendaftar->nama_lengkap),
+                ];
+            });
+        } else {
+            // Untuk role lain: Load pendaftar yang menunggu verifikasi atau baru mendaftar hari ini
+            $recentData = Pendaftar::with('jalurPendaftaran')
+                ->where(function($query) {
+                    $query->where('status_pendaftaran', 'menunggu_verifikasi')
+                          ->orWhereDate('tanggal_daftar', now()->toDateString());
+                })
+                ->orderBy('tanggal_daftar', 'desc')
+                ->take(5)
+                ->get();
+
+            $this->recentPendaftar = $recentData->map(function ($pendaftar) {
+                return [
+                    'nomor_pendaftaran' => $pendaftar->nomor_pendaftaran ?? '-',
+                    'nama' => $pendaftar->nama_lengkap,
+                    'nisn' => $pendaftar->nisn ?? '-',
+                    'jalur' => $pendaftar->jalurPendaftaran->nama ?? '-',
+                    'jalur_warna' => $pendaftar->jalurPendaftaran->warna ?? 'blue',
+                    'status' => $pendaftar->status_pendaftaran,
+                    'status_label' => $this->getStatusLabel($pendaftar->status_pendaftaran),
+                    'status_color' => $this->getStatusColor($pendaftar->status_pendaftaran),
+                    'tanggal' => \Carbon\Carbon::parse($pendaftar->tanggal_daftar)->format('d M Y'),
+                    'initials' => $this->getInitials($pendaftar->nama_lengkap),
+                ];
+            });
+        }
     }
 
     public function loadJalurStats()
@@ -122,6 +190,83 @@ class Dashboard extends Component
                 'warna' => $jalur->warna,
             ];
         });
+    }
+
+    public function loadJalurSetujuDaftarUlang()
+    {
+        // Load jalur aktif dengan count pendaftar yang setuju daftar ulang
+        $jalurAktif = JalurPendaftaran::where('aktif', true)
+            ->orderBy('urutan', 'asc')
+            ->get();
+
+        $this->jalurSetujuDaftarUlang = $jalurAktif->map(function ($jalur) {
+            // Count pendaftar yang lulus DAN setuju daftar ulang di jalur ini
+            $count = $jalur->pendaftar()
+                ->whereIn('status_pendaftaran', ['data_disetujui', 'lulus', 'diterima'])
+                ->where('status_persetujuan_daftar_ulang', 'setuju')
+                ->count();
+
+            return [
+                'nama' => $jalur->nama,
+                'count' => $count,
+                'warna' => $jalur->warna,
+            ];
+        });
+
+        // Hitung total setuju daftar ulang
+        $totalSetuju = $this->jalurSetujuDaftarUlang->sum('count');
+        $this->stats['total_setuju_daftar_ulang'] = $totalSetuju;
+    }
+
+    public function loadJalurDetailStats()
+    {
+        // Load statistik detail per jalur - tampilkan semua jalur aktif
+        $jalurAktif = JalurPendaftaran::where('aktif', true)
+            ->orderBy('urutan', 'asc')
+            ->get();
+
+        $this->jalurDetailStats = $jalurAktif->map(function ($jalur) {
+            // Query semua pendaftar di jalur ini
+            $allPendaftar = $jalur->pendaftar();
+
+            // Total pendaftar
+            $total = $allPendaftar->count();
+
+            // Lulus tes
+            $lulusTes = (clone $allPendaftar)->whereIn('status_pendaftaran', ['lulus', 'diterima'])->count();
+
+            // Tidak lulus tes
+            $tidakLulusTes = (clone $allPendaftar)->where('status_pendaftaran', 'tidak_lulus')->count();
+
+            // Query pendaftar yang lulus untuk gender dan persetujuan
+            $pendaftarLulus = $jalur->pendaftar()
+                ->whereIn('status_pendaftaran', ['lulus', 'diterima']);
+
+            // Jumlah laki-laki (yang lulus tes) - 'L' adalah nilai di database
+            $lakiLaki = (clone $pendaftarLulus)->where('jenis_kelamin', 'L')->count();
+
+            // Jumlah perempuan (yang lulus tes) - 'P' adalah nilai di database
+            $perempuan = (clone $pendaftarLulus)->where('jenis_kelamin', 'P')->count();
+
+            // Setuju daftar ulang
+            $setuju = (clone $pendaftarLulus)->where('status_persetujuan_daftar_ulang', 'setuju')->count();
+
+            // Tidak setuju daftar ulang
+            $tidakSetuju = (clone $pendaftarLulus)->where('status_persetujuan_daftar_ulang', 'tidak_setuju')->count();
+
+            return [
+                'nama' => $jalur->nama,
+                'warna' => $jalur->warna,
+                'total' => $total,
+                'lulus_tes' => $lulusTes,
+                'tidak_lulus_tes' => $tidakLulusTes,
+                'laki_laki' => $lakiLaki,
+                'perempuan' => $perempuan,
+                'setuju' => $setuju,
+                'tidak_setuju' => $tidakSetuju,
+            ];
+        });
+        // Tidak ada filter - tampilkan semua jalur aktif
     }
 
     private function getInitials($name)
@@ -173,8 +318,12 @@ class Dashboard extends Component
     public function render()
     {
         $user = Auth::user();
-        $roleLabel = $user->role === 'panitia_pendaftaran' ? 'Panitia Pendaftaran' :
-                     ($user->role === 'panitia_daftarulang' ? 'Panitia Daftar Ulang' : 'Panitia');
+        $roleLabel = match($user->role) {
+            'panitia_pendaftaran' => 'Panitia Pendaftaran',
+            'panitia_daftarulang' => 'Panitia Daftar Ulang',
+            'panitia_tes_psikologi' => 'Panitia Tes Psikologi',
+            default => 'Panitia'
+        };
 
         return view('livewire.panitia.dashboard')
             ->layout('components.layouts.dashboard', [

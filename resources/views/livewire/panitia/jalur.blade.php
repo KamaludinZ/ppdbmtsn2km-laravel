@@ -89,12 +89,18 @@
                         <x-sortable-header field="aktif" :sort-field="$sortField" :sort-direction="$sortDirection" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Status
                         </x-sortable-header>
+                        <x-sortable-header field="tampil_di_daftar" :sort-field="$sortField" :sort-direction="$sortDirection" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status Daftar
+                        </x-sortable-header>
+                        <x-sortable-header field="paling_populer" :sort-field="$sortField" :sort-direction="$sortDirection" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Paling Populer
+                        </x-sortable-header>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @foreach($jalurPendaftaran as $jalur)
-                    <tr>
+                    <tr wire:key="jalur-{{ $jalur->id }}">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-gray-900">{{ $jalur->nama }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $jalur->kode }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -111,7 +117,18 @@
                                 <span class="text-gray-400 text-xs italic">Tidak ada</span>
                             @endif
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $jalur->kuota }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            @if($jalur->kuota == 0)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-md text-xs font-medium bg-green-100 text-green-800">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                    </svg>
+                                    Tidak Terbatas
+                                </span>
+                            @else
+                                {{ number_format($jalur->kuota, 0, ',', '.') }}
+                            @endif
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             <span class="font-medium">{{ number_format($jalur->nilai_minimum, 2) }}</span>
                         </td>
@@ -119,6 +136,22 @@
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $jalur->aktif ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                 {{ $jalur->aktif ? 'Aktif' : 'Nonaktif' }}
                             </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $jalur->tampil_di_daftar ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800' }}">
+                                {{ $jalur->tampil_di_daftar ? 'Tampil' : 'Tersembunyi' }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            @if($jalur->paling_populer)
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                    ⭐ Ya
+                                </span>
+                            @else
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-600">
+                                    Tidak
+                                </span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <button wire:click="edit({{ $jalur->id }})" class="text-blue-600 hover:text-blue-900 mr-3">Edit</button>

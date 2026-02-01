@@ -5,10 +5,13 @@ namespace App\Livewire\Pendaftar;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Url;
 use App\Models\Pendaftar as PendaftarModel;
 use App\Models\Prestasi;
 use App\Models\Beasiswa;
 use App\Models\PendidikanLain;
+use App\Models\Keahlian;
+use App\Models\Tahfidz;
 use App\Models\VerifikasiBerkas;
 use App\Models\Dokumen;
 use App\Services\ImageService;
@@ -29,6 +32,10 @@ class Formulir extends Component
     public $verifikasi;
     public $dokumen;
 
+    // Active Tab with URL support
+    #[Url]
+    public $activeTab = 'siswa';
+
     // Mode edit per section
     public $editModeSiswa = false;
     public $editModeOrangTua = false;
@@ -42,6 +49,8 @@ class Formulir extends Component
     public $editModeBeasiswa = false;
     public $editModePendidikan = false;
     public $editModeSurvey = false;
+    public $editModeDataKeahlian = false;
+    public $editModeDataTahfidz = false;
 
     // Survey Answers (dynamic properties for survey_answer_X)
     public $surveyAnswers = [];
@@ -54,6 +63,25 @@ class Formulir extends Component
 
     // Pendidikan Lain List (for structured pendidikan lain data)
     public $pendidikanLainList = [];
+
+    // Keahlian List (for structured keahlian data)
+    public $keahlianList = [];
+
+    // Tahfidz Data (single record)
+    public $tahfidz = [
+        'id' => null,
+        'juz_alquran_dihafal' => null,
+        'file_bukti_syahadah' => null,
+        'file_bukti_tahsin' => null,
+    ];
+
+    // Upload properties for Keahlian & Tahfidz
+    public $uploadKeahlianSertifikat = [];
+    public $uploadTahfidzSyahadah;
+    public $uploadTahfidzTahsin;
+
+    // Upload properties for Prestasi
+    public $uploadPrestasiSertifikat = [];
 
     // Upload properties
     public $file_rapor;
@@ -351,7 +379,7 @@ class Formulir extends Component
             return redirect()->to('/login');
         }
 
-        $this->pendaftar = $user->pendaftar()->with('surveyAnswers.question', 'surveyAnswers.option')->first();
+        $this->pendaftar = $user->pendaftar()->with('surveyAnswers.question')->first();
         if (!$this->pendaftar) {
             return redirect()->to('/daftar');
         }
@@ -633,15 +661,22 @@ class Formulir extends Component
         $surveyAnswers = $this->pendaftar->surveyAnswers;
         foreach ($surveyAnswers as $answer) {
             $questionId = $answer->survey_question_id;
-            if ($answer->question->question_type === 'text') {
-                $this->surveyAnswers[$questionId] = $answer->answer_text;
-            } elseif ($answer->question->question_type === 'checkbox') {
+            if ($answer->question->tipe_input === 'text' || $answer->question->tipe_input === 'textarea') {
+                // For text: jawaban contains the text string
+                $this->surveyAnswers[$questionId] = $answer->jawaban;
+            } elseif ($answer->question->tipe_input === 'checkbox') {
+                // For checkbox: jawaban is array of selected option IDs
                 if (!isset($this->surveyAnswers[$questionId])) {
                     $this->surveyAnswers[$questionId] = [];
                 }
-                $this->surveyAnswers[$questionId][$answer->survey_option_id] = true;
+                // Convert array of IDs to checkbox format (ID => true)
+                $selectedIds = is_array($answer->jawaban) ? $answer->jawaban : [$answer->jawaban];
+                foreach ($selectedIds as $optionId) {
+                    $this->surveyAnswers[$questionId][$optionId] = true;
+                }
             } else {
-                $this->surveyAnswers[$questionId] = $answer->survey_option_id;
+                // For radio/dropdown: jawaban contains single option ID
+                $this->surveyAnswers[$questionId] = $answer->jawaban;
             }
         }
 
@@ -653,6 +688,12 @@ class Formulir extends Component
 
         // Load Pendidikan Lain Data
         $this->loadPendidikanLain();
+
+        // Load Keahlian Data
+        $this->loadKeahlian();
+
+        // Load Tahfidz Data
+        $this->loadTahfidz();
 
         // Load Cascade Dropdown Data
         $this->loadCascadeData();
@@ -900,14 +941,15 @@ class Formulir extends Component
                 $imageService->deleteOldFile($this->pendaftar->foto);
 
                 // Upload dan konversi ke WebP dengan nama file sistematis
-                // Format: foto_profil_{nomor_pendaftaran}_{timestamp}.webp
+                // Format: foto_profil-{nomor_pendaftaran}-{nama_pendaftar}-{timestamp}.webp
                 $fotoPath = $imageService->uploadProfilePhoto(
                     $this->newFoto,
                     'photos',
                     500,
                     80,
                     $this->pendaftar->nomor_pendaftaran,
-                    'foto_profil'
+                    'foto_profil',
+                    $this->pendaftar->nama_lengkap
                 );
                 $dataToUpdate['foto'] = $fotoPath;
                 $this->foto = $fotoPath;
@@ -1439,6 +1481,7 @@ class Formulir extends Component
                     'tingkat_lomba' => $prestasi->tingkat_lomba,
                     'peringkat' => $prestasi->peringkat,
                     'kategori_lomba' => $prestasi->kategori_lomba,
+                    'file_sertifikat' => $prestasi->file_sertifikat,
                 ];
             })->toArray();
         } else {
@@ -1452,6 +1495,7 @@ class Formulir extends Component
                 'tingkat_lomba' => null,
                 'peringkat' => null,
                 'kategori_lomba' => null,
+                'file_sertifikat' => null,
             ]];
         }
     }
@@ -1467,6 +1511,7 @@ class Formulir extends Component
             'tingkat_lomba' => null,
             'peringkat' => null,
             'kategori_lomba' => null,
+            'file_sertifikat' => null,
         ];
     }
 
@@ -1474,7 +1519,14 @@ class Formulir extends Component
     {
         // Jika ada id, hapus dari database
         if (isset($this->prestasiList[$index]['id']) && $this->prestasiList[$index]['id']) {
-            Prestasi::find($this->prestasiList[$index]['id'])?->delete();
+            $prestasi = Prestasi::find($this->prestasiList[$index]['id']);
+            if ($prestasi) {
+                // Delete file if exists
+                if ($prestasi->file_sertifikat && Storage::disk('public')->exists($prestasi->file_sertifikat)) {
+                    Storage::disk('public')->delete($prestasi->file_sertifikat);
+                }
+                $prestasi->delete();
+            }
         }
 
         // Hapus dari array
@@ -1493,6 +1545,7 @@ class Formulir extends Component
             'prestasiList.*.tingkat_lomba' => 'required|string|max:50',
             'prestasiList.*.peringkat' => 'required|string|max:100',
             'prestasiList.*.kategori_lomba' => 'required|string|max:50',
+            'uploadPrestasiSertifikat.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
 
         // Delete existing prestasi yang tidak ada di list
@@ -1500,34 +1553,50 @@ class Formulir extends Component
         $this->pendaftar->prestasis()->whereNotIn('id', $existingIds)->delete();
 
         // Save atau update each prestasi
-        foreach ($this->prestasiList as $prestasiData) {
+        foreach ($this->prestasiList as $index => $prestasiData) {
+            $dataToSave = [
+                'tahun' => $prestasiData['tahun'],
+                'nama_lomba' => $prestasiData['nama_lomba'],
+                'bidang_lomba' => $prestasiData['bidang_lomba'],
+                'nama_penyelenggara' => $prestasiData['nama_penyelenggara'],
+                'tingkat_lomba' => $prestasiData['tingkat_lomba'],
+                'peringkat' => $prestasiData['peringkat'],
+                'kategori_lomba' => $prestasiData['kategori_lomba'],
+            ];
+
+            // Handle file upload
+            if (isset($this->uploadPrestasiSertifikat[$index])) {
+                $file = $this->uploadPrestasiSertifikat[$index];
+                $filename = FileNamingService::generateFileName(
+                    'sertifikat_prestasi',
+                    $this->pendaftar->nomor_pendaftaran,
+                    $file->getClientOriginalExtension(),
+                    $this->pendaftar->nama_lengkap
+                );
+                $path = $file->storeAs('sertifikat_prestasi', $filename, 'public');
+                $dataToSave['file_sertifikat'] = $path;
+
+                // Delete old file if exists
+                if ($prestasiData['id']) {
+                    $oldPrestasi = Prestasi::find($prestasiData['id']);
+                    if ($oldPrestasi && $oldPrestasi->file_sertifikat && Storage::disk('public')->exists($oldPrestasi->file_sertifikat)) {
+                        Storage::disk('public')->delete($oldPrestasi->file_sertifikat);
+                    }
+                }
+            }
+
             if ($prestasiData['id']) {
                 // Update existing
-                Prestasi::where('id', $prestasiData['id'])->update([
-                    'tahun' => $prestasiData['tahun'],
-                    'nama_lomba' => $prestasiData['nama_lomba'],
-                    'bidang_lomba' => $prestasiData['bidang_lomba'],
-                    'nama_penyelenggara' => $prestasiData['nama_penyelenggara'],
-                    'tingkat_lomba' => $prestasiData['tingkat_lomba'],
-                    'peringkat' => $prestasiData['peringkat'],
-                    'kategori_lomba' => $prestasiData['kategori_lomba'],
-                ]);
+                Prestasi::where('id', $prestasiData['id'])->update($dataToSave);
             } else {
                 // Create new
-                Prestasi::create([
-                    'pendaftar_id' => $this->pendaftar->id,
-                    'tahun' => $prestasiData['tahun'],
-                    'nama_lomba' => $prestasiData['nama_lomba'],
-                    'bidang_lomba' => $prestasiData['bidang_lomba'],
-                    'nama_penyelenggara' => $prestasiData['nama_penyelenggara'],
-                    'tingkat_lomba' => $prestasiData['tingkat_lomba'],
-                    'peringkat' => $prestasiData['peringkat'],
-                    'kategori_lomba' => $prestasiData['kategori_lomba'],
-                ]);
+                $dataToSave['pendaftar_id'] = $this->pendaftar->id;
+                Prestasi::create($dataToSave);
             }
         }
 
         $this->editModeDataPrestasi = false;
+        $this->uploadPrestasiSertifikat = [];
         $this->loadPrestasi(); // Reload data
         $this->dispatch('statusUpdated', ['type' => 'success', 'message' => 'Data prestasi berhasil diperbarui.']);
     }
@@ -1814,14 +1883,14 @@ class Formulir extends Component
     public function saveDataSurvey()
     {
         // Build validation rules for required questions
-        $surveyQuestions = \App\Models\SurveyQuestion::active()->ordered()->get();
+        $surveyQuestions = \App\Models\SurveyQuestion::aktif()->umum()->ordered()->get();
         $validationRules = [];
         $validationMessages = [];
 
         foreach ($surveyQuestions as $question) {
-            if ($question->is_required) {
+            if ($question->wajib_diisi) {
                 $validationRules["surveyAnswers.{$question->id}"] = 'required';
-                $validationMessages["surveyAnswers.{$question->id}.required"] = "Pertanyaan '{$question->question_text}' wajib diisi.";
+                $validationMessages["surveyAnswers.{$question->id}.required"] = "Pertanyaan '{$question->pertanyaan}' wajib diisi.";
             }
         }
 
@@ -1839,35 +1908,34 @@ class Formulir extends Component
                     ->where('survey_question_id', $question->id)
                     ->delete();
 
-                // Create new answer
-                if ($question->question_type === 'text') {
-                    \App\Models\SurveyAnswer::create([
-                        'pendaftar_id' => $this->pendaftar->id,
-                        'survey_question_id' => $question->id,
-                        'survey_option_id' => null,
-                        'answer_text' => $answerValue,
-                    ]);
-                } elseif ($question->question_type === 'checkbox') {
-                    // For checkbox, answerValue is an array
+                // Prepare jawaban based on question type
+                $jawaban = null;
+
+                if ($question->tipe_input === 'text' || $question->tipe_input === 'textarea') {
+                    // For text type: store text directly
+                    $jawaban = $answerValue;
+                } elseif ($question->tipe_input === 'checkbox') {
+                    // For checkbox: store array of selected option IDs
                     if (is_array($answerValue)) {
+                        $selectedOptions = [];
                         foreach ($answerValue as $optionId => $checked) {
                             if ($checked) {
-                                \App\Models\SurveyAnswer::create([
-                                    'pendaftar_id' => $this->pendaftar->id,
-                                    'survey_question_id' => $question->id,
-                                    'survey_option_id' => $optionId,
-                                    'answer_text' => null,
-                                ]);
+                                $selectedOptions[] = $optionId;
                             }
                         }
+                        $jawaban = $selectedOptions; // Will be auto-cast to JSON
                     }
                 } else {
-                    // For dropdown and radio
+                    // For dropdown and radio: store single option ID
+                    $jawaban = $answerValue;
+                }
+
+                // Create new answer with jawaban field
+                if ($jawaban !== null && (!is_array($jawaban) || !empty($jawaban))) {
                     \App\Models\SurveyAnswer::create([
                         'pendaftar_id' => $this->pendaftar->id,
                         'survey_question_id' => $question->id,
-                        'survey_option_id' => $answerValue,
-                        'answer_text' => null,
+                        'jawaban' => $jawaban,
                     ]);
                 }
             }
@@ -2513,6 +2581,239 @@ class Formulir extends Component
                 }
             }
         }
+    }
+
+    // ========================================
+    // Keahlian Methods (Kursus/Club/Sanggar)
+    // ========================================
+
+    public function loadKeahlian()
+    {
+        $keahlians = $this->pendaftar->keahlians;
+
+        if ($keahlians->count() > 0) {
+            $this->keahlianList = $keahlians->map(function ($keahlian) {
+                return [
+                    'id' => $keahlian->id,
+                    'bidang_keahlian' => $keahlian->bidang_keahlian,
+                    'nama_keahlian' => $keahlian->nama_keahlian,
+                    'sertifikasi' => $keahlian->sertifikasi,
+                    'lembaga_penyelenggara' => $keahlian->lembaga_penyelenggara,
+                    'hasil_tingkat_skor' => $keahlian->hasil_tingkat_skor,
+                    'file_bukti_sertifikat' => $keahlian->file_bukti_sertifikat,
+                ];
+            })->toArray();
+        } else {
+            // Initialize dengan satu keahlian kosong
+            $this->keahlianList = [[
+                'id' => null,
+                'bidang_keahlian' => null,
+                'nama_keahlian' => null,
+                'sertifikasi' => null,
+                'lembaga_penyelenggara' => null,
+                'hasil_tingkat_skor' => null,
+                'file_bukti_sertifikat' => null,
+            ]];
+        }
+    }
+
+    public function addKeahlian()
+    {
+        $this->keahlianList[] = [
+            'id' => null,
+            'bidang_keahlian' => null,
+            'nama_keahlian' => null,
+            'sertifikasi' => null,
+            'lembaga_penyelenggara' => null,
+            'hasil_tingkat_skor' => null,
+            'file_bukti_sertifikat' => null,
+        ];
+    }
+
+    public function removeKeahlian($index)
+    {
+        // Jika ada id, hapus dari database
+        if (isset($this->keahlianList[$index]['id']) && $this->keahlianList[$index]['id']) {
+            $keahlian = Keahlian::find($this->keahlianList[$index]['id']);
+            if ($keahlian) {
+                // Delete file if exists
+                if ($keahlian->file_bukti_sertifikat && Storage::disk('public')->exists($keahlian->file_bukti_sertifikat)) {
+                    Storage::disk('public')->delete($keahlian->file_bukti_sertifikat);
+                }
+                $keahlian->delete();
+            }
+        }
+
+        // Hapus dari array
+        unset($this->keahlianList[$index]);
+        $this->keahlianList = array_values($this->keahlianList); // Re-index array
+    }
+
+    public function saveDataKeahlian()
+    {
+        // Validate all keahlian entries
+        $this->validate([
+            'keahlianList.*.bidang_keahlian' => 'nullable|string|max:255',
+            'keahlianList.*.nama_keahlian' => 'nullable|string|max:255',
+            'keahlianList.*.sertifikasi' => 'nullable|string|max:255',
+            'keahlianList.*.lembaga_penyelenggara' => 'nullable|string|max:255',
+            'keahlianList.*.hasil_tingkat_skor' => 'nullable|string|max:100',
+            'uploadKeahlianSertifikat.*' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ]);
+
+        // Delete existing keahlian yang tidak ada di list
+        $existingIds = collect($this->keahlianList)->pluck('id')->filter()->toArray();
+        $this->pendaftar->keahlians()->whereNotIn('id', $existingIds)->delete();
+
+        // Save atau update each keahlian
+        foreach ($this->keahlianList as $index => $keahlianData) {
+            // Skip if all fields are empty
+            if (empty($keahlianData['bidang_keahlian']) &&
+                empty($keahlianData['nama_keahlian']) &&
+                empty($keahlianData['sertifikasi']) &&
+                empty($keahlianData['lembaga_penyelenggara']) &&
+                empty($keahlianData['hasil_tingkat_skor']) &&
+                !isset($this->uploadKeahlianSertifikat[$index])) {
+                continue;
+            }
+
+            $dataToSave = [
+                'bidang_keahlian' => $keahlianData['bidang_keahlian'],
+                'nama_keahlian' => $keahlianData['nama_keahlian'],
+                'sertifikasi' => $keahlianData['sertifikasi'],
+                'lembaga_penyelenggara' => $keahlianData['lembaga_penyelenggara'],
+                'hasil_tingkat_skor' => $keahlianData['hasil_tingkat_skor'],
+            ];
+
+            // Handle file upload
+            if (isset($this->uploadKeahlianSertifikat[$index])) {
+                $file = $this->uploadKeahlianSertifikat[$index];
+                $filename = FileNamingService::generateFileName(
+                    'sertifikat_keahlian',
+                    $this->pendaftar->nomor_pendaftaran,
+                    $file->getClientOriginalExtension(),
+                    $this->pendaftar->nama_lengkap
+                );
+                $path = $file->storeAs('sertifikat_keahlian', $filename, 'public');
+                $dataToSave['file_bukti_sertifikat'] = $path;
+
+                // Delete old file if exists
+                if ($keahlianData['id']) {
+                    $oldKeahlian = Keahlian::find($keahlianData['id']);
+                    if ($oldKeahlian && $oldKeahlian->file_bukti_sertifikat && Storage::disk('public')->exists($oldKeahlian->file_bukti_sertifikat)) {
+                        Storage::disk('public')->delete($oldKeahlian->file_bukti_sertifikat);
+                    }
+                }
+            }
+
+            if ($keahlianData['id']) {
+                // Update existing
+                Keahlian::where('id', $keahlianData['id'])->update($dataToSave);
+            } else {
+                // Create new
+                $dataToSave['pendaftar_id'] = $this->pendaftar->id;
+                Keahlian::create($dataToSave);
+            }
+        }
+
+        $this->editModeDataKeahlian = false;
+        $this->uploadKeahlianSertifikat = [];
+        $this->loadKeahlian(); // Reload data
+        $this->dispatch('statusUpdated', ['type' => 'success', 'message' => 'Data keahlian berhasil diperbarui.']);
+    }
+
+    // ========================================
+    // Tahfidz Methods
+    // ========================================
+
+    public function loadTahfidz()
+    {
+        $tahfidz = $this->pendaftar->tahfidz;
+
+        if ($tahfidz) {
+            $this->tahfidz = [
+                'id' => $tahfidz->id,
+                'juz_alquran_dihafal' => $tahfidz->juz_alquran_dihafal,
+                'file_bukti_syahadah' => $tahfidz->file_bukti_syahadah,
+                'file_bukti_tahsin' => $tahfidz->file_bukti_tahsin,
+            ];
+        } else {
+            $this->tahfidz = [
+                'id' => null,
+                'juz_alquran_dihafal' => null,
+                'file_bukti_syahadah' => null,
+                'file_bukti_tahsin' => null,
+            ];
+        }
+    }
+
+    public function saveDataTahfidz()
+    {
+        // Validate tahfidz data
+        $this->validate([
+            'tahfidz.juz_alquran_dihafal' => 'nullable|string|max:255',
+            'uploadTahfidzSyahadah' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+            'uploadTahfidzTahsin' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
+        ]);
+
+        $dataToSave = [
+            'juz_alquran_dihafal' => $this->tahfidz['juz_alquran_dihafal'],
+        ];
+
+        // Handle syahadah file upload
+        if ($this->uploadTahfidzSyahadah) {
+            $filename = FileNamingService::generateFileName(
+                'syahadah',
+                $this->pendaftar->nomor_pendaftaran,
+                $this->uploadTahfidzSyahadah->getClientOriginalExtension(),
+                $this->pendaftar->nama_lengkap
+            );
+            $path = $this->uploadTahfidzSyahadah->storeAs('tahfidz', $filename, 'public');
+            $dataToSave['file_bukti_syahadah'] = $path;
+
+            // Delete old file if exists
+            if ($this->tahfidz['id']) {
+                $oldTahfidz = Tahfidz::find($this->tahfidz['id']);
+                if ($oldTahfidz && $oldTahfidz->file_bukti_syahadah && Storage::disk('public')->exists($oldTahfidz->file_bukti_syahadah)) {
+                    Storage::disk('public')->delete($oldTahfidz->file_bukti_syahadah);
+                }
+            }
+        }
+
+        // Handle tahsin file upload
+        if ($this->uploadTahfidzTahsin) {
+            $filename = FileNamingService::generateFileName(
+                'tahsin',
+                $this->pendaftar->nomor_pendaftaran,
+                $this->uploadTahfidzTahsin->getClientOriginalExtension(),
+                $this->pendaftar->nama_lengkap
+            );
+            $path = $this->uploadTahfidzTahsin->storeAs('tahfidz', $filename, 'public');
+            $dataToSave['file_bukti_tahsin'] = $path;
+
+            // Delete old file if exists
+            if ($this->tahfidz['id']) {
+                $oldTahfidz = Tahfidz::find($this->tahfidz['id']);
+                if ($oldTahfidz && $oldTahfidz->file_bukti_tahsin && Storage::disk('public')->exists($oldTahfidz->file_bukti_tahsin)) {
+                    Storage::disk('public')->delete($oldTahfidz->file_bukti_tahsin);
+                }
+            }
+        }
+
+        if ($this->tahfidz['id']) {
+            // Update existing
+            Tahfidz::where('id', $this->tahfidz['id'])->update($dataToSave);
+        } else {
+            // Create new
+            $dataToSave['pendaftar_id'] = $this->pendaftar->id;
+            Tahfidz::create($dataToSave);
+        }
+
+        $this->editModeDataTahfidz = false;
+        $this->uploadTahfidzSyahadah = null;
+        $this->uploadTahfidzTahsin = null;
+        $this->loadTahfidz(); // Reload data
+        $this->dispatch('statusUpdated', ['type' => 'success', 'message' => 'Data tahfidz berhasil diperbarui.']);
     }
 
     public function render()

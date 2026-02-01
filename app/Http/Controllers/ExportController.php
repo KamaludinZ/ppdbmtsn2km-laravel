@@ -5,44 +5,180 @@ namespace App\Http\Controllers;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Maatwebsite\Excel\Facades\Excel;
+use App\Models\Pendaftar;
+use App\Models\JalurPendaftaran;
+use App\Models\Setting;
+use App\Exports\LaporanPendaftaranExport;
 
 class ExportController extends Controller
 {
     /**
-     * Generate sample PDF
+     * Generate Laporan Pendaftaran PDF
      */
-    public function generatePDF()
+    public function generatePDF(Request $request)
     {
+        // Get filter parameters
+        $jalurId = $request->get('jalur');
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+
+        // Get per jalur statistics (only active jalur)
+        $jalurStats = JalurPendaftaran::aktif()
+            ->withCount([
+                'pendaftar' => function ($q) use ($startDate, $endDate) {
+                    $q->when($startDate, function ($query) use ($startDate) {
+                        $query->whereDate('tanggal_daftar', '>=', $startDate);
+                    })
+                    ->when($endDate, function ($query) use ($endDate) {
+                        $query->whereDate('tanggal_daftar', '<=', $endDate);
+                    });
+                },
+                'pendaftar as menunggu_count' => function ($q) use ($startDate, $endDate) {
+                    $q->where('status_pendaftaran', 'menunggu_verifikasi')
+                    ->when($startDate, function ($query) use ($startDate) {
+                        $query->whereDate('tanggal_daftar', '>=', $startDate);
+                    })
+                    ->when($endDate, function ($query) use ($endDate) {
+                        $query->whereDate('tanggal_daftar', '<=', $endDate);
+                    });
+                },
+                'pendaftar as lengkapi_count' => function ($q) use ($startDate, $endDate) {
+                    $q->where('status_pendaftaran', 'lengkapi_data')
+                    ->when($startDate, function ($query) use ($startDate) {
+                        $query->whereDate('tanggal_daftar', '>=', $startDate);
+                    })
+                    ->when($endDate, function ($query) use ($endDate) {
+                        $query->whereDate('tanggal_daftar', '<=', $endDate);
+                    });
+                },
+                'pendaftar as perbaiki_count' => function ($q) use ($startDate, $endDate) {
+                    $q->where('status_pendaftaran', 'perbaiki_data')
+                    ->when($startDate, function ($query) use ($startDate) {
+                        $query->whereDate('tanggal_daftar', '>=', $startDate);
+                    })
+                    ->when($endDate, function ($query) use ($endDate) {
+                        $query->whereDate('tanggal_daftar', '<=', $endDate);
+                    });
+                },
+                'pendaftar as ditolak_count' => function ($q) use ($startDate, $endDate) {
+                    $q->where('status_pendaftaran', 'data_ditolak')
+                    ->when($startDate, function ($query) use ($startDate) {
+                        $query->whereDate('tanggal_daftar', '>=', $startDate);
+                    })
+                    ->when($endDate, function ($query) use ($endDate) {
+                        $query->whereDate('tanggal_daftar', '<=', $endDate);
+                    });
+                },
+                'pendaftar as disetujui_count' => function ($q) use ($startDate, $endDate) {
+                    $q->whereIn('status_pendaftaran', ['data_disetujui', 'lulus', 'diterima', 'tidak_lulus', 'cadangan', 'ditolak'])
+                    ->when($startDate, function ($query) use ($startDate) {
+                        $query->whereDate('tanggal_daftar', '>=', $startDate);
+                    })
+                    ->when($endDate, function ($query) use ($endDate) {
+                        $query->whereDate('tanggal_daftar', '<=', $endDate);
+                    });
+                },
+                'pendaftar as lulus_count' => function ($q) use ($startDate, $endDate) {
+                    $q->whereIn('status_pendaftaran', ['lulus', 'diterima'])
+                    ->when($startDate, function ($query) use ($startDate) {
+                        $query->whereDate('tanggal_daftar', '>=', $startDate);
+                    })
+                    ->when($endDate, function ($query) use ($endDate) {
+                        $query->whereDate('tanggal_daftar', '<=', $endDate);
+                    });
+                },
+                'pendaftar as tidak_lulus_count' => function ($q) use ($startDate, $endDate) {
+                    $q->where('status_pendaftaran', 'tidak_lulus')
+                    ->when($startDate, function ($query) use ($startDate) {
+                        $query->whereDate('tanggal_daftar', '>=', $startDate);
+                    })
+                    ->when($endDate, function ($query) use ($endDate) {
+                        $query->whereDate('tanggal_daftar', '<=', $endDate);
+                    });
+                },
+                'pendaftar as cadangan_count' => function ($q) use ($startDate, $endDate) {
+                    $q->where('status_pendaftaran', 'cadangan')
+                    ->when($startDate, function ($query) use ($startDate) {
+                        $query->whereDate('tanggal_daftar', '>=', $startDate);
+                    })
+                    ->when($endDate, function ($query) use ($endDate) {
+                        $query->whereDate('tanggal_daftar', '<=', $endDate);
+                    });
+                },
+                'pendaftar as laki_laki_count' => function ($q) use ($startDate, $endDate) {
+                    $q->where('jenis_kelamin', 'L')
+                    ->when($startDate, function ($query) use ($startDate) {
+                        $query->whereDate('tanggal_daftar', '>=', $startDate);
+                    })
+                    ->when($endDate, function ($query) use ($endDate) {
+                        $query->whereDate('tanggal_daftar', '<=', $endDate);
+                    });
+                },
+                'pendaftar as perempuan_count' => function ($q) use ($startDate, $endDate) {
+                    $q->where('jenis_kelamin', 'P')
+                    ->when($startDate, function ($query) use ($startDate) {
+                        $query->whereDate('tanggal_daftar', '>=', $startDate);
+                    })
+                    ->when($endDate, function ($query) use ($endDate) {
+                        $query->whereDate('tanggal_daftar', '<=', $endDate);
+                    });
+                },
+                'pendaftar as madrasah_count' => function ($q) use ($startDate, $endDate) {
+                    $q->where('jenis_sekolah_asal', 'madrasah')
+                    ->when($startDate, function ($query) use ($startDate) {
+                        $query->whereDate('tanggal_daftar', '>=', $startDate);
+                    })
+                    ->when($endDate, function ($query) use ($endDate) {
+                        $query->whereDate('tanggal_daftar', '<=', $endDate);
+                    });
+                },
+                'pendaftar as umum_count' => function ($q) use ($startDate, $endDate) {
+                    $q->where('jenis_sekolah_asal', 'umum')
+                    ->when($startDate, function ($query) use ($startDate) {
+                        $query->whereDate('tanggal_daftar', '>=', $startDate);
+                    })
+                    ->when($endDate, function ($query) use ($endDate) {
+                        $query->whereDate('tanggal_daftar', '<=', $endDate);
+                    });
+                }
+            ])
+            ->ordered()
+            ->get();
+
         $data = [
-            'title' => 'Contoh Laporan PDF',
-            'date' => date('d/m/Y'),
-            'items' => [
-                ['no' => 1, 'nama' => 'Ahmad Zainudin', 'nisn' => '0012345678', 'kelas' => '7A'],
-                ['no' => 2, 'nama' => 'Siti Nurhaliza', 'nisn' => '0012345679', 'kelas' => '7A'],
-                ['no' => 3, 'nama' => 'Muhammad Rizki', 'nisn' => '0012345680', 'kelas' => '7B'],
-                ['no' => 4, 'nama' => 'Fatimah Zahra', 'nisn' => '0012345681', 'kelas' => '7B'],
-                ['no' => 5, 'nama' => 'Abdul Rahman', 'nisn' => '0012345682', 'kelas' => '7C'],
-            ],
+            'title' => 'Laporan Pendaftaran',
+            'date' => date('d F Y'),
+            'periode' => Setting::get('tahun_pelajaran', date('Y') . '/' . (date('Y') + 1)),
+            'jalurStats' => $jalurStats,
+            // Identitas Cetak (Kop PDF)
+            'printLogoLeft' => Setting::get('print_logo_left', ''),
+            'printLogoRight' => Setting::get('print_logo_right', ''),
+            'printInstitutionName' => Setting::get('print_institution_name', 'MADRASAH TSANAWIYAH NEGERI 2 KOTA MALANG'),
+            'printInstitutionAddress' => Setting::get('print_institution_address', 'Jl. Bandung No. 7 Kota Malang, Jawa Timur 65117'),
+            'printInstitutionPhone' => Setting::get('print_institution_phone', '(0341) 551276'),
+            'printInstitutionEmail' => Setting::get('print_institution_email', 'ppdb@mtsn2kotamalang.sch.id'),
+            'printInstitutionWebsite' => Setting::get('print_institution_website', 'www.mtsn2kotamalang.sch.id'),
         ];
 
-        $pdf = Pdf::loadView('exports.sample-pdf', $data);
+        $pdf = Pdf::loadView('exports.laporan-pendaftaran-pdf', $data);
+        $pdf->setPaper('a4', 'landscape');
 
-        // Set paper size dan orientasi
-        $pdf->setPaper('a4', 'portrait');
-
-        // Download PDF
-        return $pdf->download('laporan-' . date('Y-m-d') . '.pdf');
-
-        // Atau tampilkan di browser (uncomment baris di bawah)
-        // return $pdf->stream('laporan-' . date('Y-m-d') . '.pdf');
+        return $pdf->download('laporan-pendaftaran-' . date('Y-m-d') . '.pdf');
     }
 
     /**
-     * Generate sample Excel
+     * Generate Laporan Pendaftaran Excel
      */
-    public function generateExcel()
+    public function generateExcel(Request $request)
     {
-        return Excel::download(new \App\Exports\SampleExport, 'laporan-' . date('Y-m-d') . '.xlsx');
+        $jalurId = $request->get('jalur');
+        $startDate = $request->get('start_date');
+        $endDate = $request->get('end_date');
+
+        return Excel::download(
+            new LaporanPendaftaranExport($jalurId, null, $startDate, $endDate),
+            'laporan-pendaftaran-' . date('Y-m-d') . '.xlsx'
+        );
     }
 
     /**

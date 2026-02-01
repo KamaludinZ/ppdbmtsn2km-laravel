@@ -8,6 +8,7 @@ use App\Traits\WithSorting;
 use Livewire\Component;
 use Livewire\WithPagination;
 use Livewire\WithFileUploads;
+use Livewire\Attributes\Url;
 use Illuminate\Support\Facades\Auth;
 
 class Jalur extends Component
@@ -18,6 +19,7 @@ class Jalur extends Component
     public $jalur_id;
     public $isEdit = false;
     public $showModal = false;
+    #[Url(keep: true)]
     public $activeTab = 'general';
 
     public $persyaratan_khusus = [];
@@ -33,7 +35,7 @@ class Jalur extends Component
     public function mount()
     {
         $user = Auth::user();
-        if (!$user || !in_array($user->role, ['panitia_pendaftaran', 'panitia_daftarulang', 'panitia'])) {
+        if (!$user || !in_array($user->role, ['panitia_pendaftaran', 'panitia_daftarulang', 'panitia_tes_psikologi', 'panitia_seragam'])) {
             return redirect()->to('/login/admin');
         }
     }

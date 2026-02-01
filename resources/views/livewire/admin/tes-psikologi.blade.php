@@ -11,7 +11,7 @@
     @endif
 
     <!-- Statistics Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-6 mb-8">
         <!-- Total Card -->
         <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
             <div class="flex items-center">
@@ -86,11 +86,26 @@
                 </div>
             </div>
         </div>
+
+        <!-- Survey Dijawab Card -->
+        <div class="bg-white rounded-xl shadow-sm p-6 border border-gray-100">
+            <div class="flex items-center">
+                <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mr-4">
+                    <svg class="w-6 h-6 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Survey Dijawab</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $stats['survey_dijawab'] }}</p>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Main Tab Navigation -->
     @if(Auth::user()->role === 'admin')
-        <!-- Admin: Show both tabs -->
+        <!-- Admin: Show all tabs -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
             <div class="border-b border-gray-200">
                 <nav class="flex -mb-px">
@@ -99,6 +114,18 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                         Data Psikologi
+                    </button>
+                    <button wire:click="setMainTab('jawaban-survey')" class="py-4 px-8 text-center border-b-2 font-medium text-sm transition focus:outline-none {{ $mainTab === 'jawaban-survey' ? 'border-indigo-500 text-indigo-600 bg-indigo-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                        </svg>
+                        Jawaban Survey
+                    </button>
+                    <button wire:click="setMainTab('survey')" class="py-4 px-8 text-center border-b-2 font-medium text-sm transition focus:outline-none {{ $mainTab === 'survey' ? 'border-purple-500 text-purple-600 bg-purple-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Pertanyaan Survey
                     </button>
                     <button wire:click="setMainTab('settings')" class="py-4 px-8 text-center border-b-2 font-medium text-sm transition focus:outline-none {{ $mainTab === 'settings' ? 'border-emerald-500 text-emerald-600 bg-emerald-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                         <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -117,6 +144,10 @@
         <!-- Admin: Show tabs based on selection -->
         @if($mainTab === 'data')
             @include('livewire.admin.partials.tes-psikologi-data')
+        @elseif($mainTab === 'jawaban-survey')
+            @include('livewire.admin.partials.tes-psikologi-jawaban-survey')
+        @elseif($mainTab === 'survey')
+            @include('livewire.admin.partials.tes-psikologi-survey')
         @else
             @include('livewire.admin.partials.tes-psikologi-settings')
         @endif
@@ -263,4 +294,7 @@
             </div>
         </div>
     @endif
+
+    <!-- Template Message Modal (with template dropdown & auto-fill) -->
+    @include('livewire.admin.partials.send-message-modal')
 </div>

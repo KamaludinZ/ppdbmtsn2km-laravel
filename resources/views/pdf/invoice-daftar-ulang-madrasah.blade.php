@@ -221,8 +221,21 @@
                         <tr>
                             <td class="label" style="width: 30%;">Status</td>
                             <td class="separator">:</td>
-                            <td class="value" style="color: green; text-transform: uppercase;">
-                                {{ $daftarUlang->pembayaran_lunas ? 'LUNAS / DISETUJUI' : ($daftarUlang->status == 'selesai' ? 'LUNAS / DISETUJUI' : 'MENUNGGU VERIFIKASI') }}
+                            <td class="value" style="color: {{ in_array($daftarUlang->status, ['disetujui', 'selesai']) || $daftarUlang->pembayaran_lunas ? 'green' : ($daftarUlang->status == 'ditolak' ? 'red' : 'orange') }}; text-transform: uppercase;">
+                                @if($daftarUlang->pembayaran_lunas || in_array($daftarUlang->status, ['disetujui', 'selesai']))
+                                    LUNAS / DISETUJUI
+                                @elseif($daftarUlang->status == 'ditolak')
+                                    DITOLAK
+                                @else
+                                    MENUNGGU VERIFIKASI
+                                @endif
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label" style="width: 30%;">Opsi Pembayaran</td>
+                            <td class="separator">:</td>
+                            <td class="value" style="text-transform: uppercase;">
+                                {{ $daftarUlang->opsi_pembayaran ? strtoupper($daftarUlang->opsi_pembayaran) : 'LUNAS' }}
                             </td>
                         </tr>
                     </table>
@@ -236,22 +249,41 @@
             <table class="detail-table">
                 <thead>
                     <tr>
-                        <th class="col-keterangan">Keterangan</th>
-                        <th class="col-jumlah text-right">Jumlah</th>
+                        <th style="width: 40%;">Keterangan</th>
+                        <th class="text-right" style="width: 30%;">Nominal Biaya</th>
+                        <th class="text-right" style="width: 30%;">Konfirmasi Pembayaran</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @php $total = 0; @endphp
-                    @foreach($details as $item)
+                    @php
+                        // Nominal Biaya Awal (yang dipilih di "Pilih Nominal Biaya")
+                        $nominalBiayaAwal = $daftarUlang->nominal_biaya_awal ?? [];
+                        $keterangan = $nominalBiayaAwal['name'] ?? 'Biaya Daftar Ulang Madrasah';
+                        $jumlahAwal = $nominalBiayaAwal['amount'] ?? 0;
+
+                        // Nominal Biaya Konfirmasi (yang dipilih di "Konfirmasi Nominal yang Dibayarkan")
+                        $nominalBiayaKonfirmasi = $daftarUlang->nominal_biaya ?? [];
+                        $jumlahKonfirmasi = $nominalBiayaKonfirmasi['amount'] ?? 0;
+
+                        // Hitung selisih
+                        $selisih = $jumlahKonfirmasi - $jumlahAwal;
+                        $statusPembayaran = '';
+                        if ($selisih == 0) {
+                            $statusPembayaran = 'LUNAS';
+                        } elseif ($selisih > 0) {
+                            $statusPembayaran = 'KEMBALIAN: Rp ' . number_format($selisih, 0, ',', '.');
+                        } else {
+                            $statusPembayaran = 'KEKURANGAN: Rp ' . number_format(abs($selisih), 0, ',', '.');
+                        }
+                    @endphp
                     <tr>
-                        <td>{{ $item['name'] ?? '-' }}</td>
-                        <td class="text-right">Rp {{ number_format($item['amount'] ?? 0, 0, ',', '.') }}</td>
+                        <td>{{ $keterangan }}</td>
+                        <td class="text-right">Rp {{ number_format($jumlahAwal, 0, ',', '.') }}</td>
+                        <td class="text-right">Rp {{ number_format($jumlahKonfirmasi, 0, ',', '.') }}</td>
                     </tr>
-                    @php $total += ($item['amount'] ?? 0); @endphp
-                    @endforeach
                     <tr class="bg-gray">
-                        <td style="font-weight: bold;">Total</td>
-                        <td class="text-right" style="font-weight: bold;">Rp {{ number_format($total, 0, ',', '.') }}</td>
+                        <td style="font-weight: bold;">Status Pembayaran</td>
+                        <td colspan="2" class="text-right" style="font-weight: bold;">{{ $statusPembayaran }}</td>
                     </tr>
                 </tbody>
             </table>

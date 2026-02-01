@@ -23,6 +23,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        // 'role' and 'aktif' intentionally excluded - must be set explicitly
     ];
 
     /**
@@ -82,10 +83,15 @@ class User extends Authenticatable
     }
 
     /**
-     * Check if user is panitia
+     * Check if user is panitia (any panitia role)
      */
     public function isPanitia(): bool
     {
-        return in_array($this->role, ['panitia_pendaftaran', 'panitia_daftarulang']);
+        return in_array($this->role, [
+            'panitia_pendaftaran',
+            'panitia_daftarulang',
+            'panitia_tes_psikologi',
+            'panitia_seragam'
+        ]);
     }
 }

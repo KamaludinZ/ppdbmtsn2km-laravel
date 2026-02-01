@@ -1,7 +1,7 @@
 <div class="p-4 md:p-6">
     <div class="mb-6">
-        <h2 class="text-2xl font-bold text-gray-800">Pengaturan Kartu Ujian</h2>
-        <p class="text-sm text-gray-600 mt-1">Kelola jadwal tes dan kartu kendali untuk kartu ujian peserta.</p>
+        <h2 class="text-2xl font-bold text-gray-800">Pengaturan Kartu Tes Seleksi</h2>
+        <p class="text-sm text-gray-600 mt-1">Kelola jadwal tes dan kartu kendali untuk kartu tes seleksi peserta.</p>
     </div>
 
     @if (session()->has('message'))
@@ -280,21 +280,21 @@
     <!-- Catatan Kartu Tab -->
     @if($activeTab === 'catatan-kartu')
         <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Catatan Kartu Ujian</h3>
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Catatan Kartu Tes Seleksi</h3>
 
             <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
                 <p class="text-sm text-blue-800">
-                    <strong>Info:</strong> Catatan ini akan ditampilkan di bagian bawah kartu ujian peserta.
+                    <strong>Info:</strong> Catatan ini akan ditampilkan di bagian bawah kartu tes seleksi peserta.
                 </p>
             </div>
 
             <form wire:submit.prevent="saveCatatanKartu">
                 <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Catatan Kartu Ujian</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Catatan Kartu Tes Seleksi</label>
                     <textarea wire:model="catatan_kartu_ujian" rows="6"
                         class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
-                        placeholder="Masukkan catatan yang akan ditampilkan di kartu ujian..."></textarea>
-                    <p class="text-xs text-gray-500 mt-1">Catatan ini akan muncul di bagian bawah kartu ujian</p>
+                        placeholder="Masukkan catatan yang akan ditampilkan di kartu tes seleksi..."></textarea>
+                    <p class="text-xs text-gray-500 mt-1">Catatan ini akan muncul di bagian bawah kartu tes seleksi</p>
                 </div>
 
                 <button type="submit"
@@ -318,7 +318,7 @@
     <!-- Preview Kartu Tab -->
     @if($activeTab === 'preview-kartu')
         <div class="bg-white rounded-lg shadow-md p-6">
-            <h3 class="text-lg font-semibold text-gray-800 mb-4">Preview Kartu Ujian (A4 Portrait)</h3>
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Preview Kartu Tes Seleksi (A4 Portrait)</h3>
 
             <!-- Sample Card Preview - A4 Portrait Format -->
             <div class="mx-auto border-2 border-gray-300 bg-white shadow-lg" style="width: 210mm; min-height: 297mm; padding: 12mm 20mm;">
@@ -368,7 +368,7 @@
 
                 <!-- Title -->
                 <div class="text-center mb-4">
-                    <h1 class="text-2xl font-bold text-gray-800 mb-1">KARTU UJIAN</h1>
+                    <h1 class="text-2xl font-bold text-gray-800 mb-1">KARTU TES SELEKSI</h1>
                     <p class="text-base text-gray-600">Tahun Pelajaran {{ $printSettings['tahun_pelajaran'] ?: date('Y') . '/' . (date('Y') + 1) }}</p>
                 </div>
 
@@ -578,7 +578,7 @@
                 </div>
                 @endif
 
-                <!-- Catatan Kartu Ujian dari Admin -->
+                <!-- Catatan Kartu Tes Seleksi dari Admin -->
                 @if($catatan_kartu_ujian)
                 <div class="mt-4">
                     <h4 class="font-bold text-gray-800 mb-1 text-xs uppercase">CATATAN:</h4>
@@ -843,7 +843,7 @@
                                 <h4 class="font-semibold text-gray-700 mb-1" style="font-size: 9px;">Informasi Pembayaran:</h4>
                                 <table style="font-size: 8px; line-height: 1.4;" class="w-full">
                                     <tr>
-                                        <td class="text-gray-700" style="width: 32%">Bank Dari</td>
+                                        <td class="text-gray-700" style="width: 35%">Bank Dari</td>
                                         <td class="font-semibold text-gray-900">: BCA</td>
                                     </tr>
                                     <tr>
@@ -854,7 +854,16 @@
                                         <td class="text-gray-700">Status</td>
                                         <td class="font-bold text-emerald-600">: LUNAS / DISETUJUI</td>
                                     </tr>
+                                    <tr>
+                                        <td class="text-gray-700">Opsi Pembayaran</td>
+                                        <td class="font-semibold text-gray-900">: LUNAS</td>
+                                    </tr>
                                 </table>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    * Status akan <span class="text-emerald-600 font-semibold">hijau (LUNAS/DISETUJUI)</span> jika disetujui,
+                                    <span class="text-orange-600 font-semibold">orange (MENUNGGU VERIFIKASI)</span> jika belum,
+                                    atau <span class="text-red-600 font-semibold">merah (DITOLAK)</span> jika ditolak
+                                </p>
                             </div>
                         </div>
 
@@ -864,29 +873,37 @@
                             <table class="w-full border border-gray-300" style="font-size: 8px;">
                                 <thead class="bg-gray-100">
                                     <tr>
-                                        <th class="border border-gray-300 px-2 py-1 text-left">Keterangan</th>
-                                        <th class="border border-gray-300 px-2 py-1 text-right">Jumlah</th>
+                                        <th class="border border-gray-300 px-2 py-1 text-left" style="width: 40%;">Keterangan</th>
+                                        <th class="border border-gray-300 px-2 py-1 text-right" style="width: 30%;">Nominal Biaya</th>
+                                        <th class="border border-gray-300 px-2 py-1 text-right" style="width: 30%;">Konfirmasi Pembayaran</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td class="border border-gray-300 px-2 py-1">Biaya Pendaftaran</td>
-                                        <td class="border border-gray-300 px-2 py-1 text-right">Rp 250.000</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="border border-gray-300 px-2 py-1">SPP Bulan Pertama</td>
-                                        <td class="border border-gray-300 px-2 py-1 text-right">Rp 200.000</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="border border-gray-300 px-2 py-1">Biaya Kegiatan</td>
-                                        <td class="border border-gray-300 px-2 py-1 text-right">Rp 150.000</td>
+                                        <td class="border border-gray-300 px-2 py-1">
+                                            <span class="text-xs text-gray-700">Biaya Daftar Ulang Full</span>
+                                        </td>
+                                        <td class="border border-gray-300 px-2 py-1 text-right">
+                                            <span class="text-xs">Rp 600.000</span>
+                                        </td>
+                                        <td class="border border-gray-300 px-2 py-1 text-right">
+                                            <span class="text-xs">Rp 550.000</span>
+                                        </td>
                                     </tr>
                                     <tr class="bg-gray-50 font-semibold">
-                                        <td class="border border-gray-300 px-2 py-1">Total</td>
-                                        <td class="border border-gray-300 px-2 py-1 text-right">Rp 600.000</td>
+                                        <td class="border border-gray-300 px-2 py-1">Status Pembayaran</td>
+                                        <td colspan="2" class="border border-gray-300 px-2 py-1 text-right">
+                                            <span class="text-xs text-orange-600">KEKURANGAN: Rp 50.000</span>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
+                            <div class="mt-2 bg-blue-50 border border-blue-200 rounded px-2 py-1" style="font-size: 7px;">
+                                <strong>ℹ️ Info:</strong> Invoice menampilkan:<br>
+                                • <strong>Nominal Biaya</strong>: dari "Pilih Nominal Biaya"<br>
+                                • <strong>Konfirmasi Pembayaran</strong>: dari "Konfirmasi Nominal yang Dibayarkan"<br>
+                                • <strong>Status Pembayaran</strong>: LUNAS (sama), KEMBALIAN (lebih), atau KEKURANGAN (kurang)
+                            </div>
                         </div>
 
                         <!-- Footer -->
@@ -1003,7 +1020,7 @@
                                 <h4 class="font-semibold text-gray-700 mb-1" style="font-size: 9px;">Informasi Pembayaran:</h4>
                                 <table style="font-size: 8px; line-height: 1.4;" class="w-full">
                                     <tr>
-                                        <td class="text-gray-700" style="width: 32%">Bank Dari</td>
+                                        <td class="text-gray-700" style="width: 35%">Bank Dari</td>
                                         <td class="font-semibold text-gray-900">: BCA</td>
                                     </tr>
                                     <tr>
@@ -1014,7 +1031,16 @@
                                         <td class="text-gray-700">Status</td>
                                         <td class="font-bold text-emerald-600">: LUNAS / DISETUJUI</td>
                                     </tr>
+                                    <tr>
+                                        <td class="text-gray-700">Opsi Pembayaran</td>
+                                        <td class="font-semibold text-gray-900">: ANGSURAN</td>
+                                    </tr>
                                 </table>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    * Status akan <span class="text-emerald-600 font-semibold">hijau (LUNAS/DISETUJUI)</span> jika disetujui,
+                                    <span class="text-orange-600 font-semibold">orange (MENUNGGU VERIFIKASI)</span> jika belum,
+                                    atau <span class="text-red-600 font-semibold">merah (DITOLAK)</span> jika ditolak
+                                </p>
                             </div>
                         </div>
 
@@ -1025,15 +1051,21 @@
                                 <table style="font-size: 10px; line-height: 1.5;" class="w-full">
                                     <tr>
                                         <td style="width: 25%">Ukuran Jas</td>
-                                        <td class="font-semibold" style="width: 25%">: M (Lingkar Dada 90cm)</td>
-                                        <td style="width: 25%">Ukuran Atasan/Baju</td>
-                                        <td class="font-semibold" style="width: 25%">: L (Lingkar Dada 95cm)</td>
+                                        <td class="font-semibold" style="width: 25%">: M</td>
+                                        <td style="width: 25%">Ukuran Baju Olahraga</td>
+                                        <td class="font-semibold" style="width: 25%">: L</td>
                                     </tr>
                                     <tr>
-                                        <td>Ukuran Bawahan/Celana</td>
-                                        <td class="font-semibold">: L (Pinggang 75cm)</td>
+                                        <td>Ukuran Celana Olahraga</td>
+                                        <td class="font-semibold">: L</td>
+                                        <td>Ukuran Baju Harian</td>
+                                        <td class="font-semibold">: M</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Ukuran Celana/Rok Harian</td>
+                                        <td class="font-semibold">: M</td>
                                         <td>Ukuran Kopyah</td>
-                                        <td class="font-semibold">: M (Lingkar Kepala 56cm)</td>
+                                        <td class="font-semibold">: M</td>
                                     </tr>
                                 </table>
                             </div>
@@ -1045,29 +1077,37 @@
                             <table class="w-full border border-gray-300" style="font-size: 8px;">
                                 <thead class="bg-gray-100">
                                     <tr>
-                                        <th class="border border-gray-300 px-2 py-1 text-left">Keterangan</th>
-                                        <th class="border border-gray-300 px-2 py-1 text-right">Jumlah</th>
+                                        <th class="border border-gray-300 px-2 py-1 text-left" style="width: 40%;">Keterangan</th>
+                                        <th class="border border-gray-300 px-2 py-1 text-right" style="width: 30%;">Nominal Biaya</th>
+                                        <th class="border border-gray-300 px-2 py-1 text-right" style="width: 30%;">Konfirmasi Pembayaran</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     <tr>
-                                        <td class="border border-gray-300 px-2 py-1">Seragam Putih Abu-abu</td>
-                                        <td class="border border-gray-300 px-2 py-1 text-right">Rp 200.000</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="border border-gray-300 px-2 py-1">Seragam Pramuka</td>
-                                        <td class="border border-gray-300 px-2 py-1 text-right">Rp 180.000</td>
-                                    </tr>
-                                    <tr>
-                                        <td class="border border-gray-300 px-2 py-1">Atribut Seragam</td>
-                                        <td class="border border-gray-300 px-2 py-1 text-right">Rp 120.000</td>
+                                        <td class="border border-gray-300 px-2 py-1">
+                                            <span class="text-xs text-gray-700">Paket Seragam Lengkap</span>
+                                        </td>
+                                        <td class="border border-gray-300 px-2 py-1 text-right">
+                                            <span class="text-xs">Rp 750.000</span>
+                                        </td>
+                                        <td class="border border-gray-300 px-2 py-1 text-right">
+                                            <span class="text-xs">Rp 750.000</span>
+                                        </td>
                                     </tr>
                                     <tr class="bg-gray-50 font-semibold">
-                                        <td class="border border-gray-300 px-2 py-1">Total</td>
-                                        <td class="border border-gray-300 px-2 py-1 text-right">Rp 500.000</td>
+                                        <td class="border border-gray-300 px-2 py-1">Status Pembayaran</td>
+                                        <td colspan="2" class="border border-gray-300 px-2 py-1 text-right">
+                                            <span class="text-xs text-emerald-600">LUNAS</span>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
+                            <div class="mt-2 bg-blue-50 border border-blue-200 rounded px-2 py-1" style="font-size: 7px;">
+                                <strong>ℹ️ Info:</strong> Invoice menampilkan:<br>
+                                • <strong>Nominal Biaya</strong>: dari "Pilih Paket Seragam"<br>
+                                • <strong>Konfirmasi Pembayaran</strong>: dari "Konfirmasi Nominal Seragam yang Dibayarkan"<br>
+                                • <strong>Status</strong>: LUNAS (sama), KEMBALIAN (lebih), atau KEKURANGAN (kurang)
+                            </div>
                         </div>
 
                         <!-- Footer -->

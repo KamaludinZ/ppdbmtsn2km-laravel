@@ -1,0 +1,159 @@
+═══════════════════════════════════════════════════════════════════
+  DAFTAR COMMAND UNTUK SERVER PRODUCTION
+  Copy-paste command di bawah ke terminal SSH
+═══════════════════════════════════════════════════════════════════
+
+📌 LANGKAH 1: SSH ke Server
+───────────────────────────────────────────────────────────────────
+ssh mtsnkot4@103.30.244.77
+
+
+📌 LANGKAH 2: Masuk ke Direktori Aplikasi
+───────────────────────────────────────────────────────────────────
+cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id
+
+
+📌 LANGKAH 3: Backup Database (WAJIB!)
+───────────────────────────────────────────────────────────────────
+php artisan backup:run --only-db
+
+
+📌 LANGKAH 4: Cek Status Git (Jika pakai Git)
+───────────────────────────────────────────────────────────────────
+git status
+
+
+📌 LANGKAH 5: Pull Update dari Git (Jika pakai Git)
+───────────────────────────────────────────────────────────────────
+git pull origin main
+
+
+📌 LANGKAH 6: Set Permissions (Jika perlu)
+───────────────────────────────────────────────────────────────────
+chmod -R 755 storage bootstrap/cache
+chown -R mtsnkot4:mtsnkot4 storage bootstrap/cache
+
+
+📌 LANGKAH 7: Cleanup Duplicate Records (WAJIB!)
+───────────────────────────────────────────────────────────────────
+php cleanup_duplicates.php
+
+
+📌 LANGKAH 8: Jalankan Migrations
+───────────────────────────────────────────────────────────────────
+php artisan migrate
+
+
+📌 LANGKAH 9: Clear All Cache
+───────────────────────────────────────────────────────────────────
+php artisan cache:clear && php artisan config:clear && php artisan view:clear && php artisan route:clear && php artisan optimize
+
+
+📌 LANGKAH 10: Verifikasi (Opsional)
+───────────────────────────────────────────────────────────────────
+# Cek tabel baru sudah dibuat:
+php artisan tinker
+>>> \DB::table('riwayat_pesan')->count();
+>>> \DB::table('statistik_tahun')->count();
+>>> exit
+
+
+📌 LANGKAH 11: Cek Log (Jika ada error)
+───────────────────────────────────────────────────────────────────
+tail -50 storage/logs/laravel.log
+
+
+📌 LANGKAH 12: Cek Aplikasi Status
+───────────────────────────────────────────────────────────────────
+php artisan about
+
+
+═══════════════════════════════════════════════════════════════════
+  TROUBLESHOOTING COMMANDS
+═══════════════════════════════════════════════════════════════════
+
+🔧 Jika Migration Gagal (duplicate key error):
+───────────────────────────────────────────────────────────────────
+php cleanup_duplicates.php
+php artisan migrate
+
+
+🔧 Jika Ada Error di Aplikasi:
+───────────────────────────────────────────────────────────────────
+php artisan optimize:clear
+php artisan cache:clear
+php artisan view:clear
+
+
+🔧 Cek Catatan Duplicate (Diagnostic):
+───────────────────────────────────────────────────────────────────
+php check_catatan.php
+
+
+🔧 Cek Data Completeness:
+───────────────────────────────────────────────────────────────────
+php check_data_completeness.php
+
+
+🔧 Cek Jalur Status:
+───────────────────────────────────────────────────────────────────
+php check_jalur_status.php
+
+
+🔧 Restart Queue Worker (Jika pakai queue):
+───────────────────────────────────────────────────────────────────
+php artisan queue:restart
+
+
+🔧 Generate New Application Key (HATI-HATI!):
+───────────────────────────────────────────────────────────────────
+php artisan key:generate
+
+
+🔧 Rollback Migration (Jika perlu):
+───────────────────────────────────────────────────────────────────
+php artisan migrate:rollback
+
+
+═══════════════════════════════════════════════════════════════════
+  ONE-LINER UNTUK COPY-PASTE LANGSUNG
+═══════════════════════════════════════════════════════════════════
+
+FULL DEPLOYMENT (Copy semua baris ini):
+───────────────────────────────────────────────────────────────────
+ssh mtsnkot4@103.30.244.77 << 'EOF'
+cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id
+php artisan backup:run --only-db
+git pull origin main
+chmod -R 755 storage bootstrap/cache
+php cleanup_duplicates.php
+php artisan migrate
+php artisan cache:clear
+php artisan config:clear
+php artisan view:clear
+php artisan route:clear
+php artisan optimize
+echo "✅ DEPLOYMENT COMPLETE!"
+EOF
+
+
+QUICK CACHE CLEAR (Untuk troubleshooting cepat):
+───────────────────────────────────────────────────────────────────
+ssh mtsnkot4@103.30.244.77 "cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id && php artisan cache:clear && php artisan config:clear && php artisan view:clear && php artisan optimize && echo '✅ Cache Cleared!'"
+
+
+═══════════════════════════════════════════════════════════════════
+  CATATAN PENTING
+═══════════════════════════════════════════════════════════════════
+
+⚠️  Jangan jalankan command ini di production:
+    - php artisan migrate:fresh (akan hapus semua data!)
+    - php artisan migrate:reset (akan rollback semua migration!)
+    - php artisan db:seed (bisa duplicate data!)
+
+✅  Command yang aman:
+    - php artisan migrate (jalankan migration baru saja)
+    - php artisan cache:clear (clear cache)
+    - php artisan optimize (optimize aplikasi)
+
+═══════════════════════════════════════════════════════════════════

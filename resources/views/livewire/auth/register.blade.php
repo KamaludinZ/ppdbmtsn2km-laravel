@@ -795,125 +795,18 @@
                     @elseif($currentStep == 3)
                         <button
                             type="button"
-                            wire:click="confirmSubmit()"
-                            class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white transition shadow-lg"
-                            :class="
-                                $wire.nisn &&
-                                $wire.nama_lengkap &&
-                                $wire.tempat_lahir &&
-                                $wire.tanggal_lahir &&
-                                $wire.jenis_kelamin &&
-                                $wire.agama &&
-                                $wire.alamat &&
-                                $wire.telepon_ortu &&
-                                $wire.email &&
-                                $wire.password &&
-                                $wire.password_confirmation &&
-                                $wire.jenis_sekolah_asal &&
-                                $wire.asal_sekolah &&
-                                ($wire.jenis_sekolah_asal === 'madrasah' ? $wire.nsm_sekolah_asal : $wire.npsn_sekolah_asal) &&
-                                ($wire.jenis_sekolah_asal !== 'madrasah' || $wire.nsm_sekolah_asal) &&
-                                ($wire.jenis_sekolah_asal !== 'umum' || $wire.npsn_sekolah_asal)
-                                    ? 'bg-emerald-600 hover:bg-emerald-700'
-                                    : 'bg-gray-400 cursor-not-allowed'
-                            "
-                            :disabled="!(
-                                $wire.nisn &&
-                                $wire.nama_lengkap &&
-                                $wire.tempat_lahir &&
-                                $wire.tanggal_lahir &&
-                                $wire.jenis_kelamin &&
-                                $wire.agama &&
-                                $wire.alamat &&
-                                $wire.telepon_ortu &&
-                                $wire.email &&
-                                $wire.password &&
-                                $wire.password_confirmation &&
-                                $wire.jenis_sekolah_asal &&
-                                $wire.asal_sekolah &&
-                                ($wire.jenis_sekolah_asal === 'madrasah' ? $wire.nsm_sekolah_asal : $wire.npsn_sekolah_asal) &&
-                                ($wire.jenis_sekolah_asal !== 'madrasah' || $wire.nsm_sekolah_asal) &&
-                                ($wire.jenis_sekolah_asal !== 'umum' || $wire.npsn_sekolah_asal)
-                            )"
+                            wire:click="openConfirmModal"
+                            wire:loading.attr="disabled"
+                            id="btnDaftarSekarang"
+                            class="inline-flex items-center px-6 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
                         >
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
-                            Kirim
+                            Daftar Sekarang
                         </button>
                     @endif
 
-                    <!-- Confirmation Modal -->
-                    <div x-data="{ show: @entangle('showConfirmationModal') }"
-                         x-show="show"
-                         x-cloak
-                         class="fixed inset-0 z-9999 overflow-y-auto"
-                         aria-labelledby="modal-title"
-                         role="dialog"
-                         aria-modal="true">
-                        <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                            <div x-show="show"
-                                 class="fixed inset-0 bg-black/10 backdrop-blur-sm z-9998"
-                                 aria-hidden="true"
-                                 @click="$wire.cancelSubmit()">
-                            </div>
-
-                            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-                            <div x-show="show"
-                                 class="inline-block align-bottom bg-white rounded-lg text-left overflow-visible shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full z-9999"
-                                 style="position: relative; margin: auto; margin-top: 2rem; margin-bottom: 2rem;"
-                                 @click.outside="$wire.cancelSubmit()">
-                                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                                    <div class="sm:flex sm:items-start">
-                                        <div class="mx-auto shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10">
-                                            <svg class="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                            </svg>
-                                        </div>
-                                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                                                Konfirmasi Pendaftaran
-                                            </h3>
-                                            <div class="mt-2">
-                                                <p class="text-sm text-gray-500">
-                                                    Data pendaftaran Anda sudah sesuai. Setelah pembuatan akun ini, silakan lanjutkan mengisi formulir pendaftaran dengan login ke akun Anda.
-                                                </p>
-                                                <div class="mt-3 bg-blue-50 border border-blue-200 rounded-lg p-3">
-                                                    <p class="text-sm text-blue-800">
-                                                        <span class="font-semibold">Info yang akan dikirim:</span> Email dan password akan dikirimkan beserta link untuk login dan melengkapi formulir pendaftaran.
-                                                    </p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                                    <button
-                                        type="button"
-                                        wire:click="register"
-                                        wire:loading.attr="disabled"
-                                        wire:loading.class="opacity-75"
-                                        class="w-full inline-flex justify-center items-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed transition-opacity duration-200"
-                                    >
-                                        <svg wire:loading wire:target="register" class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                        </svg>
-                                        <span wire:loading.remove wire:target="register">Ya, Kirim Pendaftaran</span>
-                                        <span wire:loading wire:target="register">Memproses...</span>
-                                    </button>
-                                    <button
-                                        type="button"
-                                        @click="$wire.cancelSubmit()"
-                                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
-                                    >
-                                        Batal
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </form>
         </div>
@@ -936,6 +829,100 @@
         </div>
     </div>
 
+    <!-- Modal Konfirmasi Pendaftaran -->
+    <div x-data="{ show: @entangle('showConfirmModal') }"
+         x-show="show"
+         @keydown.escape.window="show = false; $wire.closeConfirmModal()"
+         class="fixed inset-0 z-[99999] overflow-y-auto"
+         aria-labelledby="modal-title"
+         role="dialog"
+         aria-modal="true"
+         style="display: none;">
+        <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+            <!-- Background Overlay with Blur -->
+            <div x-show="show"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0"
+                 x-transition:enter-end="opacity-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100"
+                 x-transition:leave-end="opacity-0"
+                 class="fixed inset-0 bg-gray-900/75 backdrop-blur-sm transition-opacity z-[99999]"
+                 aria-hidden="true"
+                 @click="show = false; $wire.closeConfirmModal()"></div>
+
+            <!-- Vertical Align Helper -->
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+            <!-- Modal Content -->
+            <div x-show="show"
+                 x-transition:enter="ease-out duration-300"
+                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave="ease-in duration-200"
+                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+                 class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full relative z-[100000]"
+                 role="dialog"
+                 aria-modal="true">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-emerald-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Konfirmasi Pendaftaran
+                            </h3>
+                            <div class="mt-2">
+                                <p class="text-sm text-gray-500">
+                                    Yakin ingin mendaftar?
+                                </p>
+                                <p class="text-sm text-gray-500 mt-2">
+                                    Data pendaftaran Anda sudah sesuai. Setelah pembuatan akun ini, silakan lanjutkan mengisi formulir pendaftaran dengan login ke akun Anda.
+                                </p>
+                                <p class="text-sm text-gray-500 mt-2">
+                                    Email dan password akan dikirimkan beserta link untuk login.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button
+                        type="button"
+                        wire:click="register"
+                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:ml-3 sm:w-auto sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                        wire:loading.attr="disabled"
+                        wire:target="register"
+                    >
+                        <span wire:loading.remove wire:target="register">
+                            <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Ya, Daftar Sekarang
+                        </span>
+                        <span wire:loading wire:target="register" class="inline-flex items-center">
+                            <svg class="animate-spin h-5 w-5 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Memproses...
+                        </span>
+                    </button>
+                    <button
+                        type="button"
+                        wire:click="closeConfirmModal"
+                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                    >
+                        Batal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         /**
@@ -991,5 +978,6 @@
                 input.setSelectionRange(newCursorPos, newCursorPos);
             }
         }
+
     </script>
 </div>

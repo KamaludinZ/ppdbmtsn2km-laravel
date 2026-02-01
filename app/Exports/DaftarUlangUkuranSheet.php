@@ -28,10 +28,14 @@ class DaftarUlangUkuranSheet implements FromQuery, WithHeadings, WithMapping, Wi
         $query = Seragam::with(['pendaftar.jalurPendaftaran', 'pendaftar.user', 'pendaftar.daftarUlang']);
 
         // Only show records with size data
-        $query->whereNotNull('ukuran_atasan')
-              ->orWhereNotNull('ukuran_bawahan')
-              ->orWhereNotNull('ukuran_jas')
+        $query->where(function($q) {
+            $q->whereNotNull('ukuran_jas')
+              ->orWhereNotNull('ukuran_baju_olahraga')
+              ->orWhereNotNull('ukuran_celana_olahraga')
+              ->orWhereNotNull('ukuran_baju_harian')
+              ->orWhereNotNull('ukuran_celana_rok_harian')
               ->orWhereNotNull('ukuran_kopyah');
+        });
 
         // Filter based on daftar ulang status if provided
         if ($this->status) {
@@ -59,17 +63,21 @@ class DaftarUlangUkuranSheet implements FromQuery, WithHeadings, WithMapping, Wi
             $pendaftar->nisn ?? '',
             $pendaftar->nama_lengkap ?? '',
             $pendaftar->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan',
-            $pendaftar->tinggi_badan ? $pendaftar->tinggi_badan . ' cm' : '-',
-            $pendaftar->berat_badan ? $pendaftar->berat_badan . ' kg' : '-',
-            $seragam->paket ?? '-',
+            $seragam->tinggi_badan ? $seragam->tinggi_badan . ' cm' : '-',
+            $seragam->berat_badan ? $seragam->berat_badan . ' kg' : '-',
+            $seragam->paket_seragam ?? '-',
+            $this->getStatusPersetujuanLabel($pendaftar->status_persetujuan_daftar_ulang),
+            $pendaftar->alasan_tidak_setuju ?? '-',
             $seragam->ukuran_jas ?? '-',
-            $seragam->ukuran_atasan ?? '-',
-            $seragam->ukuran_bawahan ?? '-',
-            $seragam->ukuran_kopyah ?? '-',
+            $seragam->ukuran_baju_olahraga ?? '-',
+            $seragam->ukuran_celana_olahraga ?? '-',
+            $seragam->ukuran_baju_harian ?? '-',
+            $seragam->ukuran_celana_rok_harian ?? '-',
+            $pendaftar->jenis_kelamin === 'L' ? ($seragam->ukuran_kopyah ?? '-') : 'N/A',
             $pendaftar->telepon_ortu ?? $pendaftar->no_hp ?? '',
             $pendaftar->alamat ?? '',
-            $this->getStatusLabel($seragam->status),
-            $seragam->catatan ?? '',
+            $this->getStatusLabel($seragam->status_ukuran),
+            $seragam->catatan_ukuran ?? '',
             $seragam->created_at ? Carbon::parse($seragam->created_at)->format('d-m-Y H:i') : '',
         ];
     }
@@ -84,15 +92,19 @@ class DaftarUlangUkuranSheet implements FromQuery, WithHeadings, WithMapping, Wi
             'Tinggi Badan',
             'Berat Badan',
             'Paket Seragam',
+            'Status Persetujuan',
+            'Alasan Tidak Melanjutkan',
             'Ukuran Jas',
-            'Ukuran Atasan',
-            'Ukuran Bawahan',
-            'Ukuran Kopyah',
+            'Ukuran Baju Olahraga',
+            'Ukuran Celana Olahraga',
+            'Ukuran Baju Seragam Harian',
+            'Ukuran Celana/Rok Harian',
+            'Ukuran Kopyah (Laki-laki)',
             'No. Telepon',
             'Alamat',
             'Status',
             'Catatan',
-            'Tanggal Pemesanan',
+            'Tanggal Input',
         ];
     }
 
@@ -127,5 +139,16 @@ class DaftarUlangUkuranSheet implements FromQuery, WithHeadings, WithMapping, Wi
         ];
 
         return $statusLabels[$status] ?? ucfirst(str_replace('_', ' ', $status));
+    }
+
+    private function getStatusPersetujuanLabel($status)
+    {
+        $statusLabels = [
+            'belum_memilih' => 'Belum Memilih',
+            'setuju' => 'Setuju Daftar Ulang',
+            'tidak_setuju' => 'Tidak Melanjutkan',
+        ];
+
+        return $statusLabels[$status] ?? 'Belum Memilih';
     }
 }

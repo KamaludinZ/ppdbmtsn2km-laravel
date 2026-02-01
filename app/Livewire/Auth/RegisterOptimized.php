@@ -497,7 +497,8 @@ class RegisterOptimized extends Component
                 $customFileName = FileNamingService::generateFileName(
                     'rapor',
                     $pendaftar->nomor_pendaftaran,
-                    $extension
+                    $extension,
+                    $pendaftar->nama_lengkap
                 );
 
                 // Store to PRIVATE storage for security
@@ -690,7 +691,7 @@ class RegisterOptimized extends Component
     {
         // Cache jalur pendaftaran dengan count yang sudah di-eager load
         $jalurPendaftaran = Cache::remember('jalur_pendaftaran_with_counts', 300, function () {
-            return JalurPendaftaran::aktif()
+            return JalurPendaftaran::tampilDiDaftar()
                 ->ordered()
                 ->withCount('pendaftar')
                 ->get()

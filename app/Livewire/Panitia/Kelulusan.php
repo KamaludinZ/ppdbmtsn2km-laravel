@@ -20,7 +20,7 @@ class Kelulusan extends Component
     public function mount()
     {
         $user = Auth::user();
-        if (!$user || !in_array($user->role, ['panitia_pendaftaran', 'panitia_daftarulang', 'panitia'])) {
+        if (!$user || !in_array($user->role, ['panitia_pendaftaran', 'panitia_daftarulang', 'panitia_tes_psikologi', 'panitia_seragam'])) {
             return redirect()->to('/login/admin');
         }
     }
@@ -42,48 +42,78 @@ class Kelulusan extends Component
 
     public function render()
     {
-        $baseQuery = Pendaftar::query()->with(['jalurPendaftaran', 'tesPsikologiPendaftar']);
-        $query = clone $baseQuery;
+        try {
+            $query = Pendaftar::query()->with(['jalurPendaftaran', 'tesPsikologiPendaftar']);
 
-        if ($this->search) {
-            $query->where(function($q) {
-                $q->where('nama_lengkap', 'like', '%' . $this->search . '%')
-                  ->orWhere('nisn', 'like', '%' . $this->search . '%')
-                  ->orWhere('nomor_pendaftaran', 'like', '%' . $this->search . '%');
+            // Apply filters
+            $query->when($this->search, function($q) {
+                $q->where(function($subQuery) {
+                    $subQuery->where('nama_lengkap', 'like', '%' . $this->search . '%')
+                        ->orWhere('nisn', 'like', '%' . $this->search . '%')
+                        ->orWhere('nomor_pendaftaran', 'like', '%' . $this->search . '%');
+                });
+            })
+            ->when($this->filterJalur, function($q) {
+                $q->where('jalur_pendaftaran_id', $this->filterJalur);
+            })
+            ->when($this->filterStatus, function($q) {
+                $q->where('status_pendaftaran', $this->filterStatus);
             });
+
+            // Optimize stats queries - use single query with groupBy
+            $statsData = Pendaftar::selectRaw('status_pendaftaran, COUNT(*) as count')
+                ->when($this->search, function($q) {
+                    $q->where(function($subQuery) {
+                        $subQuery->where('nama_lengkap', 'like', '%' . $this->search . '%')
+                            ->orWhere('nisn', 'like', '%' . $this->search . '%')
+                            ->orWhere('nomor_pendaftaran', 'like', '%' . $this->search . '%');
+                    });
+                })
+                ->when($this->filterJalur, function($q) {
+                    $q->where('jalur_pendaftaran_id', $this->filterJalur);
+                })
+                ->groupBy('status_pendaftaran')
+                ->pluck('count', 'status_pendaftaran');
+
+            $stats = [
+                'total' => $statsData->sum(),
+                'menunggu' => $statsData->get('menunggu_verifikasi', 0),
+                'lulus' => $statsData->get('data_disetujui', 0),
+                'cadangan' => $statsData->get('lengkapi_data', 0),
+                'tidak_lulus' => $statsData->get('data_ditolak', 0),
+            ];
+
+            $pendaftar = $this->applySorting($query)->paginate(10);
+            $jalurPendaftaran = JalurPendaftaran::orderBy('nama')->get();
+
+            return view('livewire.panitia.kelulusan', [
+                'pendaftar' => $pendaftar,
+                'jalurPendaftaran' => $jalurPendaftaran,
+                'stats' => $stats
+            ])->layout('components.layouts.dashboard', [
+                'role' => Auth::user()->role,
+                'pageTitle' => 'Manajemen Kelulusan',
+                'pageDescription' => 'Kelola status kelulusan pendaftar'
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Kelulusan render error: ' . $e->getMessage());
+
+            return view('livewire.panitia.kelulusan', [
+                'pendaftar' => collect(),
+                'jalurPendaftaran' => collect(),
+                'stats' => [
+                    'total' => 0,
+                    'menunggu' => 0,
+                    'lulus' => 0,
+                    'cadangan' => 0,
+                    'tidak_lulus' => 0,
+                ]
+            ])->layout('components.layouts.dashboard', [
+                'role' => Auth::user()->role,
+                'pageTitle' => 'Manajemen Kelulusan',
+                'pageDescription' => 'Kelola status kelulusan pendaftar'
+            ]);
         }
-
-        if ($this->filterJalur) {
-            $query->where('jalur_pendaftaran_id', $this->filterJalur);
-        }
-
-        if ($this->filterStatus) {
-            $query->where('status_pendaftaran', $this->filterStatus);
-        }
-
-        $statsQuery = clone $query;
-
-        // Stats untuk Status Kelulusan
-        $stats = [
-            'total' => $statsQuery->count(),
-            'menunggu' => (clone $statsQuery)->where('status_pendaftaran', 'menunggu_verifikasi')->count(),
-            'lulus' => (clone $statsQuery)->where('status_pendaftaran', 'data_disetujui')->count(),
-            'cadangan' => (clone $statsQuery)->where('status_pendaftaran', 'lengkapi_data')->count(),
-            'tidak_lulus' => (clone $statsQuery)->where('status_pendaftaran', 'data_ditolak')->count(),
-        ];
-
-        $pendaftar = $this->applySorting($query)->paginate(10);
-        $jalurPendaftaran = JalurPendaftaran::orderBy('nama')->get();
-
-        return view('livewire.panitia.kelulusan', [
-            'pendaftar' => $pendaftar,
-            'jalurPendaftaran' => $jalurPendaftaran,
-            'stats' => $stats
-        ])->layout('components.layouts.dashboard', [
-            'role' => Auth::user()->role,
-            'pageTitle' => 'Manajemen Kelulusan',
-            'pageDescription' => 'Kelola status kelulusan pendaftar'
-        ]);
     }
 
     public function updateStatus($id, $status)

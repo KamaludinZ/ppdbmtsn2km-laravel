@@ -1,4 +1,40 @@
 <div>
+    <!-- Toast Notification -->
+    <div
+        x-data="{
+            show: false,
+            message: '',
+            type: 'success',
+            init() {
+                window.addEventListener('statusUpdated', (event) => {
+                    this.type = event.detail[0].type || 'success';
+                    this.message = event.detail[0].message;
+                    this.show = true;
+                    setTimeout(() => this.show = false, 5000);
+                });
+            }
+        }"
+        x-show="show"
+        x-transition
+        :class="{
+            'bg-emerald-500': type === 'success',
+            'bg-red-500': type === 'error',
+            'bg-blue-500': type === 'info'
+        }"
+        class="fixed top-4 right-4 text-white px-6 py-4 rounded-lg shadow-lg z-[10000] flex items-center max-w-md"
+        style="display: none;">
+        <svg x-show="type === 'success'" class="w-6 h-6 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+        </svg>
+        <svg x-show="type === 'error'" class="w-6 h-6 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        </svg>
+        <svg x-show="type === 'info'" class="w-6 h-6 mr-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+        <span x-text="message" class="flex-1"></span>
+    </div>
+
     @if(!$pendaftar)
         <div class="text-center py-12">
             <p class="text-gray-500">Data pendaftar tidak ditemukan.</p>
@@ -57,20 +93,18 @@
                         <div class="flex md:flex-col items-start md:items-end justify-start md:justify-center gap-3">
                             @php
                                 $statusColors = [
-                                    'draft' => 'bg-gray-100 text-gray-800 border-gray-300',
-                                    'menunggu' => 'bg-yellow-50 text-yellow-800 border-yellow-300',
-                                    'diverifikasi' => 'bg-blue-50 text-blue-800 border-blue-300',
-                                    'lulus' => 'bg-green-50 text-green-800 border-green-300',
-                                    'tidak_lulus' => 'bg-red-50 text-red-800 border-red-300',
-                                    'cadangan' => 'bg-blue-50 text-blue-800 border-blue-300',
+                                    'menunggu_verifikasi' => 'bg-yellow-50 text-yellow-800 border-yellow-300',
+                                    'lengkapi_data' => 'bg-orange-50 text-orange-800 border-orange-300',
+                                    'perbaiki_data' => 'bg-amber-50 text-amber-800 border-amber-300',
+                                    'data_ditolak' => 'bg-red-50 text-red-800 border-red-300',
+                                    'data_disetujui' => 'bg-green-50 text-green-800 border-green-300',
                                 ];
                                 $statusLabels = [
-                                    'draft' => 'Draft',
-                                    'menunggu' => 'Menunggu Verifikasi',
-                                    'diverifikasi' => 'Diverifikasi',
-                                    'lulus' => 'Lulus Seleksi',
-                                    'tidak_lulus' => 'Tidak Lulus',
-                                    'cadangan' => 'Cadangan',
+                                    'menunggu_verifikasi' => 'Menunggu Verifikasi',
+                                    'lengkapi_data' => 'Lengkapi Data',
+                                    'perbaiki_data' => 'Perbaiki Data',
+                                    'data_ditolak' => 'Data Ditolak',
+                                    'data_disetujui' => 'Data Disetujui',
                                 ];
                                 $statusClass = $statusColors[$pendaftar->status_pendaftaran] ?? 'bg-gray-100 text-gray-800 border-gray-300';
                                 $statusLabel = $statusLabels[$pendaftar->status_pendaftaran] ?? ucfirst(str_replace('_', ' ', $pendaftar->status_pendaftaran));
@@ -83,13 +117,12 @@
                             </div>
                             <div class="text-left md:text-right">
                                 <p class="text-emerald-100 text-xs font-semibold mb-2 uppercase tracking-wide">Ubah Status</p>
-                                <select wire:model.live="status_pendaftaran" wire:change="updateStatusPendaftaran" class="rounded-lg border-2 border-white shadow-md text-sm font-semibold focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
-                                    <option value="draft">Draft</option>
-                                    <option value="menunggu">Menunggu Verifikasi</option>
-                                    <option value="diverifikasi">Diverifikasi</option>
-                                    <option value="lulus">Lulus Seleksi</option>
-                                    <option value="tidak_lulus">Tidak Lulus</option>
-                                    <option value="cadangan">Cadangan</option>
+                                <select wire:model.live="status_pendaftaran" wire:change="updateStatusPendaftaran" class="bg-white text-gray-800 rounded-lg border-2 border-white shadow-md px-4 py-2 text-sm font-semibold focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 hover:bg-gray-50 transition cursor-pointer">
+                                    <option value="menunggu_verifikasi" class="text-gray-800">Menunggu Verifikasi</option>
+                                    <option value="lengkapi_data" class="text-gray-800">Lengkapi Data</option>
+                                    <option value="perbaiki_data" class="text-gray-800">Perbaiki Data</option>
+                                    <option value="data_ditolak" class="text-gray-800">Data Ditolak</option>
+                                    <option value="data_disetujui" class="text-gray-800">Data Disetujui</option>
                                 </select>
                             </div>
                         </div>
@@ -98,17 +131,13 @@
             </div>
 
             <!-- Tab Navigation -->
-            <div x-data="{ activeTab: 'rapor' }" class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div x-data="{ activeTab: 'siswa' }" class="bg-white rounded-lg shadow-lg overflow-hidden">
                 <!-- Tab Buttons -->
                 <div class="border-b border-gray-200 overflow-x-auto">
                     <nav class="flex -mb-px whitespace-nowrap">
-                        <button @click="activeTab = 'rapor'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'rapor', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'rapor' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                            Data Rapor
-                        </button>
-                        <button @click="activeTab = 'pribadi'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'pribadi', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'pribadi' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                        <button @click="activeTab = 'siswa'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'siswa', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'siswa' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
                             <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                            Data Pribadi
+                            Data Siswa
                         </button>
                         <button @click="activeTab = 'orangtua'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'orangtua', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'orangtua' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
                             <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
@@ -118,17 +147,25 @@
                             <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                             Data Alamat
                         </button>
-                        <button @click="activeTab = 'sekolah'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'sekolah', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'sekolah' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
-                            Data Sekolah
-                        </button>
                         <button @click="activeTab = 'prestasi'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'prestasi', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'prestasi' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
                             <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path></svg>
-                            Data Prestasi
+                            Prestasi Siswa
                         </button>
-                        <button @click="activeTab = 'emisidentitas'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'emisidentitas', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'emisidentitas' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>
-                            Data EMIS
+                        <button @click="activeTab = 'keahlian'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'keahlian', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'keahlian' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                            Keahlian
+                        </button>
+                        <button @click="activeTab = 'tahfidz'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'tahfidz', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'tahfidz' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                            Tahfidz
+                        </button>
+                        <button @click="activeTab = 'beasiswa'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'beasiswa', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'beasiswa' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Beasiswa & Bantuan
+                        </button>
+                        <button @click="activeTab = 'pendidikan'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'pendidikan', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'pendidikan' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                            Pendidikan Lain
                         </button>
                         <button @click="activeTab = 'dokumen'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'dokumen', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'dokumen' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
                             <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
@@ -147,1031 +184,44 @@
 
                 <!-- Tab Content -->
                 <div class="p-6">
-                    <!-- Data Pribadi Tab -->
-                    <div x-show="activeTab === 'pribadi'" x-transition>
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900">Data Pribadi</h3>
-                            @if($editMode)
-                                <div class="space-x-2">
-                                    <button wire:click="saveDataPribadi" class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm">
-                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                        Simpan
-                                    </button>
-                                    <button wire:click="toggleEditMode" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">Batal</button>
-                                </div>
-                            @else
-                                <button wire:click="toggleEditMode" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
-                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                    Edit Data
-                                </button>
-                            @endif
-                        </div>
-
-                        @if($editMode)
-                            <form wire:submit.prevent="saveDataPribadi" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <!-- Upload Foto -->
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Foto Pendaftar</label>
-                                    <div class="flex items-center space-x-4">
-                                        @if($foto)
-                                            <img src="{{ Storage::url($foto) }}" alt="Current foto" class="w-20 h-20 rounded-full object-cover">
-                                        @endif
-                                        <div>
-                                            <input type="file" wire:model="newFoto" accept="image/*" class="text-sm">
-                                            @error('newFoto') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                            <p class="text-xs text-gray-500 mt-1">Format: JPG, PNG. Max: 2MB</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Nama Lengkap *</label>
-                                    <input type="text" wire:model="nama_lengkap" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                    @error('nama_lengkap') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">NISN *</label>
-                                    <input type="text" wire:model="nisn" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                    @error('nisn') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Tempat Lahir</label>
-                                    <input type="text" wire:model="tempat_lahir" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Tanggal Lahir</label>
-                                    <input type="date" wire:model="tanggal_lahir" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Jenis Kelamin *</label>
-                                    <select wire:model="jenis_kelamin" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                        <option value="L">Laki-laki</option>
-                                        <option value="P">Perempuan</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Agama</label>
-                                    <input type="text" wire:model="agama" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                </div>
-                            </form>
-                        @else
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">Nama Lengkap</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nama_lengkap }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">NISN</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nisn }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">Tempat Lahir</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->tempat_lahir ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">Tanggal Lahir</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->tanggal_lahir ? $pendaftar->tanggal_lahir->format('d F Y') : '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">Jenis Kelamin</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">Agama</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->agama ?? '-' }}</p>
-                                </div>
-                            </div>
-                        @endif
+                    <!-- Tab Data Siswa -->
+                    <div x-show="activeTab === 'siswa'" x-transition>
+                        @include('tab_templates.tab-data-siswa')
                     </div>
 
-                    <!-- Data Orang Tua Tab -->
+                    <!-- Tab Data Orang Tua -->
                     <div x-show="activeTab === 'orangtua'" x-transition>
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900">Data Orang Tua</h3>
-                            @if($editMode)
-                                <div class="space-x-2">
-                                    <button wire:click="saveDataOrangTua" class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm">
-                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                        Simpan
-                                    </button>
-                                    <button wire:click="toggleEditMode" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">Batal</button>
-                                </div>
-                            @else
-                                <button wire:click="toggleEditMode" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
-                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                    Edit Data
-                                </button>
-                            @endif
-                        </div>
-
-                        @if($editMode)
-                            <form wire:submit.prevent="saveDataOrangTua" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Nama Ayah</label>
-                                    <input type="text" wire:model="nama_ayah" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Pekerjaan Ayah</label>
-                                    <input type="text" wire:model="pekerjaan_ayah" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Nama Ibu</label>
-                                    <input type="text" wire:model="nama_ibu" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Pekerjaan Ibu</label>
-                                    <input type="text" wire:model="pekerjaan_ibu" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Penghasilan Orang Tua</label>
-                                    <input type="text" wire:model="penghasilan_ortu" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">No. Telepon/WA Orang Tua</label>
-                                    <input type="text" wire:model="telepon_ortu" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                </div>
-                            </form>
-                        @else
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">Nama Ayah</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nama_ayah ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">Pekerjaan Ayah</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->pekerjaan_ayah ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">Nama Ibu</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nama_ibu ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">Pekerjaan Ibu</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->pekerjaan_ibu ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">Penghasilan Orang Tua</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->penghasilan_ortu ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">No. Telepon/WA Orang Tua</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->telepon_ortu ?? '-' }}</p>
-                                </div>
-                            </div>
-                        @endif
+                        @include('tab_templates.tab-data-orangtua')
                     </div>
 
-                    <!-- Data Alamat Tab -->
+                    <!-- Tab Data Alamat -->
                     <div x-show="activeTab === 'alamat'" x-transition>
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900">Data Alamat & Kontak</h3>
-                            @if($editMode)
-                                <div class="space-x-2">
-                                    <button wire:click="saveDataAlamat" class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm">
-                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                        Simpan
-                                    </button>
-                                    <button wire:click="toggleEditMode" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">Batal</button>
-                                </div>
-                            @else
-                                <button wire:click="toggleEditMode" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
-                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                    Edit Data
-                                </button>
-                            @endif
-                        </div>
-
-                        @if($editMode)
-                            <form wire:submit.prevent="saveDataAlamat" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-700">Alamat Lengkap</label>
-                                    <textarea wire:model="alamat" rows="3" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200"></textarea>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Kab/Kota</label>
-                                    <input type="text" wire:model="asal_kabkota" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">No. Telepon</label>
-                                    <input type="text" wire:model="telepon" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">No. HP</label>
-                                    <input type="text" wire:model="no_hp" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                    @error('no_hp') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Email *</label>
-                                    <input type="email" wire:model="email" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                    @error('email') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                </div>
-                            </form>
-                        @else
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-600">Alamat Lengkap</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->alamat ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">Kab/Kota</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->asal_kabkota ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">No. Telepon</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->telepon ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">No. HP</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->no_hp ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">Email</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->email }}</p>
-                                </div>
-                            </div>
-                        @endif
+                        @include('tab_templates.tab-data-alamat')
                     </div>
 
-                    <!-- Data Sekolah Asal Tab -->
-                    <div x-show="activeTab === 'sekolah'" x-transition>
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900">Data Sekolah Asal</h3>
-                            @if($editMode)
-                                <div class="space-x-2">
-                                    <button wire:click="saveDataSekolah" class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm">
-                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                        Simpan
-                                    </button>
-                                    <button wire:click="toggleEditMode" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">Batal</button>
-                                </div>
-                            @else
-                                <button wire:click="toggleEditMode" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
-                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                    Edit Data
-                                </button>
-                            @endif
-                        </div>
-
-                        @if($editMode)
-                            <form wire:submit.prevent="saveDataSekolah" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Nama Sekolah</label>
-                                    <input type="text" wire:model="asal_sekolah" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Jenis Sekolah</label>
-                                    <select wire:model="jenis_sekolah_asal" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                        <option value="">Pilih Jenis</option>
-                                        <option value="madrasah">Madrasah</option>
-                                        <option value="umum">Umum</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">NSM (untuk Madrasah)</label>
-                                    <input type="text"
-                                           wire:model="nsm_sekolah_asal"
-                                           pattern="[0-9]{12}"
-                                           inputmode="numeric"
-                                           maxlength="12"
-                                           oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                                           placeholder="12 digit angka"
-                                           title="NSM harus berupa 12 digit angka"
-                                           class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">NPSN (untuk Sekolah Umum)</label>
-                                    <input type="text"
-                                           wire:model="npsn_sekolah_asal"
-                                           pattern="[0-9]{8}"
-                                           inputmode="numeric"
-                                           maxlength="8"
-                                           oninput="this.value = this.value.replace(/[^0-9]/g, '')"
-                                           placeholder="8 digit angka"
-                                           title="NPSN harus berupa 8 digit angka"
-                                           class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Nilai Rata-Rata</label>
-                                    <input type="number" step="0.01" wire:model="nilai_rata_rata" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                </div>
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-700">Alamat Sekolah</label>
-                                    <textarea wire:model="alamat_sekolah" rows="2" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200"></textarea>
-                                </div>
-                            </form>
-                        @else
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">Nama Sekolah</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->asal_sekolah ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">Jenis Sekolah</label>
-                                    <p class="mt-1 text-base text-gray-900">
-                                        @if($pendaftar->jenis_sekolah_asal)
-                                            <span class="inline-flex px-3 py-1 text-xs font-semibold rounded-full {{ $pendaftar->jenis_sekolah_asal === 'madrasah' ? 'bg-purple-100 text-purple-800' : 'bg-indigo-100 text-indigo-800' }}">
-                                                {{ ucfirst($pendaftar->jenis_sekolah_asal) }}
-                                            </span>
-                                        @else
-                                            -
-                                        @endif
-                                    </p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">
-                                        {{ $pendaftar->jenis_sekolah_asal === 'madrasah' ? 'NSM' : 'NPSN' }}
-                                    </label>
-                                    <p class="mt-1 text-base text-gray-900">
-                                        {{ $pendaftar->jenis_sekolah_asal === 'madrasah' ? ($pendaftar->nsm_sekolah_asal ?? '-') : ($pendaftar->npsn_sekolah_asal ?? '-') }}
-                                    </p>
-                                </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-600">Nilai Rata-Rata</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_rata_rata ?? '-' }}</p>
-                                </div>
-                                @if($pendaftar->alamat_sekolah)
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-600">Alamat Sekolah</label>
-                                    <p class="mt-1 text-base text-gray-900">{{ $pendaftar->alamat_sekolah }}</p>
-                                </div>
-                                @endif
-                            </div>
-                        @endif
-                    </div>
-
-                    <!-- Data Rapor Tab -->
-                    <div x-show="activeTab === 'rapor'" x-transition>
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900">Data Nilai Rapor</h3>
-                            @if($editMode)
-                                <div class="space-x-2">
-                                    <button wire:click="saveDataRapor" class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm">
-                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                        Simpan
-                                    </button>
-                                    <button wire:click="toggleEditMode" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">Batal</button>
-                                </div>
-                            @else
-                                <button wire:click="toggleEditMode" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
-                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                    Edit Data
-                                </button>
-                            @endif
-                        </div>
-
-                        @if($editMode)
-                            <form wire:submit.prevent="saveDataRapor" class="space-y-6">
-                                <!-- Kelas 5 Semester 1 -->
-                                <div class="border-l-4 border-blue-500 pl-4">
-                                    <h4 class="font-semibold text-gray-900 mb-3">Kelas 5 Semester 1</h4>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700">Bahasa Indonesia</label>
-                                            <input type="number" step="0.01" min="0" max="100" wire:model="nilai_b_indo_5_1" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                            @error('nilai_b_indo_5_1') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700">Matematika</label>
-                                            <input type="number" step="0.01" min="0" max="100" wire:model="nilai_matematika_5_1" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                            @error('nilai_matematika_5_1') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700">IPA</label>
-                                            <input type="number" step="0.01" min="0" max="100" wire:model="nilai_ipa_5_1" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                            @error('nilai_ipa_5_1') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Kelas 5 Semester 2 -->
-                                <div class="border-l-4 border-green-500 pl-4">
-                                    <h4 class="font-semibold text-gray-900 mb-3">Kelas 5 Semester 2</h4>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700">Bahasa Indonesia</label>
-                                            <input type="number" step="0.01" min="0" max="100" wire:model="nilai_b_indo_5_2" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                            @error('nilai_b_indo_5_2') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700">Matematika</label>
-                                            <input type="number" step="0.01" min="0" max="100" wire:model="nilai_matematika_5_2" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                            @error('nilai_matematika_5_2') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700">IPA</label>
-                                            <input type="number" step="0.01" min="0" max="100" wire:model="nilai_ipa_5_2" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                            @error('nilai_ipa_5_2') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Kelas 6 Semester 1 -->
-                                <div class="border-l-4 border-purple-500 pl-4">
-                                    <h4 class="font-semibold text-gray-900 mb-3">Kelas 6 Semester 1</h4>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700">Bahasa Indonesia</label>
-                                            <input type="number" step="0.01" min="0" max="100" wire:model="nilai_b_indo_6_1" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                            @error('nilai_b_indo_6_1') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700">Matematika</label>
-                                            <input type="number" step="0.01" min="0" max="100" wire:model="nilai_matematika_6_1" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                            @error('nilai_matematika_6_1') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-700">IPA</label>
-                                            <input type="number" step="0.01" min="0" max="100" wire:model="nilai_ipa_6_1" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                            @error('nilai_ipa_6_1') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Rata-rata -->
-                                <div class="bg-emerald-50 p-4 rounded-lg">
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-sm font-medium text-gray-700">Rata-rata Nilai:</span>
-                                        <span class="text-2xl font-bold text-emerald-600">{{ $pendaftar->hitungRataRataRapor() }}</span>
-                                    </div>
-                                </div>
-                            </form>
-                        @else
-                            <div class="space-y-6">
-                                <!-- Kelas 5 Semester 1 -->
-                                <div class="border-l-4 border-blue-500 pl-4">
-                                    <h4 class="font-semibold text-gray-900 mb-3">Kelas 5 Semester 1</h4>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-600">Bahasa Indonesia</label>
-                                            <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_b_indo_5_1 ?? '-' }}</p>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-600">Matematika</label>
-                                            <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_matematika_5_1 ?? '-' }}</p>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-600">IPA</label>
-                                            <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_ipa_5_1 ?? '-' }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Kelas 5 Semester 2 -->
-                                <div class="border-l-4 border-green-500 pl-4">
-                                    <h4 class="font-semibold text-gray-900 mb-3">Kelas 5 Semester 2</h4>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-600">Bahasa Indonesia</label>
-                                            <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_b_indo_5_2 ?? '-' }}</p>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-600">Matematika</label>
-                                            <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_matematika_5_2 ?? '-' }}</p>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-600">IPA</label>
-                                            <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_ipa_5_2 ?? '-' }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Kelas 6 Semester 1 -->
-                                <div class="border-l-4 border-purple-500 pl-4">
-                                    <h4 class="font-semibold text-gray-900 mb-3">Kelas 6 Semester 1</h4>
-                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-600">Bahasa Indonesia</label>
-                                            <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_b_indo_6_1 ?? '-' }}</p>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-600">Matematika</label>
-                                            <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_matematika_6_1 ?? '-' }}</p>
-                                        </div>
-                                        <div>
-                                            <label class="block text-sm font-medium text-gray-600">IPA</label>
-                                            <p class="mt-1 text-base text-gray-900">{{ $pendaftar->nilai_ipa_6_1 ?? '-' }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Rata-rata -->
-                                <div class="bg-emerald-50 p-4 rounded-lg">
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-sm font-medium text-gray-700">Rata-rata Nilai:</span>
-                                        <span class="text-2xl font-bold text-emerald-600">{{ $pendaftar->hitungRataRataRapor() }}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-
-                    <!-- Data Prestasi Tab -->
+                    <!-- Tab Prestasi Siswa -->
                     <div x-show="activeTab === 'prestasi'" x-transition>
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900">Data Prestasi</h3>
-                            @if($editMode)
-                                <div class="space-x-2">
-                                    <button wire:click="saveDataPrestasi" class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm">
-                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                        Simpan
-                                    </button>
-                                    <button wire:click="toggleEditMode" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">Batal</button>
-                                </div>
-                            @else
-                                <button wire:click="toggleEditMode" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
-                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                    Edit Data
-                                </button>
-                            @endif
-                        </div>
-
-                        @if($editMode)
-                            <form wire:submit.prevent="saveDataPrestasi">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-2">Prestasi yang Dimiliki</label>
-                                    <textarea wire:model="prestasi" rows="6" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200" placeholder="Tuliskan prestasi yang pernah diraih (akademik maupun non-akademik)"></textarea>
-                                    <p class="mt-1 text-xs text-gray-500">Contoh: Juara 1 Lomba MTQ Tingkat Kota, Juara 2 Olimpiade Matematika, dll.</p>
-                                </div>
-                            </form>
-                        @else
-                            <div>
-                                <label class="block text-sm font-medium text-gray-600 mb-2">Prestasi yang Dimiliki</label>
-                                @if($pendaftar->prestasi)
-                                    <div class="bg-gray-50 p-4 rounded-lg">
-                                        <p class="text-base text-gray-900 whitespace-pre-line">{{ $pendaftar->prestasi }}</p>
-                                    </div>
-                                @else
-                                    <p class="text-base text-gray-500 italic">Tidak ada data prestasi</p>
-                                @endif
-                            </div>
-                        @endif
+                        @include('tab_templates.tab-prestasi')
                     </div>
 
-                    <!-- Data EMIS Tab -->
-                    <div x-show="activeTab === 'emisidentitas'" x-transition>
-                        <h3 class="text-lg font-semibold text-gray-900 mb-6">Data EMIS Kemenag 4.0</h3>
+                    <!-- Tab Keahlian -->
+                    <div x-show="activeTab === 'keahlian'" x-transition>
+                        @include('tab_templates.tab-keahlian')
+                    </div>
 
-                        <!-- 1. Data Identitas & Keluarga -->
-                        <div class="mb-8 bg-emerald-50 p-6 rounded-lg border border-emerald-200">
-                            <h4 class="text-md font-semibold text-emerald-900 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                                Data Identitas & Keluarga
-                            </h4>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white p-4 rounded-lg">
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">NIK</label>
-                                    <p class="text-base font-semibold text-gray-900">{{ $pendaftar->nik ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nama Panggilan</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->nama_panggilan ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Kewarganegaraan</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->kewarganegaraan ? ucfirst($pendaftar->kewarganegaraan) : '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nomor Kartu Keluarga</label>
-                                    <p class="text-base font-semibold text-gray-900">{{ $pendaftar->nomor_kk ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Anak Ke-</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->anak_ke ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Jumlah Saudara Kandung</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->jumlah_saudara_kandung ?? '-' }}</p>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Tab Tahfidz -->
+                    <div x-show="activeTab === 'tahfidz'" x-transition>
+                        @include('tab_templates.tab-tahfidz')
+                    </div>
 
-                        <!-- 2. Alamat Detail -->
-                        <div class="mb-8 bg-blue-50 p-6 rounded-lg border border-blue-200">
-                            <h4 class="text-md font-semibold text-blue-900 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
-                                Alamat Detail
-                            </h4>
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 bg-white p-4 rounded-lg">
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">RT</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->rt ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">RW</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->rw ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Dusun</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->dusun ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Kelurahan/Desa</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->kelurahan ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Kecamatan</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->kecamatan ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Kabupaten/Kota</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->kabupaten ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Provinsi</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->provinsi ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Kode Pos</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->kode_pos ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Lintang</label>
-                                    <p class="text-base text-gray-900 font-mono">{{ $pendaftar->lintang ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Bujur</label>
-                                    <p class="text-base text-gray-900 font-mono">{{ $pendaftar->bujur ?? '-' }}</p>
-                                </div>
-                            </div>
-                        </div>
+                    <!-- Tab Beasiswa & Bantuan -->
+                    <div x-show="activeTab === 'beasiswa'" x-transition>
+                        @include('tab_templates.tab-beasiswa')
+                    </div>
 
-                        <!-- 3. Tempat Tinggal & Transportasi -->
-                        <div class="mb-8 bg-purple-50 p-6 rounded-lg border border-purple-200">
-                            <h4 class="text-md font-semibold text-purple-900 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                                Tempat Tinggal & Transportasi
-                            </h4>
-                            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 bg-white p-4 rounded-lg">
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Jenis Tinggal</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->jenis_tinggal ? ucwords(str_replace('_', ' ', $pendaftar->jenis_tinggal)) : '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Alat Transportasi</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->alat_transportasi ? ucwords(str_replace('_', ' ', $pendaftar->alat_transportasi)) : '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Jarak Tempat Tinggal</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->jarak_tempat_tinggal ? $pendaftar->jarak_tempat_tinggal . ' km' : '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Waktu Tempuh</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->waktu_tempuh ? $pendaftar->waktu_tempuh . ' menit' : '-' }}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 4. Data Ayah -->
-                        <div class="mb-8 bg-cyan-50 p-6 rounded-lg border border-cyan-200">
-                            <h4 class="text-md font-semibold text-cyan-900 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                                Data Ayah
-                            </h4>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white p-4 rounded-lg">
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">NIK Ayah</label>
-                                    <p class="text-base font-semibold text-gray-900">{{ $pendaftar->ayah_nik ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nama Ayah</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->nama_ayah ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Tahun Lahir</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->ayah_tahun_lahir ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Pendidikan</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->ayah_pendidikan ? strtoupper($pendaftar->ayah_pendidikan) : '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Pekerjaan</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->pekerjaan_ayah ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Penghasilan</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->ayah_penghasilan ? 'Rp ' . number_format($pendaftar->ayah_penghasilan, 0, ',', '.') : '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">No. HP</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->ayah_no_hp ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Berkebutuhan Khusus</label>
-                                    <p class="text-base text-gray-900">
-                                        @if($pendaftar->ayah_berkebutuhan_khusus)
-                                            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">Ya</span>
-                                        @else
-                                            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-gray-100 text-gray-800">Tidak</span>
-                                        @endif
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 5. Data Ibu -->
-                        <div class="mb-8 bg-pink-50 p-6 rounded-lg border border-pink-200">
-                            <h4 class="text-md font-semibold text-pink-900 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                                Data Ibu
-                            </h4>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white p-4 rounded-lg">
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">NIK Ibu</label>
-                                    <p class="text-base font-semibold text-gray-900">{{ $pendaftar->ibu_nik ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nama Ibu</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->nama_ibu ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Tahun Lahir</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->ibu_tahun_lahir ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Pendidikan</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->ibu_pendidikan ? strtoupper($pendaftar->ibu_pendidikan) : '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Pekerjaan</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->pekerjaan_ibu ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Penghasilan</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->ibu_penghasilan ? 'Rp ' . number_format($pendaftar->ibu_penghasilan, 0, ',', '.') : '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">No. HP</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->ibu_no_hp ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Berkebutuhan Khusus</label>
-                                    <p class="text-base text-gray-900">
-                                        @if($pendaftar->ibu_berkebutuhan_khusus)
-                                            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">Ya</span>
-                                        @else
-                                            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-gray-100 text-gray-800">Tidak</span>
-                                        @endif
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 6. Data Wali (Conditional) -->
-                        @if($pendaftar->memiliki_wali)
-                            <div class="mb-8 bg-indigo-50 p-6 rounded-lg border border-indigo-200">
-                                <h4 class="text-md font-semibold text-indigo-900 mb-4 flex items-center">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                                    Data Wali
-                                </h4>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white p-4 rounded-lg">
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">NIK Wali</label>
-                                        <p class="text-base font-semibold text-gray-900">{{ $pendaftar->wali_nik ?? '-' }}</p>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nama Wali</label>
-                                        <p class="text-base text-gray-900">{{ $pendaftar->wali_nama ?? '-' }}</p>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Tahun Lahir</label>
-                                        <p class="text-base text-gray-900">{{ $pendaftar->wali_tahun_lahir ?? '-' }}</p>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Pendidikan</label>
-                                        <p class="text-base text-gray-900">{{ $pendaftar->wali_pendidikan ? strtoupper($pendaftar->wali_pendidikan) : '-' }}</p>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Pekerjaan</label>
-                                        <p class="text-base text-gray-900">{{ $pendaftar->wali_pekerjaan ?? '-' }}</p>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Penghasilan</label>
-                                        <p class="text-base text-gray-900">{{ $pendaftar->wali_penghasilan ? 'Rp ' . number_format($pendaftar->wali_penghasilan, 0, ',', '.') : '-' }}</p>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">No. HP</label>
-                                        <p class="text-base text-gray-900">{{ $pendaftar->wali_no_hp ?? '-' }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                        @endif
-
-                        <!-- 7. Riwayat Pendidikan -->
-                        <div class="mb-8 bg-amber-50 p-6 rounded-lg border border-amber-200">
-                            <h4 class="text-md font-semibold text-amber-900 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                                Riwayat Pendidikan
-                            </h4>
-
-                            <!-- TK/RA -->
-                            <div class="bg-white p-4 rounded-lg mb-4">
-                                <h5 class="font-semibold text-gray-700 mb-3 flex items-center">
-                                    <span class="w-8 h-8 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mr-2 text-sm font-bold">TK</span>
-                                    TK/RA
-                                </h5>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nama TK/RA</label>
-                                        <p class="text-base text-gray-900">{{ $pendaftar->tk_nama ?? '-' }}</p>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">NPSN</label>
-                                        <p class="text-base text-gray-900">{{ $pendaftar->tk_npsn ?? '-' }}</p>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Tahun Lulus</label>
-                                        <p class="text-base text-gray-900">{{ $pendaftar->tk_tahun_lulus ?? '-' }}</p>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- SD/MI -->
-                            <div class="bg-white p-4 rounded-lg">
-                                <h5 class="font-semibold text-gray-700 mb-3 flex items-center">
-                                    <span class="w-8 h-8 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mr-2 text-sm font-bold">SD</span>
-                                    SD/MI
-                                </h5>
-                                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Nama SD/MI</label>
-                                        <p class="text-base text-gray-900">{{ $pendaftar->sd_nama ?? '-' }}</p>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">NPSN</label>
-                                        <p class="text-base text-gray-900">{{ $pendaftar->sd_npsn ?? '-' }}</p>
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Tahun Lulus</label>
-                                        <p class="text-base text-gray-900">{{ $pendaftar->sd_tahun_lulus ?? '-' }}</p>
-                                    </div>
-                                </div>
-
-                                <!-- Dokumen SD -->
-                                @if($pendaftar->file_ijazah_sd || $pendaftar->file_skhun_sd)
-                                    <div class="border-t pt-3 mt-3">
-                                        <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">Dokumen</label>
-                                        <div class="flex gap-3">
-                                            @if($pendaftar->file_ijazah_sd)
-                                                <a href="{{ Storage::url($pendaftar->file_ijazah_sd) }}" target="_blank" class="inline-flex items-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm">
-                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                                    Ijazah
-                                                </a>
-                                            @endif
-                                            @if($pendaftar->file_skhun_sd)
-                                                <a href="{{ Storage::url($pendaftar->file_skhun_sd) }}" target="_blank" class="inline-flex items-center px-3 py-2 bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 text-sm">
-                                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                                                    SKHUN
-                                                </a>
-                                            @endif
-                                        </div>
-                                    </div>
-                                @endif
-
-                                <!-- Nilai SD -->
-                                <div class="border-t pt-3 mt-3">
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-3">Nilai Rata-rata Rapor SD</label>
-                                    <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
-                                        <div class="text-center p-2 bg-blue-50 rounded">
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">Matematika</label>
-                                            <p class="text-lg font-bold text-blue-900">{{ $pendaftar->sd_nilai_matematika ?? '-' }}</p>
-                                        </div>
-                                        <div class="text-center p-2 bg-green-50 rounded">
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">IPA</label>
-                                            <p class="text-lg font-bold text-green-900">{{ $pendaftar->sd_nilai_ipa ?? '-' }}</p>
-                                        </div>
-                                        <div class="text-center p-2 bg-purple-50 rounded">
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">IPS</label>
-                                            <p class="text-lg font-bold text-purple-900">{{ $pendaftar->sd_nilai_ips ?? '-' }}</p>
-                                        </div>
-                                        <div class="text-center p-2 bg-yellow-50 rounded">
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">B. Indonesia</label>
-                                            <p class="text-lg font-bold text-yellow-900">{{ $pendaftar->sd_nilai_bahasa_indonesia ?? '-' }}</p>
-                                        </div>
-                                        <div class="text-center p-2 bg-red-50 rounded">
-                                            <label class="block text-xs font-medium text-gray-600 mb-1">B. Inggris</label>
-                                            <p class="text-lg font-bold text-red-900">{{ $pendaftar->sd_nilai_bahasa_inggris ?? '-' }}</p>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 8. Program Bantuan Pemerintah -->
-                        <div class="mb-8 bg-green-50 p-6 rounded-lg border border-green-200">
-                            <h4 class="text-md font-semibold text-green-900 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                Program Bantuan Pemerintah
-                            </h4>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white p-4 rounded-lg">
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Penerima KPS</label>
-                                    <p class="text-base text-gray-900">
-                                        @if($pendaftar->penerima_kps)
-                                            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">Ya</span>
-                                            @if($pendaftar->nomor_kps)
-                                                <span class="block mt-1 text-xs text-gray-600">No: {{ $pendaftar->nomor_kps }}</span>
-                                            @endif
-                                        @else
-                                            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-gray-100 text-gray-800">Tidak</span>
-                                        @endif
-                                    </p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Penerima KIP</label>
-                                    <p class="text-base text-gray-900">
-                                        @if($pendaftar->penerima_kip)
-                                            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">Ya</span>
-                                            @if($pendaftar->nomor_kip)
-                                                <span class="block mt-1 text-xs text-gray-600">No: {{ $pendaftar->nomor_kip }}</span>
-                                            @endif
-                                        @else
-                                            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-gray-100 text-gray-800">Tidak</span>
-                                        @endif
-                                    </p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Layak PIP</label>
-                                    <p class="text-base text-gray-900">
-                                        @if($pendaftar->layak_pip)
-                                            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-green-100 text-green-800">Ya</span>
-                                        @else
-                                            <span class="inline-flex px-3 py-1 text-sm font-semibold rounded-full bg-gray-100 text-gray-800">Tidak</span>
-                                        @endif
-                                    </p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 9. Data Tambahan -->
-                        <div class="mb-8 bg-gray-50 p-6 rounded-lg border border-gray-200">
-                            <h4 class="text-md font-semibold text-gray-900 mb-4 flex items-center">
-                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                Data Tambahan
-                            </h4>
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 bg-white p-4 rounded-lg">
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Hobi</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->hobi ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Cita-cita</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->cita_cita ?? '-' }}</p>
-                                </div>
-                                <div>
-                                    <label class="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Berkebutuhan Khusus</label>
-                                    <p class="text-base text-gray-900">{{ $pendaftar->berkebutuhan_khusus ?? '-' }}</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 10. Dokumen Pendukung EMIS -->
-                        @if($pendaftar->file_kartu_keluarga || $pendaftar->file_akta_kelahiran || $pendaftar->file_ijazah_sd || $pendaftar->file_skhun_sd)
-                            <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
-                                <h4 class="text-md font-semibold text-gray-900 mb-4 flex items-center">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                                    Dokumen Pendukung EMIS
-                                </h4>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-white p-4 rounded-lg">
-                                    @if($pendaftar->file_kartu_keluarga)
-                                        <div class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition">
-                                            <div class="flex items-center">
-                                                <svg class="w-8 h-8 text-blue-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                                                <span class="text-sm font-medium text-gray-700">Kartu Keluarga</span>
-                                            </div>
-                                            <a href="{{ Storage::url($pendaftar->file_kartu_keluarga) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Lihat</a>
-                                        </div>
-                                    @endif
-                                    @if($pendaftar->file_akta_kelahiran)
-                                        <div class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition">
-                                            <div class="flex items-center">
-                                                <svg class="w-8 h-8 text-green-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                                                <span class="text-sm font-medium text-gray-700">Akta Kelahiran</span>
-                                            </div>
-                                            <a href="{{ Storage::url($pendaftar->file_akta_kelahiran) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Lihat</a>
-                                        </div>
-                                    @endif
-                                    @if($pendaftar->file_ijazah_sd)
-                                        <div class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition">
-                                            <div class="flex items-center">
-                                                <svg class="w-8 h-8 text-purple-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                                                <span class="text-sm font-medium text-gray-700">Ijazah SD/MI</span>
-                                            </div>
-                                            <a href="{{ Storage::url($pendaftar->file_ijazah_sd) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Lihat</a>
-                                        </div>
-                                    @endif
-                                    @if($pendaftar->file_skhun_sd)
-                                        <div class="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition">
-                                            <div class="flex items-center">
-                                                <svg class="w-8 h-8 text-amber-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
-                                                <span class="text-sm font-medium text-gray-700">SKHUN SD/MI</span>
-                                            </div>
-                                            <a href="{{ Storage::url($pendaftar->file_skhun_sd) }}" target="_blank" class="text-blue-600 hover:text-blue-800 text-sm font-medium">Lihat</a>
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
-                        @endif
+                    <!-- Tab Pendidikan Lain -->
+                    <div x-show="activeTab === 'pendidikan'" x-transition>
+                        @include('tab_templates.tab-pendidikan-lain')
                     </div>
 
                     <!-- Tab Survey -->
@@ -1179,137 +229,203 @@
                         @include('tab_templates.tab-survey')
                     </div>
 
-                    <!-- Data Daftar Ulang Tab -->
+                    <!-- Tab Daftar Ulang -->
                     <div x-show="activeTab === 'daftarulang'" x-transition>
-                        <div class="flex justify-between items-center mb-4">
-                            <h3 class="text-lg font-semibold text-gray-900">Data Daftar Ulang</h3>
-                            @if($editMode)
-                                <div class="space-x-2">
-                                    <button wire:click="saveDataDaftarUlang" class="px-4 py-2 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-sm">
-                                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-                                        Simpan
-                                    </button>
-                                    <button wire:click="toggleEditMode" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm">Batal</button>
-                                </div>
-                            @else
-                                <button wire:click="toggleEditMode" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm">
-                                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                                    Edit Data
-                                </button>
-                            @endif
-                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-4">Data Daftar Ulang</h3>
 
-                        @if($editMode)
-                            <form wire:submit.prevent="saveDataDaftarUlang" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Status Daftar Ulang</label>
-                                    <select wire:model="du_status" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                        <option value="belum">Belum Daftar Ulang</option>
-                                        <option value="proses">Sedang Proses</option>
-                                        <option value="selesai">Selesai</option>
-                                    </select>
+                        @php
+                            $daftarUlang = $pendaftar->daftarUlang;
+                            $seragam = $pendaftar->seragam;
+                        @endphp
+
+                        <!-- Sub-tab Navigation -->
+                        <div x-data="{ subTab: 'madrasah' }" class="bg-white rounded-lg shadow overflow-hidden">
+                            <div class="border-b border-gray-200">
+                                <nav class="flex">
+                                    <button @click="subTab = 'madrasah'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': subTab === 'madrasah', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': subTab !== 'madrasah' }" class="flex-1 py-3 px-1 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                                        Daftar Ulang Madrasah
+                                    </button>
+                                    <button @click="subTab = 'seragam'" :class="{ 'border-blue-500 text-blue-600 bg-blue-50': subTab === 'seragam', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': subTab !== 'seragam' }" class="flex-1 py-3 px-1 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                                        Daftar Ulang Seragam
+                                    </button>
+                                    <button @click="subTab = 'ukuran'" :class="{ 'border-purple-500 text-purple-600 bg-purple-50': subTab === 'ukuran', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': subTab !== 'ukuran' }" class="flex-1 py-3 px-1 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                                        Ukuran Seragam & Atribut
+                                    </button>
+                                </nav>
+                            </div>
+
+                            <!-- Madrasah Sub-tab -->
+                            <div x-show="subTab === 'madrasah'" x-transition class="p-6 space-y-6">
+                                <h4 class="text-md font-semibold text-gray-900 mb-4 border-b pb-2">Daftar Ulang Madrasah</h4>
+
+                                <!-- Surat Pernyataan -->
+                                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                    <h5 class="font-semibold text-gray-900 mb-3 flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                        Surat Pernyataan
+                                    </h5>
+                                    @if($daftarUlang && $daftarUlang->surat_pernyataan_path)
+                                        <div class="flex items-center p-3 bg-green-50 border border-green-200 rounded">
+                                            <svg class="w-5 h-5 text-green-600 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                            <span class="text-sm text-gray-700 flex-1">Surat pernyataan telah diupload</span>
+                                            <a href="{{ Storage::url($daftarUlang->surat_pernyataan_path) }}" target="_blank" class="ml-3 text-sm text-blue-600 hover:text-blue-800 font-medium">Lihat File</a>
+                                        </div>
+                                    @else
+                                        <p class="text-sm text-gray-500 italic">Belum upload surat pernyataan</p>
+                                    @endif
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Tanggal Daftar Ulang</label>
-                                    <input type="date" wire:model="du_tanggal_daftar_ulang" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+
+                                <!-- Bukti Pembayaran Madrasah -->
+                                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                    <h5 class="font-semibold text-gray-900 mb-3 flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        Bukti Pembayaran
+                                    </h5>
+                                    @if($daftarUlang && $daftarUlang->bukti_pembayaran_madrasah)
+                                        <div class="p-3 bg-green-100 border border-green-300 rounded-lg">
+                                            <div class="flex items-center mb-3">
+                                                <svg class="w-5 h-5 text-green-600 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                                <span class="text-sm font-semibold text-green-800 flex-1">Bukti pembayaran telah diupload</span>
+                                            </div>
+                                            <div class="flex gap-2">
+                                                <a href="{{ Storage::url($daftarUlang->bukti_pembayaran_madrasah) }}" target="_blank" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm font-medium transition flex items-center justify-center">
+                                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                    </svg>
+                                                    Lihat Bukti
+                                                </a>
+                                                <a href="{{ Storage::url($daftarUlang->bukti_pembayaran_madrasah) }}" download class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded text-sm font-medium transition flex items-center justify-center">
+                                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                                    </svg>
+                                                    Download
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <p class="text-sm text-gray-500 italic">Belum upload bukti pembayaran</p>
+                                    @endif
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700">Batas Daftar Ulang</label>
-                                    <input type="date" wire:model="du_batas_daftar_ulang" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                            </div>
+
+                            <!-- Seragam Sub-tab -->
+                            <div x-show="subTab === 'seragam'" x-transition class="p-6 space-y-6">
+                                <h4 class="text-md font-semibold text-gray-900 mb-4 border-b pb-2">Daftar Ulang Seragam</h4>
+
+                                <!-- Paket Seragam -->
+                                <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                                    <h5 class="font-semibold text-gray-900 mb-3 flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
+                                        Paket Seragam
+                                    </h5>
+                                    @if($seragam && $seragam->paket_seragam)
+                                        <p class="text-sm text-gray-700"><strong>Paket yang dipilih:</strong> {{ $seragam->paket_seragam }}</p>
+                                    @else
+                                        <p class="text-sm text-gray-500 italic">Belum memilih paket seragam</p>
+                                    @endif
                                 </div>
-                                <div class="flex items-center space-x-4 mt-6">
-                                    <label class="flex items-center">
-                                        <input type="checkbox" wire:model="du_pembayaran_lunas" class="rounded text-emerald-600 focus:ring-emerald-500">
-                                        <span class="ml-2 text-sm text-gray-700">Pembayaran Lunas</span>
-                                    </label>
-                                    <label class="flex items-center">
-                                        <input type="checkbox" wire:model="du_seragam_diukur" class="rounded text-emerald-600 focus:ring-emerald-500">
-                                        <span class="ml-2 text-sm text-gray-700">Seragam Diukur</span>
-                                    </label>
-                                    <label class="flex items-center">
-                                        <input type="checkbox" wire:model="du_berkas_lengkap" class="rounded text-emerald-600 focus:ring-emerald-500">
-                                        <span class="ml-2 text-sm text-gray-700">Berkas Lengkap</span>
-                                    </label>
+
+                                <!-- Bukti Pembayaran Seragam -->
+                                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                                    <h5 class="font-semibold text-gray-900 mb-3 flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        Bukti Pembayaran Seragam
+                                    </h5>
+                                    @if($seragam && $seragam->bukti_pembayaran)
+                                        <div class="p-3 bg-green-100 border border-green-300 rounded-lg">
+                                            <div class="flex items-center mb-3">
+                                                <svg class="w-5 h-5 text-green-600 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                                <span class="text-sm font-semibold text-green-800 flex-1">Bukti pembayaran telah diupload</span>
+                                            </div>
+                                            <div class="flex gap-2">
+                                                <a href="{{ Storage::url($seragam->bukti_pembayaran) }}" target="_blank" class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded text-sm font-medium transition flex items-center justify-center">
+                                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                    </svg>
+                                                    Lihat Bukti
+                                                </a>
+                                                <a href="{{ Storage::url($seragam->bukti_pembayaran) }}" download class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded text-sm font-medium transition flex items-center justify-center">
+                                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                                    </svg>
+                                                    Download
+                                                </a>
+                                            </div>
+                                        </div>
+                                    @else
+                                        <p class="text-sm text-gray-500 italic">Belum upload bukti pembayaran</p>
+                                    @endif
                                 </div>
-                                <div class="md:col-span-2">
-                                    <label class="block text-sm font-medium text-gray-700">Catatan</label>
-                                    <textarea wire:model="du_catatan" rows="3" class="mt-1 w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200" placeholder="Catatan terkait daftar ulang"></textarea>
-                                </div>
-                            </form>
-                        @else
-                            @if($daftarUlang)
+                            </div>
+
+                            <!-- Ukuran Sub-tab -->
+                            <div x-show="subTab === 'ukuran'" x-transition class="p-6 space-y-6">
+                                <h4 class="text-md font-semibold text-gray-900 mb-4 border-b pb-2">Ukuran Seragam & Atribut</h4>
+
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-600">Status</label>
-                                        <p class="mt-1">
-                                            @php
-                                                $duColors = ['belum' => 'bg-gray-100 text-gray-800', 'proses' => 'bg-yellow-100 text-yellow-800', 'selesai' => 'bg-green-100 text-green-800'];
-                                                $duLabels = ['belum' => 'Belum Daftar Ulang', 'proses' => 'Sedang Proses', 'selesai' => 'Selesai'];
-                                            @endphp
-                                            <span class="px-3 py-1 rounded-full text-sm font-semibold {{ $duColors[$daftarUlang->status] ?? 'bg-gray-100 text-gray-800' }}">
-                                                {{ $duLabels[$daftarUlang->status] ?? $daftarUlang->status }}
-                                            </span>
-                                        </p>
+                                    <!-- Ukuran Jas -->
+                                    <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                                        <h5 class="font-semibold text-gray-900 mb-2">Ukuran Jas</h5>
+                                        @if($seragam && $seragam->ukuran_jas)
+                                            <p class="text-sm text-gray-700">{{ $seragam->ukuran_jas }}</p>
+                                        @else
+                                            <p class="text-sm text-gray-500 italic">Belum diisi</p>
+                                        @endif
                                     </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-600">Tanggal Daftar Ulang</label>
-                                        <p class="mt-1 text-base text-gray-900">{{ $daftarUlang->tanggal_daftar_ulang ? $daftarUlang->tanggal_daftar_ulang->format('d F Y') : '-' }}</p>
+
+                                    <!-- Ukuran Atasan -->
+                                    <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                                        <h5 class="font-semibold text-gray-900 mb-2">Ukuran Atasan/Baju</h5>
+                                        @if($seragam && $seragam->ukuran_atasan)
+                                            <p class="text-sm text-gray-700">{{ $seragam->ukuran_atasan }}</p>
+                                        @else
+                                            <p class="text-sm text-gray-500 italic">Belum diisi</p>
+                                        @endif
                                     </div>
-                                    <div>
-                                        <label class="block text-sm font-medium text-gray-600">Batas Daftar Ulang</label>
-                                        <p class="mt-1 text-base text-gray-900">{{ $daftarUlang->batas_daftar_ulang ? $daftarUlang->batas_daftar_ulang->format('d F Y') : '-' }}</p>
+
+                                    <!-- Ukuran Bawahan -->
+                                    <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
+                                        <h5 class="font-semibold text-gray-900 mb-2">Ukuran Bawahan/Rok/Celana</h5>
+                                        @if($seragam && $seragam->ukuran_bawahan)
+                                            <p class="text-sm text-gray-700">{{ $seragam->ukuran_bawahan }}</p>
+                                        @else
+                                            <p class="text-sm text-gray-500 italic">Belum diisi</p>
+                                        @endif
                                     </div>
-                                    <div class="space-y-2">
-                                        <label class="block text-sm font-medium text-gray-600">Checklist:</label>
-                                        <div class="space-y-1">
-                                            <p class="text-sm">
-                                                <svg class="w-5 h-5 inline {{ $daftarUlang->pembayaran_lunas ? 'text-green-600' : 'text-gray-400' }}" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                                                Pembayaran Lunas
-                                            </p>
-                                            <p class="text-sm">
-                                                <svg class="w-5 h-5 inline {{ $daftarUlang->seragam_diukur ? 'text-green-600' : 'text-gray-400' }}" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                                                Seragam Diukur
-                                            </p>
-                                            <p class="text-sm">
-                                                <svg class="w-5 h-5 inline {{ $daftarUlang->berkas_lengkap ? 'text-green-600' : 'text-gray-400' }}" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                                                Berkas Lengkap
-                                            </p>
-                                        </div>
-                                    </div>
-                                    @if($daftarUlang->catatan)
-                                    <div class="md:col-span-2">
-                                        <label class="block text-sm font-medium text-gray-600">Catatan</label>
-                                        <div class="mt-1 bg-gray-50 p-3 rounded-lg">
-                                            <p class="text-base text-gray-900">{{ $daftarUlang->catatan }}</p>
-                                        </div>
+
+                                    <!-- Ukuran Kopyah (Khusus Laki-laki) -->
+                                    @if($pendaftar->jenis_kelamin === 'L')
+                                    <div class="bg-cyan-50 border border-cyan-200 rounded-lg p-4">
+                                        <h5 class="font-semibold text-gray-900 mb-2">Ukuran Kopyah (Laki-laki)</h5>
+                                        @if($seragam && $seragam->ukuran_kopyah)
+                                            <p class="text-sm text-gray-700">{{ $seragam->ukuran_kopyah }}</p>
+                                        @else
+                                            <p class="text-sm text-gray-500 italic">Belum diisi</p>
+                                        @endif
                                     </div>
                                     @endif
                                 </div>
-                            @else
-                                <div class="text-center py-8">
-                                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                    <p class="mt-2 text-sm text-gray-600">Belum ada data daftar ulang</p>
-                                    <p class="text-xs text-gray-500">Klik tombol Edit Data untuk menambahkan data</p>
-                                </div>
-                            @endif
-                        @endif
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Verifikasi Dokumen Tab -->
+                    <!-- Tab Verifikasi Dokumen -->
                     <div x-show="activeTab === 'dokumen'" x-transition>
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Verifikasi Berkas / Dokumen</h3>
                         <div class="space-y-6">
                             @php
                                 $dokumenList = [
-                                    ['key' => 'rapor', 'label' => 'Scan Rapor'],
-                                    ['key' => 'akte', 'label' => 'Akte Kelahiran'],
-                                    ['key' => 'kk', 'label' => 'Kartu Keluarga'],
-                                    ['key' => 'nisn', 'label' => 'Scan NISN'],
-                                    ['key' => 'ijazah', 'label' => 'Ijazah/Surat Keterangan Aktif'],
-                                    ['key' => 'sertifikat', 'label' => 'Sertifikat/Piagam'],
-                                    ['key' => 'kip', 'label' => 'Scan KIP/PKH/KKS'],
+                                    ['key' => 'rapor', 'label' => 'Scan Rapor', 'search_keys' => ['rapor', 'raport'], 'wajib' => true],
+                                    ['key' => 'akte', 'label' => 'Akta Kelahiran', 'search_keys' => ['akte', 'akta_kelahiran'], 'wajib' => true],
+                                    ['key' => 'kk', 'label' => 'Kartu Keluarga', 'search_keys' => ['kk', 'kartu_keluarga'], 'wajib' => true],
+                                    ['key' => 'nisn', 'label' => 'Scan/Bukti NISN', 'search_keys' => ['nisn'], 'wajib' => true],
+                                    ['key' => 'ijazah', 'label' => 'Ijazah/SKL/Surat Keterangan Aktif', 'search_keys' => ['ijazah'], 'wajib' => true],
+                                    ['key' => 'sertifikat', 'label' => 'Sertifikat/Piagam', 'search_keys' => ['sertifikat'], 'wajib' => false],
+                                    ['key' => 'kip', 'label' => 'Kartu Indonesia Pintar (KIP)', 'search_keys' => ['kip'], 'wajib' => false, 'conditional' => 'nomor_kip'],
+                                    ['key' => 'pkh', 'label' => 'Program Keluarga Harapan (PKH)', 'search_keys' => ['pkh'], 'wajib' => false, 'conditional' => 'nomor_pkh'],
+                                    ['key' => 'kks', 'label' => 'Kartu Keluarga Sejahtera (KKS)', 'search_keys' => ['kks'], 'wajib' => false, 'conditional' => 'nomor_kks'],
                                 ];
 
                                 $statusOptions = [
@@ -1328,23 +444,49 @@
                                     $currentStatus = $this->$statusField ?? 'belum_upload';
                                     $statusInfo = $statusOptions[$currentStatus] ?? ['label' => $currentStatus, 'color' => 'bg-gray-100 text-gray-800'];
 
-                                    // Cari dokumen yang sudah di-upload berdasarkan jenis
-                                    $uploadedDokumen = $dokumen->firstWhere('jenis_dokumen', $dok['key']);
+                                    // Cari dokumen yang sudah di-upload berdasarkan jenis (cek multiple keys)
+                                    $uploadedDokumen = null;
+                                    foreach ($dok['search_keys'] as $searchKey) {
+                                        $uploadedDokumen = $dokumen->firstWhere('jenis_dokumen', $searchKey);
+                                        if ($uploadedDokumen) break;
+                                    }
 
                                     // Khusus untuk rapor, cek juga field file_rapor di pendaftar
                                     $fileRapor = null;
                                     if ($dok['key'] === 'rapor' && $pendaftar->file_rapor) {
                                         $fileRapor = $pendaftar->file_rapor;
                                     }
+
+                                    // Check if conditional document
+                                    $isConditional = isset($dok['conditional']);
+                                    $isEnabled = true;
+                                    if ($isConditional) {
+                                        $conditionalField = $dok['conditional'];
+                                        $isEnabled = !empty($pendaftar->$conditionalField);
+                                    }
                                 @endphp
 
-                                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                                <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition {{ !$isEnabled ? 'bg-gray-50 opacity-60' : '' }}">
                                     <div class="flex items-start justify-between mb-3">
                                         <div class="flex-1">
-                                            <h4 class="font-semibold text-gray-900 mb-2">{{ $dok['label'] }}</h4>
+                                            <div class="flex items-center gap-2 mb-2">
+                                                <h4 class="font-semibold text-gray-900">{{ $dok['label'] }}</h4>
+                                                @if($dok['wajib'])
+                                                    <span class="text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-bold">WAJIB</span>
+                                                @elseif($isConditional && !$isEnabled)
+                                                    <span class="text-xs bg-blue-500 text-white px-2 py-0.5 rounded-full font-medium">🔒 TERKUNCI</span>
+                                                @else
+                                                    <span class="text-xs bg-gray-400 text-white px-2 py-0.5 rounded-full font-medium">Opsional</span>
+                                                @endif
+                                            </div>
                                             <span class="inline-block px-3 py-1 rounded-full text-xs font-semibold {{ $statusInfo['color'] }}">
                                                 {{ $statusInfo['label'] }}
                                             </span>
+                                            @if($isConditional && !$isEnabled)
+                                                <p class="text-xs text-blue-600 mt-2 font-medium">
+                                                    📌 Dokumen ini terkunci karena pendaftar tidak mengisi nomor {{ strtoupper(str_replace('nomor_', '', $dok['conditional'])) }}
+                                                </p>
+                                            @endif
                                         </div>
                                     </div>
 
@@ -1417,15 +559,39 @@
 
                                     <!-- Tombol Simpan -->
                                     <div class="mt-3">
-                                        <button
-                                            wire:click="updateStatusDokumen('{{ $dok['key'] }}')"
-                                            class="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition"
-                                        >
-                                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                            </svg>
-                                            Simpan Status {{ $dok['label'] }}
-                                        </button>
+                                        @if($isConditional && !$isEnabled)
+                                            <button
+                                                disabled
+                                                class="px-4 py-2 bg-gray-400 text-white text-sm font-medium rounded-md cursor-not-allowed inline-flex items-center opacity-60"
+                                                title="Dokumen ini terkunci karena pendaftar tidak mengisi nomor {{ strtoupper(str_replace('nomor_', '', $dok['conditional'])) }}"
+                                            >
+                                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                                </svg>
+                                                Dokumen Terkunci
+                                            </button>
+                                        @else
+                                            <button
+                                                wire:click="updateStatusDokumen('{{ $dok['key'] }}')"
+                                                wire:loading.attr="disabled"
+                                                wire:target="updateStatusDokumen"
+                                                class="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center"
+                                            >
+                                                <span wire:loading.remove wire:target="updateStatusDokumen" class="inline-flex items-center">
+                                                    <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                    </svg>
+                                                    Simpan Status
+                                                </span>
+                                                <span wire:loading wire:target="updateStatusDokumen" class="inline-flex items-center">
+                                                    <svg class="animate-spin w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24">
+                                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                    </svg>
+                                                    Menyimpan...
+                                                </span>
+                                            </button>
+                                        @endif
                                     </div>
                                 </div>
                             @endforeach
@@ -1436,7 +602,7 @@
 
             <!-- Tombol Kembali -->
             <div class="flex justify-end">
-                <a href="{{ route('panitia.pendaftar') }}" class="px-6 py-3 bg-gray-600 text-white font-medium rounded-md hover:bg-gray-700 transition">
+                <a href="{{ route($routePrefix . '.pendaftar') }}" class="px-6 py-3 bg-gray-600 text-white font-medium rounded-md hover:bg-gray-700 transition">
                     <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>

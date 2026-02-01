@@ -15,7 +15,16 @@
             <button wire:click="toggleEdit('dataPrestasi')" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm transition">Batal</button>
         </div>
     @else
-        <button wire:click="toggleEdit('dataPrestasi')" class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition">
+        @php
+            $isApproved = $pendaftar->status_pendaftaran === 'data_disetujui';
+            $isPendaftar = Auth::user()->role === 'pendaftar';
+            // Hanya disable untuk role Pendaftar, Admin/Panitia tetap bisa edit
+            $shouldDisable = $isApproved && $isPendaftar;
+        @endphp
+        <button
+            wire:click="toggleEdit('dataPrestasi')"
+            @if($shouldDisable) disabled title="Data sudah disetujui, tidak dapat diubah" @endif
+            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition {{ $shouldDisable ? 'opacity-50 cursor-not-allowed' : '' }}">
             <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
             Edit Data
         </button>
@@ -142,6 +151,17 @@
                             </select>
                             @error('prestasiList.' . $index . '.kategori_lomba') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
+
+                        <!-- Upload Sertifikat Prestasi -->
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Upload Sertifikat Prestasi (PDF/Gambar max. 2MB)</label>
+                            <input type="file" wire:model="uploadPrestasiSertifikat.{{ $index }}" accept=".pdf,.jpg,.jpeg,.png" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
+                            @error('uploadPrestasiSertifikat.' . $index) <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+
+                            @if(isset($prestasiList[$index]['file_sertifikat']) && $prestasiList[$index]['file_sertifikat'])
+                                <p class="text-xs text-gray-500 mt-1">File saat ini: {{ basename($prestasiList[$index]['file_sertifikat']) }}</p>
+                            @endif
+                        </div>
                     </div>
                 </div>
             @endforeach
@@ -176,6 +196,7 @@
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Tingkat Lomba</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Peringkat</th>
                             <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Kategori Lomba</th>
+                            <th class="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider">Sertifikat</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -223,11 +244,24 @@
                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                                         {{ $prestasi->kategori_lomba }}
                                     </td>
+                                    <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
+                                        @if($prestasi->file_sertifikat)
+                                            <a href="{{ Storage::url($prestasi->file_sertifikat) }}" target="_blank" class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs transition">
+                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                </svg>
+                                                Lihat Sertifikat
+                                            </a>
+                                        @else
+                                            <span class="text-gray-400 text-xs italic">-</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             @endforeach
                         @else
                             <tr>
-                                <td colspan="8" class="px-4 py-8 text-center">
+                                <td colspan="9" class="px-4 py-8 text-center">
                                     <div class="flex flex-col items-center justify-center">
                                         <svg class="w-12 h-12 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"></path>

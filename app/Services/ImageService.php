@@ -72,6 +72,7 @@ class ImageService
      * @param int $quality
      * @param string|null $nomorPendaftaran Nomor pendaftaran untuk nama file sistematis
      * @param string|null $jenisFoto Jenis foto (foto_profil, foto_3x4, dll)
+     * @param string|null $namaPendaftar Nama pendaftar untuk nama file
      * @return string Path file yang disimpan
      */
     public function uploadProfilePhoto(
@@ -80,15 +81,17 @@ class ImageService
         int $size = 500,
         int $quality = 80,
         ?string $nomorPendaftaran = null,
-        ?string $jenisFoto = 'foto_profil'
+        ?string $jenisFoto = 'foto_profil',
+        ?string $namaPendaftar = null
     ): string {
         // Generate filename (sistematis jika nomor pendaftaran disediakan)
         if ($nomorPendaftaran) {
-            // Format: foto_profil_{nomor_pendaftaran}_{timestamp}.webp
+            // Format: foto_profil-{nomor_pendaftaran}-{nama_pendaftar}-{timestamp}.webp
             $filename = FileNamingService::generateImageFileName(
                 $jenisFoto,
                 $nomorPendaftaran,
-                'webp'
+                'webp',
+                $namaPendaftar
             );
         } else {
             // Fallback ke random filename jika nomor pendaftaran tidak ada

@@ -20,6 +20,7 @@ class Dashboard extends Component
     public $recentPendaftar = [];
     public $jalurStats = [];
     public $emisCompletenessStats = [];
+    public $jalurDetailStats = []; // Data statistik detail per jalur
 
     public function mount()
     {
@@ -34,6 +35,7 @@ class Dashboard extends Component
         $this->loadRecentPendaftar();
         $this->loadJalurStats();
         $this->loadEmisCompletenessStats();
+        $this->loadJalurDetailStats(); // Load statistik detail per jalur
     }
 
     public function loadStats()
@@ -51,8 +53,12 @@ class Dashboard extends Component
         $cadangan = Pendaftar::where('status_pendaftaran', 'cadangan')->count();
         $dataDitolak = Pendaftar::where('status_pendaftaran', 'data_ditolak')->count();
 
-        // Panitia aktif
-        $panitiaAktif = User::whereIn('role', ['panitia', 'panitia_pendaftaran', 'panitia_daftarulang'])->count();
+        // User aktif (sedang login dalam 15 menit terakhir)
+        $userAktif = DB::table('sessions')
+            ->whereNotNull('user_id')
+            ->where('last_activity', '>=', now()->subMinutes(15)->timestamp)
+            ->distinct()
+            ->count('user_id');
 
         // Calculate percentage vs last year (mocked for now)
         $lastYearTotal = 1084; // This should come from last year's data
@@ -76,14 +82,18 @@ class Dashboard extends Component
             'tidak_lulus' => $tidakLulus,
             'cadangan' => $cadangan,
             'data_ditolak' => $dataDitolak,
-            'panitia_aktif' => $panitiaAktif,
+            'user_aktif' => $userAktif,
         ];
     }
 
     public function loadRecentPendaftar()
     {
-        // Load directly from database dengan join untuk mendapatkan info jalur
+        // Load pendaftar yang menunggu verifikasi atau baru mendaftar hari ini
         $recentData = Pendaftar::with('jalur')
+            ->where(function($query) {
+                $query->where('status_pendaftaran', 'menunggu_verifikasi')
+                      ->orWhereDate('tanggal_daftar', now()->toDateString());
+            })
             ->orderBy('tanggal_daftar', 'desc')
             ->take(5)
             ->get();
@@ -135,6 +145,57 @@ class Dashboard extends Component
         $this->emisCompletenessStats = Cache::remember($cacheKey, 1800, function () {
             return $this->calculateEmisCompletenessStats();
         });
+    }
+
+    public function loadJalurDetailStats()
+    {
+        // Load statistik detail per jalur - tampilkan semua jalur aktif
+        $jalurAktif = JalurPendaftaran::where('aktif', true)
+            ->orderBy('urutan', 'asc')
+            ->get();
+
+        $this->jalurDetailStats = $jalurAktif->map(function ($jalur) {
+            // Query semua pendaftar di jalur ini
+            $allPendaftar = $jalur->pendaftar();
+
+            // Total pendaftar
+            $total = $allPendaftar->count();
+
+            // Lulus tes
+            $lulusTes = (clone $allPendaftar)->whereIn('status_pendaftaran', ['lulus', 'diterima'])->count();
+
+            // Tidak lulus tes
+            $tidakLulusTes = (clone $allPendaftar)->where('status_pendaftaran', 'tidak_lulus')->count();
+
+            // Query pendaftar yang lulus untuk gender dan persetujuan
+            $pendaftarLulus = $jalur->pendaftar()
+                ->whereIn('status_pendaftaran', ['lulus', 'diterima']);
+
+            // Jumlah laki-laki (yang lulus tes) - 'L' adalah nilai di database
+            $lakiLaki = (clone $pendaftarLulus)->where('jenis_kelamin', 'L')->count();
+
+            // Jumlah perempuan (yang lulus tes) - 'P' adalah nilai di database
+            $perempuan = (clone $pendaftarLulus)->where('jenis_kelamin', 'P')->count();
+
+            // Setuju daftar ulang
+            $setuju = (clone $pendaftarLulus)->where('status_persetujuan_daftar_ulang', 'setuju')->count();
+
+            // Tidak setuju daftar ulang
+            $tidakSetuju = (clone $pendaftarLulus)->where('status_persetujuan_daftar_ulang', 'tidak_setuju')->count();
+
+            return [
+                'nama' => $jalur->nama,
+                'warna' => $jalur->warna,
+                'total' => $total,
+                'lulus_tes' => $lulusTes,
+                'tidak_lulus_tes' => $tidakLulusTes,
+                'laki_laki' => $lakiLaki,
+                'perempuan' => $perempuan,
+                'setuju' => $setuju,
+                'tidak_setuju' => $tidakSetuju,
+            ];
+        });
+        // Tidak ada filter - tampilkan semua jalur aktif
     }
 
     /**

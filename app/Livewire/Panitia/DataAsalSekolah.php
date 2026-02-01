@@ -24,7 +24,7 @@ class DataAsalSekolah extends Component
     {
         // Check if user is admin or panitia pendaftaran
         $user = Auth::user();
-        if (!$user || !in_array($user->role, ['panitia_pendaftaran', 'panitia_daftarulang', 'panitia'])) {
+        if (!$user || !in_array($user->role, ['panitia_pendaftaran', 'panitia_daftarulang', 'panitia_tes_psikologi', 'panitia_seragam'])) {
             return redirect()->to('/login/admin');
         }
     }

@@ -277,6 +277,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/data-asal-sekolah', \App\Livewire\Admin\DataAsalSekolah::class)->name('admin.data-asal-sekolah');
     Route::get('/video-infografis', \App\Livewire\Admin\VideoInfografis::class)->name('admin.video-infografis');
     Route::get('/monitoring', \App\Livewire\Admin\Monitoring::class)->name('admin.monitoring');
+    Route::get('/logs', \App\Livewire\Admin\LogMonitoring::class)->name('admin.logs');
     Route::get('/security', \App\Livewire\Admin\Security::class)->name('admin.security');
     Route::get('/backup-restore', \App\Livewire\Admin\BackupRestore::class)->name('admin.backup-restore');
     Route::get('/backup-restore/download/{filename}', function($filename) {
@@ -304,42 +305,61 @@ Route::prefix('pendaftar')->middleware(['auth', 'role:pendaftar'])->group(functi
     Route::get('/dokumen', \App\Livewire\Pendaftar\Dokumen::class)->name('pendaftar.dokumen');
     Route::get('/status', \App\Livewire\Pendaftar\Status::class)->name('pendaftar.status');
     Route::get('/daftarulang', \App\Livewire\Pendaftar\DaftarUlang::class)->name('pendaftar.daftarulang');
-    Route::get('/kartu-ujian', \App\Livewire\Pendaftar\KartuUjian::class)->name('pendaftar.kartu-ujian');
+    Route::get('/kartu-tes-seleksi', \App\Livewire\Pendaftar\KartuTesSeleksi::class)->name('pendaftar.kartu-tes-seleksi');
     Route::get('/tes-psikologi', \App\Livewire\Pendaftar\TesPsikologi::class)->name('pendaftar.tes-psikologi');
     Route::get('/tes-psikologi/preview-invoice', [\App\Livewire\Pendaftar\TesPsikologi::class, 'previewInvoice'])->name('pendaftar.tes-psikologi.preview-invoice');
     Route::get('/notifikasi', \App\Livewire\Admin\Notifikasi::class)->name('pendaftar.notifikasi');
 });
 
-// Panitia Routes
-Route::prefix('panitia')->middleware(['auth', 'role:panitia_pendaftaran,panitia_daftarulang'])->group(function () {
-    Route::get('/dashboard', \App\Livewire\Panitia\Dashboard::class)->name('panitia.dashboard');
-
-    Route::get('/pendaftar', \App\Livewire\Panitia\Pendaftar::class)->name('panitia.pendaftar');
-    Route::get('/pendaftar/{id}', \App\Livewire\Panitia\DetailPendaftar::class)->name('panitia.pendaftar.detail');
-    Route::get('/kelulusan', \App\Livewire\Panitia\Kelulusan::class)->name('panitia.kelulusan');
-    Route::get('/data-asal-sekolah', \App\Livewire\Panitia\DataAsalSekolah::class)->name('panitia.data-asal-sekolah');
-    Route::get('/jalur', \App\Livewire\Panitia\Jalur::class)->name('panitia.jalur');
-    Route::get('/jadwal', \App\Livewire\Panitia\Jadwal::class)->name('panitia.jadwal');
-    Route::get('/pengumuman', \App\Livewire\Panitia\Pengumuman::class)->name('panitia.pengumuman');
-    Route::get('/laporan', \App\Livewire\Panitia\Laporan::class)->name('panitia.laporan');
-    Route::get('/daftar-ulang', \App\Livewire\Panitia\DaftarUlang::class)->name('panitia.daftar-ulang');
-    Route::get('/tes-psikologi', \App\Livewire\Panitia\TesPsikologi::class)->name('panitia.tes-psikologi');
-    Route::get('/emis-input', \App\Livewire\Panitia\EmisInput::class)->name('panitia.emis-input');
+// Panitia Pendaftaran Routes - Full access to registration management
+Route::prefix('panitia-pendaftaran')->middleware(['auth', 'role:panitia_pendaftaran'])->group(function () {
+    Route::get('/dashboard', \App\Livewire\Panitia\Dashboard::class)->name('panitia-pendaftaran.dashboard');
+    Route::get('/pendaftar', \App\Livewire\Panitia\Pendaftar::class)->name('panitia-pendaftaran.pendaftar');
+    Route::get('/pendaftar/{id}', \App\Livewire\Panitia\DetailPendaftar::class)->name('panitia-pendaftaran.pendaftar.detail');
+    Route::get('/kelulusan', \App\Livewire\Panitia\Kelulusan::class)->name('panitia-pendaftaran.kelulusan');
+    Route::get('/data-asal-sekolah', \App\Livewire\Panitia\DataAsalSekolah::class)->name('panitia-pendaftaran.data-asal-sekolah');
+    Route::get('/jalur', \App\Livewire\Panitia\Jalur::class)->name('panitia-pendaftaran.jalur');
+    Route::get('/jadwal', \App\Livewire\Panitia\Jadwal::class)->name('panitia-pendaftaran.jadwal');
+    Route::get('/pengumuman', \App\Livewire\Panitia\Pengumuman::class)->name('panitia-pendaftaran.pengumuman');
+    Route::get('/daftar-ulang', \App\Livewire\Panitia\DaftarUlang::class)->name('panitia-pendaftaran.daftar-ulang');
+    Route::get('/tes-psikologi', \App\Livewire\Panitia\TesPsikologi::class)->name('panitia-pendaftaran.tes-psikologi');
+    Route::get('/laporan', \App\Livewire\Panitia\Laporan::class)->name('panitia-pendaftaran.laporan');
+    Route::get('/emis-input', \App\Livewire\Panitia\EmisInput::class)->name('panitia-pendaftaran.emis-input');
 });
 
-// Daftar Ulang Routes
-Route::prefix('daftarulang')->middleware(['auth', 'role:panitia_daftarulang'])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard.panitia-daftarulang.index');
-    })->name('daftarulang.dashboard');
+// Panitia Daftar Ulang Routes - Focus on re-registration
+Route::prefix('panitia-daftarulang')->middleware(['auth', 'role:panitia_daftarulang'])->group(function () {
+    Route::get('/dashboard', \App\Livewire\Panitia\Dashboard::class)->name('panitia-daftarulang.dashboard');
+    Route::get('/pendaftar', \App\Livewire\Panitia\Pendaftar::class)->name('panitia-daftarulang.pendaftar');
+    Route::get('/pendaftar/{id}', \App\Livewire\Panitia\DetailPendaftar::class)->name('panitia-daftarulang.pendaftar.detail');
+    Route::get('/kelulusan', \App\Livewire\Panitia\Kelulusan::class)->name('panitia-daftarulang.kelulusan');
+    Route::get('/daftar-ulang', \App\Livewire\Panitia\DaftarUlang::class)->name('panitia-daftarulang.daftar-ulang');
+    Route::get('/pengumuman', \App\Livewire\Panitia\Pengumuman::class)->name('panitia-daftarulang.pengumuman');
+    Route::get('/laporan', \App\Livewire\Panitia\Laporan::class)->name('panitia-daftarulang.laporan');
+    Route::get('/emis-input', \App\Livewire\Panitia\EmisInput::class)->name('panitia-daftarulang.emis-input');
+});
 
-    Route::get('/pendaftar', \App\Livewire\Panitia\Pendaftar::class)->name('daftarulang.pendaftar');
-    Route::get('/pendaftar/{id}', \App\Livewire\Panitia\DetailPendaftar::class)->name('daftarulang.pendaftar.detail');
-    Route::get('/kelulusan', \App\Livewire\Panitia\Kelulusan::class)->name('daftarulang.kelulusan');
-    Route::get('/daftar-ulang', \App\Livewire\Panitia\DaftarUlang::class)->name('daftarulang.daftar-ulang');
-    Route::get('/pengumuman', \App\Livewire\Panitia\Pengumuman::class)->name('daftarulang.pengumuman');
-    Route::get('/laporan', \App\Livewire\Panitia\Laporan::class)->name('daftarulang.laporan');
-    Route::get('/emis-input', \App\Livewire\Panitia\EmisInput::class)->name('daftarulang.emis-input');
+// Panitia Tes Psikologi Routes - Focus on psychology test management
+Route::prefix('panitia-psikologi')->middleware(['auth', 'role:panitia_tes_psikologi'])->group(function () {
+    Route::get('/dashboard', \App\Livewire\Panitia\Dashboard::class)->name('panitia-psikologi.dashboard');
+    Route::get('/kelulusan', \App\Livewire\Panitia\Kelulusan::class)->name('panitia-psikologi.kelulusan');
+    Route::get('/tes-psikologi', \App\Livewire\Panitia\TesPsikologi::class)->name('panitia-psikologi.tes-psikologi');
+    Route::get('/laporan', \App\Livewire\Panitia\Laporan::class)->name('panitia-psikologi.laporan');
+});
+
+// Panitia Seragam Routes - Fokus pada manajemen seragam dan ukuran
+Route::prefix('panitia-seragam')->middleware(['auth', 'role:panitia_seragam'])->group(function () {
+    // Dashboard - Overview data seragam
+    Route::get('/dashboard', \App\Livewire\PanitiaSeragam\Dashboard::class)->name('panitia-seragam.dashboard');
+
+    // Kelulusan - Daftar calon siswa yang lulus (readonly)
+    Route::get('/kelulusan', \App\Livewire\PanitiaSeragam\Kelulusan::class)->name('panitia-seragam.kelulusan');
+
+    // Daftar Ulang - Hanya 2 tab (Daftar Ulang dan Ukuran Seragam & Atribut)
+    Route::get('/daftar-ulang', \App\Livewire\PanitiaSeragam\DaftarUlang::class)->name('panitia-seragam.daftar-ulang');
+
+    // Laporan - Laporan terkait seragam
+    Route::get('/laporan', \App\Livewire\PanitiaSeragam\Laporan::class)->name('panitia-seragam.laporan');
 });
 
 // Export routes - Protected (Admin & Panitia only)
@@ -498,6 +518,91 @@ Route::get('/pendaftar/daftarulang/view-file/{type}/{file}', function ($type, $f
     ]);
 })->middleware('auth')->name('pendaftar.daftarulang.view-file');
 
+// Download file route for admin/panitia - Generic route to download daftar ulang files
+Route::get('/download-file/{type}/{pendaftarId?}', function ($type, $pendaftarId = null) {
+    $user = auth()->user();
+
+    // Authorization check - Allow admin and panitia roles
+    if (!$user || !in_array($user->role, ['admin', 'panitia', 'panitia_daftarulang', 'panitia_seragam', 'pendaftar'])) {
+        abort(403, 'Anda tidak memiliki akses ke file ini.');
+    }
+
+    // If pendaftar, use their own ID
+    if ($user->role === 'pendaftar') {
+        $pendaftar = $user->pendaftar;
+    } else {
+        // For admin/panitia, get pendaftar from ID if provided, or from current page context
+        if ($pendaftarId) {
+            $pendaftar = \App\Models\Pendaftar::findOrFail($pendaftarId);
+        } else {
+            // Try to get from referer or session
+            abort(404, 'Pendaftar ID tidak ditemukan.');
+        }
+    }
+
+    // Determine file path based on type
+    $filePath = null;
+    $fileName = null;
+
+    switch ($type) {
+        case 'surat_pernyataan':
+            $daftarUlang = $pendaftar->daftarUlang;
+            if ($daftarUlang && $daftarUlang->surat_pernyataan_path) {
+                $filePath = $daftarUlang->surat_pernyataan_path;
+                $fileName = 'surat_pernyataan_' . $pendaftar->nomor_pendaftaran . '.pdf';
+            }
+            break;
+
+        case 'bukti_pembayaran_madrasah':
+            $daftarUlang = $pendaftar->daftarUlang;
+            if ($daftarUlang && $daftarUlang->bukti_pembayaran_madrasah) {
+                $filePath = $daftarUlang->bukti_pembayaran_madrasah;
+                $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+                $fileName = 'bukti_pembayaran_madrasah_' . $pendaftar->nomor_pendaftaran . '.' . $extension;
+            }
+            break;
+
+        case 'bukti_pembayaran_seragam':
+            $seragam = $pendaftar->seragam;
+            if ($seragam && $seragam->bukti_pembayaran) {
+                $filePath = $seragam->bukti_pembayaran;
+                $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+                $fileName = 'bukti_pembayaran_seragam_' . $pendaftar->nomor_pendaftaran . '.' . $extension;
+            }
+            break;
+
+        default:
+            abort(404, 'Tipe file tidak valid.');
+    }
+
+    if (!$filePath) {
+        abort(404, 'File tidak ditemukan.');
+    }
+
+    // Check if file exists in private storage
+    if (!Storage::disk('private')->exists($filePath)) {
+        abort(404, 'File tidak ditemukan di storage: ' . $filePath);
+    }
+
+    // Get full path to file
+    $fullPath = storage_path('app/private/' . $filePath);
+
+    // Determine mime type based on extension
+    $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+    $mimeType = match(strtolower($extension)) {
+        'pdf' => 'application/pdf',
+        'jpg', 'jpeg' => 'image/jpeg',
+        'png' => 'image/png',
+        default => 'application/octet-stream',
+    };
+
+    // Return file for viewing in browser (inline)
+    return response()->file($fullPath, [
+        'Content-Type' => $mimeType,
+        'Content-Disposition' => 'inline; filename="' . $fileName . '"'
+    ]);
+})->middleware('auth')->name('pendaftar.download-file');
+
 // API untuk auto-fill nama sekolah berdasarkan NSM/NPSN
 Route::get('/api/cek-sekolah', function () {
     $jenisSekolah = request('jenis_sekolah_asal');
@@ -538,3 +643,5 @@ Route::get('/api/cek-sekolah', function () {
     ]);
 })->name('api.cek.sekolah');
 
+// Test route untuk debug jalur daftar
+// require __DIR__ . '/test_jalur.php'; // Disabled for production

@@ -1,7 +1,24 @@
 <!-- Stats Overview Cards -->
 @if(!empty($stats))
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-    <!-- Total Card -->
+@php
+    $tab = $tab ?? 'madrasah';
+    $isMadrasah = $tab === 'madrasah';
+    $isSeragam = $tab === 'seragam';
+    $isUkuran = $tab === 'ukuran';
+
+    // Determine grid layout based on tab
+    if ($isMadrasah) {
+        $gridClass = 'grid-cols-1 md:grid-cols-4 lg:grid-cols-8'; // 8 cards in 1 row
+    } elseif ($isSeragam) {
+        $gridClass = 'grid-cols-1 md:grid-cols-4 lg:grid-cols-8'; // 8 cards in 1 row
+    } elseif ($isUkuran) {
+        $gridClass = 'grid-cols-1 md:grid-cols-3 lg:grid-cols-5'; // 5 cards in 1 row
+    } else {
+        $gridClass = 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'; // default 4 cols
+    }
+@endphp
+<div class="grid {{ $gridClass }} gap-4 mb-6">
+    <!-- Total Pendaftar Lulus Card -->
     <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
         <div class="flex items-center">
             <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
@@ -10,13 +27,45 @@
                 </svg>
             </div>
             <div>
-                <p class="text-xs font-medium text-gray-500">Total Pendaftar</p>
-                <p class="text-2xl font-bold text-gray-900">{{ $stats['total'] ?? 0 }}</p>
+                <p class="text-xs font-medium text-gray-500">Total Pendaftar Lulus</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $stats['total_lulus'] ?? $stats['total'] ?? 0 }}</p>
             </div>
         </div>
     </div>
 
-    <!-- Menunggu Card -->
+    @if($isMadrasah)
+    <!-- Status Setuju Daftar Ulang Card -->
+    <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mr-3">
+                <svg class="w-6 h-6 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path>
+                </svg>
+            </div>
+            <div>
+                <p class="text-xs font-medium text-gray-500">Setuju Daftar Ulang</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $stats['setuju'] ?? 0 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Tidak Setuju Daftar Ulang Card -->
+    <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-rose-100 rounded-lg flex items-center justify-center mr-3">
+                <svg class="w-6 h-6 text-rose-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.715.211-1.413.608-2.008L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"></path>
+                </svg>
+            </div>
+            <div>
+                <p class="text-xs font-medium text-gray-500">Tidak Setuju Daftar Ulang</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $stats['tidak_setuju'] ?? 0 }}</p>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Status Menunggu Card -->
     <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
         <div class="flex items-center">
             <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-3">
@@ -25,13 +74,13 @@
                 </svg>
             </div>
             <div>
-                <p class="text-xs font-medium text-gray-500">Menunggu</p>
+                <p class="text-xs font-medium text-gray-500">Menunggu Verifikasi</p>
                 <p class="text-2xl font-bold text-gray-900">{{ $stats['menunggu'] ?? 0 }}</p>
             </div>
         </div>
     </div>
 
-    <!-- Disetujui Card -->
+    <!-- Status Disetujui Card -->
     <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
         <div class="flex items-center">
             <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-3">
@@ -46,7 +95,7 @@
         </div>
     </div>
 
-    <!-- Ditolak Card -->
+    <!-- Status Ditolak Card -->
     <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
         <div class="flex items-center">
             <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-3">
@@ -61,7 +110,7 @@
         </div>
     </div>
 
-    <!-- Perbaiki Card -->
+    <!-- Status Perlu Perbaikan Card -->
     <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
         <div class="flex items-center">
             <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
@@ -71,9 +120,73 @@
             </div>
             <div>
                 <p class="text-xs font-medium text-gray-500">Perlu Perbaikan</p>
-                <p class="text-2xl font-bold text-gray-900">{{ $stats['perbaiki'] ?? 0 }}</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $stats['perlu_perbaikan'] ?? $stats['perbaiki'] ?? 0 }}</p>
             </div>
         </div>
     </div>
+
+    @if($isMadrasah)
+    <!-- Status Upload Surat Pernyataan Card -->
+    <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-3">
+                <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+            </div>
+            <div>
+                <p class="text-xs font-medium text-gray-500">Upload Surat Pernyataan</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $stats['upload_surat'] ?? 0 }}</p>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    @if($isSeragam)
+    <!-- Status Ukuran Menunggu Card -->
+    <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center mr-3">
+                <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div>
+                <p class="text-xs font-medium text-gray-500">Ukuran Menunggu</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $stats['ukuran_menunggu'] ?? 0 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Ukuran Disetujui Card -->
+    <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center mr-3">
+                <svg class="w-6 h-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div>
+                <p class="text-xs font-medium text-gray-500">Ukuran Disetujui</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $stats['ukuran_disetujui'] ?? 0 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Status Ukuran Ditolak Card -->
+    <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-pink-100 rounded-lg flex items-center justify-center mr-3">
+                <svg class="w-6 h-6 text-pink-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+            </div>
+            <div>
+                <p class="text-xs font-medium text-gray-500">Ukuran Ditolak</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $stats['ukuran_ditolak'] ?? 0 }}</p>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>
 @endif

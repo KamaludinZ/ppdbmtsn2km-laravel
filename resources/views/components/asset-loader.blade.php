@@ -70,10 +70,9 @@
         <link rel="stylesheet" href="{{ asset('css/display-fix.css') }}">
     @endif
 
-    {{-- Alpine.js - Single instance only --}}
-    @if(!isset($GLOBALS['alpine_loaded']))
-        @php $GLOBALS['alpine_loaded'] = true; @endphp
-        <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
+    {{-- Toggle Switch CSS --}}
+    @if(file_exists(public_path('css/toggle-switch.css')))
+        <link rel="stylesheet" href="{{ asset('css/toggle-switch.css') }}">
     @endif
 
     {{-- Axios - Cloudflare CDN for better performance --}}
