@@ -73,21 +73,36 @@
                             </div>
                         </td>
                         <td class="px-6 py-4 text-sm text-gray-900">
-                            <div class="space-y-1">
+                            <div class="space-y-2">
                                 @foreach($pendaftar->surveyAnswers as $answer)
-                                    <div class="flex items-start">
-                                        <svg class="w-4 h-4 text-blue-500 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                        </svg>
-                                        <div class="flex-1">
-                                            <span class="text-xs font-semibold text-gray-700">{{ $answer->question->question_text }}:</span>
-                                            <span class="text-xs text-gray-600">
-                                                @if($answer->question->question_type === 'text')
-                                                    {{ $answer->answer_text }}
+                                    <div class="border-l-2 border-blue-500 pl-3">
+                                        <div class="mb-1">
+                                            <span class="text-xs font-semibold text-gray-700">{{ $answer->question->pertanyaan }}</span>
+                                        </div>
+
+                                        {{-- DEBUG: Show RAW data from database (Admin only) --}}
+                                        @php
+                                            $rawAnswer = $answer->jawaban;
+                                        @endphp
+                                        @if($rawAnswer !== null)
+                                            <div class="text-[10px] font-mono bg-gray-100 text-gray-700 px-2 py-1 rounded border border-gray-300 mb-1">
+                                                <span class="font-bold text-red-600">RAW:</span>
+                                                @if(is_array($rawAnswer))
+                                                    [{{ implode(', ', $rawAnswer) }}]
                                                 @else
-                                                    {{ $answer->option->option_text ?? '-' }}
+                                                    {{ $rawAnswer }}
                                                 @endif
-                                            </span>
+                                                @if(is_numeric($rawAnswer) || (is_array($rawAnswer) && isset($rawAnswer[0]) && is_numeric($rawAnswer[0])))
+                                                    <span class="text-green-600 font-bold ml-1">✓ ID</span>
+                                                @else
+                                                    <span class="text-orange-600 font-bold ml-1">⚠ VALUE/LABEL</span>
+                                                @endif
+                                            </div>
+                                        @endif
+
+                                        {{-- Display formatted answer --}}
+                                        <div class="text-xs text-gray-600 font-medium">
+                                            {{ $answer->getJawabanFormatted() }}
                                         </div>
                                     </div>
                                 @endforeach
@@ -125,28 +140,39 @@
             @foreach($allQuestions as $question)
                 @php
                     $questionAnswers = \App\Models\SurveyAnswer::where('survey_question_id', $question->id)
-                        ->with('option')
                         ->get();
                     $totalAnswers = $questionAnswers->count();
                 @endphp
 
                 @if($totalAnswers > 0)
                 <div class="bg-white rounded-lg border border-gray-200 p-4">
-                    <h5 class="text-sm font-semibold text-gray-800 mb-3">{{ $question->question_text }}</h5>
+                    <h5 class="text-sm font-semibold text-gray-800 mb-3">{{ $question->pertanyaan }}</h5>
 
-                    @if($question->question_type === 'text')
+                    @if($question->tipe_input === 'text' || $question->tipe_input === 'textarea')
                         <p class="text-xs text-gray-500 italic">{{ $totalAnswers }} jawaban text</p>
                     @else
                         <div class="space-y-2">
                             @foreach($question->options as $option)
                                 @php
-                                    $optionCount = $questionAnswers->where('survey_option_id', $option->id)->count();
+                                    // CRITICAL: Count answers that contain this option's ID (or value/label for backward compatibility)
+                                    $optionCount = $questionAnswers->filter(function($answer) use ($option) {
+                                        $jawaban = $answer->getJawabanArray();
+
+                                        // Check if answer contains:
+                                        // 1. Option ID (integer) - NEW SYSTEM
+                                        // 2. Option value (string) - FALLBACK
+                                        // 3. Option label (string) - FALLBACK
+                                        return in_array($option->id, $jawaban)
+                                            || in_array((string)$option->id, $jawaban)
+                                            || in_array($option->value, $jawaban)
+                                            || in_array($option->label, $jawaban);
+                                    })->count();
                                     $percentage = $totalAnswers > 0 ? round(($optionCount / $totalAnswers) * 100, 1) : 0;
                                 @endphp
                                 @if($optionCount > 0)
                                 <div>
                                     <div class="flex justify-between items-center mb-1">
-                                        <span class="text-xs text-gray-700">{{ $option->option_text }}</span>
+                                        <span class="text-xs text-gray-700">{{ $option->label }}</span>
                                         <span class="text-xs font-semibold text-gray-900">{{ $optionCount }} ({{ $percentage }}%)</span>
                                     </div>
                                     <div class="w-full bg-gray-200 rounded-full h-2">

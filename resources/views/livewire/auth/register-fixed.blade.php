@@ -203,6 +203,88 @@
                         </div>
                     @endif
 
+                    {{-- Status Kelengkapan Data --}}
+                    <div class="mb-6 bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-lg p-4">
+                        <h3 class="font-semibold text-gray-900 mb-3 flex items-center">
+                            <svg class="w-5 h-5 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                            </svg>
+                            Status Kelengkapan Data
+                        </h3>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                            @php
+                                $nilaiFields = [
+                                    ['label' => 'B. Indo 5.1', 'value' => $nilai_b_indo_5_1],
+                                    ['label' => 'Mtk 5.1', 'value' => $nilai_matematika_5_1],
+                                    ['label' => 'IPA 5.1', 'value' => $nilai_ipa_5_1],
+                                    ['label' => 'B. Indo 5.2', 'value' => $nilai_b_indo_5_2],
+                                    ['label' => 'Mtk 5.2', 'value' => $nilai_matematika_5_2],
+                                    ['label' => 'IPA 5.2', 'value' => $nilai_ipa_5_2],
+                                    ['label' => 'B. Indo 6.1', 'value' => $nilai_b_indo_6_1],
+                                    ['label' => 'Mtk 6.1', 'value' => $nilai_matematika_6_1],
+                                    ['label' => 'IPA 6.1', 'value' => $nilai_ipa_6_1],
+                                ];
+                            @endphp
+                            @foreach($nilaiFields as $field)
+                                <div class="flex items-center p-2 rounded {{ $field['value'] ? 'bg-green-100' : 'bg-gray-100' }}">
+                                    @if($field['value'])
+                                        <svg class="w-4 h-4 text-green-600 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <span class="text-green-800 font-medium">{{ $field['label'] }}</span>
+                                    @else
+                                        <svg class="w-4 h-4 text-gray-400 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <span class="text-gray-600">{{ $field['label'] }}</span>
+                                    @endif
+                                </div>
+                            @endforeach
+                            <div class="flex items-center p-2 rounded {{ $file_rapor ? 'bg-green-100' : 'bg-gray-100' }}">
+                                @if($file_rapor)
+                                    <svg class="w-4 h-4 text-green-600 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span class="text-green-800 font-medium">File Rapor</span>
+                                @else
+                                    <svg class="w-4 h-4 text-gray-400 mr-1.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <span class="text-gray-600">File Rapor</span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    {{-- Error Summary untuk Step 2 --}}
+                    @if ($errors->any())
+                        <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg animate-shake">
+                            <div class="flex items-start">
+                                <svg class="w-5 h-5 text-red-500 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                                </svg>
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-red-800 mb-2">Mohon perbaiki kesalahan berikut:</h3>
+                                    <ul class="list-disc list-inside space-y-1 text-sm text-red-700">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                    @if($errors->has('file_rapor') && str_contains($errors->first('file_rapor'), 'maksimal'))
+                                        <div class="mt-3 p-3 bg-yellow-50 border border-yellow-200 rounded">
+                                            <p class="text-xs text-yellow-800 font-medium flex items-start">
+                                                <svg class="w-4 h-4 mr-1.5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                                </svg>
+                                                <span><strong>Tips:</strong> Gunakan tools online seperti ilovepdf.com atau smallpdf.com untuk kompres file PDF Anda.</span>
+                                            </p>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
                     <div class="space-y-6">
                         <!-- Kelas 5 Semester 1 -->
                         <div>
@@ -515,6 +597,33 @@
             @if($currentStep == 3)
                 <div class="p-8">
                     <h2 class="text-2xl font-bold text-gray-900 mb-6">Data Diri</h2>
+
+                    {{-- Error Summary untuk Step 3 --}}
+                    @if ($errors->any())
+                        <div class="mb-6 bg-red-50 border-l-4 border-red-500 p-4 rounded-lg animate-shake">
+                            <div class="flex items-start">
+                                <svg class="w-5 h-5 text-red-500 mr-3 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                                </svg>
+                                <div class="flex-1">
+                                    <h3 class="font-bold text-red-800 mb-2">Mohon lengkapi data berikut:</h3>
+                                    <ul class="list-disc list-inside space-y-1 text-sm text-red-700">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                    <div class="mt-3 p-3 bg-blue-50 border border-blue-200 rounded">
+                                        <p class="text-xs text-blue-800 font-medium flex items-start">
+                                            <svg class="w-4 h-4 mr-1.5 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                            </svg>
+                                            <span><strong>Tip:</strong> Pastikan semua field yang bertanda <span class="text-red-600">*</span> (merah) sudah terisi dengan lengkap dan benar.</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
 
                     <div class="space-y-6">
                         <!-- Data Pribadi -->

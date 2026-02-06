@@ -219,6 +219,11 @@
                             <td class="value">{{ $tesPsikologiData->waktu_transfer ? \Carbon\Carbon::parse($tesPsikologiData->waktu_transfer)->format('d/m/Y H:i') . ' WIB' : '-' }}</td>
                         </tr>
                         <tr>
+                            <td class="label" style="width: 30%;">Nama Pengirim</td>
+                            <td class="separator">:</td>
+                            <td class="value">{{ $tesPsikologiData->nama_pengirim ?? '-' }}</td>
+                        </tr>
+                        <tr>
                             <td class="label" style="width: 30%;">Status</td>
                             <td class="separator">:</td>
                             <td class="value" style="color: green; text-transform: uppercase;">LUNAS / DISETUJUI</td>

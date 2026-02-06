@@ -4,6 +4,7 @@ namespace App\Livewire\Admin;
 
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\Attributes\Url;
 use App\Models\Pendaftar as PendaftarModel;
 use App\Models\Prestasi;
 use App\Models\Beasiswa;
@@ -33,8 +34,27 @@ class DetailPendaftar extends Component
     public $dokumen;
     public $daftarUlang;
 
-    // Mode edit
+    // Active Tab with URL support
+    #[Url]
+    public $activeTab = 'siswa';
+
+    // Mode edit - Section specific
     public $editMode = false;
+    public $editModeSiswa = false;
+    public $editModeOrangtua = false;
+    public $editModeAlamat = false;
+    public $editModeSekolah = false;
+    public $editModeRapor = false;
+    public $editModePrestasi = false;
+    public $editModeDataPrestasi = false;
+    public $editModeDataBeasiswa = false;
+    public $editModeDataPendidikanLain = false;
+    public $editModeBeasiswa = false;
+    public $editModePendidikan = false;
+    public $editModeSurvey = false;
+    public $editModeDataKeahlian = false;
+    public $editModeDataTahfidz = false;
+    public $editModeInfoAkun = false;
 
     // Status dokumen
     public $status_rapor;
@@ -58,6 +78,7 @@ class DetailPendaftar extends Component
 
     // Status Pendaftaran
     public $status_pendaftaran;
+    public $catatan_verifikasi;
 
     // Data Pribadi
     public $nama_lengkap;
@@ -98,6 +119,7 @@ class DetailPendaftar extends Component
     public $siswaVillagesList = [];
     public $no_hp;
     public $email;
+    public $password_baru;
 
     // Data Sekolah
     public $asal_sekolah;
@@ -118,8 +140,21 @@ class DetailPendaftar extends Component
     public $nilai_matematika_6_1;
     public $nilai_ipa_6_1;
 
+    // Edit Nilai Rapor
+    public $showEditNilaiRapor = false;
+    public $edit_nilai_b_indo_5_1;
+    public $edit_nilai_matematika_5_1;
+    public $edit_nilai_ipa_5_1;
+    public $edit_nilai_b_indo_5_2;
+    public $edit_nilai_matematika_5_2;
+    public $edit_nilai_ipa_5_2;
+    public $edit_nilai_b_indo_6_1;
+    public $edit_nilai_matematika_6_1;
+    public $edit_nilai_ipa_6_1;
+
     // Data Prestasi
     public $prestasi;
+    public $uploadPrestasiSertifikat = [];
 
     // Data Daftar Ulang
     public $du_status;
@@ -221,6 +256,7 @@ class DetailPendaftar extends Component
     public $siswa_rt;
     public $siswa_rw;
     public $siswa_kode_pos;
+    public $siswa_alamat;
 
     // Tempat Tinggal & Transportasi
     public $jenis_tinggal;
@@ -361,6 +397,17 @@ class DetailPendaftar extends Component
     public $uploadKeahlianSertifikat = [];
     public $uploadTahfidzSyahadah;
     public $uploadTahfidzTahsin;
+
+    // Upload properties for Dokumen (Admin/Panitia can help upload)
+    public $uploadDokumenRapor;
+    public $uploadDokumenAkte;
+    public $uploadDokumenKk;
+    public $uploadDokumenNisn;
+    public $uploadDokumenIjazah;
+    public $uploadDokumenSertifikat;
+    public $uploadDokumenKip;
+    public $uploadDokumenPkh;
+    public $uploadDokumenKks;
 
     public function mount($id)
     {
@@ -556,6 +603,7 @@ class DetailPendaftar extends Component
 
         // Status Pendaftaran
         $this->status_pendaftaran = $this->pendaftar->status_pendaftaran;
+        $this->catatan_verifikasi = $this->pendaftar->catatan_verifikasi;
 
         // EMIS - Data Siswa
         $this->nik = $this->pendaftar->nik;
@@ -644,12 +692,17 @@ class DetailPendaftar extends Component
         $this->siswa_rt = $this->pendaftar->siswa_rt;
         $this->siswa_rw = $this->pendaftar->siswa_rw;
         $this->siswa_kode_pos = $this->pendaftar->siswa_kode_pos;
+        $this->siswa_alamat = $this->pendaftar->siswa_alamat;
 
-        // EMIS - Tempat Tinggal & Transportasi
+        // Alamat Siswa - Jarak & Transportasi (for tab Alamat)
+        $this->jarak_ke_sekolah = $this->pendaftar->jarak_ke_sekolah;
+        $this->transportasi = $this->pendaftar->transportasi;
+        $this->waktu_tempuh = $this->pendaftar->waktu_tempuh;
+
+        // EMIS - Tempat Tinggal & Transportasi (for EMIS data)
         $this->jenis_tinggal = $this->pendaftar->jenis_tinggal;
         $this->alat_transportasi = $this->pendaftar->alat_transportasi;
         $this->jarak_tempat_tinggal = $this->pendaftar->jarak_tempat_tinggal;
-        $this->waktu_tempuh = $this->pendaftar->waktu_tempuh;
 
         // EMIS - Minat & Bakat
         $this->hobi = $this->pendaftar->hobi;
@@ -780,9 +833,142 @@ class DetailPendaftar extends Component
      * Toggle edit mode for specific section (for template compatibility)
      * Admin uses single edit mode, so section parameter is ignored
      */
-    public function toggleEdit($section = null)
+    public function toggleEdit($section)
     {
-        $this->toggleEditMode();
+        $property = 'editMode' . ucfirst($section);
+        if (property_exists($this, $property)) {
+            $isEnabling = !$this->$property;
+            $this->$property = $isEnabling;
+
+            // Only reload data when ENABLING edit mode
+            if ($isEnabling) {
+                $this->loadDataToProperties();
+
+                // Populate cascade dropdown lists for alamat section
+                if ($section === 'alamat') {
+                    $this->populateCascadeDropdowns();
+                }
+            }
+        }
+    }
+
+    /**
+     * Populate cascade dropdown lists based on existing data
+     * This is needed when entering edit mode to show the correct options
+     */
+    private function populateCascadeDropdowns()
+    {
+        // Populate Ayah dropdowns
+        if ($this->ayah_provinsi) {
+            $this->ayahCitiesList = Regency::where('province_id', $this->ayah_provinsi)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        }
+
+        if ($this->ayah_kabupaten) {
+            $this->ayahDistrictsList = District::where('regency_id', $this->ayah_kabupaten)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        }
+
+        if ($this->ayah_kecamatan) {
+            $this->ayahVillagesList = Village::where('district_id', $this->ayah_kecamatan)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        }
+
+        // Populate Ibu dropdowns
+        if ($this->ibu_provinsi) {
+            $this->ibuCitiesList = Regency::where('province_id', $this->ibu_provinsi)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        }
+
+        if ($this->ibu_kabupaten) {
+            $this->ibuDistrictsList = District::where('regency_id', $this->ibu_kabupaten)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        }
+
+        if ($this->ibu_kecamatan) {
+            $this->ibuVillagesList = Village::where('district_id', $this->ibu_kecamatan)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        }
+
+        // Populate Wali dropdowns
+        if ($this->wali_provinsi) {
+            $this->waliCitiesList = Regency::where('province_id', $this->wali_provinsi)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        }
+
+        if ($this->wali_kabupaten) {
+            $this->waliDistrictsList = District::where('regency_id', $this->wali_kabupaten)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        }
+
+        if ($this->wali_kecamatan) {
+            $this->waliVillagesList = Village::where('district_id', $this->wali_kecamatan)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        }
+
+        // Populate Siswa dropdowns
+        if ($this->siswa_provinsi) {
+            $this->siswaCitiesList = Regency::where('province_id', $this->siswa_provinsi)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        }
+
+        if ($this->siswa_kabupaten) {
+            $this->siswaDistrictsList = District::where('regency_id', $this->siswa_kabupaten)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        }
+
+        if ($this->siswa_kecamatan) {
+            $this->siswaVillagesList = Village::where('district_id', $this->siswa_kecamatan)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        }
     }
 
     /**
@@ -848,10 +1034,189 @@ class DetailPendaftar extends Component
         ]);
     }
 
+    /**
+     * Upload dokumen untuk pendaftar (Admin/Panitia can help upload)
+     */
+    public function uploadDokumen($jenis)
+    {
+        $uploadField = 'uploadDokumen' . ucfirst($jenis);
+
+        // Map jenis key to database jenis_dokumen value
+        $jenisMapping = [
+            'rapor' => 'rapor',
+            'akte' => 'akta_kelahiran',
+            'kk' => 'kk',
+            'nisn' => 'nisn',
+            'ijazah' => 'ijazah',
+            'sertifikat' => 'sertifikat',
+            'kip' => 'kip',
+            'pkh' => 'pkh',
+            'kks' => 'kks',
+        ];
+
+        $jenisDokumen = $jenisMapping[$jenis] ?? $jenis;
+
+        // Validasi file
+        $this->validate([
+            $uploadField => 'required|file|mimes:pdf|max:2048',
+        ], [
+            $uploadField . '.required' => 'File dokumen wajib dipilih',
+            $uploadField . '.file' => 'File tidak valid',
+            $uploadField . '.mimes' => 'File harus berupa PDF',
+            $uploadField . '.max' => 'Ukuran file maksimal 2MB',
+        ]);
+
+        try {
+            $file = $this->$uploadField;
+
+            // Check if document already exists (use $jenisDokumen for database query) - CHECK FIRST!
+            $existingDokumen = Dokumen::where('pendaftar_id', $this->pendaftarId)
+                ->where('jenis_dokumen', $jenisDokumen)
+                ->first();
+
+            // Delete old file from private storage BEFORE uploading new file
+            if ($existingDokumen && Storage::disk('private')->exists($existingDokumen->path_file)) {
+                Storage::disk('private')->delete($existingDokumen->path_file);
+            }
+
+            // Generate file name using FileNamingService
+            $filename = FileNamingService::generateFileName(
+                $jenis,
+                $this->pendaftar->nomor_pendaftaran,
+                $file->getClientOriginalExtension(),
+                $this->pendaftar->nama_lengkap
+            );
+
+            // Store NEW file to private storage (dengan subdirektori pendaftar_id untuk konsistensi)
+            $path = $file->storeAs('dokumen/' . $this->pendaftarId, $filename, 'private');
+
+            // Get file info
+            $mimeType = $file->getMimeType();
+            $size = $file->getSize();
+
+            if ($existingDokumen) {
+                // Update existing document record
+                $existingDokumen->update([
+                    'nama_file' => $filename,
+                    'path_file' => $path,
+                    'mime_type' => $mimeType,
+                    'ukuran_file' => $size,
+                    'tanggal_upload' => now(),
+                ]);
+            } else {
+                // Create new document (use $jenisDokumen for database insert)
+                Dokumen::create([
+                    'pendaftar_id' => $this->pendaftarId,
+                    'jenis_dokumen' => $jenisDokumen,
+                    'nama_file' => $filename,
+                    'path_file' => $path,
+                    'mime_type' => $mimeType,
+                    'ukuran_file' => $size,
+                    'tanggal_upload' => now(),
+                ]);
+            }
+
+            // Update status to menunggu_verifikasi
+            $statusField = 'status_' . $jenis;
+            $this->$statusField = 'menunggu_verifikasi';
+            $this->verifikasi->update([
+                $statusField => 'menunggu_verifikasi',
+            ]);
+
+            // Reload dokumen and verifikasi with fresh data
+            $this->loadDokumen();
+            $this->loadVerifikasi();
+
+            // Force refresh pendaftar data
+            $this->pendaftar = $this->pendaftar->fresh();
+
+            // Clear upload field
+            $this->$uploadField = null;
+
+            // Dispatch success notification
+            $dokumenLabels = [
+                'rapor' => 'Scan Rapor',
+                'akte' => 'Akta Kelahiran',
+                'kk' => 'Kartu Keluarga',
+                'nisn' => 'Scan/Bukti NISN',
+                'ijazah' => 'Ijazah/SKL',
+                'sertifikat' => 'Sertifikat/Piagam',
+                'kip' => 'KIP',
+                'pkh' => 'PKH',
+                'kks' => 'KKS',
+            ];
+
+            $label = $dokumenLabels[$jenis] ?? ucfirst($jenis);
+
+            $this->dispatch('statusUpdated', [
+                'type' => 'success',
+                'message' => "Dokumen {$label} berhasil di-upload!"
+            ]);
+
+        } catch (\Exception $e) {
+            $this->dispatch('statusUpdated', [
+                'type' => 'error',
+                'message' => 'Gagal mengupload dokumen: ' . $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
+     * Check if all required documents are verified (status = disetujui)
+     * - All WAJIB documents must be "disetujui"
+     * - All uploaded non-wajib documents must also be "disetujui"
+     */
+    public function getIsAllDocumentsVerifiedProperty()
+    {
+        // Define wajib documents
+        $wajibDokumen = ['rapor', 'akte', 'kk', 'nisn', 'ijazah'];
+
+        // Check all wajib documents must be disetujui
+        foreach ($wajibDokumen as $dok) {
+            $statusField = 'status_' . $dok;
+            if ($this->$statusField !== 'disetujui') {
+                return false;
+            }
+        }
+
+        // Define optional documents with their conditions
+        $optionalDokumen = [
+            'sertifikat' => null, // Always check if uploaded
+            'kip' => 'nomor_kip', // Check if nomor_kip exists
+            'pkh' => 'nomor_pkh', // Check if nomor_pkh exists
+            'kks' => 'nomor_kks', // Check if nomor_kks exists
+        ];
+
+        foreach ($optionalDokumen as $dok => $conditionalField) {
+            $statusField = 'status_' . $dok;
+
+            // Check if document has been uploaded
+            $hasUpload = $this->dokumen->contains(function($dokumen) use ($dok) {
+                return $dokumen->jenis_dokumen === $dok;
+            });
+
+            // For conditional documents, also check if the condition field is filled
+            $isConditionalFilled = false;
+            if ($conditionalField && !empty($this->pendaftar->$conditionalField)) {
+                $isConditionalFilled = true;
+            }
+
+            // If uploaded or conditional field filled, must be disetujui
+            if ($hasUpload || $isConditionalFilled) {
+                if ($this->$statusField !== 'disetujui') {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
     public function updateStatusPendaftaran()
     {
         $this->pendaftar->update([
             'status_pendaftaran' => $this->status_pendaftaran,
+            'catatan_verifikasi' => $this->catatan_verifikasi,
             'diperbarui_oleh' => Auth::id(),
         ]);
 
@@ -861,7 +1226,7 @@ class DetailPendaftar extends Component
                 new \App\Notifications\StatusChangeNotification(
                     'formulir',
                     $this->status_pendaftaran,
-                    $this->pendaftar->catatan_verifikasi
+                    $this->catatan_verifikasi
                 )
             );
         }
@@ -915,10 +1280,6 @@ class DetailPendaftar extends Component
             'email_pribadi' => 'nullable|email',
             'tidak_punya_hp' => 'nullable|boolean',
             'no_hp' => 'nullable|numeric|digits_between:10,15',
-            'jenis_tinggal' => 'nullable|string',
-            'alat_transportasi' => 'nullable|string',
-            'jarak_tempat_tinggal' => 'nullable|integer|min:0',
-            'waktu_tempuh' => 'nullable|integer|min:0',
             'hobi' => 'required|string',
             'cita_cita' => 'required|string',
             'yang_membiayai_sekolah' => 'required|string',
@@ -960,10 +1321,6 @@ class DetailPendaftar extends Component
             'email_pribadi' => $this->email_pribadi,
             'tidak_punya_hp' => $this->tidak_punya_hp ?? false,
             'no_hp' => $this->no_hp,
-            'jenis_tinggal' => $this->jenis_tinggal,
-            'alat_transportasi' => $this->alat_transportasi,
-            'jarak_tempat_tinggal' => $this->jarak_tempat_tinggal,
-            'waktu_tempuh' => $this->waktu_tempuh,
             'hobi' => $this->hobi,
             'cita_cita' => $this->cita_cita,
             'yang_membiayai_sekolah' => $this->yang_membiayai_sekolah,
@@ -996,6 +1353,9 @@ class DetailPendaftar extends Component
         $this->newFoto = null;
         $this->loadPendaftar();
 
+        // Exit edit mode after successful save
+        $this->editModeSiswa = false;
+
         session()->flash('message', 'Data siswa berhasil diperbarui.');
     }
 
@@ -1015,8 +1375,8 @@ class DetailPendaftar extends Component
             'wali_hubungan' => 'nullable|in:sama_ayah,sama_ibu,lainnya',
 
             // Kartu Bantuan - Optional
-            'nomor_kks' => 'nullable|numeric|digits_between:1,17',
-            'nomor_pkh' => 'nullable|numeric|digits_between:1,17',
+            'nomor_kks' => 'nullable|string|max:25|regex:/^[A-Za-z0-9]+$/',
+            'nomor_pkh' => 'nullable|string|max:25|regex:/^[A-Za-z0-9]+$/',
 
             // Keep EMIS fields validation
             'ayah_nik' => 'nullable|digits:16',
@@ -1174,6 +1534,10 @@ class DetailPendaftar extends Component
 
         $this->pendaftar->update($updateData);
         $this->loadPendaftar();
+
+        // Exit edit mode after successful save
+        $this->editModeOrangtua = false;
+
         session()->flash('message', 'Data orang tua berhasil diperbarui.');
     }
 
@@ -1358,6 +1722,10 @@ class DetailPendaftar extends Component
         ]);
 
         $this->loadPendaftar();
+
+        // Exit edit mode after successful save
+        $this->editModeAlamat = false;
+
         session()->flash('message', 'Data alamat berhasil diperbarui.');
     }
 
@@ -1368,6 +1736,10 @@ class DetailPendaftar extends Component
         ]);
 
         $this->loadPendaftar();
+
+        // Exit edit mode after successful save
+        $this->editModeDataPrestasi = false;
+
         session()->flash('message', 'Data prestasi berhasil diperbarui.');
     }
 
@@ -1377,7 +1749,7 @@ class DetailPendaftar extends Component
             'penerima_kps' => 'nullable|boolean',
             'nomor_kps' => 'nullable|numeric|digits_between:1,17|required_if:penerima_kps,true',
             'penerima_kip' => 'nullable|boolean',
-            'nomor_kip' => 'nullable|numeric|digits_between:1,17|required_if:penerima_kip,true',
+            'nomor_kip' => 'nullable|string|max:25|regex:/^[A-Za-z0-9]+$/|required_if:penerima_kip,true',
             'layak_pip' => 'nullable|boolean',
             'alasan_layak_pip' => 'nullable|string|required_if:layak_pip,true',
             'newFileKartuKeluarga' => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:2048',
@@ -1416,6 +1788,9 @@ class DetailPendaftar extends Component
         $this->newFileKartuKeluarga = null;
         $this->newFileAktaKelahiran = null;
         $this->loadPendaftar();
+
+        // Exit edit mode after successful save
+        $this->editModeBeasiswa = false;
 
         session()->flash('message', 'Data beasiswa & bantuan berhasil diperbarui.');
     }
@@ -1481,6 +1856,9 @@ class DetailPendaftar extends Component
         $this->newFileIjazahSd = null;
         $this->newFileSkhunSd = null;
         $this->loadPendaftar();
+
+        // Exit edit mode after successful save
+        $this->editModePendidikan = false;
 
         session()->flash('message', 'Data pendidikan lain berhasil diperbarui.');
     }
@@ -1579,6 +1957,20 @@ class DetailPendaftar extends Component
         $this->ayah_kecamatan = null;
         $this->ayah_kelurahan = null;
         $this->ayah_kode_pos = null;
+
+        // Populate cities list for the selected province
+        if ($this->ayah_provinsi) {
+            $this->ayahCitiesList = Regency::where('province_id', $this->ayah_provinsi)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        } else {
+            $this->ayahCitiesList = [];
+        }
+        $this->ayahDistrictsList = [];
+        $this->ayahVillagesList = [];
     }
 
     public function updatedAyahKabupaten()
@@ -1586,12 +1978,37 @@ class DetailPendaftar extends Component
         $this->ayah_kecamatan = null;
         $this->ayah_kelurahan = null;
         $this->ayah_kode_pos = null;
+
+        // Populate districts list for the selected city
+        if ($this->ayah_kabupaten) {
+            $this->ayahDistrictsList = District::where('regency_id', $this->ayah_kabupaten)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        } else {
+            $this->ayahDistrictsList = [];
+        }
+        $this->ayahVillagesList = [];
     }
 
     public function updatedAyahKecamatan()
     {
         $this->ayah_kelurahan = null;
         $this->ayah_kode_pos = null;
+
+        // Populate villages list for the selected district
+        if ($this->ayah_kecamatan) {
+            $this->ayahVillagesList = Village::where('district_id', $this->ayah_kecamatan)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        } else {
+            $this->ayahVillagesList = [];
+        }
     }
 
     public function updatedAyahKelurahan()
@@ -1641,6 +2058,22 @@ class DetailPendaftar extends Component
             $this->ibu_kelurahan = null;
             $this->ibu_kode_pos = null;
         }
+
+        // Populate cities list for the selected province
+        if ($this->ibu_provinsi) {
+            $this->ibuCitiesList = Regency::where('province_id', $this->ibu_provinsi)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        } else {
+            $this->ibuCitiesList = [];
+        }
+        if (!$this->skipCascadeReset) {
+            $this->ibuDistrictsList = [];
+            $this->ibuVillagesList = [];
+        }
     }
 
     public function updatedIbuKabupaten()
@@ -1651,6 +2084,21 @@ class DetailPendaftar extends Component
             $this->ibu_kelurahan = null;
             $this->ibu_kode_pos = null;
         }
+
+        // Populate districts list for the selected city
+        if ($this->ibu_kabupaten) {
+            $this->ibuDistrictsList = District::where('regency_id', $this->ibu_kabupaten)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        } else {
+            $this->ibuDistrictsList = [];
+        }
+        if (!$this->skipCascadeReset) {
+            $this->ibuVillagesList = [];
+        }
     }
 
     public function updatedIbuKecamatan()
@@ -1659,6 +2107,18 @@ class DetailPendaftar extends Component
         if (!$this->skipCascadeReset && !$this->ibu_sama_dengan_ayah) {
             $this->ibu_kelurahan = null;
             $this->ibu_kode_pos = null;
+        }
+
+        // Populate villages list for the selected district
+        if ($this->ibu_kecamatan) {
+            $this->ibuVillagesList = Village::where('district_id', $this->ibu_kecamatan)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        } else {
+            $this->ibuVillagesList = [];
         }
     }
 
@@ -1742,6 +2202,22 @@ class DetailPendaftar extends Component
             $this->wali_kelurahan = null;
             $this->wali_kode_pos = null;
         }
+
+        // Populate cities list for the selected province
+        if ($this->wali_provinsi) {
+            $this->waliCitiesList = Regency::where('province_id', $this->wali_provinsi)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        } else {
+            $this->waliCitiesList = [];
+        }
+        if (!$this->skipCascadeReset) {
+            $this->waliDistrictsList = [];
+            $this->waliVillagesList = [];
+        }
     }
 
     public function updatedWaliKabupaten()
@@ -1752,6 +2228,21 @@ class DetailPendaftar extends Component
             $this->wali_kelurahan = null;
             $this->wali_kode_pos = null;
         }
+
+        // Populate districts list for the selected city
+        if ($this->wali_kabupaten) {
+            $this->waliDistrictsList = District::where('regency_id', $this->wali_kabupaten)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        } else {
+            $this->waliDistrictsList = [];
+        }
+        if (!$this->skipCascadeReset) {
+            $this->waliVillagesList = [];
+        }
     }
 
     public function updatedWaliKecamatan()
@@ -1760,6 +2251,18 @@ class DetailPendaftar extends Component
         if (!$this->skipCascadeReset && !$this->wali_sama_dengan_ayah) {
             $this->wali_kelurahan = null;
             $this->wali_kode_pos = null;
+        }
+
+        // Populate villages list for the selected district
+        if ($this->wali_kecamatan) {
+            $this->waliVillagesList = Village::where('district_id', $this->wali_kecamatan)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        } else {
+            $this->waliVillagesList = [];
         }
     }
 
@@ -1840,6 +2343,20 @@ class DetailPendaftar extends Component
         $this->siswa_kecamatan = null;
         $this->siswa_kelurahan = null;
         $this->siswa_kode_pos = null;
+
+        // Populate cities list for the selected province
+        if ($this->siswa_provinsi) {
+            $this->siswaCitiesList = Regency::where('province_id', $this->siswa_provinsi)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        } else {
+            $this->siswaCitiesList = [];
+        }
+        $this->siswaDistrictsList = [];
+        $this->siswaVillagesList = [];
     }
 
     public function updatedSiswaKabupaten()
@@ -1847,12 +2364,37 @@ class DetailPendaftar extends Component
         $this->siswa_kecamatan = null;
         $this->siswa_kelurahan = null;
         $this->siswa_kode_pos = null;
+
+        // Populate districts list for the selected city
+        if ($this->siswa_kabupaten) {
+            $this->siswaDistrictsList = District::where('regency_id', $this->siswa_kabupaten)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        } else {
+            $this->siswaDistrictsList = [];
+        }
+        $this->siswaVillagesList = [];
     }
 
     public function updatedSiswaKecamatan()
     {
         $this->siswa_kelurahan = null;
         $this->siswa_kode_pos = null;
+
+        // Populate villages list for the selected district
+        if ($this->siswa_kecamatan) {
+            $this->siswaVillagesList = Village::where('district_id', $this->siswa_kecamatan)
+                ->orderBy('name')
+                ->get()
+                ->map(function($item) {
+                    return ['id' => (string)$item->id, 'name' => $item->name];
+                })->toArray();
+        } else {
+            $this->siswaVillagesList = [];
+        }
     }
 
     public function updatedSiswaKelurahan()
@@ -1916,6 +2458,7 @@ class DetailPendaftar extends Component
                     'tingkat_lomba' => $prestasi->tingkat_lomba,
                     'peringkat' => $prestasi->peringkat,
                     'kategori_lomba' => $prestasi->kategori_lomba,
+                    'file_sertifikat' => $prestasi->file_sertifikat,
                 ];
             })->toArray();
         } else {
@@ -1929,6 +2472,7 @@ class DetailPendaftar extends Component
                 'tingkat_lomba' => null,
                 'peringkat' => null,
                 'kategori_lomba' => null,
+                'file_sertifikat' => null,
             ]];
         }
     }
@@ -1944,14 +2488,22 @@ class DetailPendaftar extends Component
             'tingkat_lomba' => null,
             'peringkat' => null,
             'kategori_lomba' => null,
+            'file_sertifikat' => null,
         ];
     }
 
     public function removePrestasi($index)
     {
-        // Jika ada id, hapus dari database
+        // Jika ada id, hapus dari database dan file
         if (isset($this->prestasiList[$index]['id']) && $this->prestasiList[$index]['id']) {
-            Prestasi::find($this->prestasiList[$index]['id'])?->delete();
+            $prestasi = Prestasi::find($this->prestasiList[$index]['id']);
+            if ($prestasi) {
+                // Delete file sertifikat if exists
+                if ($prestasi->file_sertifikat && Storage::disk('public')->exists($prestasi->file_sertifikat)) {
+                    Storage::disk('public')->delete($prestasi->file_sertifikat);
+                }
+                $prestasi->delete();
+            }
         }
 
         // Hapus dari array
@@ -1962,7 +2514,7 @@ class DetailPendaftar extends Component
     public function saveDataPrestasiTerstruktur()
     {
         // Validate all prestasi entries
-        $this->validate([
+        $rules = [
             'prestasiList.*.tahun' => 'required|integer|min:1900|max:' . (date('Y') + 1),
             'prestasiList.*.nama_lomba' => 'required|string|max:255',
             'prestasiList.*.bidang_lomba' => 'required|string|max:100',
@@ -1970,14 +2522,59 @@ class DetailPendaftar extends Component
             'prestasiList.*.tingkat_lomba' => 'required|string|max:50',
             'prestasiList.*.peringkat' => 'required|string|max:100',
             'prestasiList.*.kategori_lomba' => 'required|string|max:50',
-        ]);
+        ];
 
-        // Delete existing prestasi yang tidak ada di list
+        // Validate file upload for each prestasi
+        foreach ($this->prestasiList as $index => $prestasiData) {
+            // Jika prestasi baru (tidak ada id) dan tidak ada file existing, file upload wajib
+            if (!$prestasiData['id'] && !isset($prestasiData['file_sertifikat'])) {
+                $rules["uploadPrestasiSertifikat.{$index}"] = 'required|file|mimes:pdf,jpg,jpeg,png|max:2048';
+            } elseif (isset($this->uploadPrestasiSertifikat[$index])) {
+                // Jika ada file baru diupload (update), validasi file
+                $rules["uploadPrestasiSertifikat.{$index}"] = 'file|mimes:pdf,jpg,jpeg,png|max:2048';
+            }
+        }
+
+        $this->validate($rules);
+
+        // Delete existing prestasi yang tidak ada di list (plus files)
         $existingIds = collect($this->prestasiList)->pluck('id')->filter()->toArray();
-        $this->pendaftar->prestasis()->whereNotIn('id', $existingIds)->delete();
+        $prestasisToDelete = $this->pendaftar->prestasis()->whereNotIn('id', $existingIds)->get();
+        foreach ($prestasisToDelete as $prestasi) {
+            if ($prestasi->file_sertifikat && Storage::disk('public')->exists($prestasi->file_sertifikat)) {
+                Storage::disk('public')->delete($prestasi->file_sertifikat);
+            }
+            $prestasi->delete();
+        }
 
         // Save atau update each prestasi
-        foreach ($this->prestasiList as $prestasiData) {
+        foreach ($this->prestasiList as $index => $prestasiData) {
+            // Handle file upload
+            $filePath = $prestasiData['file_sertifikat'] ?? null;
+
+            if (isset($this->uploadPrestasiSertifikat[$index]) && $this->uploadPrestasiSertifikat[$index]) {
+                $file = $this->uploadPrestasiSertifikat[$index];
+
+                // Delete old file BEFORE uploading new file (if updating existing)
+                if ($prestasiData['id']) {
+                    $oldPrestasi = Prestasi::find($prestasiData['id']);
+                    if ($oldPrestasi && $oldPrestasi->file_sertifikat && Storage::disk('private')->exists($oldPrestasi->file_sertifikat)) {
+                        Storage::disk('private')->delete($oldPrestasi->file_sertifikat);
+                    }
+                }
+
+                // Generate filename using FileNamingService with index to prevent collision
+                $filename = FileNamingService::generateFileName(
+                    'sertifikat_prestasi_' . ($index + 1), // Add index to make unique
+                    $this->pendaftar->nomor_pendaftaran,
+                    $file->getClientOriginalExtension(),
+                    $this->pendaftar->nama_lengkap
+                );
+
+                // Upload NEW file to private storage dengan subdirektori pendaftar_id
+                $filePath = $file->storeAs('sertifikat_prestasi/' . $this->pendaftar->id, $filename, 'private');
+            }
+
             if ($prestasiData['id']) {
                 // Update existing
                 Prestasi::where('id', $prestasiData['id'])->update([
@@ -1988,6 +2585,7 @@ class DetailPendaftar extends Component
                     'tingkat_lomba' => $prestasiData['tingkat_lomba'],
                     'peringkat' => $prestasiData['peringkat'],
                     'kategori_lomba' => $prestasiData['kategori_lomba'],
+                    'file_sertifikat' => $filePath,
                 ]);
             } else {
                 // Create new
@@ -2000,12 +2598,20 @@ class DetailPendaftar extends Component
                     'tingkat_lomba' => $prestasiData['tingkat_lomba'],
                     'peringkat' => $prestasiData['peringkat'],
                     'kategori_lomba' => $prestasiData['kategori_lomba'],
+                    'file_sertifikat' => $filePath,
                 ]);
             }
         }
 
+        // Reset upload arrays
+        $this->uploadPrestasiSertifikat = [];
+
         $this->loadPrestasi(); // Reload data
         $this->loadPendaftar(); // Reload pendaftar untuk update relasi
+
+        // Exit edit mode after successful save
+        $this->editModeDataPrestasi = false;
+
         session()->flash('message', 'Data prestasi berhasil diperbarui.');
     }
 
@@ -2118,6 +2724,10 @@ class DetailPendaftar extends Component
 
         $this->loadBeasiswa(); // Reload data
         $this->loadPendaftar(); // Reload pendaftar untuk update relasi
+
+        // Exit edit mode after successful save
+        $this->editModeDataBeasiswa = false;
+
         session()->flash('message', 'Data beasiswa berhasil diperbarui.');
     }
 
@@ -2218,6 +2828,10 @@ class DetailPendaftar extends Component
 
         $this->loadPendidikanLain(); // Reload data
         $this->loadPendaftar(); // Reload pendaftar untuk update relasi
+
+        // Exit edit mode after successful save
+        $this->editModeDataPendidikanLain = false;
+
         session()->flash('message', 'Data pendidikan lain berhasil diperbarui.');
     }
 
@@ -2227,20 +2841,9 @@ class DetailPendaftar extends Component
 
     public function loadKeahlian()
     {
-        $keahlians = Keahlian::where('pendaftar_id', $this->pendaftar->id)->get();
+        $keahlians = $this->pendaftar->keahlians;
 
-        if ($keahlians->isEmpty()) {
-            // Initialize with one empty entry
-            $this->keahlianList = [[
-                'id' => null,
-                'bidang_keahlian' => null,
-                'nama_keahlian' => null,
-                'sertifikasi' => null,
-                'lembaga_penyelenggara' => null,
-                'hasil_tingkat_skor' => null,
-                'file_bukti_sertifikat' => null,
-            ]];
-        } else {
+        if ($keahlians->count() > 0) {
             $this->keahlianList = $keahlians->map(function ($keahlian) {
                 return [
                     'id' => $keahlian->id,
@@ -2252,6 +2855,17 @@ class DetailPendaftar extends Component
                     'file_bukti_sertifikat' => $keahlian->file_bukti_sertifikat,
                 ];
             })->toArray();
+        } else {
+            // Initialize dengan satu keahlian kosong
+            $this->keahlianList = [[
+                'id' => null,
+                'bidang_keahlian' => null,
+                'nama_keahlian' => null,
+                'sertifikasi' => null,
+                'lembaga_penyelenggara' => null,
+                'hasil_tingkat_skor' => null,
+                'file_bukti_sertifikat' => null,
+            ]];
         }
     }
 
@@ -2294,71 +2908,53 @@ class DetailPendaftar extends Component
 
     public function saveDataKeahlian()
     {
-        // Delete existing keahlian that are not in the list anymore
-        $existingIds = array_filter(array_column($this->keahlianList, 'id'));
-        if (!empty($existingIds)) {
-            Keahlian::where('pendaftar_id', $this->pendaftar->id)
-                ->whereNotIn('id', $existingIds)
-                ->get()
-                ->each(function ($keahlian) {
-                    if ($keahlian->file_bukti_sertifikat && Storage::disk('public')->exists($keahlian->file_bukti_sertifikat)) {
-                        Storage::disk('public')->delete($keahlian->file_bukti_sertifikat);
-                    }
-                    $keahlian->delete();
-                });
-        } else {
-            // If no existing IDs, delete all
-            Keahlian::where('pendaftar_id', $this->pendaftar->id)->get()->each(function ($keahlian) {
-                if ($keahlian->file_bukti_sertifikat && Storage::disk('public')->exists($keahlian->file_bukti_sertifikat)) {
-                    Storage::disk('public')->delete($keahlian->file_bukti_sertifikat);
-                }
-                $keahlian->delete();
-            });
+        // Delete existing keahlian yang tidak ada di list (plus files)
+        $existingIds = collect($this->keahlianList)->pluck('id')->filter()->toArray();
+        $keahliansToDelete = $this->pendaftar->keahlians()->whereNotIn('id', $existingIds)->get();
+        foreach ($keahliansToDelete as $keahlian) {
+            if ($keahlian->file_bukti_sertifikat && Storage::disk('public')->exists($keahlian->file_bukti_sertifikat)) {
+                Storage::disk('public')->delete($keahlian->file_bukti_sertifikat);
+            }
+            $keahlian->delete();
         }
 
-        // Save each keahlian
+        // Save atau update each keahlian
         foreach ($this->keahlianList as $index => $keahlianData) {
-            // Skip if empty
-            if (empty($keahlianData['bidang_keahlian']) && empty($keahlianData['nama_keahlian'])) {
-                continue;
-            }
-
             // Handle file upload
             $filePath = $keahlianData['file_bukti_sertifikat'] ?? null;
             if (isset($this->uploadKeahlianSertifikat[$index]) && $this->uploadKeahlianSertifikat[$index]) {
                 $file = $this->uploadKeahlianSertifikat[$index];
 
+                // Delete old file BEFORE uploading new file (if updating existing)
+                if (isset($keahlianData['id']) && $keahlianData['id']) {
+                    $oldKeahlian = Keahlian::find($keahlianData['id']);
+                    if ($oldKeahlian && $oldKeahlian->file_bukti_sertifikat && Storage::disk('private')->exists($oldKeahlian->file_bukti_sertifikat)) {
+                        Storage::disk('private')->delete($oldKeahlian->file_bukti_sertifikat);
+                    }
+                }
+
+                // Generate filename using FileNamingService with index to prevent collision
                 $filename = FileNamingService::generateFileName(
-                    'sertifikat_keahlian',
+                    'sertifikat_keahlian_' . ($index + 1), // Add index to make unique
                     $this->pendaftar->nomor_pendaftaran,
                     $file->getClientOriginalExtension(),
                     $this->pendaftar->nama_lengkap
                 );
 
-                $filePath = $file->storeAs('sertifikat_keahlian', $filename, 'public');
-
-                // Delete old file if exists and updating
-                if (isset($keahlianData['id']) && $keahlianData['id']) {
-                    $oldKeahlian = Keahlian::find($keahlianData['id']);
-                    if ($oldKeahlian && $oldKeahlian->file_bukti_sertifikat && Storage::disk('public')->exists($oldKeahlian->file_bukti_sertifikat)) {
-                        Storage::disk('public')->delete($oldKeahlian->file_bukti_sertifikat);
-                    }
-                }
+                // Upload NEW file to private storage dengan subdirektori pendaftar_id
+                $filePath = $file->storeAs('sertifikat_keahlian/' . $this->pendaftar->id, $filename, 'private');
             }
 
-            if (isset($keahlianData['id']) && $keahlianData['id']) {
+            if ($keahlianData['id']) {
                 // Update existing
-                $keahlian = Keahlian::find($keahlianData['id']);
-                if ($keahlian) {
-                    $keahlian->update([
-                        'bidang_keahlian' => $keahlianData['bidang_keahlian'],
-                        'nama_keahlian' => $keahlianData['nama_keahlian'],
-                        'sertifikasi' => $keahlianData['sertifikasi'],
-                        'lembaga_penyelenggara' => $keahlianData['lembaga_penyelenggara'],
-                        'hasil_tingkat_skor' => $keahlianData['hasil_tingkat_skor'],
-                        'file_bukti_sertifikat' => $filePath,
-                    ]);
-                }
+                Keahlian::where('id', $keahlianData['id'])->update([
+                    'bidang_keahlian' => $keahlianData['bidang_keahlian'],
+                    'nama_keahlian' => $keahlianData['nama_keahlian'],
+                    'sertifikasi' => $keahlianData['sertifikasi'],
+                    'lembaga_penyelenggara' => $keahlianData['lembaga_penyelenggara'],
+                    'hasil_tingkat_skor' => $keahlianData['hasil_tingkat_skor'],
+                    'file_bukti_sertifikat' => $filePath,
+                ]);
             } else {
                 // Create new
                 Keahlian::create([
@@ -2378,6 +2974,10 @@ class DetailPendaftar extends Component
 
         $this->loadKeahlian(); // Reload data
         $this->loadPendaftar(); // Reload pendaftar untuk update relasi
+
+        // Exit edit mode after successful save
+        $this->editModeDataKeahlian = false;
+
         session()->flash('message', 'Data keahlian berhasil diperbarui.');
     }
 
@@ -2410,6 +3010,15 @@ class DetailPendaftar extends Component
     {
         // Handle syahadah upload
         if ($this->uploadTahfidzSyahadah) {
+            // Delete old file BEFORE uploading new file
+            if ($this->tahfidz['id']) {
+                $oldTahfidz = Tahfidz::find($this->tahfidz['id']);
+                if ($oldTahfidz && $oldTahfidz->file_bukti_syahadah && Storage::disk('private')->exists($oldTahfidz->file_bukti_syahadah)) {
+                    Storage::disk('private')->delete($oldTahfidz->file_bukti_syahadah);
+                }
+            }
+
+            // Generate filename using FileNamingService
             $filename = FileNamingService::generateFileName(
                 'syahadah',
                 $this->pendaftar->nomor_pendaftaran,
@@ -2417,21 +3026,22 @@ class DetailPendaftar extends Component
                 $this->pendaftar->nama_lengkap
             );
 
-            $syahadahPath = $this->uploadTahfidzSyahadah->storeAs('tahfidz', $filename, 'public');
-
-            // Delete old file if exists
-            if ($this->tahfidz['id']) {
-                $oldTahfidz = Tahfidz::find($this->tahfidz['id']);
-                if ($oldTahfidz && $oldTahfidz->file_bukti_syahadah && Storage::disk('public')->exists($oldTahfidz->file_bukti_syahadah)) {
-                    Storage::disk('public')->delete($oldTahfidz->file_bukti_syahadah);
-                }
-            }
-
+            // Upload NEW file to private storage dengan subdirektori pendaftar_id
+            $syahadahPath = $this->uploadTahfidzSyahadah->storeAs('tahfidz/' . $this->pendaftar->id, $filename, 'private');
             $this->tahfidz['file_bukti_syahadah'] = $syahadahPath;
         }
 
         // Handle tahsin upload
         if ($this->uploadTahfidzTahsin) {
+            // Delete old file BEFORE uploading new file
+            if ($this->tahfidz['id']) {
+                $oldTahfidz = Tahfidz::find($this->tahfidz['id']);
+                if ($oldTahfidz && $oldTahfidz->file_bukti_tahsin && Storage::disk('private')->exists($oldTahfidz->file_bukti_tahsin)) {
+                    Storage::disk('private')->delete($oldTahfidz->file_bukti_tahsin);
+                }
+            }
+
+            // Generate filename using FileNamingService
             $filename = FileNamingService::generateFileName(
                 'tahsin',
                 $this->pendaftar->nomor_pendaftaran,
@@ -2439,16 +3049,8 @@ class DetailPendaftar extends Component
                 $this->pendaftar->nama_lengkap
             );
 
-            $tahsinPath = $this->uploadTahfidzTahsin->storeAs('tahfidz', $filename, 'public');
-
-            // Delete old file if exists
-            if ($this->tahfidz['id']) {
-                $oldTahfidz = Tahfidz::find($this->tahfidz['id']);
-                if ($oldTahfidz && $oldTahfidz->file_bukti_tahsin && Storage::disk('public')->exists($oldTahfidz->file_bukti_tahsin)) {
-                    Storage::disk('public')->delete($oldTahfidz->file_bukti_tahsin);
-                }
-            }
-
+            // Upload NEW file to private storage dengan subdirektori pendaftar_id
+            $tahsinPath = $this->uploadTahfidzTahsin->storeAs('tahfidz/' . $this->pendaftar->id, $filename, 'private');
             $this->tahfidz['file_bukti_tahsin'] = $tahsinPath;
         }
 
@@ -2479,7 +3081,176 @@ class DetailPendaftar extends Component
 
         $this->loadTahfidz(); // Reload data
         $this->loadPendaftar(); // Reload pendaftar untuk update relasi
+
+        // Exit edit mode after successful save
+        $this->editModeDataTahfidz = false;
+
         session()->flash('message', 'Data tahfidz berhasil diperbarui.');
+    }
+
+    // Method untuk Edit Nilai Rapor
+    public function openEditNilaiRapor()
+    {
+        // Load nilai rapor saat ini ke form edit
+        $this->edit_nilai_b_indo_5_1 = $this->pendaftar->nilai_b_indo_5_1;
+        $this->edit_nilai_matematika_5_1 = $this->pendaftar->nilai_matematika_5_1;
+        $this->edit_nilai_ipa_5_1 = $this->pendaftar->nilai_ipa_5_1;
+        $this->edit_nilai_b_indo_5_2 = $this->pendaftar->nilai_b_indo_5_2;
+        $this->edit_nilai_matematika_5_2 = $this->pendaftar->nilai_matematika_5_2;
+        $this->edit_nilai_ipa_5_2 = $this->pendaftar->nilai_ipa_5_2;
+        $this->edit_nilai_b_indo_6_1 = $this->pendaftar->nilai_b_indo_6_1;
+        $this->edit_nilai_matematika_6_1 = $this->pendaftar->nilai_matematika_6_1;
+        $this->edit_nilai_ipa_6_1 = $this->pendaftar->nilai_ipa_6_1;
+
+        $this->showEditNilaiRapor = true;
+    }
+
+    public function closeEditNilaiRapor()
+    {
+        $this->showEditNilaiRapor = false;
+        $this->resetErrorBag();
+    }
+
+    public function saveNilaiRapor()
+    {
+        // Validasi
+        $this->validate([
+            'edit_nilai_b_indo_5_1' => 'nullable|numeric|min:0|max:100',
+            'edit_nilai_matematika_5_1' => 'nullable|numeric|min:0|max:100',
+            'edit_nilai_ipa_5_1' => 'nullable|numeric|min:0|max:100',
+            'edit_nilai_b_indo_5_2' => 'nullable|numeric|min:0|max:100',
+            'edit_nilai_matematika_5_2' => 'nullable|numeric|min:0|max:100',
+            'edit_nilai_ipa_5_2' => 'nullable|numeric|min:0|max:100',
+            'edit_nilai_b_indo_6_1' => 'nullable|numeric|min:0|max:100',
+            'edit_nilai_matematika_6_1' => 'nullable|numeric|min:0|max:100',
+            'edit_nilai_ipa_6_1' => 'nullable|numeric|min:0|max:100',
+        ]);
+
+        try {
+            // Update nilai rapor di database
+            $this->pendaftar->update([
+                'nilai_b_indo_5_1' => $this->edit_nilai_b_indo_5_1,
+                'nilai_matematika_5_1' => $this->edit_nilai_matematika_5_1,
+                'nilai_ipa_5_1' => $this->edit_nilai_ipa_5_1,
+                'nilai_b_indo_5_2' => $this->edit_nilai_b_indo_5_2,
+                'nilai_matematika_5_2' => $this->edit_nilai_matematika_5_2,
+                'nilai_ipa_5_2' => $this->edit_nilai_ipa_5_2,
+                'nilai_b_indo_6_1' => $this->edit_nilai_b_indo_6_1,
+                'nilai_matematika_6_1' => $this->edit_nilai_matematika_6_1,
+                'nilai_ipa_6_1' => $this->edit_nilai_ipa_6_1,
+            ]);
+
+            // Hitung ulang rata-rata
+            $this->calculateAverageNilai();
+
+            // Reload data pendaftar
+            $this->loadPendaftar();
+
+            // Tutup modal
+            $this->closeEditNilaiRapor();
+
+            // Flash message sukses
+            session()->flash('message', 'Nilai rapor berhasil diperbarui.');
+            session()->flash('message_type', 'success');
+
+        } catch (\Exception $e) {
+            session()->flash('message', 'Gagal memperbarui nilai rapor: ' . $e->getMessage());
+            session()->flash('message_type', 'error');
+        }
+    }
+
+    // ===================================
+    // INFO AKUN METHODS
+    // ===================================
+
+    public function toggleEditInfoAkun()
+    {
+        $this->editModeInfoAkun = !$this->editModeInfoAkun;
+
+        // Load current data when entering edit mode
+        if ($this->editModeInfoAkun) {
+            $this->email = $this->pendaftar->user->email ?? '';
+            $this->telepon_ortu = $this->pendaftar->telepon_ortu;
+            $this->jenis_sekolah_asal = $this->pendaftar->jenis_sekolah_asal;
+            $this->nsm_sekolah_asal = $this->pendaftar->nsm_sekolah_asal;
+            $this->npsn_sekolah_asal = $this->pendaftar->npsn_sekolah_asal;
+            $this->asal_sekolah = $this->pendaftar->asal_sekolah;
+            $this->password_baru = '';
+        }
+    }
+
+    public function cancelEditInfoAkun()
+    {
+        $this->editModeInfoAkun = false;
+        $this->password_baru = '';
+        $this->resetErrorBag();
+    }
+
+    public function saveInfoAkun()
+    {
+        // Build validation rules
+        $rules = [
+            'email' => 'required|email|unique:users,email,' . $this->pendaftar->user_id,
+            'telepon_ortu' => 'required|string|regex:/^62[0-9]{9,13}$/|min:10|max:15',
+            'jenis_sekolah_asal' => 'required|in:madrasah,umum',
+            'asal_sekolah' => 'required|string|max:255',
+        ];
+
+        // Conditional validation untuk NSM/NPSN
+        if ($this->jenis_sekolah_asal == 'madrasah') {
+            $rules['nsm_sekolah_asal'] = 'required|digits:12';
+        } elseif ($this->jenis_sekolah_asal == 'umum') {
+            $rules['npsn_sekolah_asal'] = 'required|digits:8';
+        }
+
+        // Validation untuk password jika diisi
+        if (!empty($this->password_baru)) {
+            $rules['password_baru'] = 'min:8';
+        }
+
+        $this->validate($rules);
+
+        try {
+            // Update data pendaftar
+            $this->pendaftar->update([
+                'telepon_ortu' => $this->telepon_ortu,
+                'jenis_sekolah_asal' => $this->jenis_sekolah_asal,
+                'nsm_sekolah_asal' => $this->jenis_sekolah_asal == 'madrasah' ? $this->nsm_sekolah_asal : null,
+                'npsn_sekolah_asal' => $this->jenis_sekolah_asal == 'umum' ? $this->npsn_sekolah_asal : null,
+                'asal_sekolah' => $this->asal_sekolah,
+            ]);
+
+            // Update user email
+            if ($this->pendaftar->user) {
+                $this->pendaftar->user->update([
+                    'email' => $this->email,
+                ]);
+
+                // Update password jika diisi
+                if (!empty($this->password_baru)) {
+                    $this->pendaftar->user->update([
+                        'password' => \Hash::make($this->password_baru),
+                    ]);
+                }
+            }
+
+            // Reload data
+            $this->loadPendaftar();
+            $this->editModeInfoAkun = false;
+            $this->password_baru = '';
+
+            // Flash message
+            $this->dispatch('statusUpdated', [
+                'type' => 'success',
+                'message' => 'Info akun berhasil diperbarui!'
+            ]);
+
+        } catch (\Exception $e) {
+            $this->dispatch('statusUpdated', [
+                'type' => 'error',
+                'message' => 'Gagal memperbarui info akun: ' . $e->getMessage()
+            ]);
+        }
     }
 
     public function render()

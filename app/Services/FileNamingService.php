@@ -48,8 +48,8 @@ class FileNamingService
         $extension = str_replace('.', '', $extension);
         $extension = strtolower($extension);
 
-        // Generate timestamp (format: YYYYMMDD for date only)
-        $timestamp = now()->format('Ymd');
+        // Generate timestamp (format: YYYYMMDD_HIS for date and time)
+        $timestamp = now()->format('Ymd_His');
 
         // Format: {jenis}-{nomor}-{nama}-{timestamp}.{ext}
         if ($namaPendaftarClean) {

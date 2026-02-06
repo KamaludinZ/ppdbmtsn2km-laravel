@@ -1,32 +1,40 @@
 @echo off
 echo ========================================
-echo CHECK WILAYAH DATA DI PRODUCTION
+echo VERIFIKASI FILE PRODUCTION
 echo ========================================
 echo.
-
-echo [1/3] Upload check script...
-scp "C:\ppdbmtsn2km-laravel\check_wilayah_data.php" mtsnkot4@103.30.244.77:/home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/
-if %errorlevel% neq 0 (
-    echo ERROR: Upload gagal!
-    pause
-    exit /b 1
-)
-echo ✓ Upload berhasil
+echo Mengecek jumlah baris file di production...
 echo.
 
-echo [2/3] Jalankan check script di production...
-ssh mtsnkot4@103.30.244.77 "cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id && php check_wilayah_data.php"
-if %errorlevel% neq 0 (
-    echo WARNING: Script execution warning
-)
+set SERVER=mtsnkot4@103.30.244.77
+set REMOTE_PATH=/home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id
+
+echo [1] Cek file Panitia DetailPendaftar.php:
+ssh %SERVER% "cd %REMOTE_PATH% && wc -l app/Livewire/Panitia/DetailPendaftar.php"
+echo    ^ Harus: 929 baris (jika sudah benar)
 echo.
 
-echo [3/3] Hapus check script dari server...
-ssh mtsnkot4@103.30.244.77 "rm /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/check_wilayah_data.php"
-echo ✓ Cleanup selesai
+echo [2] Cek file Admin DetailPendaftar.php:
+ssh %SERVER% "cd %REMOTE_PATH% && wc -l app/Livewire/Admin/DetailPendaftar.php"
+echo    ^ Harus: 2577 baris (jika sudah benar)
+echo.
+
+echo [3] Cek method toggleEdit di Panitia:
+ssh %SERVER% "cd %REMOTE_PATH% && grep -n 'public function toggleEdit' app/Livewire/Panitia/DetailPendaftar.php"
+echo    ^ Harus ada di line 307 (jika sudah benar)
+echo.
+
+echo [4] Cek method saveNilaiRapor di Panitia:
+ssh %SERVER% "cd %REMOTE_PATH% && grep -n 'public function saveNilaiRapor' app/Livewire/Panitia/DetailPendaftar.php"
+echo    ^ Harus ada di line 875 (jika sudah benar)
+echo.
+
+echo [5] Cek method saveNilaiRapor di Admin:
+ssh %SERVER% "cd %REMOTE_PATH% && grep -n 'public function saveNilaiRapor' app/Livewire/Admin/DetailPendaftar.php"
+echo    ^ Harus ada di line 2520 (jika sudah benar)
 echo.
 
 echo ========================================
-echo CHECK SELESAI
+echo Selesai
 echo ========================================
 pause

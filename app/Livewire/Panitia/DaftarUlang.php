@@ -49,6 +49,12 @@ class DaftarUlang extends Component
     public $catatanPendaftarId = null;
     public $catatanText = '';
 
+    // Catatan internal modal (for admin/panitia only - NOT shown to pendaftar)
+    public $showCatatanInternalModal = false;
+    public $catatanInternalType = '';
+    public $catatanInternalPendaftarId = null;
+    public $catatanInternalText = '';
+
     // MADRASAH SETTINGS (Panitia Daftar Ulang fokus ke Madrasah saja)
     public $madrasahContent = '';
     public $nominalsMadrasah = [];
@@ -214,9 +220,9 @@ class DaftarUlang extends Component
 
         if ($this->search) {
             $query->where(function($q) {
-                $q->where('nama_lengkap', 'like', '%' . $this->search . '%')
-                  ->orWhere('nisn', 'like', '%' . $this->search . '%')
-                  ->orWhere('nomor_pendaftaran', 'like', '%' . $this->search . '%');
+                $q->where('nama_lengkap', 'ilike', '%' . $this->search . '%')
+                  ->orWhere('nisn', 'ilike', '%' . $this->search . '%')
+                  ->orWhere('nomor_pendaftaran', 'ilike', '%' . $this->search . '%');
             });
         }
 
@@ -449,6 +455,12 @@ class DaftarUlang extends Component
 
     public function changeStatusMadrasah($pendaftarId, $status)
     {
+        // Validasi status tidak boleh kosong
+        if (empty($status)) {
+            $this->dispatch('saved', message: 'Silakan pilih status yang valid.');
+            return;
+        }
+
         $daftarUlang = DaftarUlangModel::firstOrCreate(
             ['pendaftar_id' => $pendaftarId],
             ['status' => $status]
@@ -480,6 +492,12 @@ class DaftarUlang extends Component
 
     public function changeStatusSeragam($pendaftarId, $status)
     {
+        // Validasi status tidak boleh kosong
+        if (empty($status)) {
+            $this->dispatch('saved', message: 'Silakan pilih status yang valid.');
+            return;
+        }
+
         $seragam = Seragam::firstOrCreate(
             ['pendaftar_id' => $pendaftarId],
             ['status_seragam' => $status]
@@ -608,6 +626,85 @@ class DaftarUlang extends Component
 
         // Close modal
         $this->closeCatatanModal();
+    }
+
+    /**
+     * Open catatan internal modal (for admin/panitia only - NOT shown to pendaftar)
+     */
+    public function openCatatanInternalModal($type, $pendaftarId, $currentCatatan = '')
+    {
+        $this->catatanInternalType = $type;
+        $this->catatanInternalPendaftarId = $pendaftarId;
+        $this->catatanInternalText = $currentCatatan;
+        $this->showCatatanInternalModal = true;
+    }
+
+    /**
+     * Close catatan internal modal
+     */
+    public function closeCatatanInternalModal()
+    {
+        $this->showCatatanInternalModal = false;
+        $this->catatanInternalType = '';
+        $this->catatanInternalPendaftarId = null;
+        $this->catatanInternalText = '';
+    }
+
+    /**
+     * Save catatan internal for DU Madrasah, DU Seragam, or Ukuran Seragam
+     * IMPORTANT: Catatan internal is for admin/panitia only and NOT shown to pendaftar
+     */
+    public function saveCatatanInternal()
+    {
+        try {
+            if (!$this->catatanInternalPendaftarId || !$this->catatanInternalType) {
+                $this->dispatch('saved', message: 'Data tidak valid');
+                return;
+            }
+
+            if ($this->catatanInternalType === 'madrasah') {
+                // Find or create daftar ulang
+                $daftarUlang = DaftarUlangModel::firstOrNew(['pendaftar_id' => $this->catatanInternalPendaftarId]);
+
+                // Only set default status if it's a new record
+                if (!$daftarUlang->exists) {
+                    $daftarUlang->status = 'belum';
+                }
+
+                // Update catatan_internal
+                $daftarUlang->catatan_internal = $this->catatanInternalText;
+                $daftarUlang->save();
+
+                $this->dispatch('saved', message: 'Catatan Internal DU Madrasah berhasil disimpan');
+
+            } elseif ($this->catatanInternalType === 'seragam') {
+                // Find or create seragam
+                $seragam = Seragam::firstOrNew(['pendaftar_id' => $this->catatanInternalPendaftarId]);
+
+                // Update catatan_internal_seragam
+                $seragam->catatan_internal_seragam = $this->catatanInternalText;
+                $seragam->save();
+
+                $this->dispatch('saved', message: 'Catatan Internal DU Seragam berhasil disimpan');
+
+            } elseif ($this->catatanInternalType === 'ukuran') {
+                // Find or create seragam
+                $seragam = Seragam::firstOrNew(['pendaftar_id' => $this->catatanInternalPendaftarId]);
+
+                // Update catatan_internal_ukuran
+                $seragam->catatan_internal_ukuran = $this->catatanInternalText;
+                $seragam->save();
+
+                $this->dispatch('saved', message: 'Catatan Internal Ukuran Seragam berhasil disimpan');
+            }
+
+            // Close modal
+            $this->closeCatatanInternalModal();
+
+        } catch (\Exception $e) {
+            $this->dispatch('saved', message: 'Gagal menyimpan catatan internal: ' . $e->getMessage());
+            \Log::error('Error saving catatan internal (panitia): ' . $e->getMessage());
+        }
     }
 
     /**

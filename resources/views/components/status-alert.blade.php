@@ -2,7 +2,7 @@
 
 @php
     // Determine which statuses should show the alert
-    $showAlert = in_array($status, ['ditolak', 'perbaiki', 'menunggu', 'belum_upload', 'menunggu_verifikasi']);
+    $showAlert = in_array($status, ['ditolak', 'perbaiki', 'menunggu', 'belum_upload', 'menunggu_verifikasi', 'lengkapi_data', 'perbaiki_data', 'data_ditolak']);
 
     // Configure colors and icons based on status
     $config = [
@@ -11,10 +11,25 @@
             'icon' => 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z',
             'title' => 'Ditolak',
         ],
+        'data_ditolak' => [
+            'color' => 'red',
+            'icon' => 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z',
+            'title' => 'Data Ditolak',
+        ],
         'perbaiki' => [
             'color' => 'orange',
             'icon' => 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z',
             'title' => 'Perlu Perbaikan',
+        ],
+        'perbaiki_data' => [
+            'color' => 'orange',
+            'icon' => 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z',
+            'title' => 'Perbaiki Data',
+        ],
+        'lengkapi_data' => [
+            'color' => 'orange',
+            'icon' => 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z',
+            'title' => 'Lengkapi Data',
         ],
         'menunggu' => [
             'color' => 'yellow',
@@ -156,10 +171,14 @@
             </div>
             @endif
 
-            @if($catatan && auth()->check() && in_array(auth()->user()->role, ['admin', 'panitia_pendaftaran', 'panitia_daftarulang', 'panitia_tes_psikologi', 'panitia']))
+            @if($catatan)
             <div class="mt-3 p-3 bg-white rounded border border-{{ $currentConfig['color'] }}-200">
-                <p class="text-xs font-semibold text-{{ $currentConfig['color'] }}-800 mb-1">Catatan Internal (Admin/Panitia):</p>
-                <p class="text-sm text-gray-700">{{ $catatan }}</p>
+                @if(auth()->check() && in_array(auth()->user()->role, ['admin', 'panitia_pendaftaran', 'panitia_daftarulang', 'panitia_tes_psikologi', 'panitia', 'panitia_seragam']))
+                    <p class="text-xs font-semibold text-{{ $currentConfig['color'] }}-800 mb-1">Catatan Internal (Admin/Panitia):</p>
+                @else
+                    <p class="text-xs font-semibold text-{{ $currentConfig['color'] }}-800 mb-1">Catatan dari Admin/Panitia:</p>
+                @endif
+                <p class="text-sm text-gray-700 whitespace-pre-line">{{ $catatan }}</p>
             </div>
             @endif
         </div>

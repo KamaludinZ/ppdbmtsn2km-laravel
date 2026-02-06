@@ -215,6 +215,73 @@ class Dashboard extends Component
         return true;
     }
 
+    /**
+     * Check if all uploaded documents (wajib + tidak wajib) are approved
+     * Returns true only if ALL uploaded documents have status 'disetujui'
+     */
+    private function areAllUploadedDocumentsApproved(): bool
+    {
+        $verifikasi = $this->pendaftar->verifikasiBerkas;
+        if (!$verifikasi) {
+            return false;
+        }
+
+        // Get all uploaded documents (both required and optional)
+        $uploadedDocs = $this->pendaftar->dokumen;
+
+        if ($uploadedDocs->isEmpty()) {
+            return false;
+        }
+
+        // Check each uploaded document
+        foreach ($uploadedDocs as $dokumen) {
+            $statusField = $this->mapDocumentToStatusField($dokumen->jenis_dokumen);
+
+            if ($statusField && isset($verifikasi->$statusField)) {
+                $status = $verifikasi->$statusField;
+
+                // If any document is NOT 'disetujui', return false
+                if ($status !== 'disetujui') {
+                    return false;
+                }
+            } else {
+                // Document field doesn't exist or no mapping - consider as not approved
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Check if any uploaded document is waiting for verification (menunggu_verifikasi)
+     */
+    private function hasAnyDocumentWaiting(): bool
+    {
+        $verifikasi = $this->pendaftar->verifikasiBerkas;
+        if (!$verifikasi) {
+            return false;
+        }
+
+        // Get all uploaded documents
+        $uploadedDocs = $this->pendaftar->dokumen;
+
+        // Check if any uploaded document has "menunggu_verifikasi" status
+        foreach ($uploadedDocs as $dokumen) {
+            $statusField = $this->mapDocumentToStatusField($dokumen->jenis_dokumen);
+
+            if ($statusField && isset($verifikasi->$statusField)) {
+                $status = $verifikasi->$statusField;
+
+                if ($status === 'menunggu_verifikasi') {
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
     public function calculateProgress()
     {
         $status = $this->pendaftar->status_pendaftaran;
@@ -242,6 +309,13 @@ class Dashboard extends Component
                 'label' => 'Selesai',
                 'color' => 'emerald'
             ];
+        } elseif ($status === 'data_ditolak') {
+            // Data ditolak - explicitly show rejected status
+            $this->progress['formulir'] = [
+                'status' => 'current',
+                'label' => 'Ditolak',
+                'color' => 'red'
+            ];
         } elseif ($needsFix) {
             // Needs to be fixed
             $this->progress['formulir'] = [
@@ -268,10 +342,11 @@ class Dashboard extends Component
         // UPLOAD BERKAS STEP
         $berkasComplete = $this->isUploadBerkasComplete();
         $hasDocumentNeedsFix = $this->hasDocumentNeedsFix();
-        $allDocumentsWaiting = $this->areAllDocumentsWaitingVerification();
+        $allUploadedDocsApproved = $this->areAllUploadedDocumentsApproved();
+        $hasDocumentWaiting = $this->hasAnyDocumentWaiting();
 
         if ($isVerified) {
-            // After verification approved
+            // After verification approved (lulus/tidak_lulus/cadangan)
             $this->progress['upload_berkas'] = [
                 'status' => 'completed',
                 'label' => 'Selesai',
@@ -284,15 +359,22 @@ class Dashboard extends Component
                 'label' => 'Perbaiki',
                 'color' => 'red'
             ];
-        } elseif ($berkasComplete && $allDocumentsWaiting) {
-            // All required documents uploaded and have "menunggu_verifikasi" status
+        } elseif ($berkasComplete && $allUploadedDocsApproved) {
+            // All required documents uploaded AND all uploaded documents (wajib + tidak wajib) are approved
+            $this->progress['upload_berkas'] = [
+                'status' => 'completed',
+                'label' => 'Selesai',
+                'color' => 'emerald'
+            ];
+        } elseif ($berkasComplete && $hasDocumentWaiting) {
+            // All required documents uploaded but at least one is still waiting for verification
             $this->progress['upload_berkas'] = [
                 'status' => 'current',
                 'label' => 'Menunggu',
                 'color' => 'yellow'
             ];
         } else {
-            // Incomplete - not all documents uploaded
+            // Incomplete - not all required documents uploaded
             $this->progress['upload_berkas'] = [
                 'status' => 'current',
                 'label' => 'Lengkapi',
@@ -303,8 +385,14 @@ class Dashboard extends Component
         // TES PSIKOLOGI STEP (if active)
         $tesPsikologiComplete = false;
         if ($this->tesPsikologiAktif) {
-            if ($isVerified) {
-                // After verification approved
+            // CRITICAL FIX: Only consider tes psikologi complete if:
+            // 1. Pendaftar sudah lulus/tidak_lulus/cadangan (sudah lewat tahap tes), OR
+            // 2. Status pembayaran tes psikologi = 'disetujui'
+            // JANGAN langsung selesai hanya karena status = 'data_disetujui'!
+            $isPostTest = in_array($status, ['lulus', 'tidak_lulus', 'cadangan']);
+
+            if ($isPostTest) {
+                // Sudah lewat tahap tes - pembayaran sudah tidak relevan
                 $this->progress['tes_psikologi'] = [
                     'status' => 'completed',
                     'label' => 'Selesai',
@@ -313,6 +401,7 @@ class Dashboard extends Component
                 $tesPsikologiComplete = true;
             } elseif ($this->tesPsikologiData) {
                 if ($this->tesPsikologiData->status_verifikasi === 'disetujui') {
+                    // Pembayaran sudah diverifikasi dan disetujui
                     $this->progress['tes_psikologi'] = [
                         'status' => 'completed',
                         'label' => 'Selesai',
@@ -320,32 +409,40 @@ class Dashboard extends Component
                     ];
                     $tesPsikologiComplete = true;
                 } elseif ($this->tesPsikologiData->status_verifikasi === 'menunggu') {
+                    // Pembayaran masih menunggu verifikasi
                     $this->progress['tes_psikologi'] = [
                         'status' => 'current',
                         'label' => 'Menunggu',
                         'color' => 'yellow'
                     ];
+                    // FIXED: Set true karena sudah "at least menunggu" (bukan lengkapi)
+                    // Ini unlock step verifikasi menjadi "Menunggu" (bukan "Terkunci")
                     $tesPsikologiComplete = true;
                 } elseif ($this->tesPsikologiData->status_verifikasi === 'ditolak') {
+                    // Pembayaran ditolak, perlu upload ulang
                     $this->progress['tes_psikologi'] = [
                         'status' => 'current',
                         'label' => 'Perbaiki',
                         'color' => 'red'
                     ];
+                    $tesPsikologiComplete = false;
                 } else {
-                    // belum_upload
+                    // belum_upload - masih perlu upload bukti transfer
                     $this->progress['tes_psikologi'] = [
                         'status' => 'current',
                         'label' => 'Lengkapi',
                         'color' => 'yellow'
                     ];
+                    $tesPsikologiComplete = false;
                 }
             } else {
+                // Belum ada data tes psikologi sama sekali
                 $this->progress['tes_psikologi'] = [
                     'status' => 'current',
                     'label' => 'Lengkapi',
                     'color' => 'yellow'
                 ];
+                $tesPsikologiComplete = false;
             }
         } else {
             // If tes psikologi not active, consider it complete for verification unlock
@@ -366,8 +463,12 @@ class Dashboard extends Component
                                   ($tesPsikologiComplete &&
                                    (!$this->tesPsikologiAktif || in_array($this->progress['tes_psikologi']['label'], ['Menunggu', 'Selesai'])));
 
-        if ($isVerified || $allStepsCompleted) {
-            // Verification completed - when all steps are "Selesai"
+        // CRITICAL FIX: Jangan pakai $isVerified di sini! Pakai $isPostTest!
+        // $isVerified = ['data_disetujui', 'lulus', 'tidak_lulus', 'cadangan']
+        // $isPostTest = ['lulus', 'tidak_lulus', 'cadangan']
+        // Verifikasi hanya selesai jika sudah lewat tahap tes ATAU semua step complete
+        if ($isPostTest || $allStepsCompleted) {
+            // Verification completed - when all steps are "Selesai" OR test phase done
             $this->progress['verifikasi'] = [
                 'status' => 'completed',
                 'label' => 'Selesai',

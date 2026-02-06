@@ -353,24 +353,48 @@
 
                                 <!-- Catatan -->
                                 <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
-                                        @if($item->daftarUlang && $item->daftarUlang->catatan)
-                                            <div class="text-xs text-gray-700 bg-yellow-50 p-2 rounded border border-yellow-200 max-w-xs">
-                                                <div class="font-semibold text-yellow-700 mb-1">📝 Catatan:</div>
-                                                <p class="whitespace-pre-wrap">{{ $item->daftarUlang->catatan }}</p>
-                                            </div>
-                                        @else
-                                            <span class="text-xs text-gray-400 italic">Belum ada catatan</span>
-                                        @endif
-                                        <button
-                                            wire:click="openCatatanModal('madrasah', {{ $item->id }}, '{{ addslashes($item->daftarUlang->catatan ?? '') }}')"
-                                            class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors"
-                                            title="Edit Catatan">
-                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                            </svg>
-                                            Edit
-                                        </button>
+                                    <div class="space-y-3">
+                                        <!-- Catatan (visible to pendaftar) -->
+                                        <div class="flex items-center gap-2">
+                                            @if($item->daftarUlang && $item->daftarUlang->catatan)
+                                                <div class="text-xs text-gray-700 bg-yellow-50 p-2 rounded border border-yellow-200 max-w-xs">
+                                                    <div class="font-semibold text-yellow-700 mb-1">📝 Catatan:</div>
+                                                    <p class="whitespace-pre-wrap">{{ $item->daftarUlang->catatan }}</p>
+                                                </div>
+                                            @else
+                                                <span class="text-xs text-gray-400 italic">Belum ada catatan</span>
+                                            @endif
+                                            <button
+                                                wire:click="openCatatanModal('madrasah', {{ $item->id }}, '{{ addslashes($item->daftarUlang->catatan ?? '') }}')"
+                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors"
+                                                title="Edit Catatan">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                                Edit
+                                            </button>
+                                        </div>
+
+                                        <!-- Catatan Internal (NOT visible to pendaftar) -->
+                                        <div class="flex items-center gap-2">
+                                            @if($item->daftarUlang && $item->daftarUlang->catatan_internal)
+                                                <div class="text-xs text-gray-700 bg-red-50 p-2 rounded border border-red-200 max-w-xs">
+                                                    <div class="font-semibold text-red-700 mb-1">🔒 Internal:</div>
+                                                    <p class="whitespace-pre-wrap">{{ $item->daftarUlang->catatan_internal }}</p>
+                                                </div>
+                                            @else
+                                                <span class="text-xs text-gray-400 italic">Belum ada catatan internal</span>
+                                            @endif
+                                            <button
+                                                wire:click="openCatatanInternalModal('madrasah', {{ $item->id }}, '{{ addslashes($item->daftarUlang->catatan_internal ?? '') }}')"
+                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-50 border border-red-300 rounded hover:bg-red-100 transition-colors"
+                                                title="Edit Catatan Internal (Tidak ditampilkan ke pendaftar)">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                                </svg>
+                                                Internal
+                                            </button>
+                                        </div>
                                     </div>
                                 </td>
 
@@ -694,6 +718,69 @@
                 <button
                     type="button"
                     wire:click="closeCatatanModal"
+                    class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Modal Edit Catatan Internal -->
+    @if($showCatatanInternalModal)
+    <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-0 overflow-y-auto">
+        <!-- Backdrop -->
+        <div class="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity z-[9998]" wire:click="closeCatatanInternalModal"></div>
+
+        <!-- Modal Content -->
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full z-[10000]">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-red-100 rounded-full sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900">
+                            Edit Catatan Internal {{ $catatanInternalType === 'madrasah' ? 'DU Madrasah' : ($catatanInternalType === 'seragam' ? 'DU Seragam' : 'Ukuran Seragam') }}
+                        </h3>
+
+                        <!-- Warning Box -->
+                        <div class="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-red-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                </svg>
+                                <p class="text-sm text-red-800 font-semibold">Catatan Internal - Tidak Ditampilkan ke Pendaftar</p>
+                            </div>
+                        </div>
+
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Catatan Internal</label>
+                            <textarea
+                                wire:model="catatanInternalText"
+                                rows="5"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm"
+                                placeholder="Tulis catatan internal untuk admin/panitia saja..."></textarea>
+                            <p class="mt-1 text-xs text-red-600 font-medium">⚠️ Catatan ini HANYA untuk internal admin/panitia dan TIDAK akan ditampilkan ke pendaftar</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                    type="button"
+                    wire:click="saveCatatanInternal"
+                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Simpan Catatan Internal
+                </button>
+                <button
+                    type="button"
+                    wire:click="closeCatatanInternalModal"
                     class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                     Batal
                 </button>

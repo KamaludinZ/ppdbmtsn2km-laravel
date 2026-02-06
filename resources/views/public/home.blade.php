@@ -50,8 +50,8 @@
                         @endif
                     </div>
                 </div>
-                <div class="hidden lg:block lg:col-span-5">
-                    <div class="bg-white rounded-2xl p-8 shadow-2xl border-2 border-emerald-200">
+                <div class="lg:col-span-5">
+                    <div class="bg-white rounded-2xl p-6 md:p-8 shadow-2xl border-2 border-emerald-200">
                         <div class="flex items-center mb-6">
                             <div class="w-16 h-16 bg-emerald-600 rounded-xl flex items-center justify-center mr-4">
                                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,6 +78,25 @@
                         </div>
                         @endif
 
+                        {{-- Error Messages --}}
+                        @if ($errors->any())
+                        <div class="mb-4 bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg animate-shake">
+                            <div class="flex items-start">
+                                <svg class="w-5 h-5 text-red-500 mr-2 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div class="flex-1">
+                                    <p class="font-semibold text-red-800 mb-1">Login Gagal</p>
+                                    <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+                                        @foreach ($errors->all() as $error)
+                                            <li>{{ $error }}</li>
+                                        @endforeach
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
                         <form action="/login" method="POST" class="space-y-5">
                         @csrf
                         <!-- Email -->
@@ -87,7 +106,7 @@
                             </label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="h-5 w-5 {{ $errors->has('email') ? 'text-red-400' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                                     </svg>
                                 </div>
@@ -95,12 +114,16 @@
                                     type="email"
                                     id="hero-email"
                                     name="email"
-                                    class="block w-full pl-10 pr-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm text-gray-900 @if(!$loginEnabled) bg-gray-100 text-gray-500 cursor-not-allowed @endif"
+                                    value="{{ old('email') }}"
+                                    class="block w-full pl-10 pr-3 py-2.5 border rounded-lg focus:ring-2 text-sm text-gray-900 @if($errors->has('email')) border-red-500 focus:ring-red-500 focus:border-red-500 @else border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 @endif @if(!$loginEnabled) bg-gray-100 text-gray-500 cursor-not-allowed @endif"
                                     placeholder="email@example.com"
                                     @if($loginEnabled) required @endif
                                     @if(!$loginEnabled) disabled @endif
                                 >
                             </div>
+                            @error('email')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Password -->
@@ -110,7 +133,7 @@
                             </label>
                             <div class="relative">
                                 <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="h-5 w-5 {{ $errors->has('password') ? 'text-red-400' : 'text-gray-400' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                     </svg>
                                 </div>
@@ -118,7 +141,7 @@
                                     type="password"
                                     id="hero-password"
                                     name="password"
-                                    class="block w-full pl-10 pr-10 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm text-gray-900 @if(!$loginEnabled) bg-gray-100 text-gray-500 cursor-not-allowed @endif"
+                                    class="block w-full pl-10 pr-10 py-2.5 border rounded-lg focus:ring-2 text-sm text-gray-900 @if($errors->has('password')) border-red-500 focus:ring-red-500 focus:border-red-500 @else border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 @endif @if(!$loginEnabled) bg-gray-100 text-gray-500 cursor-not-allowed @endif"
                                     placeholder="••••••••"
                                     @if($loginEnabled) required @endif
                                     @if(!$loginEnabled) disabled @endif
@@ -130,6 +153,9 @@
                                     </svg>
                                 </button>
                             </div>
+                            @error('password')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Captcha -->
@@ -138,7 +164,7 @@
                                 Kode Keamanan
                             </label>
                             <div class="flex gap-3 items-center mb-3">
-                                <div class="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 rounded-lg p-3 border-2 border-gray-300">
+                                <div class="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 rounded-lg p-3 border-2 {{ $errors->has('captcha') ? 'border-red-300' : 'border-gray-300' }}">
                                     <p class="text-2xl font-bold text-center text-gray-800 tracking-wider select-none" style="font-family: 'Courier New', monospace; letter-spacing: 8px;">
                                         {{ $loginCaptcha ?? '000000' }}
                                     </p>
@@ -152,11 +178,14 @@
                             <input
                                 type="text"
                                 name="captcha"
-                                class="block w-full px-3 py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 text-sm text-gray-900"
+                                class="block w-full px-3 py-2.5 border rounded-lg focus:ring-2 text-sm text-gray-900 @if($errors->has('captcha')) border-red-500 focus:ring-red-500 focus:border-red-500 @else border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 @endif"
                                 placeholder="Masukkan kode di atas"
                                 @if($loginEnabled) required @endif
                                 @if(!$loginEnabled) disabled @endif
                             >
+                            @error('captcha')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <!-- Remember Me -->

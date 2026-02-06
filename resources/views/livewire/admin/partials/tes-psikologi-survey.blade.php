@@ -187,20 +187,66 @@
                                         <span class="px-2 py-1 text-xs font-semibold bg-red-100 text-red-800 rounded-full">Wajib</span>
                                     @endif
                                     <span class="text-xs text-gray-500">Urutan: {{ $survey->urutan }}</span>
+                                    {{-- DEBUG: Show Question ID --}}
+                                    <span class="px-2 py-1 text-xs font-mono font-semibold bg-yellow-100 text-yellow-800 rounded-full" title="Question ID">Q{{ $survey->id }}</span>
                                 </div>
                                 <p class="text-sm font-medium text-gray-900">{{ $survey->pertanyaan }}</p>
                                 @if($survey->deskripsi)
                                     <p class="text-xs text-gray-500 mt-1">{{ $survey->deskripsi }}</p>
                                 @endif
 
-                                <!-- Show Options if exists -->
-                                @if(in_array($survey->tipe_input, ['radio', 'checkbox', 'select']) && $survey->options->count() > 0)
-                                    <div class="mt-2 flex flex-wrap gap-2">
-                                        @foreach($survey->options as $option)
-                                            <span class="px-2 py-1 text-xs bg-gray-100 text-gray-700 rounded">
-                                                {{ $option->label }}
-                                            </span>
-                                        @endforeach
+                                <!-- Show Options if this is option-based question -->
+                                @if(in_array($survey->tipe_input, ['radio', 'checkbox', 'select']))
+                                    <div class="mt-3">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <p class="text-xs font-semibold text-gray-600">Opsi Jawaban:</p>
+                                            <button wire:click="createOption({{ $survey->id }})" class="px-2 py-1 text-xs bg-green-600 text-white rounded hover:bg-green-700 transition flex items-center" title="Tambah Opsi Baru">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                                                </svg>
+                                                Tambah Opsi
+                                            </button>
+                                        </div>
+
+                                        @if($survey->options->count() > 0)
+                                            <div class="space-y-1.5">
+                                                @foreach($survey->options as $option)
+                                                    <div class="flex items-center justify-between space-x-2 p-2 bg-gray-50 rounded border border-gray-200 hover:bg-gray-100 transition group">
+                                                        <div class="flex items-center space-x-2 flex-1">
+                                                            {{-- DEBUG: Show Option ID in badge --}}
+                                                            <span class="px-2 py-0.5 text-xs font-mono font-bold bg-indigo-100 text-indigo-800 rounded" title="Option ID">
+                                                                ID:{{ $option->id }}
+                                                            </span>
+                                                            <span class="px-2 py-0.5 text-xs bg-gray-200 text-gray-700 rounded font-medium">
+                                                                {{ $option->label }}
+                                                            </span>
+                                                            <span class="text-xs text-gray-500">
+                                                                (value: {{ $option->value }})
+                                                            </span>
+                                                            <span class="text-xs text-gray-400">
+                                                                urutan: {{ $option->urutan }}
+                                                            </span>
+                                                        </div>
+                                                        <div class="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition">
+                                                            <button wire:click="editOption({{ $option->id }})" class="p-1 text-xs text-blue-600 hover:bg-blue-100 rounded transition" title="Edit Opsi">
+                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                                </svg>
+                                                            </button>
+                                                            <button wire:click="deleteOption({{ $option->id }})" wire:confirm="Yakin ingin menghapus opsi ini?" class="p-1 text-xs text-red-600 hover:bg-red-100 rounded transition" title="Hapus Opsi">
+                                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                                </svg>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        @else
+                                            <div class="text-center py-4 bg-gray-50 border-2 border-dashed border-gray-300 rounded">
+                                                <p class="text-xs text-gray-500">Belum ada opsi. Klik "Tambah Opsi" untuk menambahkan.</p>
+                                            </div>
+                                        @endif
                                     </div>
                                 @endif
                             </div>
@@ -232,3 +278,81 @@
         @endif
     </div>
 </div>
+
+{{-- Modal Edit Option --}}
+@if($showOptionModal)
+<div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity z-50" wire:click="closeOptionModal"></div>
+<div class="fixed inset-0 z-50 overflow-y-auto">
+    <div class="flex min-h-full items-center justify-center p-4">
+        <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all w-full max-w-lg" wire:click.stop>
+            <div class="bg-white px-6 py-4">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">
+                        {{ $editingOptionId ? 'Edit Opsi' : 'Tambah Opsi Baru' }}
+                    </h3>
+                    <button wire:click="closeOptionModal" class="text-gray-400 hover:text-gray-500 transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="space-y-4">
+                    {{-- Label --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Label Opsi <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" wire:model="optionLabel" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Contoh: Sangat Setuju">
+                        @error('optionLabel') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                        <p class="text-xs text-gray-500 mt-1">Teks yang ditampilkan ke pengguna</p>
+                    </div>
+
+                    {{-- Value --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Value Opsi <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" wire:model="optionValue" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="Contoh: sangat_setuju">
+                        @error('optionValue') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                        <p class="text-xs text-gray-500 mt-1">Value internal (gunakan underscore, lowercase)</p>
+                    </div>
+
+                    {{-- Urutan --}}
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Urutan
+                        </label>
+                        <input type="number" wire:model="optionUrutan" min="0" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500" placeholder="0">
+                        @error('optionUrutan') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                        <p class="text-xs text-gray-500 mt-1">Angka lebih kecil tampil lebih dulu</p>
+                    </div>
+
+                    @if($editingOptionId)
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <div class="flex items-start space-x-2">
+                            <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div class="text-sm text-blue-800">
+                                <p class="font-medium mb-1">Benefit ID-Based Storage</p>
+                                <p>Anda aman mengubah <strong>LABEL</strong> dan <strong>VALUE</strong> kapan saja! Data pendaftar tersimpan berdasarkan <strong>ID</strong> opsi ini, sehingga tidak akan corrupt meski label/value diubah.</p>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                </div>
+            </div>
+
+            <div class="bg-gray-50 px-6 py-3 flex items-center justify-end space-x-2">
+                <button wire:click="closeOptionModal" type="button" class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition">
+                    Batal
+                </button>
+                <button wire:click="saveOption" type="button" class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700 transition">
+                    {{ $editingOptionId ? 'Simpan Perubahan' : 'Tambah Opsi' }}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endif

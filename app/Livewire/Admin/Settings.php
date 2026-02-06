@@ -3,6 +3,8 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Setting;
+use App\Models\RiwayatPesan;
+use App\Models\Pendaftar;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -197,6 +199,24 @@ class Settings extends Component
             'email_from_address' => 'required|email',
         ]);
 
+        $emailSubject = 'Test Email - Sistem PPDB MTsN 2 Kota Malang';
+        $emailBody = 'Ini adalah email percobaan dari sistem PPDB MTsN 2 Kota Malang. ' .
+                     'Jika Anda menerima email ini, berarti konfigurasi SMTP Anda sudah benar.';
+
+        // Get ID pendaftar pertama untuk testing (atau bisa set ID spesifik)
+        $testPendaftarId = Pendaftar::orderBy('id', 'asc')->value('id') ?? 1;
+
+        // Create log record with pending status
+        $riwayatPesan = RiwayatPesan::create([
+            'pendaftar_id' => $testPendaftarId, // ID khusus untuk testing
+            'user_id' => Auth::id(),
+            'jenis_pesan' => 'email',
+            'judul' => $emailSubject,
+            'isi_pesan' => $emailBody,
+            'penerima' => $this->test_email_recipient,
+            'status' => 'pending',
+        ]);
+
         try {
             // Set SMTP as default mailer
             config(['mail.default' => 'smtp']);
@@ -218,18 +238,29 @@ class Settings extends Component
 
             // Send test email using SMTP mailer explicitly
             \Illuminate\Support\Facades\Mail::mailer('smtp')->raw(
-                'Ini adalah email percobaan dari sistem PPDB MTsN 2 Kota Malang. ' .
-                'Jika Anda menerima email ini, berarti konfigurasi SMTP Anda sudah benar.',
-                function ($message) {
+                $emailBody,
+                function ($message) use ($emailSubject) {
                     $message->to($this->test_email_recipient)
-                        ->subject('Test Email - Sistem PPDB MTsN 2 Kota Malang')
+                        ->subject($emailSubject)
                         ->priority(1);
                 }
             );
 
+            // Update log to success
+            $riwayatPesan->update([
+                'status' => 'terkirim',
+                'sent_at' => now(),
+            ]);
+
             $this->dispatch('settings-saved', message: 'Email percobaan berhasil dikirim ke ' . $this->test_email_recipient . '. Silakan cek inbox atau folder spam.');
         } catch (\Exception $e) {
             $errorMessage = $e->getMessage();
+
+            // Update log to failed
+            $riwayatPesan->update([
+                'status' => 'gagal',
+                'error_message' => $errorMessage,
+            ]);
 
             // Provide more helpful error messages
             if (str_contains($errorMessage, 'Connection refused') || str_contains($errorMessage, 'Connection timed out')) {
@@ -325,6 +356,22 @@ class Settings extends Component
 
         $this->validate($rules);
 
+        $messageBody = "🔔 *Test Pesan PPDB MTsN 2 Kota Malang*\n\nIni adalah pesan percobaan dari sistem PPDB MTsN 2 Kota Malang.\n\nJika Anda menerima pesan ini, berarti konfigurasi WhatsApp Gateway Anda sudah benar dan siap digunakan! ✅\n\n_Pesan ini dikirim secara otomatis untuk testing._";
+
+        // Get ID pendaftar pertama untuk testing (atau bisa set ID spesifik)
+        $testPendaftarId = Pendaftar::orderBy('id', 'asc')->value('id') ?? 1;
+
+        // Create log record with pending status
+        $riwayatPesan = RiwayatPesan::create([
+            'pendaftar_id' => $testPendaftarId, // ID khusus untuk testing
+            'user_id' => Auth::id(),
+            'jenis_pesan' => 'whatsapp',
+            'judul' => null,
+            'isi_pesan' => $messageBody,
+            'penerima' => $this->test_whatsapp_number,
+            'status' => 'pending',
+        ]);
+
         try {
             // Save settings first to make sure WhatsAppGatewayService uses latest config
             \App\Models\Setting::set('whatsapp_api_url', $this->whatsapp_api_url, 'string', 'WhatsApp API URL');
@@ -343,10 +390,16 @@ class Settings extends Component
             $whatsappService = new \App\Services\WhatsAppGatewayService();
             $result = $whatsappService->sendMessage(
                 $this->test_whatsapp_number,
-                "🔔 *Test Pesan PPDB MTsN 2 Kota Malang*\n\nIni adalah pesan percobaan dari sistem PPDB MTsN 2 Kota Malang.\n\nJika Anda menerima pesan ini, berarti konfigurasi WhatsApp Gateway Anda sudah benar dan siap digunakan! ✅\n\n_Pesan ini dikirim secara otomatis untuk testing._"
+                $messageBody
             );
 
             if ($result['success']) {
+                // Update log to success
+                $riwayatPesan->update([
+                    'status' => 'terkirim',
+                    'sent_at' => now(),
+                ]);
+
                 $this->dispatch('settings-saved', message: 'Pesan WhatsApp berhasil dikirim ke ' . $this->test_whatsapp_number . '. Silakan cek WhatsApp penerima.');
 
                 // Log success
@@ -359,6 +412,12 @@ class Settings extends Component
             }
         } catch (\Exception $e) {
             $errorMessage = $e->getMessage();
+
+            // Update log to failed
+            $riwayatPesan->update([
+                'status' => 'gagal',
+                'error_message' => $errorMessage,
+            ]);
 
             // Log the full error
             \Log::error('WhatsApp test failed', [

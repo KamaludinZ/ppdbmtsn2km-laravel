@@ -1,0 +1,98 @@
+═══════════════════════════════════════════════════════════════════
+  FILE PATHS - READY FOR COPY-PASTE
+═══════════════════════════════════════════════════════════════════
+
+TOTAL: 4 FILES TO UPLOAD
+
+───────────────────────────────────────────────────────────────────
+FILE 1: Admin Backend
+───────────────────────────────────────────────────────────────────
+
+LOCAL PATH (copy from here):
+C:\ppdbmtsn2km-laravel\app\Livewire\Admin\TesPsikologi.php
+
+REMOTE PATH (upload to here):
+/home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/app/Livewire/Admin/
+
+FILE SIZE: ~57 KB
+ACTION: OVERWRITE existing file
+
+───────────────────────────────────────────────────────────────────
+FILE 2: Admin View - Jawaban Survey Tab
+───────────────────────────────────────────────────────────────────
+
+LOCAL PATH (copy from here):
+C:\ppdbmtsn2km-laravel\resources\views\livewire\admin\partials\tes-psikologi-jawaban-survey.blade.php
+
+REMOTE PATH (upload to here):
+/home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/resources/views/livewire/admin/partials/
+
+FILE SIZE: ~24 KB
+ACTION: OVERWRITE existing file
+
+───────────────────────────────────────────────────────────────────
+FILE 3: Admin View - Data Tab
+───────────────────────────────────────────────────────────────────
+
+LOCAL PATH (copy from here):
+C:\ppdbmtsn2km-laravel\resources\views\livewire\admin\partials\tes-psikologi-data.blade.php
+
+REMOTE PATH (upload to here):
+/home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/resources/views/livewire/admin/partials/
+
+FILE SIZE: ~28 KB
+ACTION: OVERWRITE existing file
+
+───────────────────────────────────────────────────────────────────
+FILE 4: Pendaftar Backend 🚨 CRITICAL
+───────────────────────────────────────────────────────────────────
+
+LOCAL PATH (copy from here):
+C:\ppdbmtsn2km-laravel\app\Livewire\Pendaftar\TesPsikologi.php
+
+REMOTE PATH (upload to here):
+/home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/app/Livewire/Pendaftar/
+
+FILE SIZE: ~16 KB
+ACTION: OVERWRITE existing file
+
+⚠️ CRITICAL: This file contains 3 critical bug fixes!
+   - JSON decode for checkbox arrays
+   - Survey data corruption prevention
+   - Aligned simpanSurvey logic
+
+───────────────────────────────────────────────────────────────────
+CACHE CLEAR COMMANDS
+───────────────────────────────────────────────────────────────────
+
+cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id
+
+php artisan optimize:clear
+
+php artisan view:clear
+
+php artisan config:clear
+
+───────────────────────────────────────────────────────────────────
+QUICK VERIFICATION
+───────────────────────────────────────────────────────────────────
+
+After upload, check file sizes:
+
+ls -lh /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/app/Livewire/Admin/TesPsikologi.php
+# Should show: ~57K
+
+ls -lh /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/resources/views/livewire/admin/partials/tes-psikologi-jawaban-survey.blade.php
+# Should show: ~24K
+
+ls -lh /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/resources/views/livewire/admin/partials/tes-psikologi-data.blade.php
+# Should show: ~28K
+
+ls -lh /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/app/Livewire/Pendaftar/TesPsikologi.php
+# Should show: ~16K
+
+───────────────────────────────────────────────────────────────────
+
+✅ ALL PATHS READY FOR COPY-PASTE!
+
+═══════════════════════════════════════════════════════════════════

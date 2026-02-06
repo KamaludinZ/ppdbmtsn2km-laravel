@@ -1,0 +1,135 @@
+═══════════════════════════════════════════════════════════════
+ QUICK SSH SETUP - Step by Step
+═══════════════════════════════════════════════════════════════
+
+STEP 1: GENERATE SSH KEY (Di Windows)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Buka CMD atau PowerShell:
+
+cd %USERPROFILE%\.ssh
+ssh-keygen -t rsa -b 4096 -f id_rsa_ppdb
+
+Tekan ENTER 2x (kosongkan passphrase)
+
+Result:
+✓ Private key: C:\Users\[You]\.ssh\id_rsa_ppdb
+✓ Public key:  C:\Users\[You]\.ssh\id_rsa_ppdb.pub
+
+
+STEP 2: COPY PUBLIC KEY KE SERVER
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Method A: Via cPanel File Manager
+──────────────────────────────────────────────────────────────
+1. Buka: C:\Users\[You]\.ssh\id_rsa_ppdb.pub
+2. Copy semua isi (Ctrl+A, Ctrl+C)
+3. Login cPanel → File Manager
+4. Navigate: /home/mtsnkot4/.ssh/
+5. Edit file: authorized_keys (atau buat baru)
+6. Paste public key di baris baru
+7. Save
+
+Method B: Via cPanel Terminal
+──────────────────────────────────────────────────────────────
+1. cPanel → Terminal
+2. Jalankan:
+   cd ~/.ssh
+   nano authorized_keys
+3. Paste public key
+4. Ctrl+X → Y → Enter
+
+Method C: Via Command (if SSH with password available)
+──────────────────────────────────────────────────────────────
+type C:\Users\[You]\.ssh\id_rsa_ppdb.pub | ssh mtsnkot4@103.30.244.77 "mkdir -p ~/.ssh && cat >> ~/.ssh/authorized_keys"
+
+
+STEP 3: SET PERMISSION (Di Server)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Via cPanel Terminal:
+
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/authorized_keys
+
+
+STEP 4: CREATE SSH CONFIG (Di Windows)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+notepad %USERPROFILE%\.ssh\config
+
+Paste ini:
+
+Host ppdb-production
+    HostName 103.30.244.77
+    User mtsnkot4
+    Port 22
+    IdentityFile ~/.ssh/id_rsa_ppdb
+    StrictHostKeyChecking no
+
+Save (Ctrl+S)
+
+
+STEP 5: TEST CONNECTION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Test 1: Basic connection
+────────────────────────────────────────────────────────────
+ssh ppdb-production
+
+Expected: Masuk ke server tanpa diminta password!
+Result: [mtsnkot4@server ~]$
+
+Test 2: Command execution
+────────────────────────────────────────────────────────────
+ssh ppdb-production "echo 'Connection OK!'"
+
+Expected: Tampil "Connection OK!"
+
+Test 3: Laravel command
+────────────────────────────────────────────────────────────
+ssh ppdb-production "cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id && php artisan --version"
+
+Expected: Tampil Laravel version
+
+
+═══════════════════════════════════════════════════════════════
+ TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════
+
+Error: "Permission denied (publickey)"
+→ Public key belum ter-copy dengan benar
+→ Ulangi STEP 2 dan STEP 3
+
+Error: "Connection refused"
+→ SSH service tidak running atau port salah
+→ Coba port 2222: ssh -p 2222 mtsnkot4@103.30.244.77
+→ Hubungi hosting support
+
+Error: "Connection timed out"
+→ Firewall block IP Anda
+→ Hubungi hosting support untuk whitelist IP
+
+
+═══════════════════════════════════════════════════════════════
+ VERIFICATION
+═══════════════════════════════════════════════════════════════
+
+[ ] SSH key generated (id_rsa_ppdb)
+[ ] Public key copied to server (authorized_keys)
+[ ] Permission set (600)
+[ ] SSH config created
+[ ] Test connection: ssh ppdb-production → SUCCESS
+[ ] Test command: ssh ppdb-production "ls" → SUCCESS
+
+IF ALL CHECKED: SSH READY! ✓
+
+
+═══════════════════════════════════════════════════════════════
+ NOTIFICATION
+═══════════════════════════════════════════════════════════════
+
+Setelah SSH berhasil, kirim pesan ke Claude Code:
+"SSH sudah ready!"
+
+Claude Code akan langsung debug production otomatis! 🚀

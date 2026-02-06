@@ -1,7 +1,7 @@
 <!-- Tab Data Orang Tua & Wali Content -->
 @php
-    // Support both Admin (single $editMode) and Pendaftar (per-tab $editModeOrangTua)
-    $isEditMode = $editModeOrangTua ?? $editMode ?? false;
+    // Support all controllers: Admin/Panitia (editModeOrangtua) and Pendaftar (editModeOrangTua)
+    $isEditMode = $editModeOrangtua ?? $editModeOrangTua ?? $editMode ?? false;
 @endphp
 
 <div class="flex justify-between items-center mb-6">
@@ -17,7 +17,7 @@
                 <span wire:loading.remove wire:target="saveDataOrangTua">Simpan</span>
                 <span wire:loading wire:target="saveDataOrangTua">Menyimpan...</span>
             </button>
-            <button wire:click="toggleEdit('OrangTua')" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm transition">Batal</button>
+            <button wire:click="toggleEdit('orangtua')" class="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 text-sm transition">Batal</button>
         </div>
     @else
         @php
@@ -27,7 +27,7 @@
             $shouldDisable = $isApproved && $isPendaftar;
         @endphp
         <button
-            wire:click="toggleEdit('OrangTua')"
+            wire:click="toggleEdit('orangtua')"
             @if($shouldDisable) disabled title="Data sudah disetujui, tidak dapat diubah" @endif
             class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm transition {{ $shouldDisable ? 'opacity-50 cursor-not-allowed' : '' }}">
             <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
@@ -121,17 +121,17 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan Terakhir <span class="text-red-500">*</span></label>
                         <select wire:model="ayah_pendidikan" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" required>
                             <option value="">Pilih Pendidikan</option>
-                            <option value="SD/Sederajat">SD/Sederajat</option>
-                            <option value="SMP/Sederajat">SMP/Sederajat</option>
-                            <option value="SMA/Sederajat">SMA/Sederajat</option>
+                            <option value="Tidak sekolah">Tidak sekolah</option>
+                            <option value="Putus SD">Putus SD</option>
+                            <option value="SD Sederajat">SD Sederajat</option>
+                            <option value="SMP Sederajat">SMP Sederajat</option>
+                            <option value="SMA Sederajat">SMA Sederajat</option>
                             <option value="D1">D1</option>
                             <option value="D2">D2</option>
                             <option value="D3">D3</option>
                             <option value="D4/S1">D4/S1</option>
                             <option value="S2">S2</option>
                             <option value="S3">S3</option>
-                            <option value="Tidak Sekolah">Tidak Sekolah</option>
-                            <option value="Lainnya">Lainnya</option>
                         </select>
                         @error('ayah_pendidikan') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                     </div>
@@ -283,17 +283,17 @@
                         <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan Terakhir <span class="text-red-500">*</span></label>
                         <select wire:model="ibu_pendidikan" class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" required>
                             <option value="">Pilih Pendidikan</option>
-                            <option value="SD/Sederajat">SD/Sederajat</option>
-                            <option value="SMP/Sederajat">SMP/Sederajat</option>
-                            <option value="SMA/Sederajat">SMA/Sederajat</option>
+                            <option value="Tidak sekolah">Tidak sekolah</option>
+                            <option value="Putus SD">Putus SD</option>
+                            <option value="SD Sederajat">SD Sederajat</option>
+                            <option value="SMP Sederajat">SMP Sederajat</option>
+                            <option value="SMA Sederajat">SMA Sederajat</option>
                             <option value="D1">D1</option>
                             <option value="D2">D2</option>
                             <option value="D3">D3</option>
                             <option value="D4/S1">D4/S1</option>
                             <option value="S2">S2</option>
                             <option value="S3">S3</option>
-                            <option value="Tidak Sekolah">Tidak Sekolah</option>
-                            <option value="Lainnya">Lainnya</option>
                         </select>
                         @error('ibu_pendidikan') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                     </div>
@@ -459,17 +459,17 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1">Pendidikan Terakhir <span class="text-red-500">*</span></label>
                             <select wire:model="wali_pendidikan" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200" required>
                                 <option value="">Pilih Pendidikan</option>
-                                <option value="SD/Sederajat">SD/Sederajat</option>
-                                <option value="SMP/Sederajat">SMP/Sederajat</option>
-                                <option value="SMA/Sederajat">SMA/Sederajat</option>
+                                <option value="Tidak sekolah">Tidak sekolah</option>
+                                <option value="Putus SD">Putus SD</option>
+                                <option value="SD Sederajat">SD Sederajat</option>
+                                <option value="SMP Sederajat">SMP Sederajat</option>
+                                <option value="SMA Sederajat">SMA Sederajat</option>
                                 <option value="D1">D1</option>
                                 <option value="D2">D2</option>
                                 <option value="D3">D3</option>
                                 <option value="D4/S1">D4/S1</option>
                                 <option value="S2">S2</option>
                                 <option value="S3">S3</option>
-                                <option value="Tidak Sekolah">Tidak Sekolah</option>
-                                <option value="Lainnya">Lainnya</option>
                             </select>
                             @error('wali_pendidikan') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         </div>
@@ -552,17 +552,17 @@
                 <!-- Nomor KKS -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor KKS (Kartu Keluarga Sejahtera)</label>
-                    <input type="text" wire:model="nomor_kks" maxlength="17" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring focus:ring-amber-200">
+                    <input type="text" wire:model="nomor_kks" maxlength="25" oninput="this.value = this.value.replace(/[^A-Za-z0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring focus:ring-amber-200">
                     @error('nomor_kks') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                    <p class="text-xs text-gray-500 mt-1">Maksimal 17 digit. Jika diisi, field upload KKS akan aktif di menu Upload Dokumen</p>
+                    <p class="text-xs text-gray-500 mt-1">Maksimal 25 karakter (huruf dan angka). Jika diisi, field upload KKS akan aktif di menu Upload Dokumen</p>
                 </div>
 
                 <!-- Nomor PKH -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor PKH (Program Keluarga Harapan)</label>
-                    <input type="text" wire:model="nomor_pkh" maxlength="17" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring focus:ring-amber-200">
+                    <input type="text" wire:model="nomor_pkh" maxlength="25" oninput="this.value = this.value.replace(/[^A-Za-z0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-amber-500 focus:ring focus:ring-amber-200">
                     @error('nomor_pkh') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                    <p class="text-xs text-gray-500 mt-1">Maksimal 17 digit. Jika diisi, field upload PKH akan aktif di menu Upload Dokumen</p>
+                    <p class="text-xs text-gray-500 mt-1">Maksimal 25 karakter (huruf dan angka). Jika diisi, field upload PKH akan aktif di menu Upload Dokumen</p>
                 </div>
             </div>
         </div>

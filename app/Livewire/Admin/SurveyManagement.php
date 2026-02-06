@@ -97,6 +97,12 @@ class SurveyManagement extends Component
 
         if ($this->mainTab === 'responses') {
             $responsesQuery = \App\Models\Pendaftar::with([
+                'surveyAnswers' => function($query) {
+                    // FILTER: Hanya jawaban untuk survey UMUM, bukan tes psikologi
+                    $query->whereHas('question', function($q) {
+                        $q->umum();
+                    });
+                },
                 'surveyAnswers.question'
             ])->whereHas('surveyAnswers', function($q) {
                 $q->whereHas('question', function($q2) {
@@ -327,6 +333,27 @@ class SurveyManagement extends Component
 
         $option = SurveyQuestionOption::find($id);
         if ($option) {
+            // CRITICAL: Check if option has submissions before delete
+            // Mencegah data integrity issue (VALUE NOT FOUND)
+            $hasSubmissions = \App\Models\SurveyAnswer::where('survey_question_id', $option->survey_question_id)
+                ->where(function($query) use ($option) {
+                    $query->whereJsonContains('jawaban', $option->value)
+                          ->orWhereJsonContains('jawaban', $option->label)
+                          ->orWhereJsonContains('jawaban', (string)$option->id);
+                })
+                ->exists();
+
+            if ($hasSubmissions) {
+                session()->flash('error', 'Tidak dapat menghapus opsi ini! Ada ' . \App\Models\SurveyAnswer::where('survey_question_id', $option->survey_question_id)
+                    ->where(function($query) use ($option) {
+                        $query->whereJsonContains('jawaban', $option->value)
+                              ->orWhereJsonContains('jawaban', $option->label)
+                              ->orWhereJsonContains('jawaban', (string)$option->id);
+                    })
+                    ->count() . ' pendaftar yang sudah submit jawaban dengan opsi ini. Menghapus akan menyebabkan "[VALUE NOT FOUND]" di data mereka.');
+                return;
+            }
+
             $option->delete();
             session()->flash('message', 'Opsi berhasil dihapus.');
 

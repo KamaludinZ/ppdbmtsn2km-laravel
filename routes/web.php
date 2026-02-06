@@ -379,6 +379,9 @@ Route::middleware(['auth'])->group(function () {
 
     Route::get('/download/bukti-bayar/{pendaftar}/{type}', [\App\Http\Controllers\SecureFileController::class, 'downloadBuktiBayar'])
         ->name('download.bukti-bayar');
+
+    Route::get('/view/bukti-bayar/{pendaftar}/{type}', [\App\Http\Controllers\SecureFileController::class, 'viewBuktiBayar'])
+        ->name('view.bukti-bayar');
 });
 
 // Dokumen download route - Protected dengan authorization
@@ -442,18 +445,94 @@ Route::get('/dokumen/{id}/view', function ($id) {
 
     // Check if file exists in private storage
     if (!Storage::disk('private')->exists($dokumen->path_file)) {
+        \Log::error("VIEW: File not found in storage! Path: " . $dokumen->path_file);
         abort(404, 'File tidak ditemukan.');
     }
 
+    $fullPath = storage_path('app/private/' . $dokumen->path_file);
+    $fileSize = Storage::disk('private')->size($dokumen->path_file);
+
+    \Log::info("VIEW DOKUMEN ID " . $id . ":");
+    \Log::info("  - Database path: " . $dokumen->path_file);
+    \Log::info("  - Database size: " . $dokumen->ukuran_file . " bytes");
+    \Log::info("  - Actual size: " . $fileSize . " bytes");
+    \Log::info("  - Full path: " . $fullPath);
+    \Log::info("  - File exists: " . (file_exists($fullPath) ? 'YES' : 'NO'));
+
     // Return file for viewing in browser (inline) from private storage
+    // Add no-cache headers to prevent browser from caching the PDF
     return response()->file(
-        storage_path('app/private/' . $dokumen->path_file),
+        $fullPath,
         [
             'Content-Type' => $dokumen->mime_type ?? 'application/pdf',
-            'Content-Disposition' => 'inline; filename="' . $dokumen->nama_file . '"'
+            'Content-Disposition' => 'inline; filename="' . $dokumen->nama_file . '"',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0'
         ]
     );
 })->middleware('auth')->name('dokumen.view');
+
+// Generic file view route for Prestasi, Keahlian, Tahfidz - Protected with auth
+Route::get('/file/view/{model}/{id}/{field}', function ($model, $id, $field) {
+    $user = auth()->user();
+
+    if (!$user) {
+        abort(403, 'Silakan login terlebih dahulu.');
+    }
+
+    // Map model name to class
+    $modelMap = [
+        'prestasi' => \App\Models\Prestasi::class,
+        'keahlian' => \App\Models\Keahlian::class,
+        'tahfidz' => \App\Models\Tahfidz::class,
+    ];
+
+    if (!isset($modelMap[$model])) {
+        abort(404, 'Model tidak ditemukan.');
+    }
+
+    $modelClass = $modelMap[$model];
+    $record = $modelClass::findOrFail($id);
+
+    // Authorization check - Admin, Panitia can access all, Pendaftar only their own
+    if ($user->role === 'pendaftar') {
+        if ($user->pendaftar->id !== $record->pendaftar_id) {
+            abort(403, 'Anda tidak memiliki akses ke file ini.');
+        }
+    } elseif (!in_array($user->role, ['admin', 'panitia', 'panitia_pendaftaran', 'panitia_seragam', 'panitia_tes_psikologi'])) {
+        abort(403, 'Anda tidak memiliki akses ke file ini.');
+    }
+
+    // Get file path from field
+    $filePath = $record->$field;
+
+    if (!$filePath) {
+        abort(404, 'File tidak ditemukan.');
+    }
+
+    // Try both private and public storage for backward compatibility
+    $disk = 'private';
+    if (!Storage::disk('private')->exists($filePath)) {
+        if (Storage::disk('public')->exists($filePath)) {
+            $disk = 'public';
+        } else {
+            abort(404, 'File tidak ditemukan di storage.');
+        }
+    }
+
+    // Get file and mime type
+    $file = Storage::disk($disk)->get($filePath);
+    $mimeType = Storage::disk($disk)->mimeType($filePath);
+
+    // Return file for viewing in browser with no-cache headers
+    return response($file, 200)
+        ->header('Content-Type', $mimeType)
+        ->header('Content-Disposition', 'inline; filename="' . basename($filePath) . '"')
+        ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+        ->header('Pragma', 'no-cache')
+        ->header('Expires', '0');
+})->middleware('auth')->name('file.view');
 
 // Daftar Ulang file view route - Protected untuk pendaftar melihat file mereka
 Route::get('/pendaftar/daftarulang/view-file/{type}/{file}', function ($type, $file) {

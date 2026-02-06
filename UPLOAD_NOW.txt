@@ -1,0 +1,60 @@
+========================================
+COPY PASTE COMMANDS INI - SATU PER SATU
+========================================
+
+Buka Command Prompt (Win+R → ketik "cmd" → Enter)
+
+1. Pindah ke directory project:
+
+cd C:\ppdbmtsn2km-laravel
+
+
+2. Upload WhatsAppQueueService.php (FILE UTAMA):
+
+scp app/Services/WhatsAppQueueService.php mtsnkot4@103.30.244.77:/home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/app/Services/
+
+
+3. Upload MessageQueue.php:
+
+scp app/Models/MessageQueue.php mtsnkot4@103.30.244.77:/home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/app/Models/
+
+
+4. Upload migration:
+
+scp database/migrations/2026_02_03_210000_create_message_queue_table.php mtsnkot4@103.30.244.77:/home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/database/migrations/
+
+
+5. SSH ke server:
+
+ssh mtsnkot4@103.30.244.77
+
+
+6. Setelah login, jalankan satu per satu:
+
+cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id
+
+chmod 644 app/Services/WhatsAppQueueService.php
+
+chmod 644 app/Models/MessageQueue.php
+
+php artisan migrate --force
+
+composer dump-autoload --optimize
+
+php artisan optimize:clear
+
+
+7. Keluar dari SSH:
+
+exit
+
+
+8. Test di browser:
+   - Clear browser cache (Ctrl+Shift+Del)
+   - Go to: https://pmbm.mtsn2kotamalang.sch.id/admin/pengaturan-pesan
+   - Click tab "History WhatsApp"
+   - Harus work sekarang!
+
+========================================
+SELESAI!
+========================================

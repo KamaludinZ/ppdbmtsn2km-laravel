@@ -101,66 +101,150 @@
                             </div>
                         </div>
 
-                        <form wire:submit.prevent="simpanSurvey" class="space-y-6">
-                            @foreach($surveyQuestions as $question)
-                                <div class="border border-gray-200 rounded-lg p-4">
-                                    <label class="block text-sm font-medium text-gray-900 mb-2">
-                                        {{ $question->pertanyaan }}
-                                        @if($question->wajib_diisi)
-                                            <span class="text-red-500">*</span>
-                                        @endif
-                                    </label>
+                        <div class="space-y-6">
+                            <!-- Progress Bar -->
+                            <div class="mb-6">
+                                <div class="flex justify-between items-center mb-2">
+                                    <span class="text-sm font-medium text-indigo-700">Progress Survey</span>
+                                    <span class="text-sm font-medium text-indigo-700">{{ $currentQuestionIndex + 1 }} / {{ $surveyQuestions->count() }}</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-3 overflow-hidden">
+                                    <div class="bg-indigo-600 h-3 rounded-full transition-all duration-300"
+                                         style="width: {{ (($currentQuestionIndex + 1) / $surveyQuestions->count()) * 100 }}%"></div>
+                                </div>
+                            </div>
 
-                                    @if($question->deskripsi)
-                                        <p class="text-xs text-gray-500 mb-3">{{ $question->deskripsi }}</p>
-                                    @endif
+                            @php
+                                $question = $surveyQuestions[$currentQuestionIndex];
+                            @endphp
 
+                            <!-- Question Card -->
+                            <div class="border-2 border-indigo-200 rounded-lg p-6 bg-indigo-50">
+                                <div class="mb-4">
+                                    <div class="flex items-start">
+                                        <span class="inline-flex items-center justify-center w-10 h-10 rounded-full bg-indigo-600 text-white font-bold text-lg mr-4 flex-shrink-0">
+                                            {{ $currentQuestionIndex + 1 }}
+                                        </span>
+                                        <div class="flex-1">
+                                            <label class="block text-base font-bold text-gray-900 mb-1">
+                                                {{ $question->pertanyaan }}
+                                                @if($question->wajib_diisi)
+                                                    <span class="text-red-500 text-xl">*</span>
+                                                @endif
+                                            </label>
+                                            @if($question->deskripsi)
+                                                <p class="text-sm text-gray-600 mt-1">{{ $question->deskripsi }}</p>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mt-4">
                                     @if($question->tipe_input === 'text')
-                                        <input type="text" wire:model="surveyAnswers.{{ $question->id }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="Jawaban Anda...">
+                                        <input type="text"
+                                               wire:model.live="surveyAnswers.{{ $question->id }}"
+                                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base"
+                                               placeholder="Ketik jawaban Anda di sini...">
 
                                     @elseif($question->tipe_input === 'textarea')
-                                        <textarea wire:model="surveyAnswers.{{ $question->id }}" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent" placeholder="Jawaban Anda..."></textarea>
+                                        <textarea wire:model.live="surveyAnswers.{{ $question->id }}"
+                                                  rows="5"
+                                                  class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base"
+                                                  placeholder="Ketik jawaban Anda di sini..."></textarea>
 
                                     @elseif($question->tipe_input === 'radio')
-                                        <div class="space-y-2">
-                                            @foreach($question->options as $option)
-                                                <label class="flex items-center cursor-pointer">
-                                                    <input type="radio" wire:model="surveyAnswers.{{ $question->id }}" value="{{ $option->value }}" class="text-indigo-600 focus:ring-indigo-500 mr-2">
-                                                    <span class="text-sm text-gray-700">{{ $option->label }}</span>
+                                        <div class="space-y-3">
+                                            @foreach($question->options->sortBy('urutan') as $option)
+                                                <label class="flex items-center cursor-pointer p-3 border-2 border-gray-300 rounded-lg hover:bg-white hover:border-indigo-500 transition">
+                                                    {{-- NEW APPROACH: Simpan OPTION ID untuk data integrity --}}
+                                                    {{-- FIX: Tambah name attribute untuk uniqueness per question --}}
+                                                    <input type="radio"
+                                                           name="question_{{ $question->id }}"
+                                                           wire:model.live="surveyAnswers.{{ $question->id }}"
+                                                           value="{{ $option->id }}"
+                                                           class="w-5 h-5 text-indigo-600 focus:ring-indigo-500 mr-3 flex-shrink-0">
+                                                    <span class="text-base text-gray-700">{{ $option->label }}</span>
                                                 </label>
                                             @endforeach
                                         </div>
 
                                     @elseif($question->tipe_input === 'checkbox')
-                                        <div class="space-y-2">
-                                            @foreach($question->options as $option)
-                                                <label class="flex items-center cursor-pointer">
-                                                    <input type="checkbox" wire:model="surveyAnswers.{{ $question->id }}" value="{{ $option->value }}" class="rounded text-indigo-600 focus:ring-indigo-500 mr-2">
-                                                    <span class="text-sm text-gray-700">{{ $option->label }}</span>
+                                        <div class="space-y-3">
+                                            @foreach($question->options->sortBy('urutan') as $option)
+                                                <label class="flex items-center cursor-pointer p-3 border-2 border-gray-300 rounded-lg hover:bg-white hover:border-indigo-500 transition">
+                                                    {{-- NEW APPROACH: Simpan OPTION ID untuk data integrity --}}
+                                                    <input type="checkbox"
+                                                           wire:model.live="surveyAnswers.{{ $question->id }}"
+                                                           value="{{ $option->id }}"
+                                                           class="w-5 h-5 rounded text-indigo-600 focus:ring-indigo-500 mr-3 flex-shrink-0">
+                                                    <span class="text-base text-gray-700">{{ $option->label }}</span>
                                                 </label>
                                             @endforeach
                                         </div>
 
                                     @elseif($question->tipe_input === 'select')
-                                        <select wire:model="surveyAnswers.{{ $question->id }}" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                                            <option value="">-- Pilih --</option>
-                                            @foreach($question->options as $option)
-                                                <option value="{{ $option->value }}">{{ $option->label }}</option>
+                                        <select wire:model.live="surveyAnswers.{{ $question->id }}"
+                                                class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-base">
+                                            <option value="">-- Pilih Jawaban --</option>
+                                            @foreach($question->options->sortBy('urutan') as $option)
+                                                {{-- NEW APPROACH: Simpan OPTION ID untuk data integrity --}}
+                                                <option value="{{ $option->id }}">{{ $option->label }}</option>
                                             @endforeach
                                         </select>
                                     @endif
                                 </div>
-                            @endforeach
-
-                            <div class="flex justify-end">
-                                <button type="submit" class="px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition flex items-center">
-                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
-                                    </svg>
-                                    Simpan Jawaban Survey
-                                </button>
                             </div>
-                        </form>
+
+                            <!-- Navigation Buttons -->
+                            <div class="flex justify-between items-center pt-4">
+                                <button type="button"
+                                        wire:click="previousQuestion"
+                                        @if($currentQuestionIndex === 0) disabled @endif
+                                        class="inline-flex items-center px-6 py-3 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                                    </svg>
+                                    Sebelumnya
+                                </button>
+
+                                @if($currentQuestionIndex < $surveyQuestions->count() - 1)
+                                    {{-- Tombol Selanjutnya - Disabled jika pertanyaan wajib belum dijawab --}}
+                                    <button type="button"
+                                            wire:click="nextQuestion"
+                                            @if(!$this->isCurrentQuestionAnswered) disabled @endif
+                                            class="inline-flex items-center px-6 py-3 bg-indigo-600 text-white font-medium rounded-lg hover:bg-indigo-700 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400">
+                                        Selanjutnya
+                                        <svg class="w-5 h-5 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                                        </svg>
+                                    </button>
+                                @else
+                                    {{-- Tombol Selesai - Disabled jika ada pertanyaan wajib yang belum dijawab --}}
+                                    <button type="button"
+                                            wire:click="simpanSurvey"
+                                            @if(!$this->areAllRequiredQuestionsAnswered) disabled @endif
+                                            class="inline-flex items-center px-6 py-3 bg-green-600 text-white font-medium rounded-lg hover:bg-green-700 transition disabled:opacity-50 disabled:cursor-not-allowed disabled:bg-gray-400">
+                                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                        </svg>
+                                        Selesai & Simpan
+                                    </button>
+                                @endif
+                            </div>
+
+                            {{-- Peringatan jika pertanyaan wajib belum dijawab --}}
+                            @if($question->wajib_diisi && !$this->isCurrentQuestionAnswered)
+                                <div class="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg flex items-start">
+                                    <svg class="w-5 h-5 text-red-600 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                    </svg>
+                                    <div>
+                                        <p class="text-sm font-bold text-red-900">Pertanyaan ini wajib diisi!</p>
+                                        <p class="text-xs text-red-800 mt-1">Silakan jawab pertanyaan ini untuk melanjutkan ke pertanyaan berikutnya.</p>
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
                     </div>
                 @endif
             </div>
@@ -322,7 +406,7 @@
 
                         <div class="mt-4 flex justify-center space-x-3">
                             @if($tesPsikologiData->bukti_transfer)
-                                <a href="{{ asset('storage/' . $tesPsikologiData->bukti_transfer) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                                <a href="{{ route('view.bukti-bayar', ['pendaftar' => $pendaftar->id, 'type' => 'psikologi']) }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 focus:bg-blue-700 active:bg-blue-900 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition ease-in-out duration-150">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
@@ -374,10 +458,51 @@
                         <p class="text-xs text-yellow-600 mt-2">Upload: {{ $tesPsikologiData->tanggal_upload->format('d M Y H:i') }}</p>
                     </div>
 
+                    <!-- Detail Pembayaran yang Disubmit -->
+                    <div class="mb-6 bg-gray-50 border border-gray-200 rounded-lg p-4">
+                        <h4 class="text-sm font-semibold text-gray-900 mb-3 flex items-center">
+                            <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Detail Pembayaran yang Disubmit
+                        </h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                            <div>
+                                <span class="text-gray-600">Bank/Metode:</span>
+                                <span class="ml-2 font-medium text-gray-900">{{ $tesPsikologiData->bank->nama_bank ?? '-' }}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Waktu Transfer:</span>
+                                <span class="ml-2 font-medium text-gray-900">
+                                    {{ $tesPsikologiData->waktu_transfer ? $tesPsikologiData->waktu_transfer->format('d M Y, H:i') : '-' }}
+                                </span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Nama Pengirim:</span>
+                                <span class="ml-2 font-medium text-gray-900">{{ $tesPsikologiData->nama_pengirim ?? '-' }}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-600">Tanggal Upload:</span>
+                                <span class="ml-2 font-medium text-gray-900">{{ $tesPsikologiData->tanggal_upload->format('d M Y, H:i') }}</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Bukti Transfer yang Telah Diupload -->
                     <div class="mb-4">
                         <label class="block text-sm font-medium text-gray-700 mb-2">Bukti Transfer yang Telah Diupload</label>
-                        <img src="{{ asset('storage/' . $tesPsikologiData->bukti_transfer) }}" alt="Bukti Transfer" class="w-full max-w-md rounded-lg border border-gray-300">
+                        <div class="relative">
+                            <img
+                                src="{{ route('view.bukti-bayar', ['pendaftar' => $pendaftar->id, 'type' => 'psikologi']) }}"
+                                alt="Bukti Transfer"
+                                class="w-full max-w-md rounded-lg border border-gray-300"
+                                onerror="this.onerror=null; this.src='data:image/svg+xml,%3Csvg xmlns=\'http://www.w3.org/2000/svg\' width=\'400\' height=\'300\' viewBox=\'0 0 400 300\'%3E%3Crect fill=\'%23f3f4f6\' width=\'400\' height=\'300\'/%3E%3Ctext x=\'50%25\' y=\'50%25\' dominant-baseline=\'middle\' text-anchor=\'middle\' font-family=\'sans-serif\' font-size=\'14\' fill=\'%239ca3af\'%3EGagal memuat gambar%3C/text%3E%3C/svg%3E'; this.nextElementSibling.classList.remove('hidden');">
+                            <div class="hidden mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                <p class="text-sm text-yellow-800">
+                                    <strong>Gambar gagal dimuat.</strong> Silakan refresh halaman atau hubungi panitia jika masalah berlanjut.
+                                </p>
+                            </div>
+                        </div>
                     </div>
 
                     <button wire:click="hapusBukti" onclick="return confirm('Yakin ingin menghapus bukti transfer?')" class="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">

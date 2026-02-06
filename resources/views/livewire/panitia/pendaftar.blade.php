@@ -55,7 +55,7 @@
         @endif
 
         <!-- Stats Overview - Status Pendaftaran -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
             <!-- Total Pendaftar -->
             <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
                 <div class="flex items-center justify-between">
@@ -71,12 +71,12 @@
                 </div>
             </div>
 
-            <!-- Menunggu -->
+            <!-- Menunggu Verifikasi -->
             <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium opacity-90">Menunggu</p>
-                        <p class="text-3xl font-bold mt-2">{{ number_format($stats['menunggu']) }}</p>
+                        <p class="text-sm font-medium opacity-90">Menunggu Verifikasi</p>
+                        <p class="text-3xl font-bold mt-2">{{ number_format($stats['menunggu_verifikasi'] ?? 0) }}</p>
                     </div>
                     <div class="bg-black bg-opacity-10 rounded-full p-3">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -86,42 +86,42 @@
                 </div>
             </div>
 
-            <!-- Lulus -->
-            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm font-medium opacity-90">Lulus</p>
-                        <p class="text-3xl font-bold mt-2">{{ number_format($stats['lulus']) }}</p>
-                    </div>
-                    <div class="bg-black bg-opacity-10 rounded-full p-3">
-                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Cadangan -->
+            <!-- Lengkapi Data -->
             <div class="bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium opacity-90">Cadangan</p>
-                        <p class="text-3xl font-bold mt-2">{{ number_format($stats['cadangan'] ?? 0) }}</p>
+                        <p class="text-sm font-medium opacity-90">Lengkapi Data</p>
+                        <p class="text-3xl font-bold mt-2">{{ number_format($stats['lengkapi_data'] ?? 0) }}</p>
                     </div>
                     <div class="bg-black bg-opacity-10 rounded-full p-3">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
                     </div>
                 </div>
             </div>
 
-            <!-- Tidak Lulus -->
+            <!-- Perbaiki Data -->
+            <div class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium opacity-90">Perbaiki Data</p>
+                        <p class="text-3xl font-bold mt-2">{{ number_format($stats['perbaiki_data'] ?? 0) }}</p>
+                    </div>
+                    <div class="bg-black bg-opacity-10 rounded-full p-3">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Data Ditolak -->
             <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium opacity-90">Tidak Lulus</p>
-                        <p class="text-3xl font-bold mt-2">{{ number_format($stats['tidak_lulus'] ?? 0) }}</p>
+                        <p class="text-sm font-medium opacity-90">Data Ditolak</p>
+                        <p class="text-3xl font-bold mt-2">{{ number_format($stats['data_ditolak'] ?? 0) }}</p>
                     </div>
                     <div class="bg-black bg-opacity-10 rounded-full p-3">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -130,46 +130,71 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Data Disetujui -->
+            <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm font-medium opacity-90">Data Disetujui</p>
+                        <p class="text-3xl font-bold mt-2">{{ number_format($stats['data_disetujui'] ?? 0) }}</p>
+                    </div>
+                    <div class="bg-black bg-opacity-10 rounded-full p-3">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Filters -->
         <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 bg-blue-600 flex items-center">
-                <svg class="w-6 h-6 text-white mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
-                </svg>
-                <h3 class="text-lg font-bold text-white uppercase tracking-wider">Filter Data</h3>
+            <div class="px-6 py-4 border-b border-gray-200 bg-blue-600 flex items-center justify-between">
+                <div class="flex items-center">
+                    <svg class="w-6 h-6 text-white mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                    </svg>
+                    <h3 class="text-lg font-bold text-white uppercase tracking-wider">Filter Data</h3>
+                </div>
+                <!-- Search Field -->
+                <div class="flex gap-2 flex-1 max-w-xl ml-6">
+                    <input
+                        type="text"
+                        wire:model="searchInput"
+                        wire:keydown.enter="applySearch"
+                        placeholder="Cari nama, NISN, No. Daftar..."
+                        autocomplete="new-password"
+                        autocorrect="off"
+                        autocapitalize="off"
+                        spellcheck="false"
+                        name="search_pendaftar_{{ uniqid() }}"
+                        class="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                    <button wire:click="applySearch" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition flex items-center gap-1 whitespace-nowrap">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        <span>Cari</span>
+                    </button>
+                    @if($search)
+                        <button wire:click="clearSearch" class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition" title="Hapus pencarian">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    @endif
+                </div>
             </div>
             <div class="p-6">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Pencarian</label>
-                    <div class="flex gap-2">
-                        <input
-                            type="text"
-                            wire:model="searchInput"
-                            wire:keydown.enter="applySearch"
-                            placeholder="Cari nama, NISN, No. Daftar..."
-                            autocomplete="new-password"
-                            autocorrect="off"
-                            autocapitalize="off"
-                            spellcheck="false"
-                            name="search_pendaftar_{{ uniqid() }}"
-                            class="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
-                        <button wire:click="applySearch" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition flex items-center gap-1 whitespace-nowrap">
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                            </svg>
-                            <span>Cari</span>
-                        </button>
-                        @if($search)
-                            <button wire:click="clearSearch" class="px-3 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition" title="Hapus pencarian">
-                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                            </button>
-                        @endif
-                    </div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Kelengkapan EMIS</label>
+                    <select wire:model.live="filterEmisCompleteness" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                        <option value="">Semua Persentase</option>
+                        <option value="0-25">0% - 25% (Sangat Kurang)</option>
+                        <option value="26-50">26% - 50% (Kurang)</option>
+                        <option value="51-75">51% - 75% (Cukup)</option>
+                        <option value="76-100">76% - 100% (Lengkap)</option>
+                    </select>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Jalur Pendaftaran</label>
@@ -221,20 +246,36 @@
                         <span class="font-medium">Filter Kolom</span>
                     </button>
                     <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl z-50 border border-gray-200" x-cloak>
-                        <div class="p-4 max-h-96 overflow-y-auto">
+                        <div class="p-4">
                             <h4 class="font-semibold text-gray-700 mb-3 text-sm uppercase">Pilih Kolom yang Ditampilkan</h4>
-                            <!-- Checkboxes (Existing code omitted for brevity but preserved structure) -->
-                            @foreach($showColumns as $key => $value)
-                                <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
-                                    <input
-                                        type="checkbox"
-                                        wire:click="toggleColumn('{{ $key }}')"
-                                        @checked($value)
-                                        class="rounded text-emerald-600 focus:ring-emerald-500"
-                                    >
-                                    <span class="ml-2 text-sm text-gray-700">{{ ucwords(str_replace('_', ' ', $key)) }}</span>
-                                </label>
-                            @endforeach
+                            <!-- Bulk Actions -->
+                            <div class="flex gap-2 mb-3 pb-3 border-b border-gray-200">
+                                <button
+                                    @click="checkAll()"
+                                    class="flex-1 px-3 py-1.5 bg-emerald-600 text-white text-xs font-medium rounded hover:bg-emerald-700 transition">
+                                    ✓ Ceklist Semua
+                                </button>
+                                <button
+                                    @click="uncheckAll()"
+                                    class="flex-1 px-3 py-1.5 bg-gray-600 text-white text-xs font-medium rounded hover:bg-gray-700 transition">
+                                    ✗ Hapus Semua
+                                </button>
+                            </div>
+                            <!-- Checkboxes -->
+                            <div class="max-h-96 overflow-y-auto">
+                                @foreach($showColumns as $key => $value)
+                                    <label class="flex items-center cursor-pointer hover:bg-gray-50 p-2 rounded">
+                                        <input
+                                            type="checkbox"
+                                            wire:click="toggleColumn('{{ $key }}')"
+                                            @change="toggleColumn('{{ $key }}', $event.target.checked)"
+                                            @checked($value)
+                                            class="rounded text-emerald-600 focus:ring-emerald-500"
+                                        >
+                                        <span class="ml-2 text-sm text-gray-700">{{ ucwords(str_replace('_', ' ', $key)) }}</span>
+                                    </label>
+                                @endforeach
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -255,14 +296,14 @@
                             @if($showColumns['jenis_kelamin'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Kelamin</th>
                             @endif
+                            @if($showColumns['jalur'])
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jalur</th>
+                            @endif
                             @if($showColumns['kontak'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontak</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
                             @endif
-                            @if($showColumns['password'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Password</th>
-                            @endif
-                            @if($showColumns['ubah_password'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ubah Password</th>
+                            @if($showColumns['emis_completeness'])
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelengkapan EMIS</th>
                             @endif
                             @if($showColumns['ortu_whatsapp'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ortu WhatsApp</th>
@@ -285,14 +326,17 @@
                             @if($showColumns['nama_ibu'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Ibu</th>
                             @endif
-                            @if($showColumns['jalur'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jalur</th>
-                            @endif
                             @if($showColumns['verif_psikologi'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verif. Psikologi</th>
                             @endif
                             @if($showColumns['status'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Pendaftaran</th>
+                            @endif
+                            @if($showColumns['status_keahlian'])
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Keahlian</th>
+                            @endif
+                            @if($showColumns['status_tahfidz'])
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Tahfidz</th>
                             @endif
                             @if($showColumns['status_tes'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Tes</th>
@@ -308,12 +352,6 @@
                             @endif
                             @if($showColumns['status_ukuran'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Ukuran</th>
-                            @endif
-                            @if($showColumns['status_keahlian'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Keahlian</th>
-                            @endif
-                            @if($showColumns['status_tahfidz'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Tahfidz</th>
                             @endif
                             @if($showColumns['status_daftar_ulang'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Daftar Ulang</th>
@@ -348,8 +386,11 @@
                             @if($showColumns['tanggal'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Daftar</th>
                             @endif
-                            @if($showColumns['emis_completeness'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kelengkapan EMIS</th>
+                            @if($showColumns['password'])
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Password</th>
+                            @endif
+                            @if($showColumns['ubah_password'])
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ubah Password</th>
                             @endif
                         </tr>
                     </thead>
@@ -395,51 +436,52 @@
                                         @endif
                                     </td>
                                 @endif
+                                @if($showColumns['jalur'])
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-{{ $item->jalurPendaftaran->warna ?? 'blue' }}-100 text-{{ $item->jalurPendaftaran->warna ?? 'blue' }}-800">
+                                            {{ $item->jalurPendaftaran->nama ?? '-' }}
+                                        </span>
+                                    </td>
+                                @endif
                                 @if($showColumns['kontak'])
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">{{ $item->email }}</div>
-                                        @if($item->no_hp)
-                                            <div class="text-sm text-gray-500">{{ $item->no_hp }}</div>
-                                        @endif
                                     </td>
                                 @endif
-                                @if($showColumns['password'])
+                                @if($showColumns['emis_completeness'])
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="relative inline-block">
-                                            <input
-                                                type="password"
-                                                value="••••••••"
-                                                readonly
-                                                class="text-sm text-gray-900 bg-transparent border-none focus:outline-none w-24 overflow-hidden truncate"
-                                                id="password-{{ $item->id }}"
-                                            >
-                                            <button
-                                                type="button"
-                                                class="absolute right-0 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
-                                                onclick="togglePasswordVisibility('password-{{ $item->id }}', '{{ $item->user->password ?? '' }}')"
-                                            >
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                                </svg>
-                                            </button>
+                                        @php
+                                            $emisBadge = $item->getEmisCompletenessBadge();
+                                            $percentage = $emisBadge['percentage'];
+                                            $label = $emisBadge['label'];
+                                            $color = $emisBadge['color'];
+                                        @endphp
+                                        <div class="flex items-center space-x-2">
+                                            <div class="flex-1">
+                                                <div class="flex justify-between text-xs mb-1">
+                                                    <span class="font-medium text-gray-700">{{ $percentage }}%</span>
+                                                    <span class="text-{{ $color }}-600">{{ $label }}</span>
+                                                </div>
+                                                <div class="w-full bg-gray-200 rounded-full h-1.5">
+                                                    <div class="bg-{{ $color }}-600 h-1.5 rounded-full" style="width: {{ $percentage }}%"></div>
+                                                </div>
+                                            </div>
                                         </div>
                                     </td>
                                 @endif
-                                @if($showColumns['ubah_password'])
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button
-                                            wire:click="showChangePasswordModal({{ $item->id }})"
-                                            class="text-blue-600 hover:text-blue-900 hover:underline"
-                                            title="Ubah Password"
-                                        >
-                                            Ubah
-                                        </button>
-                                    </td>
-                                @endif
                                 @if($showColumns['ortu_whatsapp'])
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $item->telepon_ortu ?? '' }}
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center space-x-2">
+                                            <span class="text-sm text-gray-900">{{ $item->telepon_ortu ?? '-' }}</span>
+                                            <button
+                                                wire:click="showEditTeleponOrtuModal({{ $item->id }})"
+                                                class="text-blue-600 hover:text-blue-900 transition"
+                                                title="Edit Nomor WhatsApp Orang Tua">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </td>
                                 @endif
                                 @if($showColumns['asal_kabkota'])
@@ -488,13 +530,6 @@
                                 @if($showColumns['nama_ibu'])
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                         {{ $item->nama_ibu ?? '-' }}
-                                    </td>
-                                @endif
-                                @if($showColumns['jalur'])
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-{{ $item->jalurPendaftaran->warna ?? 'blue' }}-100 text-{{ $item->jalurPendaftaran->warna ?? 'blue' }}-800">
-                                            {{ $item->jalurPendaftaran->nama ?? '-' }}
-                                        </span>
                                     </td>
                                 @endif
                                 @if($showColumns['verif_psikologi'])
@@ -552,6 +587,42 @@
                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-{{ $color }}-100 text-{{ $color }}-800">
                                             {{ $label }}
                                         </span>
+                                    </td>
+                                @endif
+                                @if($showColumns['status_keahlian'])
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @php
+                                            $hasKeahlian = $item->keahlians && $item->keahlians->count() > 0;
+                                        @endphp
+                                        @if($hasKeahlian)
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                Terisi ({{ $item->keahlians->count() }})
+                                            </span>
+                                        @else
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-600">
+                                                Kosong
+                                            </span>
+                                        @endif
+                                    </td>
+                                @endif
+                                @if($showColumns['status_tahfidz'])
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @php
+                                            $hasTahfidz = $item->tahfidz && (
+                                                !empty($item->tahfidz->juz_alquran_dihafal) ||
+                                                !empty($item->tahfidz->file_bukti_syahadah) ||
+                                                !empty($item->tahfidz->file_bukti_tahsin)
+                                            );
+                                        @endphp
+                                        @if($hasTahfidz)
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                                Terisi
+                                            </span>
+                                        @else
+                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-600">
+                                                Kosong
+                                            </span>
+                                        @endif
                                     </td>
                                 @endif
                                 @if($showColumns['status_tes'])
@@ -690,42 +761,6 @@
                                         </span>
                                     </td>
                                 @endif
-                                @if($showColumns['status_keahlian'])
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @php
-                                            $hasKeahlian = $item->keahlians && $item->keahlians->count() > 0;
-                                        @endphp
-                                        @if($hasKeahlian)
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                Terisi ({{ $item->keahlians->count() }})
-                                            </span>
-                                        @else
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-600">
-                                                Kosong
-                                            </span>
-                                        @endif
-                                    </td>
-                                @endif
-                                @if($showColumns['status_tahfidz'])
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        @php
-                                            $hasTahfidz = $item->tahfidz && (
-                                                !empty($item->tahfidz->juz_alquran_dihafal) ||
-                                                !empty($item->tahfidz->file_bukti_syahadah) ||
-                                                !empty($item->tahfidz->file_bukti_tahsin)
-                                            );
-                                        @endphp
-                                        @if($hasTahfidz)
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                                Terisi
-                                            </span>
-                                        @else
-                                            <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-600">
-                                                Kosong
-                                            </span>
-                                        @endif
-                                    </td>
-                                @endif
                                 @if($showColumns['status_daftar_ulang'])
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if($item->daftarUlang)
@@ -817,25 +852,38 @@
                                         {{ $item->tanggal_daftar ? \Carbon\Carbon::parse($item->tanggal_daftar)->format('d M Y') : '-' }}
                                     </td>
                                 @endif
-                                @if($showColumns['emis_completeness'])
+                                @if($showColumns['password'])
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        @php
-                                            $emisBadge = $item->getEmisCompletenessBadge();
-                                            $percentage = $emisBadge['percentage'];
-                                            $label = $emisBadge['label'];
-                                            $color = $emisBadge['color'];
-                                        @endphp
-                                        <div class="flex items-center space-x-2">
-                                            <div class="flex-1">
-                                                <div class="flex justify-between text-xs mb-1">
-                                                    <span class="font-medium text-gray-700">{{ $percentage }}%</span>
-                                                    <span class="text-{{ $color }}-600">{{ $label }}</span>
-                                                </div>
-                                                <div class="w-full bg-gray-200 rounded-full h-1.5">
-                                                    <div class="bg-{{ $color }}-600 h-1.5 rounded-full" style="width: {{ $percentage }}%"></div>
-                                                </div>
-                                            </div>
+                                        <div class="relative inline-block">
+                                            <input
+                                                type="password"
+                                                value="••••••••"
+                                                readonly
+                                                class="text-sm text-gray-900 bg-transparent border-none focus:outline-none w-24 overflow-hidden truncate"
+                                                id="password-{{ $item->id }}"
+                                            >
+                                            <button
+                                                type="button"
+                                                class="absolute right-0 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                                                onclick="togglePasswordVisibility('password-{{ $item->id }}', '{{ $item->user->password ?? '' }}')"
+                                            >
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                </svg>
+                                            </button>
                                         </div>
+                                    </td>
+                                @endif
+                                @if($showColumns['ubah_password'])
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        <button
+                                            wire:click="showChangePasswordModal({{ $item->id }})"
+                                            class="text-blue-600 hover:text-blue-900 hover:underline"
+                                            title="Ubah Password"
+                                        >
+                                            Ubah
+                                        </button>
                                     </td>
                                 @endif
                             </tr>
@@ -880,26 +928,54 @@
             return {
                 open: false,
                 init() {
+                    // Load saved column preferences from localStorage
                     this.$nextTick(() => {
-                        const savedColumns = localStorage.getItem('pendaftar_column_preferences');
+                        const savedColumns = localStorage.getItem('panitia_pendaftar_column_preferences');
                         if (savedColumns) {
                             try {
                                 const columns = JSON.parse(savedColumns);
                                 Object.keys(columns).forEach(key => {
                                     this.$wire.set('showColumns.' + key, columns[key]);
                                 });
-                            } catch (e) { console.error(e); }
+                            } catch (e) {
+                                console.error('Error loading column preferences:', e);
+                            }
                         }
                     });
                 },
                 toggleColumn(columnName, isChecked) {
+                    // Save individual column preference to localStorage
                     let savedColumns = {};
                     try {
-                        const saved = localStorage.getItem('pendaftar_column_preferences');
+                        const saved = localStorage.getItem('panitia_pendaftar_column_preferences');
                         if (saved) savedColumns = JSON.parse(saved);
-                    } catch (e) { console.error(e); }
+                    } catch (e) {
+                        console.error('Error parsing saved columns:', e);
+                    }
                     savedColumns[columnName] = isChecked;
-                    localStorage.setItem('pendaftar_column_preferences', JSON.stringify(savedColumns));
+                    localStorage.setItem('panitia_pendaftar_column_preferences', JSON.stringify(savedColumns));
+                },
+                checkAll() {
+                    // Check all columns
+                    const columns = @json(array_keys($showColumns));
+                    const allChecked = {};
+                    columns.forEach(key => {
+                        this.$wire.set('showColumns.' + key, true);
+                        allChecked[key] = true;
+                    });
+                    // Save to localStorage
+                    localStorage.setItem('panitia_pendaftar_column_preferences', JSON.stringify(allChecked));
+                },
+                uncheckAll() {
+                    // Uncheck all columns
+                    const columns = @json(array_keys($showColumns));
+                    const allUnchecked = {};
+                    columns.forEach(key => {
+                        this.$wire.set('showColumns.' + key, false);
+                        allUnchecked[key] = false;
+                    });
+                    // Save to localStorage
+                    localStorage.setItem('panitia_pendaftar_column_preferences', JSON.stringify(allUnchecked));
                 }
             }
         }
@@ -984,6 +1060,53 @@
                             Batal
                         </button>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Telepon Ortu Modal -->
+    <div x-data="{ show: @entangle('isEditTeleponOrtuModalOpen') }" x-show="show" x-cloak>
+        <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-0 overflow-y-auto">
+            <div class="fixed inset-0 bg-black/10 backdrop-blur-sm transition-opacity z-[9998]" aria-hidden="true" @click="show = false; $wire.closeEditTeleponOrtuModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full z-[10000]" role="dialog" aria-modal="true" aria-labelledby="edit-telepon-ortu-modal">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4" id="edit-telepon-ortu-modal">
+                        Edit Nomor WhatsApp Orang Tua
+                    </h3>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nomor WhatsApp Orang Tua</label>
+                            <div class="relative">
+                                <input
+                                    type="text"
+                                    wire:model="editTeleponOrtu"
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                    placeholder="Contoh: 081234567890 atau +6281234567890"
+                                    maxlength="15"
+                                >
+                            </div>
+                            @error('editTeleponOrtu') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            <p class="text-xs text-gray-500 mt-1">Format: Awali dengan 08 atau +62</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button
+                        type="button"
+                        wire:click="updateTeleponOrtu"
+                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:ml-3 sm:w-auto sm:text-sm"
+                    >
+                        Simpan
+                    </button>
+                    <button
+                        type="button"
+                        wire:click="closeEditTeleponOrtuModal"
+                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+                    >
+                        Batal
+                    </button>
                 </div>
             </div>
         </div>

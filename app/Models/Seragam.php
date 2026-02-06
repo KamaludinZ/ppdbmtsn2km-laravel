@@ -18,6 +18,7 @@ class Seragam extends Model
         'opsi_pembayaran_seragam',
         'bank_seragam',
         'bukti_pembayaran',
+        'nama_pengirim_seragam',
         // Detailed uniform sizes (NEW - active fields only)
         'ukuran_jas',
         'ukuran_baju_olahraga',
@@ -32,7 +33,9 @@ class Seragam extends Model
         'status_ukuran',
         'catatan',
         'catatan_seragam',
+        'catatan_internal_seragam',
         'catatan_ukuran',
+        'catatan_internal_ukuran',
         'tanggal_ukur',
         'tanggal_pesan',
         'tanggal_terima',

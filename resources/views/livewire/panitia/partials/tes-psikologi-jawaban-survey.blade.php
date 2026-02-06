@@ -53,6 +53,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NISN</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pendaftar</th>
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status Survey</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
 
                         <!-- Dynamic columns for each survey question -->
                         @foreach($surveyQuestionsForAnswers as $question)
@@ -88,6 +89,22 @@
                                 <span class="px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
                                     Belum Dijawab
                                 </span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            @if($data['survey_status'] === 'Sudah Dijawab')
+                                <button
+                                    wire:click="resetSurveyAnswers({{ $data['pendaftar_id'] }})"
+                                    wire:confirm="Apakah Anda yakin ingin mereset semua jawaban survey pendaftar ini?"
+                                    class="inline-flex items-center px-3 py-1.5 bg-red-600 text-white text-xs font-medium rounded-md hover:bg-red-700 transition"
+                                    title="Reset Jawaban Survey">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                    </svg>
+                                    Reset
+                                </button>
+                            @else
+                                <span class="text-gray-400 text-xs italic">-</span>
                             @endif
                         </td>
 
@@ -140,5 +157,72 @@
         <div class="p-6 bg-gray-50 border-t border-gray-100">
             {{ $dataPsikologi->links() }}
         </div>
+    @endif
+
+    <!-- Ringkasan Jawaban Section (Similar to Survey Umum) -->
+    @if(count($surveyQuestions) > 0 && count($surveyAnswersData) > 0)
+    <div class="border-t border-gray-200 bg-gray-50 p-6">
+        <h4 class="text-sm font-bold text-gray-900 mb-4 flex items-center">
+            <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            Ringkasan Jawaban Survey Tes Psikologi
+        </h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            @foreach($surveyQuestions as $question)
+                @php
+                    $questionAnswers = \App\Models\SurveyAnswer::where('survey_question_id', $question->id)
+                        ->get();
+                    $totalAnswers = $questionAnswers->count();
+                @endphp
+
+                @if($totalAnswers > 0)
+                <div class="bg-white rounded-lg border border-gray-200 p-4">
+                    <h5 class="text-sm font-semibold text-gray-800 mb-3">
+                        <span class="px-1.5 py-0.5 text-[10px] font-mono font-bold bg-yellow-100 text-yellow-800 rounded mr-1">Q{{ $question->id }}</span>
+                        {{ $question->pertanyaan }}
+                    </h5>
+
+                    @if($question->tipe_input === 'text' || $question->tipe_input === 'textarea')
+                        <p class="text-xs text-gray-500 italic">{{ $totalAnswers }} jawaban text</p>
+                    @else
+                        <div class="space-y-2">
+                            @foreach($question->options as $option)
+                                @php
+                                    // CRITICAL: Count answers that contain this option's ID (or value/label for backward compatibility)
+                                    $optionCount = $questionAnswers->filter(function($answer) use ($option) {
+                                        $jawaban = $answer->getJawabanArray();
+
+                                        // Check if answer contains:
+                                        // 1. Option ID (integer) - NEW SYSTEM
+                                        // 2. Option ID (string) - CONVERTED STRING IDs
+                                        // 3. Option value (string) - FALLBACK
+                                        // 4. Option label (string) - FALLBACK
+                                        return in_array($option->id, $jawaban)
+                                            || in_array((string)$option->id, $jawaban)
+                                            || in_array($option->value, $jawaban)
+                                            || in_array($option->label, $jawaban);
+                                    })->count();
+                                    $percentage = $totalAnswers > 0 ? round(($optionCount / $totalAnswers) * 100, 1) : 0;
+                                @endphp
+                                @if($optionCount > 0)
+                                <div>
+                                    <div class="flex justify-between items-center mb-1">
+                                        <span class="text-xs text-gray-700">{{ $option->label }}</span>
+                                        <span class="text-xs font-semibold text-gray-900">{{ $optionCount }} ({{ $percentage }}%)</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-indigo-600 h-2 rounded-full" style="width: {{ $percentage }}%"></div>
+                                    </div>
+                                </div>
+                                @endif
+                            @endforeach
+                        </div>
+                    @endif
+                </div>
+                @endif
+            @endforeach
+        </div>
+    </div>
     @endif
 </div>

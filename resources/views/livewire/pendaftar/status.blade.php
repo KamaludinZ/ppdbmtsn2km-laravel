@@ -66,6 +66,30 @@
         </div>
     </div>
 
+    <!-- Catatan Verifikasi -->
+    @if(in_array($pendaftar->status_pendaftaran, ['lengkapi_data', 'perbaiki_data', 'data_ditolak']) && !empty($pendaftar->catatan_verifikasi))
+        <div class="bg-gradient-to-r from-yellow-500 to-orange-600 rounded-lg shadow-lg p-6 mb-6 text-white border-4 border-yellow-400">
+            <div class="flex items-start gap-4">
+                <div class="flex-shrink-0">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-xl font-bold mb-3 flex items-center gap-2">
+                        📝 Catatan dari Panitia
+                    </h3>
+                    <div class="bg-yellow-50 rounded-lg p-4 border-2 border-yellow-400 shadow-md">
+                        <p class="text-gray-800 font-semibold leading-relaxed whitespace-pre-line text-sm">{{ $pendaftar->catatan_verifikasi }}</p>
+                    </div>
+                    <p class="text-yellow-100 text-sm mt-3 font-medium">
+                        💡 Silakan perbaiki data Anda sesuai dengan catatan di atas dan simpan kembali.
+                    </p>
+                </div>
+            </div>
+        </div>
+    @endif
+
     <!-- Detail Verifikasi Dokumen -->
     <div class="bg-white rounded-lg shadow overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200 bg-emerald-600 flex items-center justify-between">

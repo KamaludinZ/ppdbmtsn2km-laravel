@@ -295,6 +295,7 @@
                             <div>
                                 <label for="urutan" class="block text-sm font-medium text-gray-700 mb-2">Urutan</label>
                                 <input type="number" id="urutan" wire:model="urutan" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-emerald-500 focus:border-emerald-500" min="0">
+                                <p class="mt-1 text-xs text-gray-500">💡 Urutan tampilan pertanyaan (angka lebih kecil = tampil lebih dulu)</p>
                                 @error('urutan') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                         </div>
@@ -367,18 +368,24 @@
                         <div>
                             <label for="label" class="block text-sm font-medium text-gray-700 mb-2">Label Opsi <span class="text-red-500">*</span></label>
                             <input type="text" id="label" wire:model="label" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: Sangat Baik">
+                            <p class="mt-1 text-xs text-gray-500">💡 Teks yang ditampilkan ke pengguna (human-readable)</p>
                             @error('label') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label for="value" class="block text-sm font-medium text-gray-700 mb-2">Value Opsi <span class="text-red-500">*</span></label>
-                            <input type="text" id="value" wire:model="value" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: sangat_baik">
+                            <input type="text" id="value" wire:model="value" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" placeholder="Contoh: sangat_baik, 1, 2, 3">
+                            <p class="mt-1 text-xs text-gray-500">
+                                💡 Isi dengan data semantic yang akan disimpan (misal: "1", "2", "3" atau "sangat_baik", "baik").
+                                <span class="font-semibold">Jangan isi dengan ID!</span> VALUE ini yang akan tersimpan di database.
+                            </p>
                             @error('value') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
 
                         <div>
                             <label for="option_urutan" class="block text-sm font-medium text-gray-700 mb-2">Urutan</label>
                             <input type="number" id="option_urutan" wire:model="option_urutan" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-blue-500 focus:border-blue-500" min="0">
+                            <p class="mt-1 text-xs text-gray-500">💡 Urutan tampilan opsi (angka lebih kecil = tampil lebih dulu)</p>
                             @error('option_urutan') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                         </div>
                     </div>

@@ -40,6 +40,30 @@
     <!-- EDIT MODE -->
     <form wire:submit.prevent="saveDataSiswa" class="space-y-6">
 
+        <!-- Validation Error Summary -->
+        @if ($errors->any())
+            <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded-md mb-6" role="alert">
+                <div class="flex items-start">
+                    <svg class="w-5 h-5 text-red-500 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div class="flex-1">
+                        <h3 class="text-sm font-semibold text-red-800 mb-2">
+                            Terdapat {{ $errors->count() }} error yang harus diperbaiki:
+                        </h3>
+                        <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                        <p class="text-xs text-red-600 mt-2 italic">
+                            Silakan scroll ke bawah untuk memperbaiki field yang ditandai merah.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Section 1: Identitas Dasar -->
         <div class="bg-emerald-50 border-2 border-emerald-200 rounded-lg p-6">
             <h4 class="text-md font-semibold text-emerald-900 mb-4 flex items-center">
@@ -78,9 +102,9 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
-                    <input type="text" wire:model="nama_lengkap" pattern="[A-Za-z\s.,'\-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 uppercase" placeholder="NAMA LENGKAP" required>
+                    <input type="text" wire:model="nama_lengkap" pattern="[A-Za-z\s.,'\-]+" oninput="this.value = this.value.replace(/[0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200" placeholder="Nama Lengkap" required>
                     @error('nama_lengkap') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                    <p class="text-xs text-gray-500 mt-1">Isi dengan huruf kapital sesuai akta kelahiran</p>
+                    <p class="text-xs text-gray-500 mt-1">Isi sesuai akta kelahiran / ijazah</p>
                 </div>
 
                 <div>
@@ -373,9 +397,9 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor KIP</label>
-                    <input type="text" wire:model="nomor_kip" maxlength="17" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200" placeholder="Nomor KIP (opsional)">
+                    <input type="text" wire:model="nomor_kip" maxlength="25" oninput="this.value = this.value.replace(/[^A-Za-z0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200" placeholder="Nomor KIP (opsional)">
                     @error('nomor_kip') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
-                    <p class="text-xs text-gray-500 mt-1">Maksimal 17 digit. Jika diisi, field upload KIP akan aktif di menu Upload Dokumen</p>
+                    <p class="text-xs text-gray-500 mt-1">Maksimal 25 karakter (huruf dan angka). Jika diisi, field upload KIP akan aktif di menu Upload Dokumen</p>
                 </div>
             </div>
         </div>

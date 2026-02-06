@@ -1,0 +1,232 @@
+================================================================================
+CHECKLIST UPLOAD: Tes Psikologi Complete Fixes - 6 Februari 2026
+================================================================================
+
+STATUS: ✅ READY FOR MANUAL UPLOAD
+TOTAL FILES: 3 files
+ESTIMATED TIME: 30 menit
+
+================================================================================
+📦 FILES TO UPLOAD (Copy path lokal ini)
+================================================================================
+
+FILE 1 - BACKEND COMPONENT:
+┌────────────────────────────────────────────────────────────────────────────┐
+│ Local:  C:\ppdbmtsn2km-laravel\app\Livewire\Admin\TesPsikologi.php        │
+│ Remote: /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/app/Livewire/Admin/    │
+│ Size:   ~57 KB                                                              │
+│ Action: OVERWRITE existing file                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+FILE 2 - JAWABAN SURVEY VIEW:
+┌────────────────────────────────────────────────────────────────────────────┐
+│ Local:  C:\ppdbmtsn2km-laravel\resources\views\livewire\admin\partials\  │
+│         tes-psikologi-jawaban-survey.blade.php                             │
+│ Remote: /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/resources/views/       │
+│         livewire/admin/partials/                                           │
+│ Size:   ~24 KB                                                              │
+│ Action: OVERWRITE existing file                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+FILE 3 - DATA TAB VIEW:
+┌────────────────────────────────────────────────────────────────────────────┐
+│ Local:  C:\ppdbmtsn2km-laravel\resources\views\livewire\admin\partials\  │
+│         tes-psikologi-data.blade.php                                       │
+│ Remote: /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/resources/views/       │
+│         livewire/admin/partials/                                           │
+│ Size:   ~28 KB                                                              │
+│ Action: OVERWRITE existing file                                            │
+└────────────────────────────────────────────────────────────────────────────┘
+
+================================================================================
+📝 STEP-BY-STEP UPLOAD MANUAL VIA CPANEL
+================================================================================
+
+STEP 1: LOGIN CPANEL
+  [ ] Buka cPanel
+  [ ] Navigate to File Manager
+
+STEP 2: UPLOAD FILE 1 (TesPsikologi.php)
+  [ ] Navigate to: /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/app/Livewire/Admin/
+  [ ] Click "Upload" button
+  [ ] Select: C:\ppdbmtsn2km-laravel\app\Livewire\Admin\TesPsikologi.php
+  [ ] Upload complete → OVERWRITE existing file
+  [ ] Verify: File size ~57 KB
+
+STEP 3: UPLOAD FILE 2 (tes-psikologi-jawaban-survey.blade.php)
+  [ ] Navigate to: /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/resources/views/livewire/admin/partials/
+  [ ] Click "Upload" button
+  [ ] Select: C:\ppdbmtsn2km-laravel\resources\views\livewire\admin\partials\tes-psikologi-jawaban-survey.blade.php
+  [ ] Upload complete → OVERWRITE existing file
+  [ ] Verify: File size ~24 KB
+
+STEP 4: UPLOAD FILE 3 (tes-psikologi-data.blade.php)
+  [ ] Navigate to: /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/resources/views/livewire/admin/partials/
+  [ ] Click "Upload" button
+  [ ] Select: C:\ppdbmtsn2km-laravel\resources\views\livewire\admin\partials\tes-psikologi-data.blade.php
+  [ ] Upload complete → OVERWRITE existing file
+  [ ] Verify: File size ~28 KB
+
+STEP 5: CLEAR CACHE (WAJIB!)
+  [ ] Open Terminal di cPanel (atau SSH)
+  [ ] Run command:
+      cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id
+      php artisan optimize:clear
+      php artisan view:clear
+      php artisan config:clear
+  [ ] Verify output: "cleared successfully" messages
+
+================================================================================
+🧪 TESTING CHECKLIST (15 MENIT)
+================================================================================
+
+TEST 1: MODE EDIT TOGGLE (3 menit)
+  [ ] Login sebagai Admin
+  [ ] Buka: /admin/tes-psikologi?mainTab=jawaban-survey
+  [ ] Check: No edit icons visible (default)
+  [ ] Click "Mode Edit: OFF" button
+  [ ] ✅ Button berubah jadi "Mode Edit: ON" (yellow)
+  [ ] ✅ Edit icons (pencil) muncul
+  [ ] Click button lagi
+  [ ] ✅ Button berubah jadi "Mode Edit: OFF" (white)
+  [ ] ✅ Edit icons hilang
+
+TEST 2: PERSISTENT STATE (3 menit) - CRITICAL!
+  [ ] Enable Mode Edit
+  [ ] Check URL: ada "editMode=1"
+  [ ] Press F5 (refresh page)
+  [ ] ✅ Mode Edit tetap ON
+  [ ] ✅ Button tetap yellow
+  [ ] ✅ Edit icons tetap visible
+  [ ] Disable Mode Edit
+  [ ] Press F5 (refresh page)
+  [ ] ✅ Mode Edit tetap OFF
+  [ ] ✅ Button tetap white
+  [ ] ✅ Edit icons tetap hidden
+
+TEST 3: ID DISPLAY (2 menit)
+  [ ] Enable Mode Edit
+  [ ] Click pencil icon pada jawaban
+  [ ] Modal opens
+  [ ] ✅ "ID Pertanyaan: XX" tampil (gray badge)
+  [ ] ✅ Radio/Select options: "Label (ID: XX)"
+  [ ] ✅ Checkbox: "ID: XX" badge di reference list
+
+TEST 4: KOLOM JALUR - JAWABAN SURVEY TAB (2 menit)
+  [ ] Buka: /admin/tes-psikologi?mainTab=jawaban-survey
+  [ ] ✅ Ada kolom "Jalur" setelah Nama Lengkap
+  [ ] ✅ Ada kolom "Gender" setelah Jalur
+  [ ] ✅ Kolom Jalur menampilkan nama jalur (NOT "-")
+  [ ] ✅ Kolom Gender: Blue badge (L) / Pink badge (P)
+
+TEST 5: KOLOM JALUR - DATA TAB (2 menit)
+  [ ] Buka: /admin/tes-psikologi?mainTab=data
+  [ ] ✅ Ada kolom "Jalur" (setelah Nama Pendaftar)
+  [ ] ✅ Ada kolom "Jenis Kelamin" (setelah Jalur)
+  [ ] ✅ Kolom Jalur menampilkan nama jalur (NOT "-")
+  [ ] ✅ Kolom Gender: Blue/Pink badge
+
+TEST 6: FILTER JALUR (2 menit)
+  [ ] Dropdown "Semua Jalur" → pilih salah satu jalur
+  [ ] ✅ Table filtered sesuai jalur
+  [ ] ✅ Kolom jalur semua row sesuai filter
+  [ ] Pilih "Semua Jalur"
+  [ ] ✅ Table kembali menampilkan semua
+
+TEST 7: FILTER GENDER (1 menit)
+  [ ] Dropdown "Semua Gender" → pilih "Laki-laki"
+  [ ] ✅ Table filtered hanya laki-laki
+  [ ] ✅ Semua badge blue "Laki-laki"
+  [ ] Pilih "Perempuan"
+  [ ] ✅ Table filtered hanya perempuan
+  [ ] ✅ Semua badge pink "Perempuan"
+
+TEST 8: CHECKBOX MULTIPLE CHOICE UI (3 menit) - NEW!
+  [ ] Enable Mode Edit
+  [ ] Cari jawaban untuk pertanyaan checkbox type
+  [ ] Click edit icon (pencil)
+  [ ] ✅ Modal shows checkbox list (NOT text input)
+  [ ] ✅ Each option displayed as checkbox dengan label dan ID
+  [ ] ✅ Previously selected items ter-highlight (indigo background)
+  [ ] Click/unclick beberapa checkbox
+  [ ] ✅ Visual feedback works (highlight on/off)
+  [ ] Uncheck semua → Click "Simpan"
+  [ ] ✅ Validation error: "Pilih minimal 1 jawaban"
+  [ ] Check beberapa opsi → Click "Simpan"
+  [ ] ✅ Success, modal close, data updated
+  [ ] Open modal lagi
+  [ ] ✅ Newly selected checkboxes ter-highlight correctly
+
+================================================================================
+✅ FINAL VERIFICATION
+================================================================================
+
+  [ ] All 3 files uploaded successfully
+  [ ] All caches cleared
+  [ ] No errors in browser console (F12)
+  [ ] No errors in Laravel logs
+  [ ] Mode Edit toggle working
+  [ ] Mode Edit persists on refresh
+  [ ] IDs visible in modal
+  [ ] Jalur column displaying correctly (NOT "-")
+  [ ] Gender column displaying with badges
+  [ ] Filters working (Jalur + Gender)
+  [ ] All tests passed ✓
+
+================================================================================
+🎯 WHAT'S FIXED
+================================================================================
+
+  ✅ Toggle Edit Mode dengan persistent state (URL query string)
+  ✅ Edit icons conditional (hanya muncul saat mode ON)
+  ✅ ID Pertanyaan dan ID Opsi tampil di modal
+  ✅ Kolom Jalur fix (nama_jalur → nama)
+  ✅ Kolom Jalur dan Gender added (jawaban-survey tab)
+  ✅ Kolom Jalur dan Gender added (data tab)
+  ✅ Filter Jalur working
+  ✅ Filter Gender working
+  ✅ Checkbox UI improved (text input → actual checkboxes)
+  ✅ Audit logging untuk edit mode toggles
+
+================================================================================
+🐛 TROUBLESHOOTING
+================================================================================
+
+ISSUE: Jalur masih tampil "-"
+  → Clear cache: php artisan view:clear && php artisan optimize:clear
+  → Hard refresh browser: Ctrl+F5
+  → Check TesPsikologi.php uploaded correctly
+
+ISSUE: Mode Edit tidak persist setelah refresh
+  → Check URL harus ada "editMode=1" saat ON
+  → Clear browser cache: Ctrl+Shift+Del
+  → Hard refresh: Ctrl+F5
+
+ISSUE: Edit icons tidak hilang saat mode OFF
+  → Clear view cache: php artisan view:clear
+  → Hard refresh: Ctrl+F5
+  → Check blade file line 236 dan 252
+
+ISSUE: IDs tidak muncul di modal
+  → Clear view cache: php artisan view:clear
+  → Hard refresh: Ctrl+F5
+
+================================================================================
+📞 SUPPORT
+================================================================================
+
+Dokumentasi Lengkap:
+  - LENGKAP_UPLOAD_TES_PSIKOLOGI_6_FEB_2026.md (Full technical docs)
+  - COMPLETE_EDIT_MODE_FEATURE_6_FEB_2026.md (Edit mode feature)
+  - QUICK_GUIDE_EDIT_MODE.md (Quick reference)
+
+Jika ada masalah:
+  1. Check storage/logs/laravel.log
+  2. Check browser console (F12)
+  3. Verify all caches cleared
+  4. Verify all files uploaded (check file sizes)
+
+================================================================================
+STATUS: ✅ READY FOR UPLOAD
+CREATED: 6 Februari 2026, 23:55 WIB
+================================================================================

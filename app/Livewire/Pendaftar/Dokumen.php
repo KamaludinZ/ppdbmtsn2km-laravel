@@ -124,71 +124,89 @@ class Dokumen extends Component
         }
 
         // Validasi: Semua dokumen harus PDF dengan max 2MB
+        $this->validate([
+            $fileProperty => 'required|file|mimes:pdf|max:2048', // 2MB Max, PDF only
+        ], [
+            $fileProperty . '.required' => 'File wajib diupload.',
+            $fileProperty . '.file' => 'File yang diupload tidak valid.',
+            $fileProperty . '.mimes' => 'File harus berformat PDF.',
+            $fileProperty . '.max' => 'Ukuran file maksimal 2 MB.',
+        ]);
+
         try {
-            $this->validate([
-                $fileProperty => 'required|file|mimes:pdf|max:2048', // 2MB Max, PDF only
-            ], [
-                $fileProperty . '.required' => 'File wajib diupload.',
-                $fileProperty . '.file' => 'File yang diupload tidak valid.',
-                $fileProperty . '.mimes' => 'File harus berformat PDF.',
-                $fileProperty . '.max' => 'Ukuran file maksimal 2 MB.',
+            // Check if document already exists - CHECK FIRST!
+            $existingDokumen = DokumenModel::where('pendaftar_id', $this->pendaftar->id)
+                ->where('jenis_dokumen', $type)
+                ->first();
+
+            // Delete old file from private storage BEFORE uploading new file
+            if ($existingDokumen && Storage::disk('private')->exists($existingDokumen->path_file)) {
+                Storage::disk('private')->delete($existingDokumen->path_file);
+            }
+
+            // Generate file name using FileNamingService
+            $extension = FileNamingService::getFileExtension($file);
+            $jenisClean = FileNamingService::cleanJenisDokumen($type);
+
+            $filename = FileNamingService::generateFileName(
+                $jenisClean,
+                $this->pendaftar->nomor_pendaftaran,
+                $extension,
+                $this->pendaftar->nama_lengkap
+            );
+
+            // Store NEW file to private storage (dengan subdirektori pendaftar_id untuk konsistensi)
+            $path = $file->storeAs('dokumen/' . $this->pendaftar->id, $filename, 'private');
+
+            // Get file info
+            $mimeType = $file->getMimeType();
+            $size = $file->getSize();
+
+            if ($existingDokumen) {
+                // Update existing document record
+                $existingDokumen->update([
+                    'nama_file' => $filename,
+                    'path_file' => $path,
+                    'mime_type' => $mimeType,
+                    'ukuran_file' => $size,
+                    'tanggal_upload' => now(),
+                ]);
+            } else {
+                // Create new document
+                DokumenModel::create([
+                    'pendaftar_id' => $this->pendaftar->id,
+                    'jenis_dokumen' => $type,
+                    'nama_file' => $filename,
+                    'path_file' => $path,
+                    'mime_type' => $mimeType,
+                    'ukuran_file' => $size,
+                    'tanggal_upload' => now(),
+                ]);
+            }
+
+            // Special handling for Rapor: Sync to Pendaftar table for legacy support
+            if ($type === 'rapor') {
+                $this->pendaftar->update(['file_rapor' => $path]);
+            }
+
+            // Reset file input
+            $this->$fileProperty = null;
+
+            // Reload data with fresh data
+            $this->loadData();
+
+            // Force refresh pendaftar data
+            $this->pendaftar = $this->pendaftar->fresh();
+
+            $documentLabel = $this->documentLabels[$type]['label'] ?? 'Dokumen';
+            $this->dispatch('statusUpdated', ['type' => 'success', 'message' => $documentLabel . ' berhasil diupload!']);
+
+        } catch (\Exception $e) {
+            $this->dispatch('statusUpdated', [
+                'type' => 'error',
+                'message' => 'Gagal mengupload dokumen: ' . $e->getMessage()
             ]);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            // Re-throw validation errors so they display properly
-            throw $e;
         }
-
-        $size = $file->getSize();
-        $mime = $file->getMimeType();
-        $extension = FileNamingService::getFileExtension($file);
-
-        // Clean jenis dokumen untuk nama file
-        $jenisClean = FileNamingService::cleanJenisDokumen($type);
-
-        // Generate nama file sistematis: {jenis}-{nomor_pendaftaran}-{nama_pendaftar}-{timestamp}.{ext}
-        // Contoh: rapor-PPDB2024001-Ahmad_Fulan-20260131_143052.pdf
-        $customFileName = FileNamingService::generateFileName(
-            $jenisClean,
-            $this->pendaftar->nomor_pendaftaran,
-            $extension,
-            $this->pendaftar->nama_lengkap
-        );
-
-        // Simpan file PDF ke private storage dengan nama custom (NOT public untuk security)
-        $path = $file->storeAs(
-            'dokumen/' . $this->pendaftar->id,
-            $customFileName,
-            'private'
-        );
-
-        // Save to Dokumen table dengan nama file yang deskriptif
-        DokumenModel::updateOrCreate(
-            [
-                'pendaftar_id' => $this->pendaftar->id,
-                'jenis_dokumen' => $type,
-            ],
-            [
-                'nama_file' => $customFileName,
-                'path_file' => $path,
-                'mime_type' => $mime,
-                'ukuran_file' => $size,
-                'tanggal_upload' => now(),
-            ]
-        );
-
-        // Special handling for Rapor: Sync to Pendaftar table for legacy support
-        if ($type === 'rapor') {
-            $this->pendaftar->update(['file_rapor' => $path]);
-        }
-
-        // Reset file input
-        $this->$fileProperty = null;
-
-        // Reload data
-        $this->loadData();
-
-        $documentLabel = $this->documentLabels[$type]['label'] ?? 'Dokumen';
-        $this->dispatch('statusUpdated', ['type' => 'success', 'message' => $documentLabel . ' berhasil diupload!']);
     }
 
     // Keep the manual upload method for backward compatibility

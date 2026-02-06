@@ -48,9 +48,9 @@ class Kelulusan extends Component
             // Apply filters
             $query->when($this->search, function($q) {
                 $q->where(function($subQuery) {
-                    $subQuery->where('nama_lengkap', 'like', '%' . $this->search . '%')
-                        ->orWhere('nisn', 'like', '%' . $this->search . '%')
-                        ->orWhere('nomor_pendaftaran', 'like', '%' . $this->search . '%');
+                    $subQuery->where('nama_lengkap', 'ilike', '%' . $this->search . '%')
+                        ->orWhere('nisn', 'ilike', '%' . $this->search . '%')
+                        ->orWhere('nomor_pendaftaran', 'ilike', '%' . $this->search . '%');
                 });
             })
             ->when($this->filterJalur, function($q) {
@@ -64,9 +64,9 @@ class Kelulusan extends Component
             $statsData = Pendaftar::selectRaw('status_pendaftaran, COUNT(*) as count')
                 ->when($this->search, function($q) {
                     $q->where(function($subQuery) {
-                        $subQuery->where('nama_lengkap', 'like', '%' . $this->search . '%')
-                            ->orWhere('nisn', 'like', '%' . $this->search . '%')
-                            ->orWhere('nomor_pendaftaran', 'like', '%' . $this->search . '%');
+                        $subQuery->where('nama_lengkap', 'ilike', '%' . $this->search . '%')
+                            ->orWhere('nisn', 'ilike', '%' . $this->search . '%')
+                            ->orWhere('nomor_pendaftaran', 'ilike', '%' . $this->search . '%');
                     });
                 })
                 ->when($this->filterJalur, function($q) {
@@ -154,9 +154,9 @@ class Kelulusan extends Component
 
             if ($this->search) {
                 $query->where(function($q) {
-                    $q->where('nama_lengkap', 'like', '%' . $this->search . '%')
-                      ->orWhere('nisn', 'like', '%' . $this->search . '%')
-                      ->orWhere('nomor_pendaftaran', 'like', '%' . $this->search . '%');
+                    $q->where('nama_lengkap', 'ilike', '%' . $this->search . '%')
+                      ->orWhere('nisn', 'ilike', '%' . $this->search . '%')
+                      ->orWhere('nomor_pendaftaran', 'ilike', '%' . $this->search . '%');
                 });
             }
 

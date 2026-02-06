@@ -27,6 +27,18 @@ class KartuTesSeleksi extends Component
 
         $this->pendaftar = $user->pendaftar;
 
+        // CHECK ACCESS CONDITIONS:
+        // 1. Status pendaftaran must be 'data_disetujui'
+        // 2. Pembayaran tes psikologi must be APPROVED (status_verifikasi = 'disetujui')
+        $paymentApproved = $this->pendaftar->tesPsikologiPendaftar
+            && $this->pendaftar->tesPsikologiPendaftar->bukti_transfer
+            && $this->pendaftar->tesPsikologiPendaftar->status_verifikasi === 'disetujui';
+
+        if ($this->pendaftar->status_pendaftaran !== 'data_disetujui' || !$paymentApproved) {
+            session()->flash('error', 'Kartu Tes Seleksi hanya dapat diakses setelah data Anda disetujui dan pembayaran tes psikologi disetujui.');
+            return redirect()->to('/pendaftar/dashboard');
+        }
+
         // Load app acronym
         $appName = Setting::get('app_name', 'PPDB');
         $words = explode(' ', $appName);

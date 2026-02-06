@@ -6,6 +6,7 @@ use App\Models\JalurPendaftaran;
 use App\Models\Pendaftar;
 use App\Models\User;
 use App\Models\Setting;
+use App\Models\RiwayatPesan;
 use App\Services\EmailService;
 use App\Services\WhatsAppGatewayService;
 use App\Services\FileNamingService;
@@ -327,7 +328,26 @@ class RegisterFixed extends Component
                     'file_rapor' => 'required|file|mimes:pdf|max:2048',
                 ];
 
-                $this->validate($rules);
+                $messages = [
+                    'nilai_b_indo_5_1.required' => 'Nilai Bahasa Indonesia Kelas 5 Semester 1 wajib diisi',
+                    'nilai_matematika_5_1.required' => 'Nilai Matematika Kelas 5 Semester 1 wajib diisi',
+                    'nilai_ipa_5_1.required' => 'Nilai IPA Kelas 5 Semester 1 wajib diisi',
+                    'nilai_b_indo_5_2.required' => 'Nilai Bahasa Indonesia Kelas 5 Semester 2 wajib diisi',
+                    'nilai_matematika_5_2.required' => 'Nilai Matematika Kelas 5 Semester 2 wajib diisi',
+                    'nilai_ipa_5_2.required' => 'Nilai IPA Kelas 5 Semester 2 wajib diisi',
+                    'nilai_b_indo_6_1.required' => 'Nilai Bahasa Indonesia Kelas 6 Semester 1 wajib diisi',
+                    'nilai_matematika_6_1.required' => 'Nilai Matematika Kelas 6 Semester 1 wajib diisi',
+                    'nilai_ipa_6_1.required' => 'Nilai IPA Kelas 6 Semester 1 wajib diisi',
+                    '*.numeric' => 'Nilai harus berupa angka',
+                    '*.min' => 'Nilai minimal adalah 0',
+                    '*.max' => 'Nilai maksimal adalah 100',
+                    'file_rapor.required' => 'File scan rapor wajib diupload',
+                    'file_rapor.file' => 'File yang diupload tidak valid',
+                    'file_rapor.mimes' => 'File rapor harus berformat PDF',
+                    'file_rapor.max' => 'Ukuran file rapor maksimal 2 MB. File Anda melebihi batas ukuran. Silakan kompres file PDF terlebih dahulu.',
+                ];
+
+                $this->validate($rules, $messages);
 
                 // Calculate and validate average
                 $this->calculateAverage();
@@ -402,10 +422,11 @@ class RegisterFixed extends Component
 
         if ($this->rata_rata_nilai >= $this->selectedJalur->nilai_minimum) {
             $this->isValid = true;
-            $this->validationMessage = "Nilai rata-rata Anda ({$this->rata_rata_nilai}) memenuhi syarat minimum ({$this->selectedJalur->nilai_minimum})";
+            $this->validationMessage = "✓ Nilai rata-rata Anda ({$this->rata_rata_nilai}) memenuhi syarat minimum ({$this->selectedJalur->nilai_minimum}) untuk jalur {$this->selectedJalur->nama}";
         } else {
             $this->isValid = false;
-            $this->validationMessage = "Nilai rata-rata Anda ({$this->rata_rata_nilai}) belum memenuhi syarat minimum ({$this->selectedJalur->nilai_minimum})";
+            $selisih = round($this->selectedJalur->nilai_minimum - $this->rata_rata_nilai, 2);
+            $this->validationMessage = "✗ Nilai rata-rata Anda ({$this->rata_rata_nilai}) belum memenuhi syarat minimum ({$this->selectedJalur->nilai_minimum}) untuk jalur {$this->selectedJalur->nama}. Anda masih memerlukan peningkatan {$selisih} poin untuk memenuhi persyaratan.";
         }
     }
 
@@ -747,7 +768,38 @@ class RegisterFixed extends Component
             $rules['npsn_sekolah_asal'] = 'required|digits:8';
         }
 
-        $this->validate($rules);
+        $messages = [
+            'nisn.required' => 'NISN wajib diisi',
+            'nisn.digits' => 'NISN harus terdiri dari 10 digit angka',
+            'nama_lengkap.required' => 'Nama lengkap wajib diisi',
+            'nama_lengkap.max' => 'Nama lengkap maksimal 255 karakter',
+            'tempat_lahir.required' => 'Tempat lahir wajib diisi',
+            'tempat_lahir.max' => 'Tempat lahir maksimal 255 karakter',
+            'tanggal_lahir.required' => 'Tanggal lahir wajib diisi',
+            'tanggal_lahir.date' => 'Format tanggal lahir tidak valid',
+            'tanggal_lahir.before' => 'Tanggal lahir harus sebelum hari ini',
+            'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih',
+            'jenis_kelamin.in' => 'Jenis kelamin tidak valid',
+            'agama.required' => 'Agama wajib dipilih',
+            'alamat.required' => 'Alamat lengkap wajib diisi',
+            'telepon_ortu.required' => 'Nomor telepon/WhatsApp orang tua wajib diisi',
+            'telepon_ortu.max' => 'Nomor telepon maksimal 15 karakter',
+            'email.required' => 'Email wajib diisi',
+            'email.email' => 'Format email tidak valid',
+            'password.required' => 'Password wajib diisi',
+            'password.min' => 'Password minimal 8 karakter',
+            'password.confirmed' => 'Konfirmasi password tidak cocok',
+            'jenis_sekolah_asal.required' => 'Jenis sekolah asal wajib dipilih',
+            'jenis_sekolah_asal.in' => 'Jenis sekolah tidak valid',
+            'asal_sekolah.required' => 'Nama sekolah asal wajib diisi',
+            'asal_sekolah.max' => 'Nama sekolah maksimal 255 karakter',
+            'nsm_sekolah_asal.required' => 'NSM wajib diisi untuk Madrasah',
+            'nsm_sekolah_asal.digits' => 'NSM harus terdiri dari 12 digit angka',
+            'npsn_sekolah_asal.required' => 'NPSN wajib diisi untuk Sekolah Umum',
+            'npsn_sekolah_asal.digits' => 'NPSN harus terdiri dari 8 digit angka',
+        ];
+
+        $this->validate($rules, $messages);
         $this->showConfirmationModal = true;
     }
 
@@ -913,8 +965,26 @@ class RegisterFixed extends Component
             $emailSubject = str_replace(array_keys($replacements), array_values($replacements), $emailSubject);
             $emailBody = str_replace(array_keys($replacements), array_values($replacements), $emailBody);
 
+            // Create log record for email
+            $emailRiwayat = RiwayatPesan::create([
+                'pendaftar_id' => $pendaftar->id,
+                'user_id' => null,
+                'jenis_pesan' => 'email',
+                'judul' => $emailSubject,
+                'isi_pesan' => $emailBody,
+                'penerima' => $pendaftar->email,
+                'status' => 'pending',
+            ]);
+
             $emailService = new EmailService();
-            $emailService->sendEmail($pendaftar->email, $emailSubject, $emailBody);
+            $emailResult = $emailService->sendEmail($pendaftar->email, $emailSubject, $emailBody);
+
+            // Update email log status
+            if ($emailResult['success'] ?? false) {
+                $emailRiwayat->update(['status' => 'terkirim', 'sent_at' => now()]);
+            } else {
+                $emailRiwayat->update(['status' => 'gagal', 'error_message' => $emailResult['message'] ?? 'Unknown error']);
+            }
 
             // WhatsApp notification
             $waBody = Cache::remember('wa_pendaftaran_body', 3600, function () {
@@ -923,8 +993,26 @@ class RegisterFixed extends Component
 
             $waBody = str_replace(array_keys($replacements), array_values($replacements), $waBody);
 
+            // Create log record for WhatsApp
+            $whatsappRiwayat = RiwayatPesan::create([
+                'pendaftar_id' => $pendaftar->id,
+                'user_id' => null,
+                'jenis_pesan' => 'whatsapp',
+                'judul' => null,
+                'isi_pesan' => $waBody,
+                'penerima' => $pendaftar->telepon,
+                'status' => 'pending',
+            ]);
+
             $whatsappService = new WhatsAppGatewayService();
-            $whatsappService->sendMessage($pendaftar->telepon, $waBody);
+            $whatsappResult = $whatsappService->sendMessage($pendaftar->telepon, $waBody);
+
+            // Update WhatsApp log status
+            if ($whatsappResult['success'] ?? false) {
+                $whatsappRiwayat->update(['status' => 'terkirim', 'sent_at' => now()]);
+            } else {
+                $whatsappRiwayat->update(['status' => 'gagal', 'error_message' => $whatsappResult['message'] ?? 'Unknown error']);
+            }
 
         } catch (\Exception $e) {
             Log::error('Failed to send notification', [

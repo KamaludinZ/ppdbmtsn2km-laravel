@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Livewire\Component;
 use Livewire\WithFileUploads;
+use Livewire\Attributes\Computed;
 use Barryvdh\DomPDF\Facade\Pdf;
 
 class TesPsikologi extends Component
@@ -30,6 +31,7 @@ class TesPsikologi extends Component
     public $selectedBank;
     public $selectedOpsi;
     public $waktuTransfer;
+    public $namaPengirim;
     public $buktiTransfer;
     public $uploadProgress = false;
 
@@ -37,6 +39,79 @@ class TesPsikologi extends Component
     public $surveyQuestions;
     public $surveyAnswers = [];
     public $surveyCompleted = false;
+    public $currentQuestionIndex = 0; // For wizard-style survey
+
+    /**
+     * Check apakah pertanyaan current sudah dijawab
+     * Computed property dengan #[Computed] attribute untuk Livewire 3
+     */
+    #[Computed]
+    public function isCurrentQuestionAnswered()
+    {
+        if (!$this->surveyQuestions || $this->currentQuestionIndex >= $this->surveyQuestions->count()) {
+            return false;
+        }
+
+        $currentQuestion = $this->surveyQuestions[$this->currentQuestionIndex];
+
+        // Jika tidak wajib, selalu return true (boleh skip)
+        if (!$currentQuestion->wajib_diisi) {
+            return true;
+        }
+
+        // Check apakah ada jawaban
+        $answer = $this->surveyAnswers[$currentQuestion->id] ?? null;
+
+        // Empty check untuk berbagai tipe jawaban
+        if (empty($answer)) {
+            return false;
+        }
+
+        // Array check (untuk checkbox)
+        if (is_array($answer) && count($answer) === 0) {
+            return false;
+        }
+
+        // String check (untuk text/textarea/select yang value kosong)
+        if (is_string($answer) && trim($answer) === '') {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Check apakah semua pertanyaan wajib sudah dijawab
+     * Computed property dengan #[Computed] attribute untuk Livewire 3
+     */
+    #[Computed]
+    public function areAllRequiredQuestionsAnswered()
+    {
+        if (!$this->surveyQuestions) {
+            return false;
+        }
+
+        foreach ($this->surveyQuestions as $question) {
+            if ($question->wajib_diisi) {
+                $answer = $this->surveyAnswers[$question->id] ?? null;
+
+                // Empty checks
+                if (empty($answer)) {
+                    return false;
+                }
+
+                if (is_array($answer) && count($answer) === 0) {
+                    return false;
+                }
+
+                if (is_string($answer) && trim($answer) === '') {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
 
     public function mount()
     {
@@ -70,6 +145,7 @@ class TesPsikologi extends Component
         $this->selectedBank = $this->tesPsikologiData->bank_id;
         $this->selectedOpsi = $this->tesPsikologiData->opsi_id;
         $this->waktuTransfer = $this->tesPsikologiData->waktu_transfer ? $this->tesPsikologiData->waktu_transfer->format('Y-m-d\TH:i') : null;
+        $this->namaPengirim = $this->tesPsikologiData->nama_pengirim;
 
         // Load survey if active
         if ($this->setting->survey_aktif) {
@@ -82,8 +158,29 @@ class TesPsikologi extends Component
                     $q->tesPsikologi();
                 })
                 ->get();
+
             foreach ($existingAnswers as $answer) {
-                $this->surveyAnswers[$answer->survey_question_id] = $answer->jawaban;
+                $jawaban = $answer->jawaban;
+
+                // CRITICAL FIX: Decode JSON string for checkbox arrays
+                // Database stores checkbox as JSON string "[10,12]"
+                // But Livewire checkbox needs PHP array [10, 12]
+                if (is_string($jawaban) && (str_starts_with($jawaban, '[') || str_starts_with($jawaban, '{'))) {
+                    $decoded = json_decode($jawaban, true);
+                    if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                        $jawaban = $decoded;
+                    }
+                }
+
+                $this->surveyAnswers[$answer->survey_question_id] = $jawaban;
+            }
+
+            // CRITICAL FIX: Initialize checkbox questions dengan array kosong jika belum ada jawaban
+            // Ini penting agar Livewire wire:model tahu bahwa ini adalah multi-select checkbox
+            foreach ($this->surveyQuestions as $question) {
+                if ($question->tipe_input === 'checkbox' && !isset($this->surveyAnswers[$question->id])) {
+                    $this->surveyAnswers[$question->id] = [];
+                }
             }
 
             // Check if survey is completed
@@ -121,6 +218,98 @@ class TesPsikologi extends Component
         $this->surveyCompleted = true;
     }
 
+    /**
+     * Move to next question
+     */
+    public function nextQuestion()
+    {
+        $currentQuestion = $this->surveyQuestions[$this->currentQuestionIndex];
+
+        // Validate current question if required
+        if ($currentQuestion->wajib_diisi) {
+            $answer = $this->surveyAnswers[$currentQuestion->id] ?? null;
+
+            if (empty($answer) || (is_array($answer) && count($answer) === 0)) {
+                session()->flash('error', 'Pertanyaan ini wajib diisi');
+                return;
+            }
+        }
+
+        // Save current answer immediately
+        $answer = $this->surveyAnswers[$currentQuestion->id] ?? null;
+        if (!empty($answer)) {
+            \Log::info("nextQuestion: Q{$currentQuestion->id} = " . json_encode($answer));
+
+            // CRITICAL FIX: Different storage format for different input types
+            if (in_array($currentQuestion->tipe_input, ['radio', 'select', 'text', 'textarea'])) {
+                // Single value - store as-is (NOT as array)
+                $answerValue = is_array($answer) ? ($answer[0] ?? null) : $answer;
+                \Log::info("nextQuestion: Q{$currentQuestion->id} single value = {$answerValue}");
+            } else {
+                // Checkbox - store as array
+                $answerValue = is_array($answer) ? $answer : [$answer];
+
+                // CRITICAL FIX: Filter out boolean values dari checkbox array
+                // Livewire kadang inject boolean true ke array checkbox
+                $answerValue = array_filter($answerValue, function($val) {
+                    return !is_bool($val) && $val !== '' && $val !== null;
+                });
+
+                // Re-index array (remove gaps dari filter)
+                $answerValue = array_values($answerValue);
+                \Log::info("nextQuestion: Q{$currentQuestion->id} array value = " . json_encode($answerValue));
+            }
+
+            // Only save if we have valid data
+            if (!empty($answerValue) && $answerValue !== null) {
+                \Log::info("nextQuestion: Saving Q{$currentQuestion->id} to DB");
+
+                // CRITICAL FIX: JSON encode arrays (checkbox) before saving to TEXT column
+                // - Checkbox answers are arrays → need JSON encoding
+                // - Radio/select/text answers are strings → save as-is
+                $jawabanToSave = is_array($answerValue) ? json_encode($answerValue) : $answerValue;
+
+                SurveyAnswer::updateOrCreate(
+                    [
+                        'pendaftar_id' => $this->pendaftar->id,
+                        'survey_question_id' => $currentQuestion->id
+                    ],
+                    [
+                        'jawaban' => $jawabanToSave
+                    ]
+                );
+                \Log::info("nextQuestion: Q{$currentQuestion->id} ✓ Saved");
+            }
+        }
+
+        // Move to next question
+        if ($this->currentQuestionIndex < count($this->surveyQuestions) - 1) {
+            $this->currentQuestionIndex++;
+        }
+
+        // Clear flash messages
+        session()->forget('error');
+    }
+
+    /**
+     * Move to previous question
+     */
+    public function previousQuestion()
+    {
+        if ($this->currentQuestionIndex > 0) {
+            $this->currentQuestionIndex--;
+        }
+
+        // Clear flash messages
+        session()->forget('error');
+    }
+
+    /**
+     * Complete survey - called on last question
+     *
+     * CRITICAL FIX 7 FEB 2026: SAVE CURRENT (LAST) QUESTION ONLY
+     * Trust nextQuestion() for all previous saves - prevents data corruption
+     */
     public function simpanSurvey()
     {
         if (!$this->setting->survey_aktif) {
@@ -128,37 +317,86 @@ class TesPsikologi extends Component
             return;
         }
 
-        // Validate required questions
+        // Validate all required questions are answered
+        $validationRules = [];
+        $validationMessages = [];
+
         foreach ($this->surveyQuestions as $question) {
             if ($question->wajib_diisi) {
-                $answer = $this->surveyAnswers[$question->id] ?? null;
+                $validationRules["surveyAnswers.{$question->id}"] = 'required';
+                $validationMessages["surveyAnswers.{$question->id}.required"] = "Pertanyaan '{$question->pertanyaan}' wajib diisi.";
+            }
+        }
 
-                if (empty($answer) || (is_array($answer) && count($answer) === 0)) {
-                    session()->flash('error', 'Harap lengkapi semua pertanyaan wajib');
-                    return;
-                }
+        // Validate if there are required questions
+        if (!empty($validationRules)) {
+            try {
+                $this->validate($validationRules, $validationMessages);
+            } catch (\Illuminate\Validation\ValidationException $e) {
+                session()->flash('error', 'Harap lengkapi semua pertanyaan wajib sebelum menyelesaikan survey');
+                return;
             }
         }
 
         try {
-            // Save each answer
-            foreach ($this->surveyAnswers as $questionId => $answer) {
-                if (!empty($answer)) {
-                    // Convert array to JSON for checkbox answers
+            \Log::info('=== SIMPAN SURVEY (FINAL - CURRENT QUESTION ONLY) START ===');
+            \Log::info('Pendaftar ID: ' . $this->pendaftar->id);
+            \Log::info('Current Question Index: ' . $this->currentQuestionIndex);
+
+            // CRITICAL FIX: Save current question using EXACT SAME logic as nextQuestion()
+            // This ensures 100% consistent behavior
+            $currentQuestion = $this->surveyQuestions[$this->currentQuestionIndex];
+
+            // Save current answer immediately (EXACT COPY from nextQuestion)
+            $answer = $this->surveyAnswers[$currentQuestion->id] ?? null;
+            if (!empty($answer)) {
+                \Log::info("simpanSurvey: Q{$currentQuestion->id} = " . json_encode($answer));
+
+                // CRITICAL FIX: Different storage format for different input types
+                if (in_array($currentQuestion->tipe_input, ['radio', 'select', 'text', 'textarea'])) {
+                    // Single value - store as-is (NOT as array)
+                    $answerValue = is_array($answer) ? ($answer[0] ?? null) : $answer;
+                    \Log::info("simpanSurvey: Q{$currentQuestion->id} single value = {$answerValue}");
+                } else {
+                    // Checkbox - store as array
                     $answerValue = is_array($answer) ? $answer : [$answer];
+
+                    // CRITICAL FIX: Filter out boolean values dari checkbox array
+                    // Livewire kadang inject boolean true ke array checkbox
+                    $answerValue = array_filter($answerValue, function($val) {
+                        return !is_bool($val) && $val !== '' && $val !== null;
+                    });
+
+                    // Re-index array (remove gaps dari filter)
+                    $answerValue = array_values($answerValue);
+                    \Log::info("simpanSurvey: Q{$currentQuestion->id} array value = " . json_encode($answerValue));
+                }
+
+                // Only save if we have valid data
+                if (!empty($answerValue) && $answerValue !== null) {
+                    \Log::info("simpanSurvey: Saving Q{$currentQuestion->id} to DB");
+
+                    // CRITICAL FIX: JSON encode arrays (checkbox) before saving to TEXT column
+                    // - Checkbox answers are arrays → need JSON encoding
+                    // - Radio/select/text answers are strings → save as-is
+                    $jawabanToSave = is_array($answerValue) ? json_encode($answerValue) : $answerValue;
 
                     SurveyAnswer::updateOrCreate(
                         [
                             'pendaftar_id' => $this->pendaftar->id,
-                            'survey_question_id' => $questionId
+                            'survey_question_id' => $currentQuestion->id
                         ],
                         [
-                            'jawaban' => $answerValue
+                            'jawaban' => $jawabanToSave
                         ]
                     );
+                    \Log::info("simpanSurvey: Q{$currentQuestion->id} ✓ Saved");
                 }
             }
 
+            \Log::info('=== SIMPAN SURVEY (FINAL) END ===');
+
+            // Mark survey as complete
             $this->checkSurveyCompletion();
 
             // Refresh component to update UI
@@ -166,6 +404,7 @@ class TesPsikologi extends Component
 
             session()->flash('message', 'Survey berhasil disimpan. Anda sekarang dapat melanjutkan ke upload bukti transfer.');
         } catch (\Exception $e) {
+            \Log::error('simpanSurvey ERROR: ' . $e->getMessage());
             session()->flash('error', 'Gagal menyimpan survey: ' . $e->getMessage());
         }
     }
@@ -185,12 +424,16 @@ class TesPsikologi extends Component
             $this->validate([
                 'selectedOpsi' => 'required|exists:tes_psikologi_opsi,id',
                 'waktuTransfer' => 'required|date',
+                'namaPengirim' => 'required|string|max:255',
                 'selectedBank' => 'required|exists:tes_psikologi_bank,id',
                 'buktiTransfer' => 'required|image|max:2048'
             ], [
                 'selectedOpsi.required' => 'Pilih biaya tes psikologi terlebih dahulu',
                 'waktuTransfer.required' => 'Waktu transfer harus diisi',
                 'waktuTransfer.date' => 'Format waktu transfer tidak valid',
+                'namaPengirim.required' => 'Nama pengirim harus diisi',
+                'namaPengirim.string' => 'Nama pengirim harus berupa teks',
+                'namaPengirim.max' => 'Nama pengirim maksimal 255 karakter',
                 'selectedBank.required' => 'Pilih bank terlebih dahulu',
                 'buktiTransfer.required' => 'Upload bukti transfer terlebih dahulu',
                 'buktiTransfer.image' => 'File harus berupa gambar',
@@ -230,6 +473,7 @@ class TesPsikologi extends Component
             $this->tesPsikologiData->update([
                 'opsi_id' => $this->selectedOpsi,
                 'waktu_transfer' => $this->waktuTransfer,
+                'nama_pengirim' => $this->namaPengirim,
                 'bank_id' => $this->selectedBank,
                 'bukti_transfer' => $path,
                 'tanggal_upload' => now(),
@@ -271,6 +515,7 @@ class TesPsikologi extends Component
         $this->tesPsikologiData->update([
             'opsi_id' => null,
             'waktu_transfer' => null,
+            'nama_pengirim' => null,
             'bank_id' => null,
             'bukti_transfer' => null,
             'tanggal_upload' => null,
@@ -285,6 +530,7 @@ class TesPsikologi extends Component
         $this->selectedBank = null;
         $this->selectedOpsi = null;
         $this->waktuTransfer = null;
+        $this->namaPengirim = null;
     }
 
     public function downloadInvoice()

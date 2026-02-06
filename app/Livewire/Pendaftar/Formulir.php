@@ -38,7 +38,7 @@ class Formulir extends Component
 
     // Mode edit per section
     public $editModeSiswa = false;
-    public $editModeOrangTua = false;
+    public $editModeOrangtua = false;  // Changed from OrangTua to Orangtua (lowercase t)
     public $editModeAlamat = false;
     public $editModeSekolah = false;
     public $editModeRapor = false;
@@ -658,27 +658,7 @@ class Formulir extends Component
         $this->file_akta_kelahiran = $this->pendaftar->file_akta_kelahiran;
 
         // Load Survey Answers
-        $surveyAnswers = $this->pendaftar->surveyAnswers;
-        foreach ($surveyAnswers as $answer) {
-            $questionId = $answer->survey_question_id;
-            if ($answer->question->tipe_input === 'text' || $answer->question->tipe_input === 'textarea') {
-                // For text: jawaban contains the text string
-                $this->surveyAnswers[$questionId] = $answer->jawaban;
-            } elseif ($answer->question->tipe_input === 'checkbox') {
-                // For checkbox: jawaban is array of selected option IDs
-                if (!isset($this->surveyAnswers[$questionId])) {
-                    $this->surveyAnswers[$questionId] = [];
-                }
-                // Convert array of IDs to checkbox format (ID => true)
-                $selectedIds = is_array($answer->jawaban) ? $answer->jawaban : [$answer->jawaban];
-                foreach ($selectedIds as $optionId) {
-                    $this->surveyAnswers[$questionId][$optionId] = true;
-                }
-            } else {
-                // For radio/dropdown: jawaban contains single option ID
-                $this->surveyAnswers[$questionId] = $answer->jawaban;
-            }
-        }
+        $this->loadSurveyAnswers();
 
         // Load Prestasi Data
         $this->loadPrestasi();
@@ -776,6 +756,45 @@ class Formulir extends Component
     }
 
     /**
+     * Load survey answers for the current pendaftar
+     * Used in mount() and when re-entering edit mode
+     */
+    public function loadSurveyAnswers()
+    {
+        // Initialize survey answers array
+        if (!is_array($this->surveyAnswers)) {
+            $this->surveyAnswers = [];
+        }
+
+        // Load Survey Answers from database
+        $surveyAnswers = $this->pendaftar->surveyAnswers;
+        foreach ($surveyAnswers as $answer) {
+            $questionId = $answer->survey_question_id;
+            if ($answer->question->tipe_input === 'text' || $answer->question->tipe_input === 'textarea') {
+                // For text: jawaban contains the text string
+                $this->surveyAnswers[$questionId] = $answer->jawaban;
+            } elseif ($answer->question->tipe_input === 'checkbox') {
+                // NEW APPROACH: For checkbox, jawaban is LINEAR array of option IDs [1, 3, 5]
+                // NOT associative array [1 => true, 3 => true]
+                $selectedIds = is_array($answer->jawaban) ? $answer->jawaban : [$answer->jawaban];
+                $this->surveyAnswers[$questionId] = $selectedIds;
+            } else {
+                // For radio/dropdown: jawaban contains single option ID
+                $this->surveyAnswers[$questionId] = $answer->jawaban;
+            }
+        }
+
+        // CRITICAL FIX: Initialize checkbox questions dengan empty array jika belum ada jawaban
+        // Ini penting agar Livewire wire:model tahu bahwa ini adalah multi-select checkbox
+        $allSurveyQuestions = \App\Models\SurveyQuestion::umum()->aktif()->with('options')->get();
+        foreach ($allSurveyQuestions as $question) {
+            if ($question->tipe_input === 'checkbox' && !isset($this->surveyAnswers[$question->id])) {
+                $this->surveyAnswers[$question->id] = [];
+            }
+        }
+    }
+
+    /**
      * Ensure cascade dropdown arrays are always plain arrays, not Eloquent Collections
      * This prevents Livewire serialization issues with PostgreSQL string IDs
      */
@@ -826,6 +845,11 @@ class Formulir extends Component
             if ($isEnabling) {
                 // Just load the cascade dropdown data for the current state
                 $this->loadCascadeData();
+
+                // CRITICAL FIX: Reload survey answers when entering edit mode
+                if ($section === 'survey') {
+                    $this->loadSurveyAnswers();
+                }
             }
             // When canceling (disabling), Livewire will restore the previous state automatically
         }
@@ -859,7 +883,7 @@ class Formulir extends Component
                 'yang_membiayai_sekolah' => 'required|string',
                 'tidak_punya_hp' => 'nullable|boolean',
                 'no_hp' => $this->tidak_punya_hp ? 'nullable' : 'nullable|numeric|digits_between:10,15',
-                'nomor_kip' => 'nullable|string|max:17',
+                'nomor_kip' => 'nullable|string|max:25|regex:/^[A-Za-z0-9]+$/',
                 'newFoto' => $fotoValidation,
             ];
 
@@ -872,13 +896,76 @@ class Formulir extends Component
             }
 
             $this->validate($validationRules, [
+                // Nama Lengkap
+                'nama_lengkap.required' => 'Nama lengkap wajib diisi',
+                'nama_lengkap.max' => 'Nama lengkap maksimal 255 karakter',
+                'nama_lengkap.regex' => 'Nama lengkap hanya boleh berisi huruf, spasi, titik, koma, dan tanda hubung',
+
+                // NISN
+                'nisn.required' => 'NISN wajib diisi',
+                'nisn.digits' => 'NISN harus 10 digit',
+
+                // Tempat Lahir
+                'tempat_lahir.required' => 'Tempat lahir wajib diisi',
+                'tempat_lahir.max' => 'Tempat lahir maksimal 255 karakter',
+                'tempat_lahir.regex' => 'Tempat lahir hanya boleh berisi huruf, spasi, titik, koma, dan tanda hubung',
+
+                // Tanggal Lahir
+                'tanggal_lahir.required' => 'Tanggal lahir wajib diisi',
+                'tanggal_lahir.date' => 'Tanggal lahir harus format tanggal yang valid',
+
+                // Jenis Kelamin
+                'jenis_kelamin.required' => 'Jenis kelamin wajib dipilih',
+                'jenis_kelamin.in' => 'Jenis kelamin harus Laki-laki (L) atau Perempuan (P)',
+
+                // Agama
+                'agama.required' => 'Agama wajib dipilih',
+
+                // Kewarganegaraan
+                'kewarganegaraan.required' => 'Kewarganegaraan wajib dipilih',
+                'kewarganegaraan.in' => 'Kewarganegaraan harus WNI atau WNA',
+
+                // Nomor KK
+                'nomor_kk.required' => 'Nomor Kartu Keluarga wajib diisi',
+                'nomor_kk.digits' => 'Nomor Kartu Keluarga harus 16 digit',
+
+                // Nama Kepala Keluarga
+                'nama_kepala_keluarga.required' => 'Nama kepala keluarga wajib diisi',
+                'nama_kepala_keluarga.max' => 'Nama kepala keluarga maksimal 255 karakter',
+                'nama_kepala_keluarga.regex' => 'Nama kepala keluarga hanya boleh berisi huruf, spasi, titik, koma, dan tanda hubung',
+
+                // Anak Ke
+                'anak_ke.required' => 'Anak ke berapa wajib diisi',
+                'anak_ke.integer' => 'Anak ke harus berupa angka',
+                'anak_ke.min' => 'Anak ke minimal 1',
+                'anak_ke.max' => 'Anak ke maksimal 99',
+
+                // Jumlah Saudara
+                'jumlah_saudara.required' => 'Jumlah saudara wajib diisi',
+                'jumlah_saudara.integer' => 'Jumlah saudara harus berupa angka',
+                'jumlah_saudara.min' => 'Jumlah saudara minimal 0',
+                'jumlah_saudara.max' => 'Jumlah saudara maksimal 99',
+
+                // Hobi
+                'hobi.required' => 'Hobi wajib diisi',
+
+                // Cita-cita
+                'cita_cita.required' => 'Cita-cita wajib diisi',
+
+                // Yang Membiayai Sekolah
+                'yang_membiayai_sekolah.required' => 'Yang membiayai sekolah wajib diisi',
+
+                // No HP
+                'no_hp.numeric' => 'Nomor HP harus berupa angka',
+                'no_hp.digits_between' => 'Nomor HP harus 10-15 digit',
+
+                // NIK / KITAS
                 'nik.required' => 'NIK wajib diisi untuk WNI',
-                'nik.min' => 'NIK harus 16 digit',
-                'nik.max' => 'NIK harus 16 digit',
-                'nomor_kk.min' => 'Nomor KK harus 16 digit',
-                'nomor_kk.max' => 'Nomor KK harus 16 digit',
+                'nik.digits' => 'NIK harus 16 digit',
                 'negara_asal.required' => 'Asal negara wajib diisi untuk WNA',
                 'nomor_kitas.required' => 'Nomor KITAS wajib diisi untuk WNA',
+
+                // Foto
                 'newFoto.required' => 'Foto pendaftar wajib diupload',
                 'newFoto.image' => 'File harus berupa gambar',
                 'newFoto.max' => 'Ukuran foto maksimal 2MB',
@@ -1000,8 +1087,8 @@ class Formulir extends Component
             'wali_hubungan' => 'nullable|in:sama_ayah,sama_ibu,lainnya',
 
             // Kartu Bantuan - Optional
-            'nomor_kks' => 'nullable|numeric|digits_between:1,17',
-            'nomor_pkh' => 'nullable|numeric|digits_between:1,17',
+            'nomor_kks' => 'nullable|string|max:25|regex:/^[A-Za-z0-9]+$/',
+            'nomor_pkh' => 'nullable|string|max:25|regex:/^[A-Za-z0-9]+$/',
 
             // Keep EMIS fields validation
             'ayah_nik' => 'nullable|digits:16',
@@ -1090,7 +1177,104 @@ class Formulir extends Component
             }
         }
 
-        $this->validate($validationRules);
+        $this->validate($validationRules, [
+            // Ayah - Base fields
+            'nama_ayah.required' => 'Nama ayah wajib diisi',
+            'nama_ayah.max' => 'Nama ayah maksimal 255 karakter',
+            'nama_ayah.regex' => 'Nama ayah hanya boleh berisi huruf, spasi, titik, koma, dan tanda hubung',
+            'ayah_status.required' => 'Status ayah wajib dipilih',
+            'ayah_status.in' => 'Status ayah tidak valid',
+
+            // Ibu - Base fields
+            'nama_ibu.required' => 'Nama ibu wajib diisi',
+            'nama_ibu.max' => 'Nama ibu maksimal 255 karakter',
+            'nama_ibu.regex' => 'Nama ibu hanya boleh berisi huruf, spasi, titik, koma, dan tanda hubung',
+            'ibu_status.required' => 'Status ibu wajib dipilih',
+            'ibu_status.in' => 'Status ibu tidak valid',
+
+            // Wali - Hubungan
+            'wali_hubungan.in' => 'Hubungan wali tidak valid',
+
+            // Kartu Bantuan
+            'nomor_kks.max' => 'Nomor KKS maksimal 25 karakter',
+            'nomor_kks.regex' => 'Nomor KKS hanya boleh huruf dan angka',
+            'nomor_pkh.max' => 'Nomor PKH maksimal 25 karakter',
+            'nomor_pkh.regex' => 'Nomor PKH hanya boleh huruf dan angka',
+
+            // Ayah - Conditional fields
+            'ayah_kewarganegaraan.required' => 'Kewarganegaraan ayah wajib dipilih',
+            'ayah_kewarganegaraan.in' => 'Kewarganegaraan ayah harus WNI atau WNA',
+            'ayah_tempat_lahir.required' => 'Tempat lahir ayah wajib diisi',
+            'ayah_tempat_lahir.max' => 'Tempat lahir ayah maksimal 255 karakter',
+            'ayah_tempat_lahir.regex' => 'Tempat lahir ayah hanya boleh berisi huruf, spasi, titik, koma, dan tanda hubung',
+            'ayah_tanggal_lahir.required' => 'Tanggal lahir ayah wajib diisi',
+            'ayah_tanggal_lahir.date' => 'Tanggal lahir ayah harus format tanggal yang valid',
+            'ayah_pekerjaan.required' => 'Pekerjaan ayah wajib diisi',
+            'ayah_pekerjaan.max' => 'Pekerjaan ayah maksimal 100 karakter',
+            'ayah_nik.required' => 'NIK ayah wajib diisi',
+            'ayah_nik.digits' => 'NIK ayah harus 16 digit',
+            'ayah_negara_asal.required' => 'Negara asal ayah wajib diisi untuk WNA',
+            'ayah_negara_asal.max' => 'Negara asal ayah maksimal 100 karakter',
+            'ayah_nomor_kitas.required' => 'Nomor KITAS ayah wajib diisi untuk WNA',
+            'ayah_nomor_kitas.max' => 'Nomor KITAS ayah maksimal 50 karakter',
+            'ayah_no_hp.required' => 'Nomor HP ayah wajib diisi',
+            'ayah_no_hp.numeric' => 'Nomor HP ayah harus berupa angka',
+            'ayah_no_hp.digits_between' => 'Nomor HP ayah harus 10-15 digit',
+            'ayah_tahun_lahir.integer' => 'Tahun lahir ayah harus berupa angka',
+            'ayah_tahun_lahir.min' => 'Tahun lahir ayah tidak valid',
+            'ayah_tahun_lahir.max' => 'Tahun lahir ayah tidak boleh melebihi tahun ini',
+
+            // Ibu - Conditional fields
+            'ibu_kewarganegaraan.required' => 'Kewarganegaraan ibu wajib dipilih',
+            'ibu_kewarganegaraan.in' => 'Kewarganegaraan ibu harus WNI atau WNA',
+            'ibu_tempat_lahir.required' => 'Tempat lahir ibu wajib diisi',
+            'ibu_tempat_lahir.max' => 'Tempat lahir ibu maksimal 255 karakter',
+            'ibu_tempat_lahir.regex' => 'Tempat lahir ibu hanya boleh berisi huruf, spasi, titik, koma, dan tanda hubung',
+            'ibu_tanggal_lahir.required' => 'Tanggal lahir ibu wajib diisi',
+            'ibu_tanggal_lahir.date' => 'Tanggal lahir ibu harus format tanggal yang valid',
+            'ibu_pekerjaan.required' => 'Pekerjaan ibu wajib diisi',
+            'ibu_pekerjaan.max' => 'Pekerjaan ibu maksimal 100 karakter',
+            'ibu_nik.required' => 'NIK ibu wajib diisi',
+            'ibu_nik.digits' => 'NIK ibu harus 16 digit',
+            'ibu_negara_asal.required' => 'Negara asal ibu wajib diisi untuk WNA',
+            'ibu_negara_asal.max' => 'Negara asal ibu maksimal 100 karakter',
+            'ibu_nomor_kitas.required' => 'Nomor KITAS ibu wajib diisi untuk WNA',
+            'ibu_nomor_kitas.max' => 'Nomor KITAS ibu maksimal 50 karakter',
+            'ibu_no_hp.required' => 'Nomor HP ibu wajib diisi',
+            'ibu_no_hp.numeric' => 'Nomor HP ibu harus berupa angka',
+            'ibu_no_hp.digits_between' => 'Nomor HP ibu harus 10-15 digit',
+            'ibu_tahun_lahir.integer' => 'Tahun lahir ibu harus berupa angka',
+            'ibu_tahun_lahir.min' => 'Tahun lahir ibu tidak valid',
+            'ibu_tahun_lahir.max' => 'Tahun lahir ibu tidak boleh melebihi tahun ini',
+
+            // Wali - Conditional fields
+            'wali_nama.required' => 'Nama wali wajib diisi',
+            'wali_nama.max' => 'Nama wali maksimal 255 karakter',
+            'wali_nama.regex' => 'Nama wali hanya boleh berisi huruf, spasi, titik, koma, dan tanda hubung',
+            'wali_status.required' => 'Status wali wajib dipilih',
+            'wali_status.in' => 'Status wali tidak valid',
+            'wali_kewarganegaraan.required' => 'Kewarganegaraan wali wajib dipilih',
+            'wali_kewarganegaraan.in' => 'Kewarganegaraan wali harus WNI atau WNA',
+            'wali_tempat_lahir.required' => 'Tempat lahir wali wajib diisi',
+            'wali_tempat_lahir.max' => 'Tempat lahir wali maksimal 255 karakter',
+            'wali_tempat_lahir.regex' => 'Tempat lahir wali hanya boleh berisi huruf, spasi, titik, koma, dan tanda hubung',
+            'wali_tanggal_lahir.required' => 'Tanggal lahir wali wajib diisi',
+            'wali_tanggal_lahir.date' => 'Tanggal lahir wali harus format tanggal yang valid',
+            'wali_pekerjaan.required' => 'Pekerjaan wali wajib diisi',
+            'wali_pekerjaan.max' => 'Pekerjaan wali maksimal 100 karakter',
+            'wali_nik.required' => 'NIK wali wajib diisi',
+            'wali_nik.digits' => 'NIK wali harus 16 digit',
+            'wali_negara_asal.required' => 'Negara asal wali wajib diisi untuk WNA',
+            'wali_negara_asal.max' => 'Negara asal wali maksimal 100 karakter',
+            'wali_nomor_kitas.required' => 'Nomor KITAS wali wajib diisi untuk WNA',
+            'wali_nomor_kitas.max' => 'Nomor KITAS wali maksimal 50 karakter',
+            'wali_no_hp.required' => 'Nomor HP wali wajib diisi',
+            'wali_no_hp.numeric' => 'Nomor HP wali harus berupa angka',
+            'wali_no_hp.digits_between' => 'Nomor HP wali harus 10-15 digit',
+            'wali_tahun_lahir.integer' => 'Tahun lahir wali harus berupa angka',
+            'wali_tahun_lahir.min' => 'Tahun lahir wali tidak valid',
+            'wali_tahun_lahir.max' => 'Tahun lahir wali tidak boleh melebihi tahun ini',
+        ]);
 
         // Prepare data for update
         $updateData = [
@@ -1158,7 +1342,7 @@ class Formulir extends Component
         ];
 
         $this->pendaftar->update($updateData);
-        $this->editModeOrangTua = false;
+        $this->editModeOrangtua = false;  // Changed from OrangTua to Orangtua (lowercase t)
         $this->dispatch('statusUpdated', ['type' => 'success', 'message' => 'Data orang tua berhasil diperbarui.']);
     }
 
@@ -1295,7 +1479,92 @@ class Formulir extends Component
         $validationRules['transportasi'] = 'required|string|max:100';
         $validationRules['waktu_tempuh'] = 'required|string|max:50';
 
-        $this->validate($validationRules);
+        $this->validate($validationRules, [
+            // Email dan kontak
+            'email.required' => 'Email wajib diisi',
+            'email.email' => 'Format email tidak valid',
+            'latitude.numeric' => 'Latitude harus berupa angka',
+            'latitude.between' => 'Latitude harus antara -90 dan 90',
+            'longitude.numeric' => 'Longitude harus berupa angka',
+            'longitude.between' => 'Longitude harus antara -180 dan 180',
+            'no_hp.numeric' => 'Nomor HP harus berupa angka',
+            'no_hp.digits_between' => 'Nomor HP harus 10-15 digit',
+            'asal_kabkota.max' => 'Asal Kabupaten/Kota maksimal 100 karakter',
+
+            // Wali status
+            'wali_status_wali.required' => 'Status wali wajib dipilih',
+            'wali_status_wali.in' => 'Status wali tidak valid',
+
+            // Ayah Address
+            'ayah_status_kepemilikan_rumah.required' => 'Status kepemilikan rumah ayah wajib dipilih',
+            'ayah_status_kepemilikan_rumah.max' => 'Status kepemilikan rumah ayah maksimal 100 karakter',
+            'alamat_ayah.required' => 'Alamat ayah wajib diisi',
+            'ayah_provinsi.required' => 'Provinsi ayah wajib dipilih',
+            'ayah_kabupaten.required' => 'Kabupaten ayah wajib dipilih',
+            'ayah_kecamatan.required' => 'Kecamatan ayah wajib dipilih',
+            'ayah_kelurahan.required' => 'Kelurahan ayah wajib dipilih',
+            'ayah_rt.required' => 'RT ayah wajib diisi',
+            'ayah_rt.max' => 'RT ayah maksimal 3 karakter',
+            'ayah_rw.required' => 'RW ayah wajib diisi',
+            'ayah_rw.max' => 'RW ayah maksimal 3 karakter',
+            'ayah_kode_pos.required' => 'Kode pos ayah wajib diisi',
+            'ayah_kode_pos.max' => 'Kode pos ayah maksimal 6 karakter',
+
+            // Ibu Address
+            'ibu_status_kepemilikan_rumah.required' => 'Status kepemilikan rumah ibu wajib dipilih',
+            'ibu_status_kepemilikan_rumah.max' => 'Status kepemilikan rumah ibu maksimal 100 karakter',
+            'ibu_alamat.required' => 'Alamat ibu wajib diisi',
+            'ibu_provinsi.required' => 'Provinsi ibu wajib dipilih',
+            'ibu_kabupaten.required' => 'Kabupaten ibu wajib dipilih',
+            'ibu_kecamatan.required' => 'Kecamatan ibu wajib dipilih',
+            'ibu_kelurahan.required' => 'Kelurahan ibu wajib dipilih',
+            'ibu_rt.required' => 'RT ibu wajib diisi',
+            'ibu_rt.max' => 'RT ibu maksimal 3 karakter',
+            'ibu_rw.required' => 'RW ibu wajib diisi',
+            'ibu_rw.max' => 'RW ibu maksimal 3 karakter',
+            'ibu_kode_pos.required' => 'Kode pos ibu wajib diisi',
+            'ibu_kode_pos.max' => 'Kode pos ibu maksimal 6 karakter',
+
+            // Wali Address
+            'wali_status_kepemilikan_rumah.required' => 'Status kepemilikan rumah wali wajib dipilih',
+            'wali_status_kepemilikan_rumah.max' => 'Status kepemilikan rumah wali maksimal 100 karakter',
+            'alamat_wali.required' => 'Alamat wali wajib diisi',
+            'wali_provinsi.required' => 'Provinsi wali wajib dipilih',
+            'wali_kabupaten.required' => 'Kabupaten wali wajib dipilih',
+            'wali_kecamatan.required' => 'Kecamatan wali wajib dipilih',
+            'wali_kelurahan.required' => 'Kelurahan wali wajib dipilih',
+            'wali_rt.required' => 'RT wali wajib diisi',
+            'wali_rt.max' => 'RT wali maksimal 3 karakter',
+            'wali_rw.required' => 'RW wali wajib diisi',
+            'wali_rw.max' => 'RW wali maksimal 3 karakter',
+            'wali_kode_pos.required' => 'Kode pos wali wajib diisi',
+            'wali_kode_pos.max' => 'Kode pos wali maksimal 6 karakter',
+
+            // Siswa Address
+            'status_tempat_tinggal.required' => 'Status tempat tinggal wajib dipilih',
+            'status_tempat_tinggal.max' => 'Status tempat tinggal maksimal 100 karakter',
+            'siswa_status_kepemilikan_rumah.required' => 'Status kepemilikan rumah wajib dipilih',
+            'siswa_status_kepemilikan_rumah.max' => 'Status kepemilikan rumah maksimal 100 karakter',
+            'siswa_provinsi.required' => 'Provinsi tempat tinggal wajib dipilih',
+            'siswa_kabupaten.required' => 'Kabupaten tempat tinggal wajib dipilih',
+            'siswa_kecamatan.required' => 'Kecamatan tempat tinggal wajib dipilih',
+            'siswa_kelurahan.required' => 'Kelurahan tempat tinggal wajib dipilih',
+            'siswa_rt.required' => 'RT tempat tinggal wajib diisi',
+            'siswa_rt.max' => 'RT tempat tinggal maksimal 3 karakter',
+            'siswa_rw.required' => 'RW tempat tinggal wajib diisi',
+            'siswa_rw.max' => 'RW tempat tinggal maksimal 3 karakter',
+            'siswa_kode_pos.required' => 'Kode pos tempat tinggal wajib diisi',
+            'siswa_kode_pos.max' => 'Kode pos tempat tinggal maksimal 6 karakter',
+            'siswa_alamat.required' => 'Alamat tempat tinggal wajib diisi',
+
+            // Jarak, Transportasi, Waktu Tempuh
+            'jarak_ke_sekolah.required' => 'Jarak ke sekolah wajib diisi',
+            'jarak_ke_sekolah.max' => 'Jarak ke sekolah maksimal 50 karakter',
+            'transportasi.required' => 'Jenis transportasi wajib dipilih',
+            'transportasi.max' => 'Jenis transportasi maksimal 100 karakter',
+            'waktu_tempuh.required' => 'Waktu tempuh wajib diisi',
+            'waktu_tempuh.max' => 'Waktu tempuh maksimal 50 karakter',
+        ]);
 
         // Auto-copy alamat siswa from ayah/ibu/wali if applicable
         if ($this->status_tempat_tinggal === 'Tinggal dengan Ayah Kandung') {
@@ -1567,22 +1836,31 @@ class Formulir extends Component
             // Handle file upload
             if (isset($this->uploadPrestasiSertifikat[$index])) {
                 $file = $this->uploadPrestasiSertifikat[$index];
+
+                // Delete old file FIRST if exists
+                if ($prestasiData['id']) {
+                    $oldPrestasi = Prestasi::find($prestasiData['id']);
+                    if ($oldPrestasi && $oldPrestasi->file_sertifikat) {
+                        // Try both public and private storage for backward compatibility
+                        if (Storage::disk('private')->exists($oldPrestasi->file_sertifikat)) {
+                            Storage::disk('private')->delete($oldPrestasi->file_sertifikat);
+                        } elseif (Storage::disk('public')->exists($oldPrestasi->file_sertifikat)) {
+                            Storage::disk('public')->delete($oldPrestasi->file_sertifikat);
+                        }
+                    }
+                }
+
+                // Add index to filename to prevent collision when multiple prestasi uploaded
                 $filename = FileNamingService::generateFileName(
-                    'sertifikat_prestasi',
+                    'sertifikat_prestasi_' . ($index + 1), // Add index to make unique
                     $this->pendaftar->nomor_pendaftaran,
                     $file->getClientOriginalExtension(),
                     $this->pendaftar->nama_lengkap
                 );
-                $path = $file->storeAs('sertifikat_prestasi', $filename, 'public');
-                $dataToSave['file_sertifikat'] = $path;
 
-                // Delete old file if exists
-                if ($prestasiData['id']) {
-                    $oldPrestasi = Prestasi::find($prestasiData['id']);
-                    if ($oldPrestasi && $oldPrestasi->file_sertifikat && Storage::disk('public')->exists($oldPrestasi->file_sertifikat)) {
-                        Storage::disk('public')->delete($oldPrestasi->file_sertifikat);
-                    }
-                }
+                // Store to private storage untuk keamanan
+                $path = $file->storeAs('sertifikat_prestasi/' . $this->pendaftar->id, $filename, 'private');
+                $dataToSave['file_sertifikat'] = $path;
             }
 
             if ($prestasiData['id']) {
@@ -1819,7 +2097,7 @@ class Formulir extends Component
             'penerima_kps' => 'nullable|boolean',
             'nomor_kps' => 'nullable|numeric|digits_between:1,17|required_if:penerima_kps,true',
             'penerima_kip' => 'nullable|boolean',
-            'nomor_kip' => 'nullable|string|max:17',
+            'nomor_kip' => 'nullable|string|max:25|regex:/^[A-Za-z0-9]+$/',
             'layak_pip' => 'nullable|boolean',
             'alasan_layak_pip' => 'nullable|string|required_if:layak_pip,true',
         ]);
@@ -1915,15 +2193,17 @@ class Formulir extends Component
                     // For text type: store text directly
                     $jawaban = $answerValue;
                 } elseif ($question->tipe_input === 'checkbox') {
-                    // For checkbox: store array of selected option IDs
+                    // NEW APPROACH: For checkbox, answerValue is LINEAR array [1, 3, 5]
+                    // CRITICAL FIX: Filter out boolean values dari checkbox array
+                    // Livewire kadang inject boolean true ke array checkbox
                     if (is_array($answerValue)) {
-                        $selectedOptions = [];
-                        foreach ($answerValue as $optionId => $checked) {
-                            if ($checked) {
-                                $selectedOptions[] = $optionId;
-                            }
-                        }
-                        $jawaban = $selectedOptions; // Will be auto-cast to JSON
+                        $filteredValues = array_filter($answerValue, function($val) {
+                            return !is_bool($val) && $val !== '' && $val !== null;
+                        });
+                        // Re-index array (remove gaps dari filter)
+                        $jawaban = array_values($filteredValues);
+                    } else {
+                        $jawaban = [];
                     }
                 } else {
                     // For dropdown and radio: store single option ID
@@ -1932,10 +2212,13 @@ class Formulir extends Component
 
                 // Create new answer with jawaban field
                 if ($jawaban !== null && (!is_array($jawaban) || !empty($jawaban))) {
+                    // CRITICAL FIX: JSON encode arrays (checkbox) before saving to TEXT column
+                    $jawabanToSave = is_array($jawaban) ? json_encode($jawaban) : $jawaban;
+
                     \App\Models\SurveyAnswer::create([
                         'pendaftar_id' => $this->pendaftar->id,
                         'survey_question_id' => $question->id,
-                        'jawaban' => $jawaban,
+                        'jawaban' => $jawabanToSave,
                     ]);
                 }
             }
@@ -2688,22 +2971,31 @@ class Formulir extends Component
             // Handle file upload
             if (isset($this->uploadKeahlianSertifikat[$index])) {
                 $file = $this->uploadKeahlianSertifikat[$index];
+
+                // Delete old file FIRST if exists
+                if ($keahlianData['id']) {
+                    $oldKeahlian = Keahlian::find($keahlianData['id']);
+                    if ($oldKeahlian && $oldKeahlian->file_bukti_sertifikat) {
+                        // Try both public and private storage for backward compatibility
+                        if (Storage::disk('private')->exists($oldKeahlian->file_bukti_sertifikat)) {
+                            Storage::disk('private')->delete($oldKeahlian->file_bukti_sertifikat);
+                        } elseif (Storage::disk('public')->exists($oldKeahlian->file_bukti_sertifikat)) {
+                            Storage::disk('public')->delete($oldKeahlian->file_bukti_sertifikat);
+                        }
+                    }
+                }
+
+                // Add index to filename to prevent collision when multiple keahlian uploaded
                 $filename = FileNamingService::generateFileName(
-                    'sertifikat_keahlian',
+                    'sertifikat_keahlian_' . ($index + 1), // Add index to make unique
                     $this->pendaftar->nomor_pendaftaran,
                     $file->getClientOriginalExtension(),
                     $this->pendaftar->nama_lengkap
                 );
-                $path = $file->storeAs('sertifikat_keahlian', $filename, 'public');
-                $dataToSave['file_bukti_sertifikat'] = $path;
 
-                // Delete old file if exists
-                if ($keahlianData['id']) {
-                    $oldKeahlian = Keahlian::find($keahlianData['id']);
-                    if ($oldKeahlian && $oldKeahlian->file_bukti_sertifikat && Storage::disk('public')->exists($oldKeahlian->file_bukti_sertifikat)) {
-                        Storage::disk('public')->delete($oldKeahlian->file_bukti_sertifikat);
-                    }
-                }
+                // Store to private storage untuk keamanan
+                $path = $file->storeAs('sertifikat_keahlian/' . $this->pendaftar->id, $filename, 'private');
+                $dataToSave['file_bukti_sertifikat'] = $path;
             }
 
             if ($keahlianData['id']) {
@@ -2762,42 +3054,56 @@ class Formulir extends Component
 
         // Handle syahadah file upload
         if ($this->uploadTahfidzSyahadah) {
+            // Delete old file FIRST if exists
+            if ($this->tahfidz['id']) {
+                $oldTahfidz = Tahfidz::find($this->tahfidz['id']);
+                if ($oldTahfidz && $oldTahfidz->file_bukti_syahadah) {
+                    // Try both public and private storage for backward compatibility
+                    if (Storage::disk('private')->exists($oldTahfidz->file_bukti_syahadah)) {
+                        Storage::disk('private')->delete($oldTahfidz->file_bukti_syahadah);
+                    } elseif (Storage::disk('public')->exists($oldTahfidz->file_bukti_syahadah)) {
+                        Storage::disk('public')->delete($oldTahfidz->file_bukti_syahadah);
+                    }
+                }
+            }
+
             $filename = FileNamingService::generateFileName(
                 'syahadah',
                 $this->pendaftar->nomor_pendaftaran,
                 $this->uploadTahfidzSyahadah->getClientOriginalExtension(),
                 $this->pendaftar->nama_lengkap
             );
-            $path = $this->uploadTahfidzSyahadah->storeAs('tahfidz', $filename, 'public');
-            $dataToSave['file_bukti_syahadah'] = $path;
 
-            // Delete old file if exists
-            if ($this->tahfidz['id']) {
-                $oldTahfidz = Tahfidz::find($this->tahfidz['id']);
-                if ($oldTahfidz && $oldTahfidz->file_bukti_syahadah && Storage::disk('public')->exists($oldTahfidz->file_bukti_syahadah)) {
-                    Storage::disk('public')->delete($oldTahfidz->file_bukti_syahadah);
-                }
-            }
+            // Store to private storage untuk keamanan
+            $path = $this->uploadTahfidzSyahadah->storeAs('tahfidz/' . $this->pendaftar->id, $filename, 'private');
+            $dataToSave['file_bukti_syahadah'] = $path;
         }
 
         // Handle tahsin file upload
         if ($this->uploadTahfidzTahsin) {
+            // Delete old file FIRST if exists
+            if ($this->tahfidz['id']) {
+                $oldTahfidz = Tahfidz::find($this->tahfidz['id']);
+                if ($oldTahfidz && $oldTahfidz->file_bukti_tahsin) {
+                    // Try both public and private storage for backward compatibility
+                    if (Storage::disk('private')->exists($oldTahfidz->file_bukti_tahsin)) {
+                        Storage::disk('private')->delete($oldTahfidz->file_bukti_tahsin);
+                    } elseif (Storage::disk('public')->exists($oldTahfidz->file_bukti_tahsin)) {
+                        Storage::disk('public')->delete($oldTahfidz->file_bukti_tahsin);
+                    }
+                }
+            }
+
             $filename = FileNamingService::generateFileName(
                 'tahsin',
                 $this->pendaftar->nomor_pendaftaran,
                 $this->uploadTahfidzTahsin->getClientOriginalExtension(),
                 $this->pendaftar->nama_lengkap
             );
-            $path = $this->uploadTahfidzTahsin->storeAs('tahfidz', $filename, 'public');
-            $dataToSave['file_bukti_tahsin'] = $path;
 
-            // Delete old file if exists
-            if ($this->tahfidz['id']) {
-                $oldTahfidz = Tahfidz::find($this->tahfidz['id']);
-                if ($oldTahfidz && $oldTahfidz->file_bukti_tahsin && Storage::disk('public')->exists($oldTahfidz->file_bukti_tahsin)) {
-                    Storage::disk('public')->delete($oldTahfidz->file_bukti_tahsin);
-                }
-            }
+            // Store to private storage untuk keamanan
+            $path = $this->uploadTahfidzTahsin->storeAs('tahfidz/' . $this->pendaftar->id, $filename, 'private');
+            $dataToSave['file_bukti_tahsin'] = $path;
         }
 
         if ($this->tahfidz['id']) {

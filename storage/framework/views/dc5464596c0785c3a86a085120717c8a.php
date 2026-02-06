@@ -301,7 +301,14 @@ unset($__defined_vars, $__key, $__value); ?>
                         <!-- Pendaftar Menu -->
                         <?php
                             $currentPendaftar = Auth::user()->pendaftar ?? null;
-                            $canAccessKartuUjian = $currentPendaftar && $currentPendaftar->status_pendaftaran === 'data_disetujui';
+                            // Kartu Tes Seleksi can be accessed ONLY if:
+                            // 1. Status pendaftaran = data_disetujui
+                            // 2. Pembayaran tes psikologi sudah DISETUJUI (bukan hanya uploaded!)
+                            $canAccessKartuUjian = $currentPendaftar
+                                && $currentPendaftar->status_pendaftaran === 'data_disetujui'
+                                && $currentPendaftar->tesPsikologiPendaftar
+                                && $currentPendaftar->tesPsikologiPendaftar->bukti_transfer
+                                && $currentPendaftar->tesPsikologiPendaftar->status_verifikasi === 'disetujui';
                             $tesPsikologiSetting = \App\Models\TesPsikologiSetting::getSetting();
                             $tesPsikologiAktif = $tesPsikologiSetting->aktif;
                         ?>
@@ -350,7 +357,7 @@ unset($__defined_vars, $__key, $__value); ?>
                                 Kartu Tes Seleksi
                             </a>
                         <?php else: ?>
-                            <div class="flex items-center px-4 py-3 text-sm rounded-lg opacity-50 cursor-not-allowed" title="Menu ini hanya dapat diakses setelah data Anda disetujui">
+                            <div class="flex items-center px-4 py-3 text-sm rounded-lg opacity-50 cursor-not-allowed" title="Menu ini dapat diakses setelah: 1) Data Anda disetujui, dan 2) Pembayaran tes psikologi disetujui">
                                 <svg class="w-5 h-5 mr-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                 </svg>

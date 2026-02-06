@@ -709,6 +709,25 @@ class TesPsikologi extends Component
         session()->flash('message', 'Pengaturan survey berhasil disimpan');
     }
 
+    /**
+     * Reset survey answers for a specific pendaftar
+     */
+    public function resetSurveyAnswers($pendaftarId)
+    {
+        try {
+            // Delete all survey answers for this pendaftar (tes psikologi context only)
+            SurveyAnswer::where('pendaftar_id', $pendaftarId)
+                ->whereHas('question', function($q) {
+                    $q->tesPsikologi();
+                })
+                ->delete();
+
+            session()->flash('message', 'Jawaban survey berhasil direset');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Gagal mereset jawaban survey: ' . $e->getMessage());
+        }
+    }
+
     public function render()
     {
         // Conditionally load data based on mainTab
@@ -717,9 +736,9 @@ class TesPsikologi extends Component
             $query = TesPsikologiPendaftar::with(['pendaftar', 'opsi', 'bank', 'verifiedBy'])
                 ->whereHas('pendaftar', function($q) {
                     if ($this->search) {
-                        $q->where('nama_lengkap', 'like', '%'.$this->search.'%')
-                          ->orWhere('nisn', 'like', '%'.$this->search.'%')
-                          ->orWhere('nomor_pendaftaran', 'like', '%'.$this->search.'%');
+                        $q->where('nama_lengkap', 'ilike', '%'.$this->search.'%')
+                          ->orWhere('nisn', 'ilike', '%'.$this->search.'%')
+                          ->orWhere('nomor_pendaftaran', 'ilike', '%'.$this->search.'%');
                     }
                 });
 
@@ -735,10 +754,11 @@ class TesPsikologi extends Component
         $surveyAnswersData = [];
         $surveyQuestionsForAnswers = [];
         if ($this->mainTab === 'jawaban-survey' && $this->isPanitiaPsikologi) {
-            // Get all active survey questions for tes psikologi
+            // Get all active survey questions for tes psikologi (with options for label conversion)
             $surveyQuestionsForAnswers = SurveyQuestion::tesPsikologi()
                 ->aktif()
                 ->ordered()
+                ->with('options')
                 ->get();
 
             // Get all pendaftar who registered for tes psikologi
@@ -748,9 +768,9 @@ class TesPsikologi extends Component
             // Apply search filter
             if ($this->search) {
                 $query->whereHas('pendaftar', function($q) {
-                    $q->where('nama_lengkap', 'like', '%'.$this->search.'%')
-                      ->orWhere('nisn', 'like', '%'.$this->search.'%')
-                      ->orWhere('nomor_pendaftaran', 'like', '%'.$this->search.'%');
+                    $q->where('nama_lengkap', 'ilike', '%'.$this->search.'%')
+                      ->orWhere('nisn', 'ilike', '%'.$this->search.'%')
+                      ->orWhere('nomor_pendaftaran', 'ilike', '%'.$this->search.'%');
                 });
             }
 
@@ -776,10 +796,117 @@ class TesPsikologi extends Component
                         ->where('survey_question_id', $question->id)
                         ->first();
 
-                    $answers[$question->id] = $answer ? $answer->jawaban : '-';
+                    if (!$answer) {
+                        $answers[$question->id] = '-';
+                        continue;
+                    }
+
+                    $jawaban = $answer->jawaban;
+
+                    // Format jawaban berdasarkan tipe - convert VALUE to LABEL for options-based questions
+                    if (in_array($question->tipe_input, ['radio', 'checkbox', 'select'])) {
+                        // CRITICAL FIX: Query options directly with WHERE clause to ensure correct filtering
+                        $questionOptions = SurveyQuestionOption::where('survey_question_id', $question->id)
+                            ->orderBy('urutan')
+                            ->get();
+
+                        // Get label from options instead of showing raw value
+                        $jawabanLabels = [];
+                        $jawabanArray = is_array($jawaban) ? $jawaban : [$jawaban];
+
+                        foreach ($jawabanArray as $value) {
+                            // Skip empty values
+                            if (empty($value) || $value === '-') {
+                                continue;
+                            }
+
+                            // Normalize value: trim whitespace and convert to string for comparison
+                            $normalizedValue = trim((string)$value);
+
+                            // Find matching option - try multiple comparison methods with PRIORITY
+                            $option = null;
+
+                            // ======================================================================
+                            // NEW APPROACH: Match by OPTION ID (data integrity)
+                            // ======================================================================
+                            // Starting Feb 2026: Jawaban menyimpan OPTION ID untuk data integrity
+                            // Benefit: Admin dapat ubah LABEL/VALUE tanpa corrupt existing answers
+
+                            // Method 1: Match by OPTION ID (PRIMARY METHOD for new data)
+                            // Data baru (Feb 2026+) simpan Option ID, bukan VALUE
+                            if (is_numeric($normalizedValue)) {
+                                $option = $questionOptions->firstWhere('id', (int)$normalizedValue);
+                            }
+
+                            // ======================================================================
+                            // BACKWARD COMPATIBILITY: Fallback untuk data lama (before Feb 2026)
+                            // ======================================================================
+
+                            // Method 2: Exact string match on VALUE (untuk data lama yang simpan VALUE)
+                            if (!$option) {
+                                $option = $questionOptions->first(function($opt) use ($normalizedValue) {
+                                    return trim((string)$opt->value) === $normalizedValue;
+                                });
+                            }
+
+                            // Method 3: Case-insensitive match on VALUE
+                            if (!$option) {
+                                $option = $questionOptions->first(function($opt) use ($normalizedValue) {
+                                    return strcasecmp(trim((string)$opt->value), $normalizedValue) === 0;
+                                });
+                            }
+
+                            // Method 4: Try matching by LABEL (untuk data lama yang simpan label)
+                            if (!$option) {
+                                $option = $questionOptions->first(function($opt) use ($normalizedValue) {
+                                    $normalizedLabel = trim((string)$opt->label);
+                                    return strcasecmp($normalizedLabel, $normalizedValue) === 0;
+                                });
+                            }
+
+                            // Method 5: Partial match by label (untuk typo atau extra spaces)
+                            if (!$option) {
+                                $option = $questionOptions->first(function($opt) use ($normalizedValue) {
+                                    $normalizedLabel = trim((string)$opt->label);
+                                    return stripos($normalizedLabel, $normalizedValue) !== false
+                                        || stripos($normalizedValue, $normalizedLabel) !== false;
+                                });
+                            }
+
+                            // Debug log if option not found
+                            if (!$option) {
+                                \Log::warning('Survey option not found (Panitia)', [
+                                    'pendaftar_id' => $pendaftar->id,
+                                    'question_id' => $question->id,
+                                    'pertanyaan' => $question->pertanyaan,
+                                    'tipe_input' => $question->tipe_input,
+                                    'looking_for_value' => $normalizedValue,
+                                    'options_count' => $questionOptions->count(),
+                                    'available_options' => $questionOptions->map(function($opt) {
+                                        return ['opt_id' => $opt->id, 'question_id' => $opt->survey_question_id, 'label' => $opt->label, 'value' => $opt->value];
+                                    })->toArray()
+                                ]);
+                            }
+
+                            // Use label if found, otherwise show raw value with archived marker
+                            // PRODUCTION FIX: Tampilkan raw value jika option tidak ketemu (happens when admin change/delete options)
+                            if ($option) {
+                                $jawabanLabels[] = $option->label;
+                            } else {
+                                // Show raw value with marker (data integrity issue)
+                                $jawabanLabels[] = "{$normalizedValue} ⚠️";
+                            }
+                        }
+
+                        $answers[$question->id] = !empty($jawabanLabels) ? implode(', ', $jawabanLabels) : '-';
+                    } else {
+                        // For text/textarea, show as is
+                        $answers[$question->id] = is_array($jawaban) ? implode(', ', $jawaban) : $jawaban;
+                    }
                 }
 
                 $surveyAnswersData[] = [
+                    'pendaftar_id' => $pendaftar->id,
                     'nomor_pendaftaran' => $pendaftar->nomor_pendaftaran,
                     'nisn' => $pendaftar->nisn ?? '-',
                     'nama_lengkap' => $pendaftar->nama_lengkap,

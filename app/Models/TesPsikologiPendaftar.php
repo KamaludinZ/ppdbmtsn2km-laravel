@@ -12,6 +12,7 @@ class TesPsikologiPendaftar extends Model
         'pendaftar_id',
         'opsi_id',
         'waktu_transfer',
+        'nama_pengirim',
         'bank_id',
         'bukti_transfer',
         'tanggal_upload',

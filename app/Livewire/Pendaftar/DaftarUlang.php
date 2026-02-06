@@ -56,13 +56,17 @@ class DaftarUlang extends Component
     public $konfirmasiNominalBiayaOpsiLainnya;
     public $konfirmasiNominalSeragamOpsiLainnya;
 
+    // Payment Period Status
+    public $isMadrasahPaymentOpen = false;
+    public $isSeragamPaymentOpen = false;
+    public $madrasahPaymentStartDate;
+    public $seragamPaymentStartDate;
+
     // Countdown & Payment Deadline
     public $madrasahPaymentStart;
     public $madrasahPaymentEnd;
     public $seragamPaymentStart;
     public $seragamPaymentEnd;
-    public $isMadrasahPaymentOpen = false;
-    public $isSeragamPaymentOpen = false;
 
     // Form Inputs - Madrasah
     public $nominalBiaya; // JSON encoded nominal yang dipilih
@@ -70,6 +74,7 @@ class DaftarUlang extends Component
     public $opsiPembayaran;
     public $bankPilihan;
     public $buktiPembayaran;
+    public $namaPengirim;
     public $suratPernyataan;
 
     // Form Inputs - Seragam
@@ -79,6 +84,7 @@ class DaftarUlang extends Component
     public $opsiPembayaranSeragam;
     public $bankSeragam;
     public $buktiSeragam;
+    public $namaPengirimSeragam;
 
     // Form Inputs - Ukuran (NEW - specific fields only)
     public $ukuran_jas;
@@ -96,6 +102,33 @@ class DaftarUlang extends Component
         }
 
         $this->pendaftar = $user->pendaftar;
+
+        // ACCESS CONTROL: Only allow access if:
+        // 1. Status = lulus (passed selection test)
+        // 2. setuju_daftar_ulang = true (agreed to re-register)
+        // 3. Current date >= payment start date
+        if ($this->pendaftar->status_pendaftaran !== 'lulus') {
+            session()->flash('error', 'Halaman daftar ulang hanya dapat diakses oleh pendaftar yang dinyatakan lulus tes seleksi.');
+            return redirect()->to('/pendaftar/dashboard');
+        }
+
+        if (!$this->pendaftar->setuju_daftar_ulang) {
+            session()->flash('error', 'Anda harus menyetujui untuk melanjutkan daftar ulang terlebih dahulu.');
+            return redirect()->to('/pendaftar/dashboard');
+        }
+
+        // Load payment start dates
+        $madrasahPaymentStart = Setting::get('daftar_ulang_madrasah_payment_start');
+        $seragamPaymentStart = Setting::get('daftar_ulang_seragam_payment_start');
+
+        // Check if payment periods have started (don't redirect, just set flags)
+        $now = Carbon::now();
+        $this->isMadrasahPaymentOpen = $madrasahPaymentStart ? $now->gte(Carbon::parse($madrasahPaymentStart)) : false;
+        $this->isSeragamPaymentOpen = $seragamPaymentStart ? $now->gte(Carbon::parse($seragamPaymentStart)) : false;
+
+        // Store start dates for display
+        $this->madrasahPaymentStartDate = $madrasahPaymentStart;
+        $this->seragamPaymentStartDate = $seragamPaymentStart;
         $this->daftarUlang = $this->pendaftar->daftarUlang;
         $this->seragam = $this->pendaftar->seragam ?? null;
 
@@ -153,6 +186,7 @@ class DaftarUlang extends Component
 
             $this->opsiPembayaran = $this->daftarUlang->opsi_pembayaran;
             $this->bankPilihan = $this->daftarUlang->metode_pembayaran;
+            $this->namaPengirim = $this->daftarUlang->nama_pengirim;
         }
 
         // Initialize seragam inputs if data exists
@@ -185,6 +219,7 @@ class DaftarUlang extends Component
 
             $this->opsiPembayaranSeragam = $this->seragam->opsi_pembayaran_seragam;
             $this->bankSeragam = $this->seragam->bank_seragam;
+            $this->namaPengirimSeragam = $this->seragam->nama_pengirim_seragam;
 
             // Ukuran detail seragam - with "Opsi Lainnya" detection
             // Ukuran Jas
@@ -303,18 +338,31 @@ class DaftarUlang extends Component
             return;
         }
 
+        // Check if Surat Pernyataan uploaded before allowing Bukti Pembayaran
+        if ($this->buktiPembayaran && (!$this->daftarUlang || !$this->daftarUlang->surat_pernyataan_path)) {
+            session()->flash('error', 'Silakan upload Surat Pernyataan terlebih dahulu sebelum upload Bukti Pembayaran.');
+            return;
+        }
+
         $this->validate([
             'nominalBiaya' => 'required|string',
             'konfirmasiNominalBiaya' => 'required|string',
-            'opsiPembayaran' => 'nullable|string',
-            'bankPilihan' => 'nullable|string',
-            'buktiPembayaran' => 'nullable|mimes:pdf,jpg,jpeg,png|max:2048',
-            'suratPernyataan' => 'nullable|mimes:pdf|max:2048',
+            'opsiPembayaran' => 'required|string',
+            'bankPilihan' => 'required|string',
+            'buktiPembayaran' => 'required|mimes:pdf,jpg,jpeg,png|max:2048',
+            'namaPengirim' => 'required|string|max:255',
+            'suratPernyataan' => 'required|mimes:pdf|max:2048',
         ], [
             'nominalBiaya.required' => 'Silakan pilih nominal biaya terlebih dahulu.',
             'konfirmasiNominalBiaya.required' => 'Silakan pilih nominal yang akan dibayarkan.',
+            'opsiPembayaran.required' => 'Silakan pilih opsi pembayaran.',
+            'bankPilihan.required' => 'Silakan pilih bank.',
+            'buktiPembayaran.required' => 'Bukti pembayaran harus diupload.',
             'buktiPembayaran.mimes' => 'Bukti pembayaran harus berupa file PDF atau Gambar (JPG, JPEG, PNG).',
             'buktiPembayaran.max' => 'Ukuran file bukti pembayaran maksimal 2MB.',
+            'namaPengirim.required' => 'Nama pengirim harus diisi.',
+            'namaPengirim.max' => 'Nama pengirim maksimal 255 karakter.',
+            'suratPernyataan.required' => 'Surat pernyataan harus diupload.',
             'suratPernyataan.mimes' => 'Surat pernyataan harus berupa file PDF.',
             'suratPernyataan.max' => 'Ukuran file surat pernyataan maksimal 2MB.',
         ]);
@@ -359,6 +407,7 @@ class DaftarUlang extends Component
             'nominal_biaya' => $konfirmasiNominalData, // Konfirmasi nominal yang dibayarkan
             'opsi_pembayaran' => $this->opsiPembayaran,
             'metode_pembayaran' => $this->bankPilihan,
+            'nama_pengirim' => $this->namaPengirim,
             'waktu_pembayaran_madrasah' => now(), // Timestamp pembayaran
         ];
 
@@ -422,17 +471,24 @@ class DaftarUlang extends Component
         }
 
         $this->validate([
-            'paketSeragam' => 'nullable|string',
+            'paketSeragam' => 'required|string',
             'nominalSeragam' => 'required|string',
             'konfirmasiNominalSeragam' => 'required|string',
-            'opsiPembayaranSeragam' => 'nullable|string',
-            'bankSeragam' => 'nullable|string',
-            'buktiSeragam' => 'nullable|mimes:pdf,jpg,jpeg,png|max:5120',
+            'opsiPembayaranSeragam' => 'required|string',
+            'bankSeragam' => 'required|string',
+            'buktiSeragam' => 'required|mimes:pdf,jpg,jpeg,png|max:5120',
+            'namaPengirimSeragam' => 'required|string|max:255',
         ], [
+            'paketSeragam.required' => 'Silakan pilih paket seragam.',
             'nominalSeragam.required' => 'Silakan pilih nominal biaya seragam terlebih dahulu.',
             'konfirmasiNominalSeragam.required' => 'Silakan pilih nominal yang akan dibayarkan.',
+            'opsiPembayaranSeragam.required' => 'Silakan pilih opsi pembayaran.',
+            'bankSeragam.required' => 'Silakan pilih bank.',
+            'buktiSeragam.required' => 'Bukti pembayaran seragam harus diupload.',
             'buktiSeragam.mimes' => 'Bukti pembayaran harus berupa file PDF atau Gambar (JPG, JPEG, PNG).',
             'buktiSeragam.max' => 'Ukuran file bukti pembayaran maksimal 5MB.',
+            'namaPengirimSeragam.required' => 'Nama pengirim harus diisi.',
+            'namaPengirimSeragam.max' => 'Nama pengirim maksimal 255 karakter.',
         ]);
 
         if (!$this->seragam) {
@@ -476,6 +532,7 @@ class DaftarUlang extends Component
             'nominal_seragam' => $konfirmasiNominalSeragamData, // Konfirmasi nominal yang dibayarkan
             'opsi_pembayaran_seragam' => $this->opsiPembayaranSeragam,
             'bank_seragam' => $this->bankSeragam,
+            'nama_pengirim_seragam' => $this->namaPengirimSeragam,
             'waktu_pembayaran_seragam' => now(), // Timestamp pembayaran
         ];
 
@@ -510,12 +567,19 @@ class DaftarUlang extends Component
     {
         $this->validate([
             // Detailed uniform sizes (NEW - specific fields only)
-            'ukuran_jas' => 'nullable|string',
-            'ukuran_baju_olahraga' => 'nullable|string',
-            'ukuran_celana_olahraga' => 'nullable|string',
-            'ukuran_baju_harian' => 'nullable|string',
-            'ukuran_celana_rok_harian' => 'nullable|string',
-            'ukuran_kopyah' => 'nullable|string',
+            'ukuran_jas' => 'required|string',
+            'ukuran_baju_olahraga' => 'required|string',
+            'ukuran_celana_olahraga' => 'required|string',
+            'ukuran_baju_harian' => 'required|string',
+            'ukuran_celana_rok_harian' => 'required|string',
+            'ukuran_kopyah' => 'required|string',
+        ], [
+            'ukuran_jas.required' => 'Ukuran jas harus dipilih.',
+            'ukuran_baju_olahraga.required' => 'Ukuran baju olahraga harus dipilih.',
+            'ukuran_celana_olahraga.required' => 'Ukuran celana olahraga harus dipilih.',
+            'ukuran_baju_harian.required' => 'Ukuran baju harian harus dipilih.',
+            'ukuran_celana_rok_harian.required' => 'Ukuran celana/rok harian harus dipilih.',
+            'ukuran_kopyah.required' => 'Ukuran kopyah harus dipilih.',
         ]);
 
         if (!$this->seragam) {
@@ -756,6 +820,198 @@ class DaftarUlang extends Component
         return response()->streamDownload(function () use ($pdf) {
             echo $pdf->output();
         }, $filename);
+    }
+
+    public function uploadSuratPernyataan()
+    {
+        // Check if already approved
+        if ($this->daftarUlang && $this->daftarUlang->status === 'disetujui') {
+            session()->flash('error', 'Data sudah disetujui, tidak dapat diubah.');
+            return;
+        }
+
+        // Validate file
+        $this->validate([
+            'suratPernyataan' => 'required|mimes:pdf|max:2048',
+        ], [
+            'suratPernyataan.required' => 'Silakan pilih file surat pernyataan terlebih dahulu.',
+            'suratPernyataan.mimes' => 'Surat pernyataan harus berupa file PDF.',
+            'suratPernyataan.max' => 'Ukuran file surat pernyataan maksimal 2MB.',
+        ]);
+
+        // Create daftar ulang record if not exists
+        if (!$this->daftarUlang) {
+            $this->daftarUlang = DaftarUlangModel::create([
+                'pendaftar_id' => $this->pendaftar->id,
+                'status' => 'belum',
+            ]);
+        }
+
+        // Generate nama file sistematis
+        $extension = FileNamingService::getFileExtension($this->suratPernyataan);
+        $customFileName = FileNamingService::generateFileName(
+            'surat_pernyataan',
+            $this->pendaftar->nomor_pendaftaran,
+            $extension,
+            $this->pendaftar->nama_lengkap
+        );
+
+        // Delete old file if exists
+        if ($this->daftarUlang->surat_pernyataan_path) {
+            Storage::disk('private')->delete($this->daftarUlang->surat_pernyataan_path);
+        }
+
+        // Upload new file
+        $path = $this->suratPernyataan->storeAs(
+            'dokumen/' . $this->pendaftar->id,
+            $customFileName,
+            'private'
+        );
+
+        // Update database
+        $this->daftarUlang->update([
+            'surat_pernyataan_path' => $path,
+        ]);
+
+        // Reset file input
+        $this->suratPernyataan = null;
+
+        session()->flash('success', 'Surat pernyataan berhasil diupload.');
+        $this->dispatch('saved');
+    }
+
+    public function uploadBuktiPembayaran()
+    {
+        // Check if payment is still open
+        $this->checkPaymentStatus();
+
+        if (!$this->isMadrasahPaymentOpen) {
+            session()->flash('error', 'Waktu pembayaran telah berakhir. Upload bukti pembayaran tidak dapat dilakukan.');
+            return;
+        }
+
+        // Check if already approved
+        if ($this->daftarUlang && $this->daftarUlang->status === 'disetujui') {
+            session()->flash('error', 'Data sudah disetujui, tidak dapat diubah.');
+            return;
+        }
+
+        // Check if Surat Pernyataan uploaded first
+        if (!$this->daftarUlang || !$this->daftarUlang->surat_pernyataan_path) {
+            session()->flash('error', 'Silakan upload Surat Pernyataan terlebih dahulu sebelum upload Bukti Pembayaran.');
+            return;
+        }
+
+        // Validate file
+        $this->validate([
+            'buktiPembayaran' => 'required|mimes:pdf,jpg,jpeg,png|max:2048',
+        ], [
+            'buktiPembayaran.required' => 'Silakan pilih file bukti pembayaran terlebih dahulu.',
+            'buktiPembayaran.mimes' => 'Bukti pembayaran harus berupa file PDF atau Gambar (JPG, JPEG, PNG).',
+            'buktiPembayaran.max' => 'Ukuran file bukti pembayaran maksimal 2MB.',
+        ]);
+
+        // Generate nama file sistematis
+        $extension = FileNamingService::getFileExtension($this->buktiPembayaran);
+        $customFileName = FileNamingService::generateBuktiBayarFileName(
+            'daftar_ulang',
+            $this->pendaftar->nomor_pendaftaran,
+            $extension,
+            $this->pendaftar->nama_lengkap
+        );
+
+        // Delete old file if exists
+        if ($this->daftarUlang->bukti_pembayaran_madrasah) {
+            Storage::disk('private')->delete($this->daftarUlang->bukti_pembayaran_madrasah);
+        }
+
+        // Upload new file
+        $path = $this->buktiPembayaran->storeAs(
+            'bukti_bayar/' . $this->pendaftar->id,
+            $customFileName,
+            'private'
+        );
+
+        // Update database - Upload only, status remains unchanged
+        $this->daftarUlang->update([
+            'bukti_pembayaran_madrasah' => $path,
+            'waktu_pembayaran_madrasah' => now(),
+            // Status will be updated only when user clicks "Simpan Data" button
+        ]);
+
+        // Reset file input
+        $this->buktiPembayaran = null;
+
+        session()->flash('success', 'Bukti pembayaran berhasil diupload.');
+        $this->dispatch('saved');
+    }
+
+    public function uploadBuktiSeragam()
+    {
+        // Check if payment is still open
+        $this->checkPaymentStatus();
+
+        if (!$this->isSeragamPaymentOpen) {
+            session()->flash('error', 'Waktu pembayaran telah berakhir. Upload bukti pembayaran tidak dapat dilakukan.');
+            return;
+        }
+
+        // Check if already approved
+        if ($this->seragam && $this->seragam->status_seragam === 'disetujui') {
+            session()->flash('error', 'Data sudah disetujui, tidak dapat diubah.');
+            return;
+        }
+
+        // Validate file
+        $this->validate([
+            'buktiSeragam' => 'required|mimes:pdf,jpg,jpeg,png|max:5120',
+        ], [
+            'buktiSeragam.required' => 'Silakan pilih file bukti pembayaran terlebih dahulu.',
+            'buktiSeragam.mimes' => 'Bukti pembayaran harus berupa file PDF atau Gambar (JPG, JPEG, PNG).',
+            'buktiSeragam.max' => 'Ukuran file bukti pembayaran maksimal 5MB.',
+        ]);
+
+        // Create seragam record if not exists
+        if (!$this->seragam) {
+            $this->seragam = \App\Models\Seragam::create([
+                'pendaftar_id' => $this->pendaftar->id,
+                'status_seragam' => 'belum',
+            ]);
+        }
+
+        // Generate nama file sistematis
+        $extension = FileNamingService::getFileExtension($this->buktiSeragam);
+        $customFileName = FileNamingService::generateBuktiBayarFileName(
+            'seragam',
+            $this->pendaftar->nomor_pendaftaran,
+            $extension,
+            $this->pendaftar->nama_lengkap
+        );
+
+        // Delete old file if exists
+        if ($this->seragam->bukti_pembayaran) {
+            Storage::disk('private')->delete($this->seragam->bukti_pembayaran);
+        }
+
+        // Upload new file
+        $path = $this->buktiSeragam->storeAs(
+            'bukti_bayar/' . $this->pendaftar->id,
+            $customFileName,
+            'private'
+        );
+
+        // Update database - Upload only, status remains unchanged
+        $this->seragam->update([
+            'bukti_pembayaran' => $path,
+            'waktu_pembayaran_seragam' => now(),
+            // Status will be updated only when user clicks "Simpan Data" button
+        ]);
+
+        // Reset file input
+        $this->buktiSeragam = null;
+
+        session()->flash('success', 'Bukti pembayaran seragam berhasil diupload.');
+        $this->dispatch('saved');
     }
 
     public function render()

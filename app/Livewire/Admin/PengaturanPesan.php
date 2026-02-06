@@ -3,14 +3,26 @@
 namespace App\Livewire\Admin;
 
 use App\Models\Setting;
+use App\Models\RiwayatPesan;
+use App\Models\MessageQueue;
+use App\Services\WhatsAppQueueService;
 use Livewire\Component;
 use Livewire\Attributes\Url;
+use Livewire\WithPagination;
 use Illuminate\Support\Facades\Auth;
 
 class PengaturanPesan extends Component
 {
+    use WithPagination;
+
     #[Url(keep: true)]
     public $activeTab = 'email';
+
+    // History filters
+    public $historySearch = '';
+    public $historyStatus = '';
+    public $historyDateFrom = '';
+    public $historyDateTo = '';
 
     // Email Templates
     public $email_pendaftaran_subject;
@@ -399,6 +411,236 @@ class PengaturanPesan extends Component
         session()->flash('message', 'Template telah direset ke default!');
     }
 
+    /**
+     * Get email history with pagination
+     */
+    public function getEmailHistory()
+    {
+        $query = RiwayatPesan::with(['pendaftar', 'user'])
+            ->where('jenis_pesan', 'email')
+            ->latest();
+
+        // Apply filters
+        if ($this->historySearch) {
+            $query->where(function($q) {
+                $q->where('penerima', 'like', '%' . $this->historySearch . '%')
+                  ->orWhere('judul', 'like', '%' . $this->historySearch . '%')
+                  ->orWhere('isi_pesan', 'like', '%' . $this->historySearch . '%')
+                  ->orWhereHas('pendaftar', function($q) {
+                      $q->where('nama_lengkap', 'like', '%' . $this->historySearch . '%')
+                        ->orWhere('nomor_pendaftaran', 'like', '%' . $this->historySearch . '%');
+                  });
+            });
+        }
+
+        if ($this->historyStatus) {
+            $query->where('status', $this->historyStatus);
+        }
+
+        if ($this->historyDateFrom) {
+            $query->whereDate('created_at', '>=', $this->historyDateFrom);
+        }
+
+        if ($this->historyDateTo) {
+            $query->whereDate('created_at', '<=', $this->historyDateTo);
+        }
+
+        return $query->paginate(20);
+    }
+
+    /**
+     * Get WhatsApp history (from riwayat_pesan)
+     */
+    public function getWhatsAppHistory()
+    {
+        $query = RiwayatPesan::with(['pendaftar', 'user'])
+            ->where('jenis_pesan', 'whatsapp')
+            ->latest();
+
+        // Apply filters
+        if ($this->historySearch) {
+            $query->where(function($q) {
+                $q->where('penerima', 'like', '%' . $this->historySearch . '%')
+                  ->orWhere('isi_pesan', 'like', '%' . $this->historySearch . '%')
+                  ->orWhereHas('pendaftar', function($q) {
+                      $q->where('nama_lengkap', 'like', '%' . $this->historySearch . '%')
+                        ->orWhere('nomor_pendaftaran', 'like', '%' . $this->historySearch . '%');
+                  });
+            });
+        }
+
+        if ($this->historyStatus) {
+            $query->where('status', $this->historyStatus);
+        }
+
+        if ($this->historyDateFrom) {
+            $query->whereDate('created_at', '>=', $this->historyDateFrom);
+        }
+
+        if ($this->historyDateTo) {
+            $query->whereDate('created_at', '<=', $this->historyDateTo);
+        }
+
+        return $query->paginate(20);
+    }
+
+    /**
+     * Get WhatsApp queue (pending messages)
+     */
+    public function getWhatsAppQueue()
+    {
+        $query = MessageQueue::with(['pendaftar', 'user'])
+            ->where('jenis_pesan', 'whatsapp')
+            ->latest();
+
+        // Apply filters
+        if ($this->historySearch) {
+            $query->where(function($q) {
+                $q->where('penerima', 'like', '%' . $this->historySearch . '%')
+                  ->orWhere('isi_pesan', 'like', '%' . $this->historySearch . '%')
+                  ->orWhereHas('pendaftar', function($q) {
+                      $q->where('nama_lengkap', 'like', '%' . $this->historySearch . '%')
+                        ->orWhere('nomor_pendaftaran', 'like', '%' . $this->historySearch . '%');
+                  });
+            });
+        }
+
+        if ($this->historyStatus) {
+            $query->where('status', $this->historyStatus);
+        }
+
+        if ($this->historyDateFrom) {
+            $query->whereDate('created_at', '>=', $this->historyDateFrom);
+        }
+
+        if ($this->historyDateTo) {
+            $query->whereDate('created_at', '<=', $this->historyDateTo);
+        }
+
+        return $query->paginate(20);
+    }
+
+    /**
+     * Get queue statistics
+     */
+    public function getQueueStatistics()
+    {
+        // Count from RiwayatPesan (history)
+        $sent = RiwayatPesan::where('jenis_pesan', 'whatsapp')
+            ->where('status', 'terkirim')
+            ->count();
+
+        $failed = RiwayatPesan::where('jenis_pesan', 'whatsapp')
+            ->where('status', 'gagal')
+            ->count();
+
+        $pending = RiwayatPesan::where('jenis_pesan', 'whatsapp')
+            ->where('status', 'pending')
+            ->count();
+
+        // Count from MessageQueue (queue system)
+        $queued = MessageQueue::where('jenis_pesan', 'whatsapp')
+            ->whereIn('status', ['queued', 'processing'])
+            ->count();
+
+        $today = RiwayatPesan::where('jenis_pesan', 'whatsapp')
+            ->where('status', 'terkirim')
+            ->whereDate('sent_at', today())
+            ->count();
+
+        return [
+            'total' => $sent + $failed + $pending,
+            'queued' => $queued,
+            'sent' => $sent,
+            'failed' => $failed,
+            'today' => $today,
+        ];
+    }
+
+    /**
+     * Get email statistics
+     */
+    public function getEmailStatistics()
+    {
+        $totalSent = RiwayatPesan::where('jenis_pesan', 'email')
+            ->where('status', 'terkirim')
+            ->count();
+
+        $failed = RiwayatPesan::where('jenis_pesan', 'email')
+            ->where('status', 'gagal')
+            ->count();
+
+        $pending = RiwayatPesan::where('jenis_pesan', 'email')
+            ->where('status', 'pending')
+            ->count();
+
+        $today = RiwayatPesan::where('jenis_pesan', 'email')
+            ->where('status', 'terkirim')
+            ->whereDate('sent_at', today())
+            ->count();
+
+        return [
+            'total' => $totalSent + $failed + $pending,
+            'sent' => $totalSent,
+            'failed' => $failed,
+            'pending' => $pending,
+            'today' => $today,
+        ];
+    }
+
+    /**
+     * Retry failed message from queue
+     */
+    public function retryQueueMessage($queueId)
+    {
+        $service = app(WhatsAppQueueService::class);
+
+        if ($service->retryMessage($queueId)) {
+            session()->flash('message', 'Pesan berhasil di-queue ulang!');
+        } else {
+            session()->flash('error', 'Gagal retry pesan. Pesan tidak ditemukan atau tidak bisa di-retry.');
+        }
+    }
+
+    /**
+     * Cancel queued message
+     */
+    public function cancelQueueMessage($queueId)
+    {
+        $service = app(WhatsAppQueueService::class);
+
+        if ($service->cancelMessage($queueId)) {
+            session()->flash('message', 'Pesan berhasil dibatalkan!');
+        } else {
+            session()->flash('error', 'Gagal membatalkan pesan. Pesan tidak ditemukan atau sudah diproses.');
+        }
+    }
+
+    /**
+     * Clear history filters
+     */
+    public function clearFilters()
+    {
+        $this->historySearch = '';
+        $this->historyStatus = '';
+        $this->historyDateFrom = '';
+        $this->historyDateTo = '';
+        $this->resetPage();
+    }
+
+    /**
+     * Updated to reset page when search changes
+     */
+    public function updatingHistorySearch()
+    {
+        $this->resetPage();
+    }
+
+    public function updatingHistoryStatus()
+    {
+        $this->resetPage();
+    }
+
     // Default Templates
     private function getDefaultEmailPendaftaran()
     {
@@ -635,7 +877,19 @@ class PengaturanPesan extends Component
 
     public function render()
     {
-        return view('livewire.admin.pengaturan-pesan')->layout('components.layouts.dashboard', [
+        // Prepare data based on active tab
+        $data = [];
+
+        if ($this->activeTab === 'history-email') {
+            $data['emailHistory'] = $this->getEmailHistory();
+            $data['emailStats'] = $this->getEmailStatistics();
+        } elseif ($this->activeTab === 'history-whatsapp') {
+            $data['whatsappHistory'] = $this->getWhatsAppHistory();
+            $data['whatsappQueue'] = $this->getWhatsAppQueue();
+            $data['queueStats'] = $this->getQueueStatistics();
+        }
+
+        return view('livewire.admin.pengaturan-pesan', $data)->layout('components.layouts.dashboard', [
             'role' => Auth::user()->role,
             'pageTitle' => 'Pengaturan Pesan Notifikasi',
             'pageDescription' => 'Kelola template pesan email dan WhatsApp'

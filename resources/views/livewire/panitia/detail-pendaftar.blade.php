@@ -116,14 +116,44 @@
                                 </span>
                             </div>
                             <div class="text-left md:text-right">
-                                <p class="text-emerald-100 text-xs font-semibold mb-2 uppercase tracking-wide">Ubah Status</p>
-                                <select wire:model.live="status_pendaftaran" wire:change="updateStatusPendaftaran" class="bg-white text-gray-800 rounded-lg border-2 border-white shadow-md px-4 py-2 text-sm font-semibold focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 hover:bg-gray-50 transition cursor-pointer">
-                                    <option value="menunggu_verifikasi" class="text-gray-800">Menunggu Verifikasi</option>
-                                    <option value="lengkapi_data" class="text-gray-800">Lengkapi Data</option>
-                                    <option value="perbaiki_data" class="text-gray-800">Perbaiki Data</option>
-                                    <option value="data_ditolak" class="text-gray-800">Data Ditolak</option>
-                                    <option value="data_disetujui" class="text-gray-800">Data Disetujui</option>
-                                </select>
+                                <p class="text-emerald-100 text-xs font-semibold mb-2 uppercase tracking-wide flex items-center gap-1 justify-end">
+                                    Ubah Status
+                                    @if(!$this->isAllDocumentsVerified)
+                                        <span class="inline-block" title="Verifikasi semua dokumen terlebih dahulu">
+                                            <svg class="w-4 h-4 text-red-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                            </svg>
+                                        </span>
+                                    @endif
+                                </p>
+                                @if($this->isAllDocumentsVerified)
+                                    <select wire:model.live="status_pendaftaran" wire:change="updateStatusPendaftaran" class="bg-white text-gray-800 rounded-lg border-2 border-white shadow-md px-4 py-2 text-sm font-semibold focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 hover:bg-gray-50 transition cursor-pointer">
+                                        <option value="menunggu_verifikasi" class="text-gray-800">Menunggu Verifikasi</option>
+                                        <option value="lengkapi_data" class="text-gray-800">Lengkapi Data</option>
+                                        <option value="perbaiki_data" class="text-gray-800">Perbaiki Data</option>
+                                        <option value="data_ditolak" class="text-gray-800">Data Ditolak</option>
+                                        <option value="data_disetujui" class="text-gray-800">Data Disetujui</option>
+                                    </select>
+                                @else
+                                    <div class="relative group">
+                                        <select disabled class="bg-gray-300 text-gray-600 rounded-lg border-2 border-gray-400 shadow-md px-4 py-2 text-sm font-semibold cursor-not-allowed opacity-60">
+                                            <option>{{ $statusLabel }}</option>
+                                        </select>
+                                        <div class="absolute bottom-full right-0 mb-2 hidden group-hover:block z-10 w-64">
+                                            <div class="bg-red-600 text-white text-xs rounded-lg px-3 py-2 shadow-lg">
+                                                <div class="flex items-start gap-2">
+                                                    <svg class="w-4 h-4 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                                    </svg>
+                                                    <div>
+                                                        <p class="font-bold mb-1">🔒 Terkunci!</p>
+                                                        <p>Verifikasi semua <strong>dokumen wajib</strong> dan dokumen yang sudah di-upload dengan status <strong>"Disetujui"</strong> terlebih dahulu di tab <strong>Verifikasi Dokumen</strong></p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                @endif
                             </div>
                         </div>
                     </div>
@@ -131,7 +161,7 @@
             </div>
 
             <!-- Tab Navigation -->
-            <div x-data="{ activeTab: 'siswa' }" class="bg-white rounded-lg shadow-lg overflow-hidden">
+            <div x-data="{ activeTab: @entangle('activeTab') }" class="bg-white rounded-lg shadow-lg overflow-hidden">
                 <!-- Tab Buttons -->
                 <div class="border-b border-gray-200 overflow-x-auto">
                     <nav class="flex -mb-px whitespace-nowrap">
@@ -167,6 +197,14 @@
                             <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
                             Pendidikan Lain
                         </button>
+                        <button @click="activeTab = 'survey'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'survey', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'survey' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+                            Survey
+                        </button>
+                        <button @click="activeTab = 'infoakun'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'infoakun', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'infoakun' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                            Info Akun
+                        </button>
                         <button @click="activeTab = 'dokumen'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'dokumen', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'dokumen' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
                             <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                             Verifikasi Dokumen
@@ -174,10 +212,6 @@
                         <button @click="activeTab = 'daftarulang'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'daftarulang', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'daftarulang' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
                             <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
                             Daftar Ulang
-                        </button>
-                        <button @click="activeTab = 'survey'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'survey', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'survey' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
-                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
-                            Survey
                         </button>
                     </nav>
                 </div>
@@ -229,6 +263,11 @@
                         @include('tab_templates.tab-survey')
                     </div>
 
+                    <!-- Tab Info Akun -->
+                    <div x-show="activeTab === 'infoakun'" x-transition>
+                        @include('tab_templates.tab-info-akun')
+                    </div>
+
                     <!-- Tab Daftar Ulang -->
                     <div x-show="activeTab === 'daftarulang'" x-transition>
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Data Daftar Ulang</h3>
@@ -257,6 +296,91 @@
                             <!-- Madrasah Sub-tab -->
                             <div x-show="subTab === 'madrasah'" x-transition class="p-6 space-y-6">
                                 <h4 class="text-md font-semibold text-gray-900 mb-4 border-b pb-2">Daftar Ulang Madrasah</h4>
+
+                                <!-- Informasi Pembayaran -->
+                                <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-4">
+                                    <h5 class="font-semibold text-gray-900 mb-3 flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        Informasi Pembayaran
+                                    </h5>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Opsi Pembayaran:</p>
+                                            <p class="text-gray-900 font-semibold">
+                                                @if($daftarUlang && $daftarUlang->opsi_pembayaran)
+                                                    {{ ucwords(str_replace('_', ' ', $daftarUlang->opsi_pembayaran)) }}
+                                                @else
+                                                    <span class="text-gray-400 italic">Belum dipilih</span>
+                                                @endif
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Metode Pembayaran:</p>
+                                            <p class="text-gray-900 font-semibold">
+                                                @if($daftarUlang && $daftarUlang->metode_pembayaran)
+                                                    {{ strtoupper($daftarUlang->metode_pembayaran) }}
+                                                @else
+                                                    <span class="text-gray-400 italic">Belum dipilih</span>
+                                                @endif
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Nominal Biaya:</p>
+                                            <p class="text-gray-900 font-bold text-lg">
+                                                @if($daftarUlang && $daftarUlang->nominal_biaya)
+                                                    @php
+                                                        $nominalBiaya = is_array($daftarUlang->nominal_biaya) ? $daftarUlang->nominal_biaya : json_decode($daftarUlang->nominal_biaya, true);
+                                                        $totalNominal = is_array($nominalBiaya) ? array_sum($nominalBiaya) : 0;
+                                                    @endphp
+                                                    Rp {{ number_format($totalNominal, 0, ',', '.') }}
+                                                @else
+                                                    <span class="text-gray-400 italic text-sm">Belum ada</span>
+                                                @endif
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Waktu Pembayaran:</p>
+                                            <p class="text-gray-900 font-semibold">
+                                                @if($daftarUlang && $daftarUlang->waktu_pembayaran_madrasah)
+                                                    {{ $daftarUlang->waktu_pembayaran_madrasah->format('d M Y H:i') }}
+                                                @else
+                                                    <span class="text-gray-400 italic">Belum bayar</span>
+                                                @endif
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Status -->
+                                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                    <h5 class="font-semibold text-gray-900 mb-2 flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        Status Daftar Ulang
+                                    </h5>
+                                    <p class="text-sm">
+                                        @if($daftarUlang && $daftarUlang->status)
+                                            @php
+                                                $statusColors = [
+                                                    'menunggu' => 'bg-yellow-100 text-yellow-800 border-yellow-300',
+                                                    'setuju' => 'bg-green-100 text-green-800 border-green-300',
+                                                    'tidak_setuju' => 'bg-red-100 text-red-800 border-red-300',
+                                                ];
+                                                $statusColor = $statusColors[$daftarUlang->status] ?? 'bg-gray-100 text-gray-800 border-gray-300';
+                                            @endphp
+                                            <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold border {{ $statusColor }}">
+                                                {{ ucwords(str_replace('_', ' ', $daftarUlang->status)) }}
+                                            </span>
+                                        @else
+                                            <span class="text-gray-400 italic">Belum ada status</span>
+                                        @endif
+                                    </p>
+                                    @if($daftarUlang && $daftarUlang->catatan)
+                                        <div class="mt-3 p-3 bg-white border border-gray-200 rounded">
+                                            <p class="text-xs text-gray-600 font-medium mb-1">Catatan:</p>
+                                            <p class="text-sm text-gray-700">{{ $daftarUlang->catatan }}</p>
+                                        </div>
+                                    @endif
+                                </div>
 
                                 <!-- Surat Pernyataan -->
                                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -313,6 +437,60 @@
                             <div x-show="subTab === 'seragam'" x-transition class="p-6 space-y-6">
                                 <h4 class="text-md font-semibold text-gray-900 mb-4 border-b pb-2">Daftar Ulang Seragam</h4>
 
+                                <!-- Informasi Pembayaran Seragam -->
+                                <div class="bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 rounded-lg p-4">
+                                    <h5 class="font-semibold text-gray-900 mb-3 flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        Informasi Pembayaran Seragam
+                                    </h5>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Opsi Pembayaran:</p>
+                                            <p class="text-gray-900 font-semibold">
+                                                @if($seragam && $seragam->opsi_pembayaran_seragam)
+                                                    {{ ucwords(str_replace('_', ' ', $seragam->opsi_pembayaran_seragam)) }}
+                                                @else
+                                                    <span class="text-gray-400 italic">Belum dipilih</span>
+                                                @endif
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Bank Transfer:</p>
+                                            <p class="text-gray-900 font-semibold">
+                                                @if($seragam && $seragam->bank_seragam)
+                                                    {{ strtoupper($seragam->bank_seragam) }}
+                                                @else
+                                                    <span class="text-gray-400 italic">Belum dipilih</span>
+                                                @endif
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Nominal Seragam:</p>
+                                            <p class="text-gray-900 font-bold text-lg">
+                                                @if($seragam && $seragam->nominal_seragam)
+                                                    @php
+                                                        $nominalSeragam = is_array($seragam->nominal_seragam) ? $seragam->nominal_seragam : json_decode($seragam->nominal_seragam, true);
+                                                        $totalSeragam = is_array($nominalSeragam) ? array_sum($nominalSeragam) : 0;
+                                                    @endphp
+                                                    Rp {{ number_format($totalSeragam, 0, ',', '.') }}
+                                                @else
+                                                    <span class="text-gray-400 italic text-sm">Belum ada</span>
+                                                @endif
+                                            </p>
+                                        </div>
+                                        <div>
+                                            <p class="text-gray-600 font-medium">Waktu Pembayaran:</p>
+                                            <p class="text-gray-900 font-semibold">
+                                                @if($seragam && $seragam->waktu_pembayaran_seragam)
+                                                    {{ $seragam->waktu_pembayaran_seragam->format('d M Y H:i') }}
+                                                @else
+                                                    <span class="text-gray-400 italic">Belum bayar</span>
+                                                @endif
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+
                                 <!-- Paket Seragam -->
                                 <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
                                     <h5 class="font-semibold text-gray-900 mb-3 flex items-center">
@@ -323,6 +501,37 @@
                                         <p class="text-sm text-gray-700"><strong>Paket yang dipilih:</strong> {{ $seragam->paket_seragam }}</p>
                                     @else
                                         <p class="text-sm text-gray-500 italic">Belum memilih paket seragam</p>
+                                    @endif
+                                </div>
+
+                                <!-- Status Seragam -->
+                                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                    <h5 class="font-semibold text-gray-900 mb-2 flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        Status Seragam
+                                    </h5>
+                                    <p class="text-sm">
+                                        @if($seragam && $seragam->status_seragam)
+                                            @php
+                                                $statusColors = [
+                                                    'menunggu' => 'bg-yellow-100 text-yellow-800 border-yellow-300',
+                                                    'disetujui' => 'bg-green-100 text-green-800 border-green-300',
+                                                    'ditolak' => 'bg-red-100 text-red-800 border-red-300',
+                                                ];
+                                                $statusColor = $statusColors[$seragam->status_seragam] ?? 'bg-gray-100 text-gray-800 border-gray-300';
+                                            @endphp
+                                            <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold border {{ $statusColor }}">
+                                                {{ ucwords(str_replace('_', ' ', $seragam->status_seragam)) }}
+                                            </span>
+                                        @else
+                                            <span class="text-gray-400 italic">Belum ada status</span>
+                                        @endif
+                                    </p>
+                                    @if($seragam && $seragam->catatan_seragam)
+                                        <div class="mt-3 p-3 bg-white border border-gray-200 rounded">
+                                            <p class="text-xs text-gray-600 font-medium mb-1">Catatan:</p>
+                                            <p class="text-sm text-gray-700">{{ $seragam->catatan_seragam }}</p>
+                                        </div>
                                     @endif
                                 </div>
 
@@ -364,45 +573,114 @@
                             <div x-show="subTab === 'ukuran'" x-transition class="p-6 space-y-6">
                                 <h4 class="text-md font-semibold text-gray-900 mb-4 border-b pb-2">Ukuran Seragam & Atribut</h4>
 
+                                <!-- Status Ukuran -->
+                                <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+                                    <h5 class="font-semibold text-gray-900 mb-2 flex items-center">
+                                        <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                                        Status Ukuran
+                                    </h5>
+                                    <p class="text-sm">
+                                        @if($seragam && $seragam->status_ukuran)
+                                            @php
+                                                $statusColors = [
+                                                    'belum' => 'bg-gray-100 text-gray-800 border-gray-300',
+                                                    'sedang_diukur' => 'bg-blue-100 text-blue-800 border-blue-300',
+                                                    'selesai' => 'bg-green-100 text-green-800 border-green-300',
+                                                ];
+                                                $statusColor = $statusColors[$seragam->status_ukuran] ?? 'bg-gray-100 text-gray-800 border-gray-300';
+                                            @endphp
+                                            <span class="inline-block px-3 py-1 rounded-full text-sm font-semibold border {{ $statusColor }}">
+                                                {{ ucwords(str_replace('_', ' ', $seragam->status_ukuran)) }}
+                                            </span>
+                                        @else
+                                            <span class="text-gray-400 italic">Belum ada status</span>
+                                        @endif
+                                    </p>
+                                    @if($seragam && $seragam->catatan_ukuran)
+                                        <div class="mt-3 p-3 bg-white border border-gray-200 rounded">
+                                            <p class="text-xs text-gray-600 font-medium mb-1">Catatan:</p>
+                                            <p class="text-sm text-gray-700">{{ $seragam->catatan_ukuran }}</p>
+                                        </div>
+                                    @endif
+                                </div>
+
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <!-- Ukuran Jas -->
                                     <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                                        <h5 class="font-semibold text-gray-900 mb-2">Ukuran Jas</h5>
+                                        <h5 class="font-semibold text-gray-900 mb-2 flex items-center">
+                                            <svg class="w-4 h-4 mr-1.5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                            Ukuran Jas
+                                        </h5>
                                         @if($seragam && $seragam->ukuran_jas)
-                                            <p class="text-sm text-gray-700">{{ $seragam->ukuran_jas }}</p>
+                                            <p class="text-sm text-gray-900 font-semibold">{{ $seragam->ukuran_jas }}</p>
                                         @else
-                                            <p class="text-sm text-gray-500 italic">Belum diisi</p>
+                                            <p class="text-sm text-gray-400 italic">Belum diisi</p>
                                         @endif
                                     </div>
 
-                                    <!-- Ukuran Atasan -->
+                                    <!-- Ukuran Baju Harian -->
                                     <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                                        <h5 class="font-semibold text-gray-900 mb-2">Ukuran Atasan/Baju</h5>
-                                        @if($seragam && $seragam->ukuran_atasan)
-                                            <p class="text-sm text-gray-700">{{ $seragam->ukuran_atasan }}</p>
+                                        <h5 class="font-semibold text-gray-900 mb-2 flex items-center">
+                                            <svg class="w-4 h-4 mr-1.5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                            Ukuran Baju Harian
+                                        </h5>
+                                        @if($seragam && $seragam->ukuran_baju_harian)
+                                            <p class="text-sm text-gray-900 font-semibold">{{ $seragam->ukuran_baju_harian }}</p>
                                         @else
-                                            <p class="text-sm text-gray-500 italic">Belum diisi</p>
+                                            <p class="text-sm text-gray-400 italic">Belum diisi</p>
                                         @endif
                                     </div>
 
-                                    <!-- Ukuran Bawahan -->
+                                    <!-- Ukuran Celana/Rok Harian -->
                                     <div class="bg-teal-50 border border-teal-200 rounded-lg p-4">
-                                        <h5 class="font-semibold text-gray-900 mb-2">Ukuran Bawahan/Rok/Celana</h5>
-                                        @if($seragam && $seragam->ukuran_bawahan)
-                                            <p class="text-sm text-gray-700">{{ $seragam->ukuran_bawahan }}</p>
+                                        <h5 class="font-semibold text-gray-900 mb-2 flex items-center">
+                                            <svg class="w-4 h-4 mr-1.5 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
+                                            Ukuran {{ $pendaftar->jenis_kelamin === 'L' ? 'Celana' : 'Rok' }} Harian
+                                        </h5>
+                                        @if($seragam && $seragam->ukuran_celana_rok_harian)
+                                            <p class="text-sm text-gray-900 font-semibold">{{ $seragam->ukuran_celana_rok_harian }}</p>
                                         @else
-                                            <p class="text-sm text-gray-500 italic">Belum diisi</p>
+                                            <p class="text-sm text-gray-400 italic">Belum diisi</p>
+                                        @endif
+                                    </div>
+
+                                    <!-- Ukuran Baju Olahraga -->
+                                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                        <h5 class="font-semibold text-gray-900 mb-2 flex items-center">
+                                            <svg class="w-4 h-4 mr-1.5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"></path></svg>
+                                            Ukuran Baju Olahraga
+                                        </h5>
+                                        @if($seragam && $seragam->ukuran_baju_olahraga)
+                                            <p class="text-sm text-gray-900 font-semibold">{{ $seragam->ukuran_baju_olahraga }}</p>
+                                        @else
+                                            <p class="text-sm text-gray-400 italic">Belum diisi</p>
+                                        @endif
+                                    </div>
+
+                                    <!-- Ukuran Celana Olahraga -->
+                                    <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
+                                        <h5 class="font-semibold text-gray-900 mb-2 flex items-center">
+                                            <svg class="w-4 h-4 mr-1.5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10l-2 1m0 0l-2-1m2 1v2.5M20 7l-2 1m2-1l-2-1m2 1v2.5M14 4l-2-1-2 1M4 7l2-1M4 7l2 1M4 7v2.5M12 21l-2-1m2 1l2-1m-2 1v-2.5M6 18l-2-1v-2.5M18 18l2-1v-2.5"></path></svg>
+                                            Ukuran Celana Olahraga
+                                        </h5>
+                                        @if($seragam && $seragam->ukuran_celana_olahraga)
+                                            <p class="text-sm text-gray-900 font-semibold">{{ $seragam->ukuran_celana_olahraga }}</p>
+                                        @else
+                                            <p class="text-sm text-gray-400 italic">Belum diisi</p>
                                         @endif
                                     </div>
 
                                     <!-- Ukuran Kopyah (Khusus Laki-laki) -->
                                     @if($pendaftar->jenis_kelamin === 'L')
                                     <div class="bg-cyan-50 border border-cyan-200 rounded-lg p-4">
-                                        <h5 class="font-semibold text-gray-900 mb-2">Ukuran Kopyah (Laki-laki)</h5>
+                                        <h5 class="font-semibold text-gray-900 mb-2 flex items-center">
+                                            <svg class="w-4 h-4 mr-1.5 text-cyan-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                                            Ukuran Kopyah (Laki-laki)
+                                        </h5>
                                         @if($seragam && $seragam->ukuran_kopyah)
-                                            <p class="text-sm text-gray-700">{{ $seragam->ukuran_kopyah }}</p>
+                                            <p class="text-sm text-gray-900 font-semibold">{{ $seragam->ukuran_kopyah }}</p>
                                         @else
-                                            <p class="text-sm text-gray-500 italic">Belum diisi</p>
+                                            <p class="text-sm text-gray-400 italic">Belum diisi</p>
                                         @endif
                                     </div>
                                     @endif
@@ -415,6 +693,150 @@
                     <div x-show="activeTab === 'dokumen'" x-transition>
                         <h3 class="text-lg font-semibold text-gray-900 mb-4">Verifikasi Berkas / Dokumen</h3>
                         <div class="space-y-6">
+                            <!-- Nilai Rapor Section -->
+                            <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-6 shadow-sm">
+                                @php
+                                    // Hitung rata-rata per mapel
+                                    $nilaiBindoArr = array_filter([
+                                        $pendaftar->nilai_b_indo_5_1,
+                                        $pendaftar->nilai_b_indo_5_2,
+                                        $pendaftar->nilai_b_indo_6_1
+                                    ]);
+                                    $nilaiMatematikaArr = array_filter([
+                                        $pendaftar->nilai_matematika_5_1,
+                                        $pendaftar->nilai_matematika_5_2,
+                                        $pendaftar->nilai_matematika_6_1
+                                    ]);
+                                    $nilaiIPAArr = array_filter([
+                                        $pendaftar->nilai_ipa_5_1,
+                                        $pendaftar->nilai_ipa_5_2,
+                                        $pendaftar->nilai_ipa_6_1
+                                    ]);
+
+                                    $rataBindo = count($nilaiBindoArr) > 0 ? array_sum($nilaiBindoArr) / count($nilaiBindoArr) : 0;
+                                    $rataMatematika = count($nilaiMatematikaArr) > 0 ? array_sum($nilaiMatematikaArr) / count($nilaiMatematikaArr) : 0;
+                                    $rataIPA = count($nilaiIPAArr) > 0 ? array_sum($nilaiIPAArr) / count($nilaiIPAArr) : 0;
+
+                                    // Hitung rata-rata total
+                                    $semuaNilai = array_merge($nilaiBindoArr, $nilaiMatematikaArr, $nilaiIPAArr);
+                                    $rataTotal = count($semuaNilai) > 0 ? array_sum($semuaNilai) / count($semuaNilai) : 0;
+                                @endphp
+
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center">
+                                        <svg class="w-6 h-6 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        <h4 class="text-lg font-bold text-gray-900">Nilai Rapor yang Diinputkan</h4>
+                                    </div>
+                                    <button type="button" wire:click="openEditNilaiRapor" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition shadow-sm">
+                                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                        Edit Nilai
+                                    </button>
+                                </div>
+
+                                <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+                                    <!-- Tabel Nilai per Semester -->
+                                    <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+                                        <h5 class="font-semibold text-gray-900 mb-3 text-sm">Nilai per Semester & Mata Pelajaran</h5>
+                                        <div class="overflow-x-auto">
+                                            <table class="min-w-full text-sm">
+                                                <thead class="bg-gray-50">
+                                                    <tr>
+                                                        <th class="px-3 py-2 text-left text-xs font-semibold text-gray-700 border-b">Semester</th>
+                                                        <th class="px-3 py-2 text-center text-xs font-semibold text-gray-700 border-b">B. Indo</th>
+                                                        <th class="px-3 py-2 text-center text-xs font-semibold text-gray-700 border-b">Matematika</th>
+                                                        <th class="px-3 py-2 text-center text-xs font-semibold text-gray-700 border-b">IPA</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody class="divide-y divide-gray-200">
+                                                    <tr class="hover:bg-gray-50">
+                                                        <td class="px-3 py-2 text-gray-700 font-medium">Kelas 5 Sem 1</td>
+                                                        <td class="px-3 py-2 text-center">
+                                                            <span class="font-semibold text-blue-600">{{ $pendaftar->nilai_b_indo_5_1 ?? '-' }}</span>
+                                                        </td>
+                                                        <td class="px-3 py-2 text-center">
+                                                            <span class="font-semibold text-green-600">{{ $pendaftar->nilai_matematika_5_1 ?? '-' }}</span>
+                                                        </td>
+                                                        <td class="px-3 py-2 text-center">
+                                                            <span class="font-semibold text-purple-600">{{ $pendaftar->nilai_ipa_5_1 ?? '-' }}</span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="hover:bg-gray-50">
+                                                        <td class="px-3 py-2 text-gray-700 font-medium">Kelas 5 Sem 2</td>
+                                                        <td class="px-3 py-2 text-center">
+                                                            <span class="font-semibold text-blue-600">{{ $pendaftar->nilai_b_indo_5_2 ?? '-' }}</span>
+                                                        </td>
+                                                        <td class="px-3 py-2 text-center">
+                                                            <span class="font-semibold text-green-600">{{ $pendaftar->nilai_matematika_5_2 ?? '-' }}</span>
+                                                        </td>
+                                                        <td class="px-3 py-2 text-center">
+                                                            <span class="font-semibold text-purple-600">{{ $pendaftar->nilai_ipa_5_2 ?? '-' }}</span>
+                                                        </td>
+                                                    </tr>
+                                                    <tr class="hover:bg-gray-50">
+                                                        <td class="px-3 py-2 text-gray-700 font-medium">Kelas 6 Sem 1</td>
+                                                        <td class="px-3 py-2 text-center">
+                                                            <span class="font-semibold text-blue-600">{{ $pendaftar->nilai_b_indo_6_1 ?? '-' }}</span>
+                                                        </td>
+                                                        <td class="px-3 py-2 text-center">
+                                                            <span class="font-semibold text-green-600">{{ $pendaftar->nilai_matematika_6_1 ?? '-' }}</span>
+                                                        </td>
+                                                        <td class="px-3 py-2 text-center">
+                                                            <span class="font-semibold text-purple-600">{{ $pendaftar->nilai_ipa_6_1 ?? '-' }}</span>
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+
+                                    <!-- Nilai Rata-rata -->
+                                    <div class="space-y-3">
+                                        <!-- Rata-rata per Mapel -->
+                                        <div class="bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+                                            <h5 class="font-semibold text-gray-900 mb-3 text-sm">Rata-rata per Mata Pelajaran</h5>
+                                            <div class="space-y-2">
+                                                <div class="flex justify-between items-center p-2 bg-blue-50 rounded">
+                                                    <span class="text-sm font-medium text-gray-700">Bahasa Indonesia</span>
+                                                    <span class="text-base font-bold text-blue-600">{{ number_format($rataBindo, 2) }}</span>
+                                                </div>
+                                                <div class="flex justify-between items-center p-2 bg-green-50 rounded">
+                                                    <span class="text-sm font-medium text-gray-700">Matematika</span>
+                                                    <span class="text-base font-bold text-green-600">{{ number_format($rataMatematika, 2) }}</span>
+                                                </div>
+                                                <div class="flex justify-between items-center p-2 bg-purple-50 rounded">
+                                                    <span class="text-sm font-medium text-gray-700">IPA</span>
+                                                    <span class="text-base font-bold text-purple-600">{{ number_format($rataIPA, 2) }}</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Rata-rata Total -->
+                                        <div class="bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg p-4 shadow-md text-white">
+                                            <h5 class="font-semibold mb-2 text-sm opacity-90">Nilai Rata-rata Total</h5>
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-sm">Semua Mata Pelajaran</span>
+                                                <span class="text-3xl font-bold">{{ number_format($rataTotal, 2) }}</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                @if(count($semuaNilai) === 0)
+                                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-2">
+                                        <p class="text-sm text-yellow-800 flex items-center">
+                                            <svg class="w-5 h-5 mr-2 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                            </svg>
+                                            <span><strong>Perhatian:</strong> Pendaftar belum mengisi nilai rapor</span>
+                                        </p>
+                                    </div>
+                                @endif
+                            </div>
+
                             @php
                                 $dokumenList = [
                                     ['key' => 'rapor', 'label' => 'Scan Rapor', 'search_keys' => ['rapor', 'raport'], 'wajib' => true],
@@ -557,6 +979,58 @@
                                         </div>
                                     </div>
 
+                                    <!-- Upload Dokumen (Admin/Panitia Help Upload) -->
+                                    <div class="mt-4 pt-4 border-t border-gray-200">
+                                        <label class="block text-sm font-semibold text-gray-700 mb-2">
+                                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                            </svg>
+                                            Upload Dokumen (Bantu Pendaftar)
+                                        </label>
+                                        @if($isConditional && !$isEnabled)
+                                            <div class="bg-gray-100 border border-gray-300 rounded-lg p-3 text-center">
+                                                <p class="text-xs text-gray-600">
+                                                    🔒 Upload dinonaktifkan karena dokumen ini terkunci
+                                                </p>
+                                            </div>
+                                        @else
+                                            <div class="flex items-center gap-2">
+                                                <input
+                                                    type="file"
+                                                    wire:model="uploadDokumen{{ ucfirst($dok['key']) }}"
+                                                    accept=".pdf"
+                                                    class="flex-1 text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 border border-gray-300 rounded-md"
+                                                />
+                                                <button
+                                                    wire:click="uploadDokumen('{{ $dok['key'] }}')"
+                                                    wire:loading.attr="disabled"
+                                                    wire:target="uploadDokumen{{ ucfirst($dok['key']) }}, uploadDokumen('{{ $dok['key'] }}')"
+                                                    class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center whitespace-nowrap"
+                                                >
+                                                    <span wire:loading.remove wire:target="uploadDokumen{{ ucfirst($dok['key']) }}, uploadDokumen('{{ $dok['key'] }}')" class="inline-flex items-center">
+                                                        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                                        </svg>
+                                                        Upload
+                                                    </span>
+                                                    <span wire:loading wire:target="uploadDokumen{{ ucfirst($dok['key']) }}, uploadDokumen('{{ $dok['key'] }}')" class="inline-flex items-center">
+                                                        <svg class="animate-spin w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24">
+                                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        Uploading...
+                                                    </span>
+                                                </button>
+                                            </div>
+                                            @error('uploadDokumen' . ucfirst($dok['key']))
+                                                <p class="text-xs text-red-600 mt-1">{{ $message }}</p>
+                                            @enderror
+                                            <p class="text-xs text-gray-500 mt-1">
+                                                Format: PDF. Maks: 2MB
+                                            </p>
+                                        @endif
+                                    </div>
+
                                     <!-- Tombol Simpan -->
                                     <div class="mt-3">
                                         @if($isConditional && !$isEnabled)
@@ -574,16 +1048,16 @@
                                             <button
                                                 wire:click="updateStatusDokumen('{{ $dok['key'] }}')"
                                                 wire:loading.attr="disabled"
-                                                wire:target="updateStatusDokumen"
+                                                wire:target="updateStatusDokumen('{{ $dok['key'] }}')"
                                                 class="px-4 py-2 bg-emerald-600 text-white text-sm font-medium rounded-md hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 transition disabled:opacity-50 disabled:cursor-not-allowed inline-flex items-center"
                                             >
-                                                <span wire:loading.remove wire:target="updateStatusDokumen" class="inline-flex items-center">
+                                                <span wire:loading.remove wire:target="updateStatusDokumen('{{ $dok['key'] }}')" class="inline-flex items-center">
                                                     <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                                                     </svg>
                                                     Simpan Status
                                                 </span>
-                                                <span wire:loading wire:target="updateStatusDokumen" class="inline-flex items-center">
+                                                <span wire:loading wire:target="updateStatusDokumen('{{ $dok['key'] }}')" class="inline-flex items-center">
                                                     <svg class="animate-spin w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24">
                                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -602,12 +1076,190 @@
 
             <!-- Tombol Kembali -->
             <div class="flex justify-end">
-                <a href="{{ route($routePrefix . '.pendaftar') }}" class="px-6 py-3 bg-gray-600 text-white font-medium rounded-md hover:bg-gray-700 transition">
+                <a href="{{ route('panitia-pendaftaran.pendaftar') }}" class="px-6 py-3 bg-gray-600 text-white font-medium rounded-md hover:bg-gray-700 transition">
                     <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
                     Kembali ke Daftar Pendaftar
                 </a>
+            </div>
+        </div>
+    @endif
+
+    <!-- Modal Edit Nilai Rapor -->
+    @if($showEditNilaiRapor)
+        <div class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full z-50" wire:click.self="closeEditNilaiRapor">
+            <div class="relative top-10 mx-auto p-6 border w-full max-w-5xl shadow-2xl rounded-xl bg-white mb-10">
+                <div class="flex items-center justify-between mb-4 border-b pb-3">
+                    <h3 class="text-xl font-bold text-gray-900 flex items-center">
+                        <svg class="w-6 h-6 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        Edit Nilai Rapor
+                    </h3>
+                    <button wire:click="closeEditNilaiRapor" class="text-gray-400 hover:text-gray-600 transition">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <form wire:submit.prevent="saveNilaiRapor">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                        <!-- Bahasa Indonesia -->
+                        <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-blue-900 mb-3 flex items-center text-sm">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
+                                </svg>
+                                Bahasa Indonesia
+                            </h4>
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Kelas 5 Sem 1</label>
+                                    <input type="number" wire:model.live="edit_nilai_b_indo_5_1" step="0.01" min="0" max="100" class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    @error('edit_nilai_b_indo_5_1') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Kelas 5 Sem 2</label>
+                                    <input type="number" wire:model.live="edit_nilai_b_indo_5_2" step="0.01" min="0" max="100" class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    @error('edit_nilai_b_indo_5_2') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Kelas 6 Sem 1</label>
+                                    <input type="number" wire:model.live="edit_nilai_b_indo_6_1" step="0.01" min="0" max="100" class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    @error('edit_nilai_b_indo_6_1') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            @php
+                                $nilaiBindoEdit = array_filter([
+                                    $edit_nilai_b_indo_5_1,
+                                    $edit_nilai_b_indo_5_2,
+                                    $edit_nilai_b_indo_6_1
+                                ]);
+                                $rataBindoEdit = count($nilaiBindoEdit) > 0 ? array_sum($nilaiBindoEdit) / count($nilaiBindoEdit) : 0;
+                            @endphp
+                            <div class="mt-3 pt-3 border-t border-blue-300">
+                                <div class="flex justify-between items-center bg-blue-100 rounded px-2 py-1.5">
+                                    <span class="text-xs font-medium text-blue-900">Rata-rata:</span>
+                                    <span class="text-sm font-bold text-blue-700">{{ number_format($rataBindoEdit, 2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Matematika -->
+                        <div class="bg-green-50 border-2 border-green-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-green-900 mb-3 flex items-center text-sm">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                </svg>
+                                Matematika
+                            </h4>
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Kelas 5 Sem 1</label>
+                                    <input type="number" wire:model.live="edit_nilai_matematika_5_1" step="0.01" min="0" max="100" class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                    @error('edit_nilai_matematika_5_1') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Kelas 5 Sem 2</label>
+                                    <input type="number" wire:model.live="edit_nilai_matematika_5_2" step="0.01" min="0" max="100" class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                    @error('edit_nilai_matematika_5_2') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Kelas 6 Sem 1</label>
+                                    <input type="number" wire:model.live="edit_nilai_matematika_6_1" step="0.01" min="0" max="100" class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500">
+                                    @error('edit_nilai_matematika_6_1') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            @php
+                                $nilaiMatematikaEdit = array_filter([
+                                    $edit_nilai_matematika_5_1,
+                                    $edit_nilai_matematika_5_2,
+                                    $edit_nilai_matematika_6_1
+                                ]);
+                                $rataMatematikaEdit = count($nilaiMatematikaEdit) > 0 ? array_sum($nilaiMatematikaEdit) / count($nilaiMatematikaEdit) : 0;
+                            @endphp
+                            <div class="mt-3 pt-3 border-t border-green-300">
+                                <div class="flex justify-between items-center bg-green-100 rounded px-2 py-1.5">
+                                    <span class="text-xs font-medium text-green-900">Rata-rata:</span>
+                                    <span class="text-sm font-bold text-green-700">{{ number_format($rataMatematikaEdit, 2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- IPA -->
+                        <div class="bg-purple-50 border-2 border-purple-200 rounded-lg p-4">
+                            <h4 class="font-semibold text-purple-900 mb-3 flex items-center text-sm">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path>
+                                </svg>
+                                IPA
+                            </h4>
+                            <div class="space-y-2">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Kelas 5 Sem 1</label>
+                                    <input type="number" wire:model.live="edit_nilai_ipa_5_1" step="0.01" min="0" max="100" class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                    @error('edit_nilai_ipa_5_1') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Kelas 5 Sem 2</label>
+                                    <input type="number" wire:model.live="edit_nilai_ipa_5_2" step="0.01" min="0" max="100" class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                    @error('edit_nilai_ipa_5_2') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-700 mb-1">Kelas 6 Sem 1</label>
+                                    <input type="number" wire:model.live="edit_nilai_ipa_6_1" step="0.01" min="0" max="100" class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500">
+                                    @error('edit_nilai_ipa_6_1') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                                </div>
+                            </div>
+                            @php
+                                $nilaiIPAEdit = array_filter([
+                                    $edit_nilai_ipa_5_1,
+                                    $edit_nilai_ipa_5_2,
+                                    $edit_nilai_ipa_6_1
+                                ]);
+                                $rataIPAEdit = count($nilaiIPAEdit) > 0 ? array_sum($nilaiIPAEdit) / count($nilaiIPAEdit) : 0;
+                            @endphp
+                            <div class="mt-3 pt-3 border-t border-purple-300">
+                                <div class="flex justify-between items-center bg-purple-100 rounded px-2 py-1.5">
+                                    <span class="text-xs font-medium text-purple-900">Rata-rata:</span>
+                                    <span class="text-sm font-bold text-purple-700">{{ number_format($rataIPAEdit, 2) }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rata-rata Total -->
+                    @php
+                        $semuaNilaiEdit = array_merge($nilaiBindoEdit ?? [], $nilaiMatematikaEdit ?? [], $nilaiIPAEdit ?? []);
+                        $rataTotalEdit = count($semuaNilaiEdit) > 0 ? array_sum($semuaNilaiEdit) / count($semuaNilaiEdit) : 0;
+                    @endphp
+                    <div class="mt-4 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg p-4 shadow-md text-white">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center">
+                                <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                                </svg>
+                                <span class="font-semibold">Nilai Rata-rata Total</span>
+                            </div>
+                            <span class="text-3xl font-bold">{{ number_format($rataTotalEdit, 2) }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="flex justify-end space-x-3 mt-4 pt-4 border-t">
+                        <button type="button" wire:click="closeEditNilaiRapor" class="px-5 py-2 bg-gray-500 text-white font-medium rounded-lg hover:bg-gray-600 transition text-sm">
+                            Batal
+                        </button>
+                        <button type="submit" class="px-5 py-2 bg-blue-600 text-white font-medium rounded-lg hover:bg-blue-700 transition shadow-md text-sm">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                            Simpan Perubahan
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     @endif

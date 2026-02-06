@@ -45,9 +45,9 @@ class DataAsalSekolah extends Component
 
         if ($this->search) {
             $query->where(function($q) {
-                $q->where('asal_sekolah', 'like', '%' . $this->search . '%')
-                  ->orWhere('npsn_sekolah_asal', 'like', '%' . $this->search . '%')
-                  ->orWhere('nsm_sekolah_asal', 'like', '%' . $this->search . '%');
+                $q->where('asal_sekolah', 'ilike', '%' . $this->search . '%')
+                  ->orWhere('npsn_sekolah_asal', 'ilike', '%' . $this->search . '%')
+                  ->orWhere('nsm_sekolah_asal', 'ilike', '%' . $this->search . '%');
             });
         }
 

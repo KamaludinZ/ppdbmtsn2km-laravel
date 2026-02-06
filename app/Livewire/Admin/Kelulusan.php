@@ -95,9 +95,9 @@ class Kelulusan extends Component
         // Apply filters
         if ($this->search) {
             $query->where(function($q) {
-                $q->where('nama_lengkap', 'like', '%' . $this->search . '%')
-                  ->orWhere('nisn', 'like', '%' . $this->search . '%')
-                  ->orWhere('nomor_pendaftaran', 'like', '%' . $this->search . '%');
+                $q->where('nama_lengkap', 'ilike', '%' . $this->search . '%')
+                  ->orWhere('nisn', 'ilike', '%' . $this->search . '%')
+                  ->orWhere('nomor_pendaftaran', 'ilike', '%' . $this->search . '%');
             });
         }
 
@@ -113,9 +113,9 @@ class Kelulusan extends Component
         $statsData = Pendaftar::query()
             ->when($this->search, function ($q) {
                 $q->where(function($subQ) {
-                    $subQ->where('nama_lengkap', 'like', '%' . $this->search . '%')
-                      ->orWhere('nisn', 'like', '%' . $this->search . '%')
-                      ->orWhere('nomor_pendaftaran', 'like', '%' . $this->search . '%');
+                    $subQ->where('nama_lengkap', 'ilike', '%' . $this->search . '%')
+                      ->orWhere('nisn', 'ilike', '%' . $this->search . '%')
+                      ->orWhere('nomor_pendaftaran', 'ilike', '%' . $this->search . '%');
                 });
             })
             ->when($this->filterJalur, fn($q) => $q->where('jalur_pendaftaran_id', $this->filterJalur))

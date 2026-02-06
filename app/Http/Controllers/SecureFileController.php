@@ -33,7 +33,7 @@ class SecureFileController extends Controller
         }
 
         // Check if file exists
-        if (!Storage::disk('private')->exists($dokumen->file_path)) {
+        if (!Storage::disk('private')->exists($dokumen->path_file)) {
             abort(404, 'File tidak ditemukan.');
         }
 
@@ -42,7 +42,7 @@ class SecureFileController extends Controller
 
         // Download file
         return Storage::disk('private')->download(
-            $dokumen->file_path,
+            $dokumen->path_file,
             $fileName
         );
     }
@@ -64,15 +64,56 @@ class SecureFileController extends Controller
         }
 
         // Check if file exists
-        if (!Storage::disk('private')->exists($dokumen->file_path)) {
+        if (!Storage::disk('private')->exists($dokumen->path_file)) {
             abort(404, 'File tidak ditemukan.');
         }
 
         // Get file
-        $file = Storage::disk('private')->get($dokumen->file_path);
-        $mimeType = Storage::disk('private')->mimeType($dokumen->file_path);
+        $file = Storage::disk('private')->get($dokumen->path_file);
+        $mimeType = Storage::disk('private')->mimeType($dokumen->path_file);
 
-        // Return file as response (inline display)
+        // Return file as response (inline display) with no-cache headers
+        return response($file, 200)
+            ->header('Content-Type', $mimeType)
+            ->header('Content-Disposition', 'inline')
+            ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
+            ->header('Pragma', 'no-cache')
+            ->header('Expires', '0');
+    }
+
+    /**
+     * View/Preview bukti pembayaran (inline display)
+     *
+     * @param int $pendaftarId
+     * @param string $type (daftar_ulang|seragam|psikologi)
+     * @return \Illuminate\Http\Response
+     */
+    public function viewBuktiBayar($pendaftarId, $type)
+    {
+        $pendaftar = Pendaftar::findOrFail($pendaftarId);
+
+        // Authorization check
+        if (!$this->canAccessBuktiBayar($pendaftar)) {
+            abort(403, 'Anda tidak memiliki akses ke file ini.');
+        }
+
+        // Get file path based on type
+        $filePath = $this->getBuktiBayarPath($pendaftar, $type);
+
+        if (!$filePath) {
+            abort(404, 'Bukti pembayaran tidak ditemukan.');
+        }
+
+        // Check if file exists
+        if (!Storage::disk('private')->exists($filePath)) {
+            abort(404, 'File tidak ditemukan di: ' . $filePath);
+        }
+
+        // Get file and mime type
+        $file = Storage::disk('private')->get($filePath);
+        $mimeType = Storage::disk('private')->mimeType($filePath);
+
+        // Return file as inline response (for preview in browser)
         return response($file, 200)
             ->header('Content-Type', $mimeType)
             ->header('Content-Disposition', 'inline');
@@ -94,38 +135,9 @@ class SecureFileController extends Controller
             abort(403, 'Anda tidak memiliki akses ke file ini.');
         }
 
-        // Get file path based on type
-        $filePath = null;
-        $fileName = null;
-
-        switch ($type) {
-            case 'daftar_ulang':
-                $daftarUlang = $pendaftar->daftarUlang;
-                if ($daftarUlang && $daftarUlang->bukti_bayar) {
-                    $filePath = $daftarUlang->bukti_bayar;
-                    $fileName = 'bukti_daftar_ulang_' . $pendaftar->nomor_pendaftaran . '.pdf';
-                }
-                break;
-
-            case 'seragam':
-                $seragam = $pendaftar->seragam;
-                if ($seragam && $seragam->bukti_bayar) {
-                    $filePath = $seragam->bukti_bayar;
-                    $fileName = 'bukti_seragam_' . $pendaftar->nomor_pendaftaran . '.pdf';
-                }
-                break;
-
-            case 'psikologi':
-                $tesPsikologi = $pendaftar->tesPsikologi;
-                if ($tesPsikologi && $tesPsikologi->bukti_transfer) {
-                    $filePath = $tesPsikologi->bukti_transfer;
-                    $fileName = 'bukti_psikologi_' . $pendaftar->nomor_pendaftaran . '.pdf';
-                }
-                break;
-
-            default:
-                abort(404);
-        }
+        // Get file path and name
+        $filePath = $this->getBuktiBayarPath($pendaftar, $type);
+        $fileName = $this->getBuktiBayarFileName($pendaftar, $type, $filePath);
 
         if (!$filePath) {
             abort(404, 'Bukti pembayaran tidak ditemukan.');
@@ -138,6 +150,57 @@ class SecureFileController extends Controller
 
         // Download file
         return Storage::disk('private')->download($filePath, $fileName);
+    }
+
+    /**
+     * Get bukti bayar file path based on type
+     *
+     * @param Pendaftar $pendaftar
+     * @param string $type
+     * @return string|null
+     */
+    protected function getBuktiBayarPath(Pendaftar $pendaftar, string $type): ?string
+    {
+        switch ($type) {
+            case 'daftar_ulang':
+                $daftarUlang = $pendaftar->daftarUlang;
+                return $daftarUlang?->bukti_bayar;
+
+            case 'seragam':
+                $seragam = $pendaftar->seragam;
+                return $seragam?->bukti_bayar;
+
+            case 'psikologi':
+                $tesPsikologi = $pendaftar->tesPsikologiPendaftar;
+                return $tesPsikologi?->bukti_transfer;
+
+            default:
+                return null;
+        }
+    }
+
+    /**
+     * Get bukti bayar file name for download
+     *
+     * @param Pendaftar $pendaftar
+     * @param string $type
+     * @param string $filePath
+     * @return string
+     */
+    protected function getBuktiBayarFileName(Pendaftar $pendaftar, string $type, string $filePath): string
+    {
+        $extension = pathinfo($filePath, PATHINFO_EXTENSION);
+        $nomorPendaftaran = $pendaftar->nomor_pendaftaran;
+
+        $typeLabels = [
+            'daftar_ulang' => 'bukti_daftar_ulang',
+            'seragam' => 'bukti_seragam',
+            'psikologi' => 'bukti_psikologi',
+        ];
+
+        $label = $typeLabels[$type] ?? 'bukti';
+
+        return "{$label}_{$nomorPendaftaran}.{$extension}";
     }
 
     /**
@@ -186,21 +249,25 @@ class SecureFileController extends Controller
         $jenisLabels = [
             'ktp' => 'KTP',
             'kk' => 'Kartu_Keluarga',
+            'akta_kelahiran' => 'Akta_Kelahiran',
             'akta_lahir' => 'Akta_Lahir',
             'ijazah' => 'Ijazah',
+            'rapor' => 'Rapor',
             'raport' => 'Raport',
             'skhun' => 'SKHUN',
             'foto' => 'Foto',
             'skl' => 'SKL',
             'prestasi' => 'Sertifikat_Prestasi',
+            'sertifikat' => 'Sertifikat',
             'pkh' => 'Kartu_PKH',
             'kks' => 'Kartu_KKS',
             'kip' => 'Kartu_KIP',
+            'nisn' => 'NISN',
         ];
 
         $jenis = $jenisLabels[$dokumen->jenis_dokumen] ?? $dokumen->jenis_dokumen;
         $nomorPendaftaran = $dokumen->pendaftar->nomor_pendaftaran;
-        $extension = pathinfo($dokumen->file_path, PATHINFO_EXTENSION);
+        $extension = pathinfo($dokumen->path_file, PATHINFO_EXTENSION);
 
         return "{$jenis}_{$nomorPendaftaran}.{$extension}";
     }

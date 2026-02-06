@@ -76,9 +76,12 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Pendaftaran</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NISN</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pendaftar</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jalur</th>
+                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Kelamin</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opsi/Biaya</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bank Transfer</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu Transfer</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pengirim</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bukti Transfer</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Psikologi</th>
                         @if($setting && $setting->survey_aktif)
@@ -103,6 +106,14 @@
                         <td class="px-6 py-4">
                             <div class="text-sm font-medium text-gray-900">{{ $data->pendaftar->nama_lengkap }}</div>
                         </td>
+                        <td class="px-6 py-4">
+                            <div class="text-sm text-gray-700">{{ $data->pendaftar->jalurPendaftaran->nama ?? '-' }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <span class="px-2 py-1 text-xs font-semibold rounded-full {{ $data->pendaftar->jenis_kelamin === 'L' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800' }}">
+                                {{ $data->pendaftar->jenis_kelamin === 'L' ? 'Laki-laki' : ($data->pendaftar->jenis_kelamin === 'P' ? 'Perempuan' : '-') }}
+                            </span>
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-semibold text-gray-900">
                                 Rp {{ number_format(floatval(str_replace('.', '', $data->opsi->nama ?? '0')), 0, ',', '.') }}
@@ -124,8 +135,11 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">{{ $data->nama_pengirim ?? '-' }}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
                             @if($data->bukti_transfer)
-                                <a href="{{ Storage::url($data->bukti_transfer) }}" target="_blank" class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition text-xs font-medium">
+                                <a href="{{ route('view.bukti-bayar', ['pendaftar' => $data->pendaftar_id, 'type' => 'psikologi']) }}" target="_blank" class="inline-flex items-center px-3 py-1 bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition text-xs font-medium">
                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>

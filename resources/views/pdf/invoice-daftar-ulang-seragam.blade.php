@@ -240,6 +240,11 @@
                             <td class="value">{{ $bank['name'] ?? 'Bank' }} {{ isset($bank['account_number']) ? '- ' . $bank['account_number'] : '' }}</td>
                         </tr>
                         <tr>
+                            <td class="label" style="width: 30%;">Nama Pengirim</td>
+                            <td class="separator">:</td>
+                            <td class="value">{{ $seragam->nama_pengirim_seragam ?? '-' }}</td>
+                        </tr>
+                        <tr>
                             <td class="label" style="width: 30%;">Waktu Transfer</td>
                             <td class="separator">:</td>
                             <td class="value">{{ $seragam->updated_at ? $seragam->updated_at->format('d/m/Y H:i') . ' WIB' : '-' }}</td>

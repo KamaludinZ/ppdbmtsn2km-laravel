@@ -1,0 +1,63 @@
+========================================
+DAFTAR FILE UPLOAD - History Pesan Enhancement
+Tanggal: 3 Februari 2026
+Total: 9 files
+========================================
+
+MODEL (1):
+----------
+app/Models/MessageQueue.php
+
+CONTROLLERS (3):
+----------------
+app/Livewire/Admin/Pendaftar.php
+app/Livewire/Panitia/Pendaftar.php
+app/Livewire/Admin/PengaturanPesan.php
+
+VIEWS (4):
+----------
+resources/views/livewire/admin/pendaftar.blade.php
+resources/views/livewire/panitia/pendaftar.blade.php
+resources/views/livewire/admin/partials/history-email-tab.blade.php
+resources/views/livewire/admin/partials/history-whatsapp-tab.blade.php
+
+MIGRATION (1):
+--------------
+database/migrations/2026_02_03_210000_create_message_queue_table.php
+
+========================================
+AFTER UPLOAD - RUN THESE COMMANDS:
+========================================
+
+ssh mtsnkot4@103.30.244.77
+cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id
+
+# Backup first!
+pg_dump -U mtsnkot4 -d mtsnkot4_ppdb > backup_$(date +%Y%m%d_%H%M%S).sql
+
+# Set permissions
+chmod 644 app/Models/MessageQueue.php
+chmod 644 app/Livewire/Admin/Pendaftar.php
+chmod 644 app/Livewire/Panitia/Pendaftar.php
+chmod 644 app/Livewire/Admin/PengaturanPesan.php
+chmod 644 resources/views/livewire/admin/pendaftar.blade.php
+chmod 644 resources/views/livewire/panitia/pendaftar.blade.php
+chmod 644 resources/views/livewire/admin/partials/history-email-tab.blade.php
+chmod 644 resources/views/livewire/admin/partials/history-whatsapp-tab.blade.php
+chmod 644 database/migrations/2026_02_03_210000_create_message_queue_table.php
+
+# Run migration
+php artisan migrate --force
+
+# Clear caches
+php artisan optimize:clear
+
+========================================
+QUICK TEST:
+========================================
+
+1. /admin/pengaturan-pesan (History WhatsApp & Email)
+2. /admin/pendaftar (Filter EMIS)
+3. /panitia-pendaftaran/pendaftar (Filter EMIS)
+
+========================================

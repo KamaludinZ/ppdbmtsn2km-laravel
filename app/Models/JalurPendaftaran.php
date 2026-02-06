@@ -71,25 +71,54 @@ class JalurPendaftaran extends Model
      * Generate nomor pendaftaran berikutnya untuk jalur ini
      * Format: [PREFIX]-[YY][MM][0001-9999]
      * Contoh: REG-25040001 (REG prefix, tahun 25, bulan 04, urutan 0001)
+     *
+     * Menggunakan database locking untuk mencegah race condition
      */
     public function generateNomorPendaftaran(): string
     {
-        $prefix = $this->getNomorPrefix();
+        return \DB::transaction(function () {
+            $prefix = $this->getNomorPrefix();
 
-        // Ambil tahun dan bulan saat ini
-        $year = date('y');  // 2 digit tahun (contoh: 25 untuk 2025)
-        $month = date('m'); // 2 digit bulan (contoh: 04 untuk April)
+            // Ambil tahun dan bulan saat ini
+            $year = date('y');  // 2 digit tahun (contoh: 25 untuk 2025)
+            $month = date('m'); // 2 digit bulan (contoh: 04 untuk April)
 
-        // Hitung jumlah pendaftar di jalur ini untuk bulan ini
-        $count = $this->pendaftar()
-            ->whereYear('created_at', date('Y'))
-            ->whereMonth('created_at', date('m'))
-            ->count() + 1;
+            // Generate pattern untuk bulan ini
+            $monthPattern = $prefix . '-' . $year . $month . '%';
 
-        // Format dengan 4 digit urutan
-        $number = str_pad($count, 4, '0', STR_PAD_LEFT);
+            // Ambil nomor terakhir untuk bulan ini dengan locking
+            // Menggunakan lockForUpdate() untuk mencegah race condition
+            $lastPendaftar = Pendaftar::where('jalur_pendaftaran_id', $this->id)
+                ->where('nomor_pendaftaran', 'like', $monthPattern)
+                ->lockForUpdate()
+                ->orderByRaw('CAST(RIGHT(nomor_pendaftaran, 4) AS INTEGER) DESC')
+                ->first();
 
-        return $prefix . '-' . $year . $month . $number;
+            if ($lastPendaftar && $lastPendaftar->nomor_pendaftaran) {
+                // Extract 4 digit terakhir dan increment
+                $lastNumber = intval(substr($lastPendaftar->nomor_pendaftaran, -4));
+                $nextNumber = $lastNumber + 1;
+            } else {
+                // Ini nomor pertama untuk bulan ini
+                $nextNumber = 1;
+            }
+
+            // Format dengan 4 digit urutan
+            $number = str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+
+            $nomorPendaftaran = $prefix . '-' . $year . $month . $number;
+
+            // Double check: pastikan nomor belum ada (extra safety)
+            $exists = Pendaftar::where('nomor_pendaftaran', $nomorPendaftaran)->exists();
+            if ($exists) {
+                // Jika masih bentrok (sangat jarang), increment lagi
+                $nextNumber++;
+                $number = str_pad($nextNumber, 4, '0', STR_PAD_LEFT);
+                $nomorPendaftaran = $prefix . '-' . $year . $month . $number;
+            }
+
+            return $nomorPendaftaran;
+        });
     }
 
     /**

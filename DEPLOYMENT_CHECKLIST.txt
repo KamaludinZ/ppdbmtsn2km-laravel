@@ -1,0 +1,183 @@
+═══════════════════════════════════════════════════════════════
+ DEPLOYMENT CHECKLIST - Survey Overwrite Bug Fix
+═══════════════════════════════════════════════════════════════
+
+ROOT CAUSE: Model cast 'jawaban' => 'array' forcing corruption
+FIX: Removed array cast from SurveyAnswer.php model
+
+═══════════════════════════════════════════════════════════════
+ PRE-DEPLOYMENT
+═══════════════════════════════════════════════════════════════
+
+[✓] Root cause identified: Model cast issue
+[✓] Fix applied to local files
+[✓] Documentation created
+[✓] Deployment guides prepared
+
+═══════════════════════════════════════════════════════════════
+ DEPLOYMENT STEPS
+═══════════════════════════════════════════════════════════════
+
+STEP 1: UPLOAD FILES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Method A: Via FileZilla/WinSCP
+─────────────────────────────────────────────────────────────
+[ ] Connect to 103.30.244.77 port 22 (user: mtsnkot4)
+[ ] Upload: app/Models/SurveyAnswer.php
+    → /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/app/Models/
+[ ] Upload: app/Livewire/Pendaftar/TesPsikologi.php
+    → /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/app/Livewire/Pendaftar/
+
+Method B: Via cPanel File Manager
+─────────────────────────────────────────────────────────────
+[ ] Login cPanel
+[ ] File Manager → /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/
+[ ] Navigate to app/Models/ → Upload SurveyAnswer.php
+[ ] Navigate to app/Livewire/Pendaftar/ → Upload TesPsikologi.php
+
+Method C: Via SCP (when SSH available)
+─────────────────────────────────────────────────────────────
+[ ] Run: upload_FINAL_FIX_survey_overwrite.bat
+    OR
+[ ] scp app/Models/SurveyAnswer.php mtsnkot4@103.30.244.77:...
+[ ] scp app/Livewire/Pendaftar/TesPsikologi.php mtsnkot4@103.30.244.77:...
+
+
+STEP 2: CLEAR ALL CACHES ⚠️ CRITICAL!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Via SSH/Terminal:
+─────────────────────────────────────────────────────────────
+[ ] ssh mtsnkot4@103.30.244.77
+[ ] cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id
+[ ] php artisan view:clear
+[ ] php artisan optimize:clear
+[ ] php artisan cache:clear
+[ ] php artisan config:clear
+[ ] exit
+
+
+STEP 3: DELETE CORRUPT DATA ⚠️ REQUIRED!
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Via PostgreSQL:
+─────────────────────────────────────────────────────────────
+[ ] psql -U mtsnkot4_uspmbm -d mtsnkot4_dbpmbm
+[ ] DELETE FROM survey_answers;
+[ ] SELECT COUNT(*) FROM survey_answers;  (verify: 0)
+[ ] \q
+
+
+STEP 4: TEST & VERIFY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+4A: Submit Test Survey
+─────────────────────────────────────────────────────────────
+[ ] Login sebagai pendaftar (atau daftar baru)
+[ ] Buka: /pendaftar/tes-psikologi
+[ ] Isi survey dengan jawaban BERBEDA untuk tiap pertanyaan:
+    Q1:  Ya (ID: 133)
+    Q2:  Guru (ID: 129)
+    Q3:  Menanyakan langsung (ID: 7)
+    Q4:  Sangat Tidak Setuju (ID: 29)
+    Q5:  Tidak Setuju (ID: 34)
+    Q6:  Tidak Setuju (ID: 39)
+    Q7:  Tidak Setuju (ID: 44)
+    Q8:  Kurang Setuju (ID: 50)
+    ...
+    Q32: [pilih berbeda]
+[ ] Klik "Selesai & Simpan"
+[ ] Catat nomor pendaftaran: ___________________
+
+4B: Verify Database
+─────────────────────────────────────────────────────────────
+[ ] psql -U mtsnkot4_uspmbm -d mtsnkot4_dbpmbm
+[ ] SELECT id, nomor_pendaftaran FROM pendaftar
+    ORDER BY created_at DESC LIMIT 5;
+[ ] SELECT survey_question_id, jawaban FROM survey_answers
+    WHERE pendaftar_id = [ID] ORDER BY survey_question_id;
+
+Expected Result:
+    survey_question_id | jawaban
+    ───────────────────┼─────────
+                     1 | 133      ← INTEGER (not string)
+                     2 | 129      ← BERBEDA dari Q1!
+                     3 | 7        ← BERBEDA!
+                    ...
+                    32 | 121      ← SEMUA BERBEDA!
+
+[ ] ✓ Semua jawaban INTEGER (bukan string "133")
+[ ] ✓ Semua jawaban BERBEDA (tidak ada yang sama)
+[ ] ✓ Tidak ada overwrite!
+
+4C: Verify Admin Panel
+─────────────────────────────────────────────────────────────
+[ ] Login sebagai Admin
+[ ] Buka: /admin/tes-psikologi?mainTab=jawaban-survey
+[ ] Pilih pendaftar yang baru submit
+[ ] Check RAW display untuk semua pertanyaan
+
+Expected Result:
+    RAW: 133 ✓ ID      ← Hijau (correct!)
+    Ya
+
+    RAW: 129 ✓ ID      ← Hijau (correct!)
+    Guru
+
+    RAW: 7 ✓ ID        ← Hijau (correct!)
+    Menanyakan langsung
+
+[ ] ✓ SEMUA RAW menunjukkan "✓ ID" (hijau)
+[ ] ✓ TIDAK ADA "⚠ VALUE/LABEL" (orange)
+
+═══════════════════════════════════════════════════════════════
+ SUCCESS CRITERIA
+═══════════════════════════════════════════════════════════════
+
+Fix BERHASIL jika:
+
+[✓] Database: Semua jawaban tersimpan sebagai INTEGER
+[✓] Database: Q1-Q32 semua BERBEDA (tidak overwrite)
+[✓] Database: Checkbox masih tersimpan sebagai ARRAY
+[✓] Admin panel: Semua RAW menunjukkan "✓ ID" (hijau)
+[✓] User bisa submit survey tanpa corruption
+[✓] Tidak ada lagi bug "all answers become 126"!
+
+═══════════════════════════════════════════════════════════════
+ POST-DEPLOYMENT
+═══════════════════════════════════════════════════════════════
+
+[ ] Notify pendaftar untuk isi ulang survey
+[ ] Monitor 10-20 submissions pertama
+[ ] Check logs untuk errors
+[ ] Remove debug logging (optional, nanti)
+[ ] Run SMART migration untuk 106 VALUE/LABEL issues (nanti)
+
+═══════════════════════════════════════════════════════════════
+ TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════
+
+If bug still occurs:
+1. Verify file updated: grep "REMOVED" app/Models/SurveyAnswer.php
+2. Clear cache LAGI: php artisan view:clear optimize:clear
+3. Delete survey_answers LAGI
+4. Check logs: tail -100 storage/logs/laravel.log
+
+═══════════════════════════════════════════════════════════════
+ REFERENCE DOCUMENTS
+═══════════════════════════════════════════════════════════════
+
+Full Guides:
+• DEPLOY_FINAL_FIX_MANUAL.md (250+ lines, complete guide)
+• ROOT_CAUSE_FOUND_SURVEY_OVERWRITE.md (technical analysis)
+• QUICK_FIX_SUMMARY.md (quick reference)
+
+Deployment Scripts:
+• upload_FINAL_FIX_survey_overwrite.bat
+
+═══════════════════════════════════════════════════════════════
+
+Date: 6 Februari 2026
+Priority: 🔥 CRITICAL
+Estimated Time: 30-45 minutes

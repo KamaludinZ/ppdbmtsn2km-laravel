@@ -1,0 +1,198 @@
+═══════════════════════════════════════════════════════════════════
+  QUICK CHECKLIST - UPLOAD MANUAL 7 FEB 2026
+═══════════════════════════════════════════════════════════════════
+
+TOTAL FILES: 4 FILES
+PRIORITY: 🚨 CRITICAL (includes data corruption fix)
+
+───────────────────────────────────────────────────────────────────
+📦 FILES TO UPLOAD
+───────────────────────────────────────────────────────────────────
+
+FILE 1: Admin Backend (~57 KB)
+[ ] Local:  C:\ppdbmtsn2km-laravel\app\Livewire\Admin\TesPsikologi.php
+[ ] Remote: /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/app/Livewire/Admin/
+[ ] Size:   ~57 KB
+[ ] Upload: OVERWRITE
+
+FILE 2: Admin View - Jawaban Survey Tab (~24 KB)
+[ ] Local:  C:\ppdbmtsn2km-laravel\resources\views\livewire\admin\partials\tes-psikologi-jawaban-survey.blade.php
+[ ] Remote: /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/resources/views/livewire/admin/partials/
+[ ] Size:   ~24 KB
+[ ] Upload: OVERWRITE
+
+FILE 3: Admin View - Data Tab (~28 KB)
+[ ] Local:  C:\ppdbmtsn2km-laravel\resources\views\livewire\admin\partials\tes-psikologi-data.blade.php
+[ ] Remote: /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/resources/views/livewire/admin/partials/
+[ ] Size:   ~28 KB
+[ ] Upload: OVERWRITE
+
+FILE 4: Pendaftar Backend 🚨 CRITICAL (~16 KB)
+[ ] Local:  C:\ppdbmtsn2km-laravel\app\Livewire\Pendaftar\TesPsikologi.php
+[ ] Remote: /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/app/Livewire/Pendaftar/
+[ ] Size:   ~16 KB
+[ ] Upload: OVERWRITE
+[ ] Contains 3 CRITICAL fixes!
+
+───────────────────────────────────────────────────────────────────
+🧹 CACHE CLEAR (WAJIB!)
+───────────────────────────────────────────────────────────────────
+
+Via SSH or cPanel Terminal:
+
+[ ] cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id
+[ ] php artisan optimize:clear
+[ ] php artisan view:clear
+[ ] php artisan config:clear
+
+───────────────────────────────────────────────────────────────────
+✅ ADMIN SIDE TESTS
+───────────────────────────────────────────────────────────────────
+
+URL: /admin/tes-psikologi?mainTab=jawaban-survey
+
+Test 1: Toggle Edit Mode
+[ ] Button "Aktifkan Mode Edit" visible (white)
+[ ] Click → changes to "Nonaktifkan Mode Edit" (yellow)
+[ ] Edit icons appear
+[ ] Refresh page → mode persists
+
+Test 2: Jalur Column
+[ ] Jawaban-survey tab shows Jalur names (NOT "-")
+[ ] Data tab shows Jalur names (NOT "-")
+
+Test 3: Filter Dropdown
+[ ] "Semua Jalur" dropdown shows clear names
+[ ] NO empty options
+
+Test 4: Gender Column
+[ ] Gender badges display (blue/pink)
+
+Test 5: Checkbox UI
+[ ] Enable Mode Edit → click edit on checkbox question
+[ ] Modal shows actual checkboxes (NOT text input)
+[ ] Select options → save
+[ ] Check saved value: [10,12] ✅ NOT [0,10,12] ❌
+
+───────────────────────────────────────────────────────────────────
+✅ PENDAFTAR SIDE TESTS 🚨 CRITICAL
+───────────────────────────────────────────────────────────────────
+
+URL: /pendaftar/tes-psikologi
+
+Test 6: Checkbox All-Selected Bug
+[ ] Pendaftar with existing checkbox answers
+[ ] Navigate to checkbox question
+[ ] Only intended checkboxes selected (NOT ALL)
+
+Test 7: Survey Data Corruption 🚨 CRITICAL
+[ ] Fresh survey: Q1 answer "A" → Next
+[ ] Q2 answer "B" → Next
+[ ] Q3 answer "C" → Selesai
+[ ] Check database: Q1="A", Q2="B", Q3="C" ✅
+
+CRITICAL SCENARIO:
+[ ] Fresh survey: Q1 answer "A" (ID 3) → Next → saves "3"
+[ ] Q2 answer "B" (ID 9) → Next → saves "9"
+[ ] Q3 answer "C" → Next
+[ ] Click BACK to Q1
+[ ] Change to "X" (ID 4) but DON'T click Next
+[ ] Navigate forward → reach last question
+[ ] Click Selesai
+[ ] Check database: Q1 MUST BE "3" (NOT "4"!) ✅
+
+Test 8: "Selesai" Button
+[ ] Fill survey to last question
+[ ] "Selesai & Simpan" button enabled
+[ ] Click → saves successfully
+[ ] No errors in logs
+
+───────────────────────────────────────────────────────────────────
+🔍 FINAL VERIFICATION
+───────────────────────────────────────────────────────────────────
+
+Admin Side:
+[ ] Toggle edit mode works
+[ ] Jalur displays correctly (3 locations)
+[ ] Filter dropdown clear
+[ ] Gender columns show
+[ ] Checkbox arrays clean (no zeros)
+[ ] All filters work
+
+Pendaftar Side:
+[ ] Checkbox all-selected bug FIXED
+[ ] Survey data corruption FIXED
+[ ] "Selesai" button works
+[ ] Multiple choice works
+[ ] No errors in logs
+
+───────────────────────────────────────────────────────────────────
+📊 WHAT'S FIXED
+───────────────────────────────────────────────────────────────────
+
+ADMIN SIDE (Files 1-3):
+✅ Toggle Edit Mode with persistence
+✅ ID Display (Pertanyaan + Opsi)
+✅ Jalur field fix (nama_jalur → nama) - 3 locations
+✅ Jalur & Gender columns
+✅ Filter dropdown clarity
+✅ Checkbox UI improvement
+✅ Checkbox zero values filtering
+
+PENDAFTAR SIDE (File 4) 🚨 CRITICAL:
+✅ Checkbox all-selected bug (JSON decode in mount)
+✅ Survey data corruption (simpanSurvey only saves current question)
+✅ "Selesai" button logic (aligned with nextQuestion)
+
+───────────────────────────────────────────────────────────────────
+🚨 CRITICAL NOTES
+───────────────────────────────────────────────────────────────────
+
+1. FILE 4 PALING CRITICAL - Test with extra care!
+2. WAJIB clear cache - changes won't appear without it
+3. Test KEDUA sisi - Admin DAN Pendaftar
+4. Backup dulu sebelum upload
+5. Monitor Laravel logs setelah upload
+
+───────────────────────────────────────────────────────────────────
+📞 IF SOMETHING GOES WRONG
+───────────────────────────────────────────────────────────────────
+
+Jalur still shows "-":
+→ Re-upload File 1, clear cache, hard refresh (Ctrl+F5)
+
+Checkbox still has zeros [0,10,12]:
+→ Re-upload File 1, clear cache, test with NEW checkbox (not old data)
+
+Checkbox all selected:
+→ Re-upload File 4, clear cache
+
+Data corruption still happens:
+→ Re-upload File 4, verify file size ~16 KB, clear cache
+
+"Selesai" button disabled:
+→ Re-upload File 4, clear cache, test with fresh survey
+
+───────────────────────────────────────────────────────────────────
+✅ SUCCESS CHECKLIST
+───────────────────────────────────────────────────────────────────
+
+[ ] All 4 files uploaded
+[ ] File sizes verified (57KB, 24KB, 28KB, 16KB)
+[ ] All caches cleared
+[ ] All 8 test cases PASS
+[ ] No errors in Laravel logs
+[ ] Admin side works perfectly
+[ ] Pendaftar side works perfectly
+[ ] Data corruption prevented
+[ ] Checkbox bug fixed
+
+═══════════════════════════════════════════════════════════════════
+
+🎉 DEPLOYMENT READY!
+
+Created: 7 Feb 2026, 03:30 WIB
+Status: ✅ PRODUCTION READY
+Priority: 🚨 CRITICAL
+
+═══════════════════════════════════════════════════════════════════

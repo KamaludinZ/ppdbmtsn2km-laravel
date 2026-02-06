@@ -32,14 +32,18 @@
                     </li>
                     <li class="flex items-start">
                         <span class="font-bold mr-2">3.</span>
-                        <span>Pilih bank/metode pembayaran yang Anda gunakan</span>
+                        <span>Isi <strong>nama pengirim</strong> (atas nama rekening yang digunakan untuk transfer)</span>
                     </li>
                     <li class="flex items-start">
                         <span class="font-bold mr-2">4.</span>
-                        <span>Upload foto/screenshot bukti transfer yang jelas (nama, nomor rekening, dan jumlah transfer terlihat)</span>
+                        <span>Pilih bank/metode pembayaran yang Anda gunakan</span>
                     </li>
                     <li class="flex items-start">
                         <span class="font-bold mr-2">5.</span>
+                        <span>Upload foto/screenshot bukti transfer yang jelas (nama, nomor rekening, dan jumlah transfer terlihat)</span>
+                    </li>
+                    <li class="flex items-start">
+                        <span class="font-bold mr-2">6.</span>
                         <span>Format file: JPG, PNG, atau JPEG (maksimal 2MB) - akan otomatis dikonversi ke WebP</span>
                     </li>
                 </ul>
@@ -76,10 +80,37 @@
 
         <hr class="border-gray-200">
 
-        <!-- Langkah 2: Pilih Bank/Metode -->
+        <!-- Langkah 2: Nama Pengirim -->
         <div class="relative">
             <div class="flex items-center mb-3">
                 <span class="flex items-center justify-center w-8 h-8 rounded-full bg-purple-600 text-white font-bold text-sm mr-3">2</span>
+                <label class="block text-base font-semibold text-gray-900">Nama Pengirim (Atas Nama Rekening) *</label>
+            </div>
+            <div class="ml-11">
+                <p class="text-sm text-gray-600 mb-2">Atas nama siapa transfer dilakukan (sesuai pemilik rekening pengirim)</p>
+                <input
+                    type="text"
+                    wire:model="namaPengirim"
+                    class="w-full border-gray-300 rounded-lg shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200 text-base"
+                    placeholder="Contoh: Budi Santoso">
+                <p class="text-xs text-gray-500 mt-1">Isi sesuai nama pemilik rekening yang Anda gunakan untuk transfer</p>
+                @error('namaPengirim')
+                    <p class="text-red-500 text-sm mt-1 flex items-center">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        {{ $message }}
+                    </p>
+                @enderror
+            </div>
+        </div>
+
+        <hr class="border-gray-200">
+
+        <!-- Langkah 3: Pilih Bank/Metode -->
+        <div class="relative">
+            <div class="flex items-center mb-3">
+                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-purple-600 text-white font-bold text-sm mr-3">3</span>
                 <label class="block text-base font-semibold text-gray-900">Bank/Metode Pembayaran yang Digunakan *</label>
             </div>
             <div class="ml-11">
@@ -105,10 +136,10 @@
 
         <hr class="border-gray-200">
 
-        <!-- Langkah 3: Upload Bukti Transfer -->
+        <!-- Langkah 4: Upload Bukti Transfer -->
         <div class="relative">
             <div class="flex items-center mb-3">
-                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-purple-600 text-white font-bold text-sm mr-3">3</span>
+                <span class="flex items-center justify-center w-8 h-8 rounded-full bg-purple-600 text-white font-bold text-sm mr-3">4</span>
                 <label class="block text-base font-semibold text-gray-900">Upload Foto/Screenshot Bukti Transfer *</label>
             </div>
             <div class="ml-11">

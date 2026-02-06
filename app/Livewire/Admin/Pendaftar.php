@@ -18,6 +18,7 @@ class Pendaftar extends Component
     public $searchInput = ''; // Temporary input untuk user ketik
     public $filterJalur = '';
     public $filterStatus = '';
+    public $filterEmisCompleteness = ''; // Filter berdasarkan persentase kelengkapan EMIS
     public $perPage = 10;
 
     // Properties for change password modal
@@ -33,6 +34,10 @@ class Pendaftar extends Component
     public $messageSubject = '';
     public $messageBody = '';
     public $messageNote = '';
+
+    // Properties for edit telepon ortu modal
+    public $isEditTeleponOrtuModalOpen = false;
+    public $editTeleponOrtu = '';
 
     // Array to store status for each pendaftar
     public $statusSelections = [];
@@ -85,6 +90,7 @@ class Pendaftar extends Component
         'search' => ['except' => ''],
         'filterJalur' => ['except' => ''],
         'filterStatus' => ['except' => ''],
+        'filterEmisCompleteness' => ['except' => ''],
         'sortField' => ['except' => 'created_at'],
         'sortDirection' => ['except' => 'desc'],
     ];
@@ -129,6 +135,11 @@ class Pendaftar extends Component
         $this->resetPage();
     }
 
+    public function updatingFilterEmisCompleteness()
+    {
+        $this->resetPage();
+    }
+
     public function updatingPerPage()
     {
         $this->resetPage();
@@ -139,14 +150,14 @@ class Pendaftar extends Component
         $query = PendaftarModel::with(['jalurPendaftaran', 'user', 'diperbaruiOleh', 'daftarUlang', 'seragam', 'verifikasiBerkas', 'tesPsikologiPendaftar', 'keahlians', 'tahfidz'])
             ->when($this->search, function ($q) {
                 $q->where(function ($query) {
-                    $query->where('nama_lengkap', 'like', '%' . $this->search . '%')
-                        ->orWhere('nomor_pendaftaran', 'like', '%' . $this->search . '%')
-                        ->orWhere('nisn', 'like', '%' . $this->search . '%')
-                        ->orWhere('email', 'like', '%' . $this->search . '%')
-                        ->orWhere('no_hp', 'like', '%' . $this->search . '%')
-                        ->orWhere('nama_ayah', 'like', '%' . $this->search . '%')
-                        ->orWhere('nama_ibu', 'like', '%' . $this->search . '%')
-                        ->orWhere('asal_kabkota', 'like', '%' . $this->search . '%');
+                    $query->where('nama_lengkap', 'ilike', '%' . $this->search . '%')
+                        ->orWhere('nomor_pendaftaran', 'ilike', '%' . $this->search . '%')
+                        ->orWhere('nisn', 'ilike', '%' . $this->search . '%')
+                        ->orWhere('email', 'ilike', '%' . $this->search . '%')
+                        ->orWhere('no_hp', 'ilike', '%' . $this->search . '%')
+                        ->orWhere('nama_ayah', 'ilike', '%' . $this->search . '%')
+                        ->orWhere('nama_ibu', 'ilike', '%' . $this->search . '%')
+                        ->orWhere('asal_kabkota', 'ilike', '%' . $this->search . '%');
                 });
             })
             ->when($this->filterJalur, function ($q) {
@@ -161,7 +172,38 @@ class Pendaftar extends Component
             });
 
         // Apply sorting
-        $pendaftar = $this->applySorting($query)->paginate($this->perPage);
+        $query = $this->applySorting($query);
+
+        // Filter by EMIS completeness if selected
+        if ($this->filterEmisCompleteness) {
+            $allRecords = $query->get();
+            $filtered = $allRecords->filter(function ($pendaftar) {
+                $percentage = $pendaftar->getEmisCompletenessPercentage();
+
+                return match($this->filterEmisCompleteness) {
+                    '0-25' => $percentage >= 0 && $percentage <= 25,
+                    '26-50' => $percentage >= 26 && $percentage <= 50,
+                    '51-75' => $percentage >= 51 && $percentage <= 75,
+                    '76-100' => $percentage >= 76 && $percentage <= 100,
+                    default => true,
+                };
+            });
+
+            // Manual pagination
+            $currentPage = $this->getPage();
+            $perPage = $this->perPage;
+            $currentPageItems = $filtered->slice(($currentPage - 1) * $perPage, $perPage)->values();
+
+            $pendaftar = new \Illuminate\Pagination\LengthAwarePaginator(
+                $currentPageItems,
+                $filtered->count(),
+                $perPage,
+                $currentPage,
+                ['path' => \Illuminate\Pagination\Paginator::resolveCurrentPath()]
+            );
+        } else {
+            $pendaftar = $query->paginate($this->perPage);
+        }
 
         // Initialize status selections for each pendaftar
         foreach ($pendaftar as $item) {
@@ -270,6 +312,48 @@ class Pendaftar extends Component
             $this->closeChangePasswordModal();
         } else {
             session()->flash('error', 'Pendaftar tidak ditemukan atau tidak memiliki akun.');
+        }
+    }
+
+    public function showEditTeleponOrtuModal($id)
+    {
+        $pendaftar = PendaftarModel::find($id);
+        if ($pendaftar) {
+            $this->selectedPendaftarId = $id;
+            $this->editTeleponOrtu = $pendaftar->telepon_ortu ?? '';
+            $this->isEditTeleponOrtuModalOpen = true;
+        }
+    }
+
+    public function closeEditTeleponOrtuModal()
+    {
+        $this->isEditTeleponOrtuModalOpen = false;
+        $this->selectedPendaftarId = null;
+        $this->editTeleponOrtu = '';
+    }
+
+    public function updateTeleponOrtu()
+    {
+        $this->validate([
+            'editTeleponOrtu' => 'required|string|min:10|max:15|regex:/^[0-9+]+$/',
+        ], [
+            'editTeleponOrtu.required' => 'Nomor WhatsApp Orang Tua wajib diisi.',
+            'editTeleponOrtu.min' => 'Nomor WhatsApp Orang Tua minimal 10 digit.',
+            'editTeleponOrtu.max' => 'Nomor WhatsApp Orang Tua maksimal 15 digit.',
+            'editTeleponOrtu.regex' => 'Nomor WhatsApp Orang Tua hanya boleh berisi angka dan tanda +.',
+        ]);
+
+        $pendaftar = PendaftarModel::find($this->selectedPendaftarId);
+        if ($pendaftar) {
+            $pendaftar->update([
+                'telepon_ortu' => $this->editTeleponOrtu,
+                'telepon' => $this->editTeleponOrtu, // Update both fields for consistency
+            ]);
+
+            session()->flash('message', 'Nomor WhatsApp Orang Tua berhasil diperbarui.');
+            $this->closeEditTeleponOrtuModal();
+        } else {
+            session()->flash('error', 'Pendaftar tidak ditemukan.');
         }
     }
 
@@ -443,7 +527,7 @@ class Pendaftar extends Component
         }
 
         // Determine recipient based on message type
-        $penerima = $this->messageType === 'email' ? $pendaftar->email : $pendaftar->no_hp;
+        $penerima = $this->messageType === 'email' ? $pendaftar->email : $pendaftar->telepon_ortu;
 
         // Create log record with pending status
         $riwayatPesan = RiwayatPesan::create([
@@ -476,15 +560,15 @@ class Pendaftar extends Component
                 // Implementasi disesuaikan dengan service WhatsApp yang digunakan
                 // Contoh: menggunakan Fonnte, Wablas, atau service lainnya
 
-                $phoneNumber = $pendaftar->no_hp;
+                $phoneNumber = $pendaftar->telepon_ortu;
                 if (!$phoneNumber) {
                     // Update log to failed
                     $riwayatPesan->update([
                         'status' => 'gagal',
-                        'error_message' => 'Nomor WhatsApp tidak ditemukan',
+                        'error_message' => 'Nomor WhatsApp Orang Tua tidak ditemukan',
                     ]);
 
-                    session()->flash('error', 'Nomor WhatsApp tidak ditemukan.');
+                    session()->flash('error', 'Nomor WhatsApp Orang Tua tidak ditemukan.');
                     return;
                 }
 

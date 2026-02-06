@@ -6,6 +6,7 @@ use App\Models\JalurPendaftaran;
 use App\Models\Pendaftar;
 use App\Models\User;
 use App\Models\Setting;
+use App\Models\RiwayatPesan;
 use App\Services\EmailService;
 use App\Services\WhatsAppGatewayService;
 use App\Services\FileNamingService;
@@ -609,9 +610,33 @@ class Register extends Component
             $emailSubject = str_replace(array_keys($replacements), array_values($replacements), $emailSubject);
             $emailBody = str_replace(array_keys($replacements), array_values($replacements), $emailBody);
 
+            // Create log record for email with pending status
+            $emailRiwayat = RiwayatPesan::create([
+                'pendaftar_id' => $pendaftar->id,
+                'user_id' => null, // Otomatis dari sistem
+                'jenis_pesan' => 'email',
+                'judul' => $emailSubject,
+                'isi_pesan' => $emailBody,
+                'penerima' => $pendaftar->email,
+                'status' => 'pending',
+            ]);
+
             // Send Email
             $emailService = new EmailService();
             $emailResult = $emailService->sendEmail($pendaftar->email, $emailSubject, $emailBody);
+
+            // Update email log status
+            if ($emailResult['success'] ?? false) {
+                $emailRiwayat->update([
+                    'status' => 'terkirim',
+                    'sent_at' => now(),
+                ]);
+            } else {
+                $emailRiwayat->update([
+                    'status' => 'gagal',
+                    'error_message' => $emailResult['message'] ?? 'Unknown error',
+                ]);
+            }
 
             // Get WhatsApp template from settings
             $waBody = Setting::get('wa_pendaftaran_body',
@@ -621,9 +646,33 @@ class Register extends Component
             // Replace placeholders for WhatsApp
             $waBody = str_replace(array_keys($replacements), array_values($replacements), $waBody);
 
-            // Send WhatsApp
+            // Create log record for WhatsApp with pending status
+            $whatsappRiwayat = RiwayatPesan::create([
+                'pendaftar_id' => $pendaftar->id,
+                'user_id' => null, // Otomatis dari sistem
+                'jenis_pesan' => 'whatsapp',
+                'judul' => null,
+                'isi_pesan' => $waBody,
+                'penerima' => $pendaftar->telepon_ortu,
+                'status' => 'pending',
+            ]);
+
+            // Send WhatsApp to parent's phone number
             $whatsappService = new WhatsAppGatewayService();
-            $whatsappResult = $whatsappService->sendMessage($pendaftar->telepon, $waBody);
+            $whatsappResult = $whatsappService->sendMessage($pendaftar->telepon_ortu, $waBody);
+
+            // Update WhatsApp log status
+            if ($whatsappResult['success'] ?? false) {
+                $whatsappRiwayat->update([
+                    'status' => 'terkirim',
+                    'sent_at' => now(),
+                ]);
+            } else {
+                $whatsappRiwayat->update([
+                    'status' => 'gagal',
+                    'error_message' => $whatsappResult['message'] ?? 'Unknown error',
+                ]);
+            }
 
             \Log::info("Registration notification sent", [
                 'pendaftar_id' => $pendaftar->id,

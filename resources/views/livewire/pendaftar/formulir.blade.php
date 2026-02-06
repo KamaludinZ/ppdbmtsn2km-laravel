@@ -169,23 +169,23 @@
                         Tahfidz
                     </button>
 
-                    <!-- Tab 7: Beasiswa & Bantuan -->
-                    <button @click="activeTab = 'beasiswa'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'beasiswa', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'beasiswa' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
-                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        Beasiswa & Bantuan
-                    </button>
-
-                    <!-- Tab 6: Pendidikan Lain -->
-                    <button @click="activeTab = 'pendidikan'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'pendidikan', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'pendidikan' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
-                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                        Pendidikan Lain
-                    </button>
-
                     <!-- Tab 7: Survey -->
                     <button @click="activeTab = 'survey'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'survey', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'survey' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
                         <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                         Survey
                         <span class="text-red-500 ml-1">*</span>
+                    </button>
+
+                    <!-- Tab 8: Beasiswa & Bantuan -->
+                    <button @click="activeTab = 'beasiswa'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'beasiswa', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'beasiswa' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        Beasiswa & Bantuan
+                    </button>
+
+                    <!-- Tab 9: Pendidikan Lain -->
+                    <button @click="activeTab = 'pendidikan'" :class="{ 'border-emerald-500 text-emerald-600 bg-emerald-50': activeTab === 'pendidikan', 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300': activeTab !== 'pendidikan' }" class="py-4 px-6 text-center border-b-2 font-medium text-sm transition focus:outline-none">
+                        <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                        Pendidikan Lain
                     </button>
                 </nav>
             </div>
@@ -196,15 +196,39 @@
                     <svg class="w-5 h-5 text-blue-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
-                    <div class="text-sm text-blue-800">
-                        <p class="mb-1">
+                    <div class="text-sm text-blue-800 w-full">
+                        <p class="mb-2">
                             <span class="font-semibold">Informasi:</span> Tab dengan tanda <span class="text-red-500 font-bold">*</span> (bintang merah) wajib diisi sebelum mengirim pendaftaran.
                         </p>
-                        @if($pendaftar->jalurPendaftaran && str_contains(strtolower($pendaftar->jalurPendaftaran->nama), 'prestasi'))
-                            <p class="text-xs bg-amber-50 border border-amber-200 rounded px-2 py-1 inline-block mt-1">
-                                <span class="font-semibold text-amber-800">Catatan:</span> <span class="text-amber-700">Tab <strong>Prestasi Siswa</strong> wajib diisi untuk jalur Prestasi Non-Akademik</span>
-                            </p>
-                        @endif
+
+                        <!-- Tab Wajib untuk Semua Jalur -->
+                        <p class="mb-2 text-xs">
+                            <span class="font-semibold text-blue-900">Tab Wajib untuk Semua Jalur:</span>
+                            <span class="text-blue-700">Data Siswa, Data Orang Tua, Data Alamat, dan Survey</span>
+                        </p>
+
+                        <!-- Catatan Khusus Jalur -->
+                        <div class="space-y-1 mb-2">
+                            @if($pendaftar->jalurPendaftaran && str_contains(strtolower($pendaftar->jalurPendaftaran->nama), 'prestasi'))
+                                <p class="text-xs bg-amber-50 border border-amber-200 rounded px-2 py-1 inline-block">
+                                    <span class="font-semibold text-amber-800">Catatan Jalur Prestasi:</span> <span class="text-amber-700">Tab <strong>Prestasi Siswa</strong> wajib diisi</span>
+                                </p>
+                            @endif
+
+                            @if($pendaftar->jalurPendaftaran && str_contains(strtolower($pendaftar->jalurPendaftaran->nama), 'tahfidz'))
+                                <p class="text-xs bg-emerald-50 border border-emerald-200 rounded px-2 py-1 inline-block">
+                                    <span class="font-semibold text-emerald-800">Catatan Jalur Tahfidz:</span> <span class="text-emerald-700">Tab <strong>Tahfidz</strong> wajib diisi</span>
+                                </p>
+                            @endif
+                        </div>
+
+                        <!-- Petunjuk Navigasi Tab -->
+                        <p class="text-xs bg-blue-100 border border-blue-200 rounded px-2 py-1 inline-flex items-center">
+                            <svg class="w-4 h-4 mr-1 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16l-4-4m0 0l4-4m-4 4h18"></path>
+                            </svg>
+                            <span class="text-blue-700"><strong>Petunjuk:</strong> Geser tab ke kanan/kiri untuk melihat tab lainnya</span>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -241,6 +265,11 @@
                     @include('tab_templates.tab-tahfidz')
                 </div>
 
+                <!-- Tab Survey -->
+                <div x-show="activeTab === 'survey'" x-transition>
+                    @include('tab_templates.tab-survey')
+                </div>
+
                 <!-- Tab Beasiswa & Bantuan -->
                 <div x-show="activeTab === 'beasiswa'" x-transition>
                     @include('tab_templates.tab-beasiswa')
@@ -249,11 +278,6 @@
                 <!-- Tab Pendidikan Lain -->
                 <div x-show="activeTab === 'pendidikan'" x-transition>
                     @include('tab_templates.tab-pendidikan-lain')
-                </div>
-
-                <!-- Tab Survey -->
-                <div x-show="activeTab === 'survey'" x-transition>
-                    @include('tab_templates.tab-survey')
                 </div>
             </div>
         </div>

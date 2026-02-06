@@ -154,12 +154,56 @@
 
                         <!-- Upload Sertifikat Prestasi -->
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Upload Sertifikat Prestasi (PDF/Gambar max. 2MB)</label>
-                            <input type="file" wire:model="uploadPrestasiSertifikat.{{ $index }}" accept=".pdf,.jpg,.jpeg,.png" class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100">
-                            @error('uploadPrestasiSertifikat.' . $index) <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
+                            <label class="block text-sm font-medium text-gray-700 mb-1">
+                                Upload Sertifikat Prestasi <span class="text-red-500">*</span>
+                                <span class="text-xs font-normal text-gray-500">(PDF/Gambar max. 2MB)</span>
+                            </label>
 
+                            <!-- File Upload Input -->
+                            <input type="file"
+                                wire:model="uploadPrestasiSertifikat.{{ $index }}"
+                                accept=".pdf,.jpg,.jpeg,.png"
+                                class="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-yellow-50 file:text-yellow-700 hover:file:bg-yellow-100 border border-gray-300 rounded-md">
+
+                            @error('uploadPrestasiSertifikat.' . $index)
+                                <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                            @enderror
+
+                            <!-- Status File yang Sudah Diupload -->
                             @if(isset($prestasiList[$index]['file_sertifikat']) && $prestasiList[$index]['file_sertifikat'])
-                                <p class="text-xs text-gray-500 mt-1">File saat ini: {{ basename($prestasiList[$index]['file_sertifikat']) }}</p>
+                                <div class="mt-2 flex items-center space-x-2 p-2 bg-emerald-50 border border-emerald-200 rounded-md">
+                                    <svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <div class="flex-1">
+                                        <p class="text-xs font-semibold text-emerald-900">Sertifikat Sudah Diupload</p>
+                                        <p class="text-xs text-emerald-700 mt-0.5">{{ basename($prestasiList[$index]['file_sertifikat']) }}</p>
+                                    </div>
+                                    <a href="{{ route('file.view', ['model' => 'prestasi', 'id' => $prestasiList[$index]['id'], 'field' => 'file_sertifikat']) }}"
+                                       target="_blank"
+                                       class="px-3 py-1 bg-emerald-600 text-white rounded-md hover:bg-emerald-700 text-xs transition flex items-center space-x-1">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                        <span>Lihat</span>
+                                    </a>
+                                </div>
+                                <p class="text-xs text-gray-600 mt-1">
+                                    <svg class="w-3 h-3 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Upload file baru untuk mengganti sertifikat yang ada
+                                </p>
+                            @else
+                                <div class="mt-2 flex items-start space-x-2 p-2 bg-yellow-50 border border-yellow-200 rounded-md">
+                                    <svg class="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                    </svg>
+                                    <p class="text-xs text-yellow-800 font-medium">
+                                        Sertifikat belum diupload. Silakan pilih file untuk diupload.
+                                    </p>
+                                </div>
                             @endif
                         </div>
                     </div>
@@ -246,15 +290,30 @@
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                                         @if($prestasi->file_sertifikat)
-                                            <a href="{{ Storage::url($prestasi->file_sertifikat) }}" target="_blank" class="inline-flex items-center px-3 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs transition">
-                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                                </svg>
-                                                Lihat Sertifikat
-                                            </a>
+                                            <div class="flex items-center space-x-2">
+                                                <span class="inline-flex items-center px-2 py-1 bg-emerald-100 text-emerald-800 rounded-full text-xs font-medium">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                    Tersedia
+                                                </span>
+                                                <a href="{{ route('file.view', ['model' => 'prestasi', 'id' => $prestasi->id, 'field' => 'file_sertifikat']) }}"
+                                                   target="_blank"
+                                                   class="inline-flex items-center px-2 py-1 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-xs transition">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                    </svg>
+                                                    Lihat
+                                                </a>
+                                            </div>
                                         @else
-                                            <span class="text-gray-400 text-xs italic">-</span>
+                                            <span class="inline-flex items-center px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs font-medium">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                </svg>
+                                                Belum Upload
+                                            </span>
                                         @endif
                                     </td>
                                 </tr>

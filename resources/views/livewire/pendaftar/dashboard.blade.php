@@ -183,8 +183,8 @@
         </div>
     </div>
 
-    <!-- Petunjuk Cetak Kartu Ujian (When Data Disetujui) -->
-    @if(in_array($pendaftar->status_pendaftaran, ['data_disetujui']))
+    <!-- Petunjuk Cetak Kartu Ujian (When Data Disetujui AND Verifikasi Selesai) -->
+    @if(in_array($pendaftar->status_pendaftaran, ['data_disetujui']) && isset($progress['verifikasi']) && $progress['verifikasi']['label'] === 'Selesai')
         <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg p-8 mb-8 text-white border-4 border-blue-300">
             <div class="flex items-start justify-between">
                 <div class="flex-1">
@@ -340,6 +340,30 @@
                 </div>
             @endif
         @endif
+    @endif
+
+    <!-- Catatan Verifikasi -->
+    @if(in_array($pendaftar->status_pendaftaran, ['lengkapi_data', 'perbaiki_data', 'data_ditolak']) && !empty($pendaftar->catatan_verifikasi))
+        <div class="bg-gradient-to-r from-yellow-500 to-orange-600 rounded-lg shadow-lg p-6 mb-8 text-white border-4 border-yellow-400">
+            <div class="flex items-start gap-4">
+                <div class="flex-shrink-0">
+                    <svg class="w-10 h-10 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="text-xl font-bold mb-3 flex items-center gap-2">
+                        📝 Catatan dari Panitia
+                    </h3>
+                    <div class="bg-yellow-50 rounded-lg p-4 border-2 border-yellow-400 shadow-md">
+                        <p class="text-gray-800 font-semibold leading-relaxed whitespace-pre-line text-sm">{{ $pendaftar->catatan_verifikasi }}</p>
+                    </div>
+                    <p class="text-yellow-100 text-sm mt-3 font-medium">
+                        💡 Silakan perbaiki data Anda sesuai dengan catatan di atas dan simpan kembali.
+                    </p>
+                </div>
+            </div>
+        </div>
     @endif
 
     <!-- Progress Steps -->
@@ -974,21 +998,8 @@
                             <!-- Judul & Konten -->
                             <h4 class="font-bold text-base text-gray-900 mb-2">{{ $pengumuman->judul }}</h4>
                             <div class="text-sm text-gray-600 leading-relaxed">
-                                {!! Str::limit(strip_tags($pengumuman->konten), 150) !!}
+                                {!! format_pengumuman($pengumuman->konten) !!}
                             </div>
-
-                            <!-- Footer dengan Action -->
-                            @if(strlen(strip_tags($pengumuman->konten)) > 150)
-                                <div class="mt-3 pt-3 border-t border-gray-200">
-                                    <button onclick="alert('Detail pengumuman: {{ $pengumuman->judul }}')"
-                                            class="text-xs font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1 transition">
-                                        <span>Baca Selengkapnya</span>
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            @endif
                         </div>
                     </div>
                 @empty
