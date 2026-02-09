@@ -37,6 +37,11 @@ class Settings extends Component
     public $registration_start_date;
     public $registration_end_date;
 
+    // Countdown Timer Settings (Dashboard Pendaftar)
+    public $countdown_pendaftar_enabled = false;
+    public $countdown_pendaftar_label;
+    public $countdown_pendaftar_description;
+
     // App Identity Settings
     public $app_name;
     public $app_acronym;
@@ -100,6 +105,11 @@ class Settings extends Component
         $this->registration_phase_description = Setting::get('registration_phase_description', 'Pendaftaran akan segera dibuka.');
         $this->registration_start_date = Setting::get('registration_start_date');
         $this->registration_end_date = Setting::get('registration_end_date');
+
+        // Load Countdown Timer Settings
+        $this->countdown_pendaftar_enabled = Setting::get('countdown_pendaftar_enabled', false);
+        $this->countdown_pendaftar_label = Setting::get('countdown_pendaftar_label', 'Waktu Pendaftaran Tersisa');
+        $this->countdown_pendaftar_description = Setting::get('countdown_pendaftar_description', 'Segera lengkapi data pendaftaran Anda sebelum waktu berakhir.');
 
         // Auto-update fase pendaftaran jika kondisi terpenuhi
         $this->autoUpdateRegistrationPhase();
@@ -551,6 +561,8 @@ class Settings extends Component
             'registration_phase_description' => 'nullable|string',
             'registration_start_date' => 'required|date',
             'registration_end_date' => 'required|date|after_or_equal:registration_start_date',
+            'countdown_pendaftar_label' => 'nullable|string',
+            'countdown_pendaftar_description' => 'nullable|string',
         ]);
 
         Setting::set('registration_phase', $this->registration_phase, 'string', 'Fase Pendaftaran');
@@ -558,6 +570,11 @@ class Settings extends Component
         Setting::set('registration_phase_description', $this->registration_phase_description, 'string', 'Deskripsi Fase Pendaftaran');
         Setting::set('registration_start_date', $this->registration_start_date, 'date', 'Tanggal Mulai Pendaftaran');
         Setting::set('registration_end_date', $this->registration_end_date, 'date', 'Tanggal Selesai Pendaftaran');
+
+        // Save Countdown Timer Settings
+        Setting::set('countdown_pendaftar_enabled', $this->countdown_pendaftar_enabled, 'boolean', 'Countdown Timer Pendaftar Aktif');
+        Setting::set('countdown_pendaftar_label', $this->countdown_pendaftar_label, 'string', 'Label Countdown Pendaftar');
+        Setting::set('countdown_pendaftar_description', $this->countdown_pendaftar_description, 'string', 'Deskripsi Countdown Pendaftar');
 
         $this->dispatch('settings-saved', message: 'Pengaturan Umum berhasil disimpan!');
     }

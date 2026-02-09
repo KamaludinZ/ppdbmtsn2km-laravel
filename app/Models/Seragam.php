@@ -15,6 +15,7 @@ class Seragam extends Model
         'nominal_seragam_awal',
         'waktu_pembayaran_seragam',
         'paket_seragam',
+        'opsi_seragam',  // NEW: Selected option from package (JSON)
         'opsi_pembayaran_seragam',
         'bank_seragam',
         'bukti_pembayaran',
@@ -40,6 +41,8 @@ class Seragam extends Model
         'tanggal_pesan',
         'tanggal_terima',
         'petugas_id',
+        'opsi_lainnya_dropdown_individual',
+        'opsi_lainnya_konfirmasi_individual',
     ];
 
     protected $casts = [
@@ -52,6 +55,8 @@ class Seragam extends Model
         'tanggal_ukur' => 'datetime',
         'tanggal_pesan' => 'datetime',
         'tanggal_terima' => 'datetime',
+        'opsi_lainnya_dropdown_individual' => 'boolean',
+        'opsi_lainnya_konfirmasi_individual' => 'boolean',
     ];
 
     /**

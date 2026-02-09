@@ -115,6 +115,49 @@
                                     {{ $statusLabel }}
                                 </span>
                             </div>
+
+                            <!-- Catatan Verifikasi (Only show for specific statuses) -->
+                            @if(in_array($pendaftar->status_pendaftaran, ['lengkapi_data', 'perbaiki_data', 'data_ditolak']))
+                                <div class="text-left md:text-right w-full md:max-w-md">
+                                    <p class="text-white text-xs font-semibold mb-2 uppercase tracking-wide flex items-center gap-1 justify-start md:justify-end">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                                        </svg>
+                                        Catatan untuk Pendaftar
+                                    </p>
+                                    <div class="bg-yellow-50 rounded-lg px-4 py-3 border-2 border-yellow-400 shadow-lg">
+                                        @if(!empty($catatan_verifikasi))
+                                            <div class="mb-3">
+                                                <div class="flex items-start gap-2">
+                                                    <svg class="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                                                    </svg>
+                                                    <p class="text-gray-800 text-sm font-medium leading-relaxed flex-1">{{ $catatan_verifikasi }}</p>
+                                                </div>
+                                            </div>
+                                        @else
+                                            <div class="mb-3">
+                                                <div class="flex items-center gap-2">
+                                                    <svg class="w-5 h-5 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                    </svg>
+                                                    <p class="text-gray-500 text-sm italic flex-1">Catatan belum di isi</p>
+                                                </div>
+                                            </div>
+                                        @endif
+
+                                        <!-- Edit Catatan Button -->
+                                        <button type="button"
+                                                onclick="document.getElementById('editCatatanModal').classList.remove('hidden')"
+                                                class="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white px-3 py-2 rounded-md text-xs font-semibold transition shadow-md flex items-center justify-center gap-2">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                            Edit Catatan
+                                        </button>
+                                    </div>
+                                </div>
+                            @endif
                             <div class="text-left md:text-right">
                                 <p class="text-emerald-100 text-xs font-semibold mb-2 uppercase tracking-wide flex items-center gap-1 justify-end">
                                     Ubah Status
@@ -498,7 +541,45 @@
                                         Paket Seragam
                                     </h5>
                                     @if($seragam && $seragam->paket_seragam)
-                                        <p class="text-sm text-gray-700"><strong>Paket yang dipilih:</strong> {{ $seragam->paket_seragam }}</p>
+                                        @php
+                                            try {
+                                                $paketData = is_string($seragam->paket_seragam)
+                                                    ? json_decode($seragam->paket_seragam, true)
+                                                    : $seragam->paket_seragam;
+                                            } catch (\Exception $e) {
+                                                $paketData = null;
+                                            }
+                                        @endphp
+
+                                        @if($paketData && is_array($paketData))
+                                            <div class="bg-white border border-indigo-200 rounded-lg p-3 space-y-2">
+                                                <div>
+                                                    <span class="text-xs font-medium text-gray-500 uppercase">Nama Paket:</span>
+                                                    <p class="text-sm font-semibold text-gray-900">{{ $paketData['name'] ?? 'N/A' }}</p>
+                                                </div>
+                                                @if(!empty($paketData['description']))
+                                                    <div>
+                                                        <span class="text-xs font-medium text-gray-500 uppercase">Deskripsi:</span>
+                                                        <p class="text-sm text-gray-700">{{ $paketData['description'] }}</p>
+                                                    </div>
+                                                @endif
+                                                @if(!empty($paketData['options']) && is_array($paketData['options']))
+                                                    <div>
+                                                        <span class="text-xs font-medium text-gray-500 uppercase block mb-1">Opsi Paket:</span>
+                                                        <ul class="space-y-1">
+                                                            @foreach($paketData['options'] as $option)
+                                                                <li class="flex items-center justify-between text-sm bg-indigo-50 px-2 py-1 rounded">
+                                                                    <span class="font-medium text-gray-700">{{ $option['name'] ?? 'N/A' }}</span>
+                                                                    <span class="text-indigo-600 font-semibold">Rp {{ number_format($option['amount'] ?? 0, 0, ',', '.') }}</span>
+                                                                </li>
+                                                            @endforeach
+                                                        </ul>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <p class="text-sm text-gray-700">{{ $seragam->paket_seragam }}</p>
+                                        @endif
                                     @else
                                         <p class="text-sm text-gray-500 italic">Belum memilih paket seragam</p>
                                     @endif
@@ -1263,4 +1344,75 @@
             </div>
         </div>
     @endif
+
+    <!-- Modal Edit Catatan Verifikasi -->
+    <div id="editCatatanModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-lg shadow-xl max-w-lg w-full">
+            <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 rounded-t-lg flex items-center justify-between">
+                <h3 class="text-lg font-bold text-white flex items-center">
+                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                    </svg>
+                    Edit Catatan untuk Pendaftar
+                </h3>
+                <button type="button" onclick="document.getElementById('editCatatanModal').classList.add('hidden')" class="text-white hover:text-gray-200 transition">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <form wire:submit.prevent="updateStatusPendaftaran" class="p-6">
+                <div class="mb-4">
+                    <label for="catatan_verifikasi" class="block text-sm font-medium text-gray-700 mb-2">
+                        Catatan Verifikasi
+                        <span class="text-gray-500 font-normal">(Opsional)</span>
+                    </label>
+                    <textarea
+                        wire:model="catatan_verifikasi"
+                        id="catatan_verifikasi"
+                        rows="5"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition"
+                        placeholder="Tulis catatan untuk pendaftar, misalnya: apa yang perlu diperbaiki atau dilengkapi..."></textarea>
+                    <p class="mt-2 text-xs text-gray-500">
+                        💡 Catatan ini akan ditampilkan di dashboard pendaftar untuk memberikan feedback yang jelas.
+                    </p>
+                </div>
+
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                    <div class="flex items-start">
+                        <svg class="w-5 h-5 text-yellow-600 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        <div class="text-xs text-yellow-800">
+                            <p class="font-semibold mb-1">Tips menulis catatan yang baik:</p>
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Jelaskan secara spesifik apa yang perlu diperbaiki/dilengkapi</li>
+                                <li>Gunakan bahasa yang sopan dan konstruktif</li>
+                                <li>Berikan instruksi yang jelas dan mudah dipahami</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end space-x-3">
+                    <button
+                        type="button"
+                        onclick="document.getElementById('editCatatanModal').classList.add('hidden')"
+                        class="px-5 py-2 bg-gray-500 hover:bg-gray-600 text-white font-medium rounded-lg transition text-sm">
+                        Batal
+                    </button>
+                    <button
+                        type="submit"
+                        onclick="document.getElementById('editCatatanModal').classList.add('hidden')"
+                        class="px-5 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition shadow-md text-sm flex items-center">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Simpan Catatan
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>

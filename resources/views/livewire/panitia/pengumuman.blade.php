@@ -161,13 +161,34 @@
                                         <label class="block text-sm font-medium text-gray-700 mb-1">
                                             Isi Pengumuman <span class="text-red-500">*</span>
                                         </label>
-                                        <textarea
-                                            wire:model="konten"
-                                            rows="8"
-                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 resize-y"
-                                            placeholder="Tulis detail pengumuman di sini... Gunakan bahasa yang jelas dan mudah dipahami."
-                                        ></textarea>
-                                        <p class="text-xs text-gray-500 mt-1">Minimum 10 karakter. Gunakan paragraf untuk memudahkan pembacaan.</p>
+
+                                        <!-- Trix Rich Text Editor -->
+                                        <div wire:ignore x-data="{ trixId: 'konten-{{ $pengumuman_id ?? uniqid() }}' }" x-init="
+                                            // Wait for Trix to be ready
+                                            $nextTick(() => {
+                                                const hiddenInput = document.getElementById(trixId);
+                                                const editor = document.querySelector(`trix-editor[input='${trixId}']`);
+
+                                                if (editor) {
+                                                    // Set initial content
+                                                    editor.editor.loadHTML('{{ addslashes($konten) }}');
+
+                                                    // Listen for changes
+                                                    editor.addEventListener('trix-change', function(e) {
+                                                        @this.set('konten', editor.value);
+                                                    });
+                                                }
+                                            });
+                                        ">
+                                            <input :id="trixId" type="hidden" name="konten" value="{{ $konten }}">
+                                            <trix-editor
+                                                :input="trixId"
+                                                class="trix-content rounded-lg border border-gray-300 shadow-sm focus-within:border-emerald-500 focus-within:ring focus-within:ring-emerald-200 focus-within:ring-opacity-50"
+                                                placeholder="Tulis detail pengumuman di sini dengan format yang lebih kaya..."
+                                            ></trix-editor>
+                                        </div>
+
+                                        <p class="text-xs text-gray-500 mt-2">Gunakan toolbar di atas untuk format teks (Bold, Italic, Link, List, dll). Format akan otomatis tersimpan sebagai HTML.</p>
                                         @error('konten') <span class="text-red-500 text-xs mt-1 flex items-center">
                                             <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
                                             {{ $message }}

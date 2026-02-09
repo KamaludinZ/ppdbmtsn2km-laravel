@@ -18,6 +18,10 @@ class KartuTesSeleksi extends Component
     public $appAcronym;
     public $alamatLengkap;
 
+    // Link Grup
+    public $linkGrupUrl = '';
+    public $linkGrupEnabled = false;
+
     public function mount()
     {
         $user = Auth::user();
@@ -48,6 +52,10 @@ class KartuTesSeleksi extends Component
                 $this->appAcronym .= strtoupper($word[0]);
             }
         }
+
+        // Load link grup settings
+        $this->linkGrupUrl = Setting::get('link_grup_url', '');
+        $this->linkGrupEnabled = Setting::get('link_grup_enabled', false);
 
         $this->generateAlamatLengkap();
     }

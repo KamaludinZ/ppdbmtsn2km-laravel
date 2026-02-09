@@ -24,7 +24,30 @@
             <!-- Informasi -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Informasi Tes Psikologi</label>
-                <textarea wire:model="informasi" rows="4" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50" placeholder="Masukkan informasi tentang tes psikologi..."></textarea>
+                <!-- Trix Rich Text Editor -->
+                <div wire:ignore x-data="{ trixId: 'tes-psikologi-informasi-{{ uniqid() }}' }" x-init="
+                    $nextTick(() => {
+                        const hiddenInput = document.getElementById(trixId);
+                        const editor = document.querySelector(`trix-editor[input='${trixId}']`);
+
+                        if (editor) {
+                            // Set initial content
+                            editor.editor.loadHTML('{{ addslashes($informasi ?? '') }}');
+
+                            // Listen for changes
+                            editor.addEventListener('trix-change', function(e) {
+                                @this.set('informasi', editor.value);
+                            });
+                        }
+                    });
+                ">
+                    <input :id="trixId" type="hidden" name="informasi" value="{{ $informasi ?? '' }}">
+                    <trix-editor
+                        :input="trixId"
+                        class="trix-content rounded-lg border border-gray-300 shadow-sm focus-within:border-emerald-500 focus-within:ring focus-within:ring-emerald-200 focus-within:ring-opacity-50"
+                        placeholder="Masukkan informasi tentang tes psikologi..."
+                    ></trix-editor>
+                </div>
                 @error('informasi') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
             </div>
 
@@ -39,7 +62,30 @@
                     </span>
                 </label>
                 <p class="text-xs text-gray-500 mb-2">Informasi ini hanya akan ditampilkan di halaman Tes Psikologi untuk Admin dan Panitia (tidak terlihat oleh pendaftar)</p>
-                <textarea wire:model="informasi_admin_panitia" rows="4" class="w-full border-gray-300 rounded-lg shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50" placeholder="Contoh: Reminder untuk verifikasi pembayaran, catatan internal, dll..."></textarea>
+                <!-- Trix Rich Text Editor -->
+                <div wire:ignore x-data="{ trixId: 'tes-psikologi-informasi-admin-{{ uniqid() }}' }" x-init="
+                    $nextTick(() => {
+                        const hiddenInput = document.getElementById(trixId);
+                        const editor = document.querySelector(`trix-editor[input='${trixId}']`);
+
+                        if (editor) {
+                            // Set initial content
+                            editor.editor.loadHTML('{{ addslashes($informasi_admin_panitia ?? '') }}');
+
+                            // Listen for changes
+                            editor.addEventListener('trix-change', function(e) {
+                                @this.set('informasi_admin_panitia', editor.value);
+                            });
+                        }
+                    });
+                ">
+                    <input :id="trixId" type="hidden" name="informasi_admin_panitia" value="{{ $informasi_admin_panitia ?? '' }}">
+                    <trix-editor
+                        :input="trixId"
+                        class="trix-content rounded-lg border border-gray-300 shadow-sm focus-within:border-blue-500 focus-within:ring focus-within:ring-blue-200 focus-within:ring-opacity-50"
+                        placeholder="Contoh: Reminder untuk verifikasi pembayaran, catatan internal, dll..."
+                    ></trix-editor>
+                </div>
                 @error('informasi_admin_panitia') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
             </div>
 

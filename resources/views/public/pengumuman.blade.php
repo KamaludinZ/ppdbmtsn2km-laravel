@@ -71,7 +71,9 @@
                         </div>
 
                         <h2 class="text-2xl font-bold text-gray-900 mb-4">{{ $pengumuman->judul }}</h2>
-                        <p class="text-gray-700 leading-relaxed">{{ $pengumuman->konten }}</p>
+                        <div class="text-gray-700 leading-relaxed prose prose-emerald max-w-none trix-content">
+                            {!! \App\Helpers\TextFormatter::formatPengumuman($pengumuman->konten) !!}
+                        </div>
                     </div>
                 </div>
                 @endforeach

@@ -2335,18 +2335,24 @@ class Formulir extends Component
             $regency = Regency::where('id', $this->ayah_kabupaten)->first();
 
             if ($village && $district && $regency) {
-                // Remove KABUPATEN/KOTA prefix from regency name for matching
-                $cityName = preg_replace('/^(KABUPATEN|KOTA)\s+/i', '', $regency->name);
+                try {
+                    // Remove KABUPATEN/KOTA prefix from regency name for matching
+                    $cityName = preg_replace('/^(KABUPATEN|KOTA)\s+/i', '', $regency->name);
 
-                // Query postal_codes table
-                $postalCode = \DB::table('postal_codes')
-                    ->where('urban', 'LIKE', '%' . $village->name . '%')
-                    ->where('sub_district', 'LIKE', '%' . $district->name . '%')
-                    ->where('city', 'LIKE', '%' . $cityName . '%')
-                    ->first();
+                    // Query postal_codes table
+                    $postalCode = \DB::table('postal_codes')
+                        ->where('urban', 'LIKE', '%' . $village->name . '%')
+                        ->where('sub_district', 'LIKE', '%' . $district->name . '%')
+                        ->where('city', 'LIKE', '%' . $cityName . '%')
+                        ->first();
 
-                if ($postalCode) {
-                    $this->ayah_kode_pos = $postalCode->postal_code;
+                    if ($postalCode) {
+                        $this->ayah_kode_pos = $postalCode->postal_code;
+                    }
+                } catch (\Exception $e) {
+                    // If postal_codes table doesn't exist or query fails, keep field empty
+                    // User can fill it manually
+                    \Log::warning('Failed to auto-fill ayah_kode_pos: ' . $e->getMessage());
                 }
             }
         }
@@ -2447,18 +2453,24 @@ class Formulir extends Component
             $regency = Regency::where('id', $this->ibu_kabupaten)->first();
 
             if ($village && $district && $regency) {
-                // Remove KABUPATEN/KOTA prefix from regency name for matching
-                $cityName = preg_replace('/^(KABUPATEN|KOTA)\s+/i', '', $regency->name);
+                try {
+                    // Remove KABUPATEN/KOTA prefix from regency name for matching
+                    $cityName = preg_replace('/^(KABUPATEN|KOTA)\s+/i', '', $regency->name);
 
-                // Query postal_codes table
-                $postalCode = \DB::table('postal_codes')
-                    ->where('urban', 'LIKE', '%' . $village->name . '%')
-                    ->where('sub_district', 'LIKE', '%' . $district->name . '%')
-                    ->where('city', 'LIKE', '%' . $cityName . '%')
-                    ->first();
+                    // Query postal_codes table
+                    $postalCode = \DB::table('postal_codes')
+                        ->where('urban', 'LIKE', '%' . $village->name . '%')
+                        ->where('sub_district', 'LIKE', '%' . $district->name . '%')
+                        ->where('city', 'LIKE', '%' . $cityName . '%')
+                        ->first();
 
-                if ($postalCode) {
-                    $this->ibu_kode_pos = $postalCode->postal_code;
+                    if ($postalCode) {
+                        $this->ibu_kode_pos = $postalCode->postal_code;
+                    }
+                } catch (\Exception $e) {
+                    // If postal_codes table doesn't exist or query fails, keep field empty
+                    // User can fill it manually
+                    \Log::warning('Failed to auto-fill ibu_kode_pos: ' . $e->getMessage());
                 }
             }
         }
@@ -2713,18 +2725,24 @@ class Formulir extends Component
             $regency = Regency::where('id', $this->wali_kabupaten)->first();
 
             if ($village && $district && $regency) {
-                // Remove KABUPATEN/KOTA prefix from regency name for matching
-                $cityName = preg_replace('/^(KABUPATEN|KOTA)\s+/i', '', $regency->name);
+                try {
+                    // Remove KABUPATEN/KOTA prefix from regency name for matching
+                    $cityName = preg_replace('/^(KABUPATEN|KOTA)\s+/i', '', $regency->name);
 
-                // Query postal_codes table
-                $postalCode = \DB::table('postal_codes')
-                    ->where('urban', 'LIKE', '%' . $village->name . '%')
-                    ->where('sub_district', 'LIKE', '%' . $district->name . '%')
-                    ->where('city', 'LIKE', '%' . $cityName . '%')
-                    ->first();
+                    // Query postal_codes table
+                    $postalCode = \DB::table('postal_codes')
+                        ->where('urban', 'LIKE', '%' . $village->name . '%')
+                        ->where('sub_district', 'LIKE', '%' . $district->name . '%')
+                        ->where('city', 'LIKE', '%' . $cityName . '%')
+                        ->first();
 
-                if ($postalCode) {
-                    $this->wali_kode_pos = $postalCode->postal_code;
+                    if ($postalCode) {
+                        $this->wali_kode_pos = $postalCode->postal_code;
+                    }
+                } catch (\Exception $e) {
+                    // If postal_codes table doesn't exist or query fails, keep field empty
+                    // User can fill it manually
+                    \Log::warning('Failed to auto-fill wali_kode_pos: ' . $e->getMessage());
                 }
             }
         }
@@ -2849,18 +2867,24 @@ class Formulir extends Component
             $regency = Regency::where('id', $this->siswa_kabupaten)->first();
 
             if ($village && $district && $regency) {
-                // Remove KABUPATEN/KOTA prefix from regency name for matching
-                $cityName = preg_replace('/^(KABUPATEN|KOTA)\s+/i', '', $regency->name);
+                try {
+                    // Remove KABUPATEN/KOTA prefix from regency name for matching
+                    $cityName = preg_replace('/^(KABUPATEN|KOTA)\s+/i', '', $regency->name);
 
-                // Query postal_codes table
-                $postalCode = \DB::table('postal_codes')
-                    ->where('urban', 'LIKE', '%' . $village->name . '%')
-                    ->where('sub_district', 'LIKE', '%' . $district->name . '%')
-                    ->where('city', 'LIKE', '%' . $cityName . '%')
-                    ->first();
+                    // Query postal_codes table
+                    $postalCode = \DB::table('postal_codes')
+                        ->where('urban', 'LIKE', '%' . $village->name . '%')
+                        ->where('sub_district', 'LIKE', '%' . $district->name . '%')
+                        ->where('city', 'LIKE', '%' . $cityName . '%')
+                        ->first();
 
-                if ($postalCode) {
-                    $this->siswa_kode_pos = $postalCode->postal_code;
+                    if ($postalCode) {
+                        $this->siswa_kode_pos = $postalCode->postal_code;
+                    }
+                } catch (\Exception $e) {
+                    // If postal_codes table doesn't exist or query fails, keep field empty
+                    // User can fill it manually
+                    \Log::warning('Failed to auto-fill siswa_kode_pos: ' . $e->getMessage());
                 }
             }
         }

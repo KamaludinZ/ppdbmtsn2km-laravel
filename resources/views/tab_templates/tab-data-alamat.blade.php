@@ -40,7 +40,9 @@
         wali_status: @entangle('wali_status_wali'),
         wali_luar_negeri: @entangle('wali_tinggal_luar_negeri'),
         wali_sama_ayah: @entangle('wali_sama_dengan_ayah'),
-        status_tempat_tinggal: @entangle('status_tempat_tinggal')
+        status_tempat_tinggal: @entangle('status_tempat_tinggal'),
+        ayah_status: '{{ $ayah_status ?? 'masih_hidup' }}',
+        ibu_status: '{{ $ibu_status ?? 'masih_hidup' }}'
     }">
 
         <!-- ===================== AYAH KANDUNG ===================== -->
@@ -58,11 +60,24 @@
                 </label>
             </div>
 
+            <!-- Info jika status bukan masih hidup -->
+            <div x-show="ayah_luar_negeri && ayah_status !== 'masih_hidup'" x-transition class="bg-gray-100 rounded-lg p-4 mb-4">
+                <p class="text-sm text-gray-600 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Alamat ayah tidak perlu diisi karena status ayah: <strong class="ml-1">{{ ucfirst(str_replace('_', ' ', $ayah_status ?? '')) }}</strong>
+                </p>
+            </div>
+
             <!-- Jika Tinggal Diluar Negeri -->
             <div x-show="ayah_luar_negeri" x-transition class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Status Kepemilikan Rumah <span class="text-red-500">*</span></label>
-                    <select wire:model="ayah_status_kepemilikan_rumah" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" required>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Status Kepemilikan Rumah
+                        <span x-show="ayah_status === 'masih_hidup'" class="text-red-500">*</span>
+                    </label>
+                    <select wire:model="ayah_status_kepemilikan_rumah" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
                         <option value="">Pilih Status Kepemilikan</option>
                         <option value="Milik Sendiri">Milik Sendiri</option>
                         <option value="Rumah Orang Tua">Rumah Orang Tua</option>
@@ -75,17 +90,33 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap <span class="text-red-500">*</span></label>
-                    <textarea wire:model="alamat_ayah" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" placeholder="Alamat lengkap di luar negeri" required></textarea>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Alamat Lengkap
+                        <span x-show="ayah_status === 'masih_hidup'" class="text-red-500">*</span>
+                    </label>
+                    <textarea wire:model="alamat_ayah" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" placeholder="Alamat lengkap di luar negeri"></textarea>
                     @error('alamat_ayah') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                 </div>
+            </div>
+
+            <!-- Info jika status bukan masih hidup (dalam negeri) -->
+            <div x-show="!ayah_luar_negeri && ayah_status !== 'masih_hidup'" x-transition class="bg-gray-100 rounded-lg p-4 mb-4">
+                <p class="text-sm text-gray-600 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Alamat ayah tidak perlu diisi karena status ayah: <strong class="ml-1">{{ ucfirst(str_replace('_', ' ', $ayah_status ?? '')) }}</strong>
+                </p>
             </div>
 
             <!-- Jika Tinggal Didalam Negeri -->
             <div x-show="!ayah_luar_negeri" x-transition class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Status Kepemilikan Rumah <span class="text-red-500">*</span></label>
-                    <select wire:model="ayah_status_kepemilikan_rumah" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" required>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Status Kepemilikan Rumah
+                        <span x-show="ayah_status === 'masih_hidup'" class="text-red-500">*</span>
+                    </label>
+                    <select wire:model="ayah_status_kepemilikan_rumah" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
                         <option value="">Pilih Status Kepemilikan</option>
                         <option value="Milik Sendiri">Milik Sendiri</option>
                         <option value="Rumah Orang Tua">Rumah Orang Tua</option>
@@ -98,8 +129,11 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Provinsi <span class="text-red-500">*</span></label>
-                    <select wire:model.live="ayah_provinsi" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" required>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Provinsi
+                        <span x-show="ayah_status === 'masih_hidup'" class="text-red-500">*</span>
+                    </label>
+                    <select wire:model.live="ayah_provinsi" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
                         <option value="">Pilih Provinsi</option>
                         @foreach($provincesList as $province)
                             <option value="{{ $province['id'] }}">{{ $province['name'] }}</option>
@@ -109,8 +143,11 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kabupaten/Kota <span class="text-red-500">*</span></label>
-                    <select wire:model.live="ayah_kabupaten" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" required @if(!$ayah_provinsi) disabled @endif>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Kabupaten/Kota
+                        <span x-show="ayah_status === 'masih_hidup'" class="text-red-500">*</span>
+                    </label>
+                    <select wire:model.live="ayah_kabupaten" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" @if(!$ayah_provinsi) disabled @endif>
                         <option value="">Pilih Kabupaten/Kota</option>
                         @foreach($ayahCitiesList as $city)
                             <option value="{{ $city['id'] }}">{{ $city['name'] }}</option>
@@ -121,8 +158,11 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Kecamatan <span class="text-red-500">*</span></label>
-                        <select wire:model.live="ayah_kecamatan" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" required @if(!$ayah_kabupaten) disabled @endif>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Kecamatan
+                            <span x-show="ayah_status === 'masih_hidup'" class="text-red-500">*</span>
+                        </label>
+                        <select wire:model.live="ayah_kecamatan" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" @if(!$ayah_kabupaten) disabled @endif>
                             <option value="">Pilih Kecamatan</option>
                             @foreach($ayahDistrictsList as $district)
                                 <option value="{{ $district['id'] }}">{{ $district['name'] }}</option>
@@ -132,8 +172,11 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Kelurahan/Desa <span class="text-red-500">*</span></label>
-                        <select wire:model.live="ayah_kelurahan" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" required @if(!$ayah_kecamatan) disabled @endif>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Kelurahan/Desa
+                            <span x-show="ayah_status === 'masih_hidup'" class="text-red-500">*</span>
+                        </label>
+                        <select wire:model.live="ayah_kelurahan" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" @if(!$ayah_kecamatan) disabled @endif>
                             <option value="">Pilih Kelurahan/Desa</option>
                             @foreach($ayahVillagesList as $village)
                                 <option value="{{ $village['id'] }}">{{ $village['name'] }}</option>
@@ -145,21 +188,30 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">RT <span class="text-red-500">*</span></label>
-                        <input type="text" wire:model="ayah_rt" maxlength="3" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" placeholder="001" required>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            RT
+                            <span x-show="ayah_status === 'masih_hidup'" class="text-red-500">*</span>
+                        </label>
+                        <input type="text" wire:model="ayah_rt" maxlength="3" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" placeholder="001">
                         @error('ayah_rt') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         <p class="text-xs text-gray-500 mt-1">Maksimal 3 digit</p>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">RW <span class="text-red-500">*</span></label>
-                        <input type="text" wire:model="ayah_rw" maxlength="3" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" placeholder="001" required>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            RW
+                            <span x-show="ayah_status === 'masih_hidup'" class="text-red-500">*</span>
+                        </label>
+                        <input type="text" wire:model="ayah_rw" maxlength="3" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" placeholder="001">
                         @error('ayah_rw') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         <p class="text-xs text-gray-500 mt-1">Maksimal 3 digit</p>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Kode Pos <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Kode Pos
+                            <span x-show="ayah_status === 'masih_hidup'" class="text-red-500">*</span>
+                        </label>
                         <input type="text" wire:model="ayah_kode_pos" maxlength="6" class="w-full rounded-md border-gray-300 bg-white shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" placeholder="Otomatis terisi atau input manual">
                         @error('ayah_kode_pos') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         <p class="text-xs text-gray-500 mt-1">Otomatis terisi atau dapat diedit manual</p>
@@ -167,8 +219,11 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap <span class="text-red-500">*</span></label>
-                    <textarea wire:model="alamat_ayah" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" placeholder="Jalan, No. Rumah, Gang/Kampung" required></textarea>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Alamat Lengkap
+                        <span x-show="ayah_status === 'masih_hidup'" class="text-red-500">*</span>
+                    </label>
+                    <textarea wire:model="alamat_ayah" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200" placeholder="Jalan, No. Rumah, Gang/Kampung"></textarea>
                     @error('alamat_ayah') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                 </div>
             </div>
@@ -200,11 +255,24 @@
                 </label>
             </div>
 
+            <!-- Info jika status bukan masih hidup (luar negeri) -->
+            <div x-show="ibu_luar_negeri && ibu_status !== 'masih_hidup'" x-transition class="bg-gray-100 rounded-lg p-4 mb-4">
+                <p class="text-sm text-gray-600 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Alamat ibu tidak perlu diisi karena status ibu: <strong class="ml-1">{{ ucfirst(str_replace('_', ' ', $ibu_status ?? '')) }}</strong>
+                </p>
+            </div>
+
             <!-- Jika Tinggal Diluar Negeri -->
             <div x-show="ibu_luar_negeri" x-transition class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Status Kepemilikan Rumah <span class="text-red-500">*</span></label>
-                    <select wire:model="ibu_status_kepemilikan_rumah" class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" required>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Status Kepemilikan Rumah
+                        <span x-show="ibu_status === 'masih_hidup'" class="text-red-500">*</span>
+                    </label>
+                    <select wire:model="ibu_status_kepemilikan_rumah" class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200">
                         <option value="">Pilih Status Kepemilikan</option>
                         <option value="Milik Sendiri">Milik Sendiri</option>
                         <option value="Rumah Orang Tua">Rumah Orang Tua</option>
@@ -217,17 +285,33 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap <span class="text-red-500">*</span></label>
-                    <textarea wire:model="ibu_alamat" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" placeholder="Alamat lengkap di luar negeri" required></textarea>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Alamat Lengkap
+                        <span x-show="ibu_status === 'masih_hidup'" class="text-red-500">*</span>
+                    </label>
+                    <textarea wire:model="ibu_alamat" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" placeholder="Alamat lengkap di luar negeri"></textarea>
                     @error('ibu_alamat') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                 </div>
+            </div>
+
+            <!-- Info jika status bukan masih hidup (dalam negeri) -->
+            <div x-show="!ibu_luar_negeri && ibu_status !== 'masih_hidup'" x-transition class="bg-gray-100 rounded-lg p-4 mb-4">
+                <p class="text-sm text-gray-600 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Alamat ibu tidak perlu diisi karena status ibu: <strong class="ml-1">{{ ucfirst(str_replace('_', ' ', $ibu_status ?? '')) }}</strong>
+                </p>
             </div>
 
             <!-- Jika Tinggal Didalam Negeri -->
             <div x-show="!ibu_luar_negeri" x-transition class="space-y-4">
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Status Kepemilikan Rumah <span class="text-red-500">*</span></label>
-                    <select wire:model="ibu_status_kepemilikan_rumah" :disabled="ibu_sama_ayah" class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" required>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Status Kepemilikan Rumah
+                        <span x-show="!ibu_sama_ayah && ibu_status === 'masih_hidup'" class="text-red-500">*</span>
+                    </label>
+                    <select wire:model="ibu_status_kepemilikan_rumah" :disabled="ibu_sama_ayah" class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200">
                         <option value="">Pilih Status Kepemilikan</option>
                         <option value="Milik Sendiri">Milik Sendiri</option>
                         <option value="Rumah Orang Tua">Rumah Orang Tua</option>
@@ -240,8 +324,11 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Provinsi <span class="text-red-500">*</span></label>
-                    <select wire:model.live="ibu_provinsi" :disabled="ibu_sama_ayah" class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" required>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Provinsi
+                        <span x-show="!ibu_sama_ayah && ibu_status === 'masih_hidup'" class="text-red-500">*</span>
+                    </label>
+                    <select wire:model.live="ibu_provinsi" :disabled="ibu_sama_ayah" class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200">
                         <option value="">Pilih Provinsi</option>
                         @foreach($provincesList as $province)
                             <option value="{{ $province['id'] }}">{{ $province['name'] }}</option>
@@ -251,8 +338,11 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Kabupaten/Kota <span class="text-red-500">*</span></label>
-                    <select wire:model.live="ibu_kabupaten" :disabled="ibu_sama_ayah" @if(!$ibu_provinsi) disabled @endif class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" required>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Kabupaten/Kota
+                        <span x-show="!ibu_sama_ayah && ibu_status === 'masih_hidup'" class="text-red-500">*</span>
+                    </label>
+                    <select wire:model.live="ibu_kabupaten" :disabled="ibu_sama_ayah" @if(!$ibu_provinsi) disabled @endif class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200">
                         <option value="">Pilih Kabupaten/Kota</option>
                         @foreach($ibuCitiesList as $city)
                             <option value="{{ $city['id'] }}">{{ $city['name'] }}</option>
@@ -263,8 +353,11 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Kecamatan <span class="text-red-500">*</span></label>
-                        <select wire:model.live="ibu_kecamatan" :disabled="ibu_sama_ayah" @if(!$ibu_kabupaten) disabled @endif class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" required>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Kecamatan
+                            <span x-show="!ibu_sama_ayah && ibu_status === 'masih_hidup'" class="text-red-500">*</span>
+                        </label>
+                        <select wire:model.live="ibu_kecamatan" :disabled="ibu_sama_ayah" @if(!$ibu_kabupaten) disabled @endif class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200">
                             <option value="">Pilih Kecamatan</option>
                             @foreach($ibuDistrictsList as $district)
                                 <option value="{{ $district['id'] }}">{{ $district['name'] }}</option>
@@ -274,8 +367,11 @@
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Kelurahan/Desa <span class="text-red-500">*</span></label>
-                        <select wire:model.live="ibu_kelurahan" :disabled="ibu_sama_ayah" @if(!$ibu_kecamatan) disabled @endif class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" required>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Kelurahan/Desa
+                            <span x-show="!ibu_sama_ayah && ibu_status === 'masih_hidup'" class="text-red-500">*</span>
+                        </label>
+                        <select wire:model.live="ibu_kelurahan" :disabled="ibu_sama_ayah" @if(!$ibu_kecamatan) disabled @endif class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200">
                             <option value="">Pilih Kelurahan/Desa</option>
                             @foreach($ibuVillagesList as $village)
                                 <option value="{{ $village['id'] }}">{{ $village['name'] }}</option>
@@ -287,21 +383,30 @@
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">RT <span class="text-red-500">*</span></label>
-                        <input type="text" wire:model="ibu_rt" :disabled="ibu_sama_ayah" maxlength="3" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" placeholder="001" required>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            RT
+                            <span x-show="!ibu_sama_ayah && ibu_status === 'masih_hidup'" class="text-red-500">*</span>
+                        </label>
+                        <input type="text" wire:model="ibu_rt" :disabled="ibu_sama_ayah" maxlength="3" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" placeholder="001">
                         @error('ibu_rt') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         <p class="text-xs text-gray-500 mt-1">Maksimal 3 digit</p>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">RW <span class="text-red-500">*</span></label>
-                        <input type="text" wire:model="ibu_rw" :disabled="ibu_sama_ayah" maxlength="3" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" placeholder="001" required>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            RW
+                            <span x-show="!ibu_sama_ayah && ibu_status === 'masih_hidup'" class="text-red-500">*</span>
+                        </label>
+                        <input type="text" wire:model="ibu_rw" :disabled="ibu_sama_ayah" maxlength="3" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" placeholder="001">
                         @error('ibu_rw') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         <p class="text-xs text-gray-500 mt-1">Maksimal 3 digit</p>
                     </div>
 
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Kode Pos <span class="text-red-500">*</span></label>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">
+                            Kode Pos
+                            <span x-show="!ibu_sama_ayah && ibu_status === 'masih_hidup'" class="text-red-500">*</span>
+                        </label>
                         <input type="text" wire:model="ibu_kode_pos" :disabled="ibu_sama_ayah" maxlength="6" class="w-full rounded-md border-gray-300 bg-white shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" placeholder="Otomatis terisi atau input manual">
                         @error('ibu_kode_pos') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                         <p class="text-xs text-gray-500 mt-1">Otomatis terisi atau dapat diedit manual</p>
@@ -309,8 +414,11 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap <span class="text-red-500">*</span></label>
-                    <textarea wire:model="ibu_alamat" :disabled="ibu_sama_ayah" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" placeholder="Jalan, No. Rumah, Gang/Kampung" required></textarea>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Alamat Lengkap
+                        <span x-show="!ibu_sama_ayah && ibu_status === 'masih_hidup'" class="text-red-500">*</span>
+                    </label>
+                    <textarea wire:model="ibu_alamat" :disabled="ibu_sama_ayah" rows="3" class="w-full rounded-md border-gray-300 shadow-sm focus:border-pink-500 focus:ring focus:ring-pink-200" placeholder="Jalan, No. Rumah, Gang/Kampung"></textarea>
                     @error('ibu_alamat') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
                 </div>
             </div>

@@ -23,6 +23,15 @@ class TextFormatter
             return '';
         }
 
+        // Check if content is already HTML from Trix editor
+        // Trix generates content with HTML tags like <div>, <strong>, <em>, <a>, <ul>, <ol>, etc
+        if (self::isHtmlContent($text)) {
+            // Content already formatted by Trix, return as-is
+            // Trix output is already safe, no need to escape
+            return $text;
+        }
+
+        // Legacy plain text with markdown-like syntax
         // Escape HTML untuk keamanan (prevent XSS)
         $text = htmlspecialchars($text, ENT_QUOTES, 'UTF-8');
 
@@ -94,5 +103,25 @@ class TextFormatter
     public static function toPlainText($text)
     {
         return self::stripFormatting($text);
+    }
+
+    /**
+     * Check if content is HTML (from Trix editor) or plain text
+     *
+     * @param string $text
+     * @return bool
+     */
+    private static function isHtmlContent($text)
+    {
+        // Check for common HTML tags that Trix generates
+        $htmlTags = ['<div', '<p>', '<strong>', '<em>', '<ul>', '<ol>', '<li>', '<br>', '<a ', '<h1>', '<blockquote>'];
+
+        foreach ($htmlTags as $tag) {
+            if (stripos($text, $tag) !== false) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

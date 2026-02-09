@@ -3,6 +3,7 @@
 namespace App\Livewire\Pendaftar;
 
 use App\Models\Pengumuman as PengumumanModel;
+use App\Models\Setting;
 use App\Models\TimelinePendaftaran;
 use App\Models\TesPsikologiSetting;
 use App\Models\TesPsikologiPendaftar;
@@ -18,6 +19,10 @@ class Dashboard extends Component
     public $pengumumanPendaftar;
     public $tesPsikologiAktif = false;
     public $tesPsikologiData = null;
+
+    // Link Grup
+    public $linkGrupUrl = '';
+    public $linkGrupEnabled = false;
 
     public $documentLabels = [
         'rapor' => ['label' => 'Scan Rapor', 'keterangan' => 'Upload dalam format PDF, maksimal 2 MB', 'wajib' => true],
@@ -78,6 +83,10 @@ class Dashboard extends Component
                 ['status_verifikasi' => 'belum_upload']
             );
         }
+
+        // Load link grup settings
+        $this->linkGrupUrl = Setting::get('link_grup_url', '');
+        $this->linkGrupEnabled = Setting::get('link_grup_enabled', false);
 
         $this->calculateProgress();
     }

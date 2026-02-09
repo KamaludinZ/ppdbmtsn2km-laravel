@@ -20,7 +20,25 @@
     @endif
 
     <div class="space-y-6">
+        <!-- Catatan Psikologi (jika ada) -->
+        @if($tesPsikologiData && $tesPsikologiData->catatan_psikologi)
+            <div class="bg-purple-50 border-l-4 border-purple-500 rounded-lg shadow overflow-hidden">
+                <div class="px-6 py-4 bg-purple-100 flex items-center">
+                    <svg class="w-6 h-6 text-purple-700 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    <h3 class="text-lg font-bold text-purple-900 uppercase tracking-wider">Catatan Psikologi</h3>
+                </div>
+                <div class="p-6">
+                    <div class="bg-white border border-purple-200 rounded-lg p-4">
+                        <p class="text-gray-800 whitespace-pre-wrap">{{ $tesPsikologiData->catatan_psikologi }}</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
         <!-- Informasi Tes Psikologi -->
+        @if(!$tesPsikologiData || $tesPsikologiData->status_verifikasi !== 'disetujui')
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200 bg-emerald-600 flex items-center">
                 <svg class="w-6 h-6 text-white mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -34,8 +52,10 @@
                 </div>
             </div>
         </div>
+        @endif
 
         <!-- Survey Pertanyaan (Muncul jika aktif) -->
+        @if(!$tesPsikologiData || $tesPsikologiData->status_verifikasi !== 'disetujui')
         @if($setting->survey_aktif && $surveyQuestions && $surveyQuestions->count() > 0)
             <div class="bg-white rounded-lg shadow overflow-hidden">
                 <div class="px-6 py-4 border-b border-gray-200 bg-indigo-600 flex items-center justify-between">
@@ -249,8 +269,10 @@
                 @endif
             </div>
         @endif
+        @endif
 
         <!-- Informasi Rekening Tujuan -->
+        @if(!$tesPsikologiData || $tesPsikologiData->status_verifikasi !== 'disetujui')
         <div class="bg-white rounded-lg shadow overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200 bg-green-600 flex items-center">
                 <svg class="w-6 h-6 text-white mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -347,6 +369,7 @@
                     </div>
                 </div>
             </div>
+        @endif
         @endif
 
         <!-- Status Alert -->

@@ -610,4 +610,52 @@ class Pendaftar extends Component
         return $city ? $city->name : '-';
     }
 
+    /**
+     * Ganti jalur pendaftaran dan regenerate nomor pendaftaran
+     */
+    public function gantiJalur($pendaftarId, $newJalurId)
+    {
+        try {
+            $pendaftar = PendaftarModel::findOrFail($pendaftarId);
+            $oldJalur = $pendaftar->jalurPendaftaran;
+            $newJalur = JalurPendaftaran::findOrFail($newJalurId);
+
+            // Check if jalur actually changed
+            if ($pendaftar->jalur_pendaftaran_id == $newJalurId) {
+                $this->dispatch('statusUpdated', [
+                    'type' => 'info',
+                    'message' => 'Jalur yang dipilih sama dengan jalur saat ini.'
+                ]);
+                return;
+            }
+
+            // Start transaction
+            \DB::beginTransaction();
+
+            // Generate nomor pendaftaran baru berdasarkan jalur baru
+            $nomorPendaftaranBaru = $newJalur->generateNomorPendaftaran();
+
+            // Update pendaftar dengan jalur dan nomor baru
+            $pendaftar->update([
+                'jalur_pendaftaran_id' => $newJalurId,
+                'nomor_pendaftaran' => $nomorPendaftaranBaru,
+                'diperbarui_oleh' => Auth::id()
+            ]);
+
+            \DB::commit();
+
+            $this->dispatch('statusUpdated', [
+                'type' => 'success',
+                'message' => "Jalur berhasil diganti dari '{$oldJalur->nama}' ke '{$newJalur->nama}'. Nomor pendaftaran baru: {$nomorPendaftaranBaru}"
+            ]);
+
+        } catch (\Exception $e) {
+            \DB::rollBack();
+            $this->dispatch('statusUpdated', [
+                'type' => 'error',
+                'message' => 'Gagal mengganti jalur: ' . $e->getMessage()
+            ]);
+        }
+    }
+
 }

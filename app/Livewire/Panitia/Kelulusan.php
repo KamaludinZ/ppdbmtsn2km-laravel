@@ -60,27 +60,21 @@ class Kelulusan extends Component
                 $q->where('status_pendaftaran', $this->filterStatus);
             });
 
-            // Optimize stats queries - use single query with groupBy
+            // Calculate statistics WITHOUT ANY FILTERS
+            // Stats should show TOTAL OVERALL DATA regardless of ANY filter (search, jalur, status)
+            // This gives accurate overview of ALL data in system
             $statsData = Pendaftar::selectRaw('status_pendaftaran, COUNT(*) as count')
-                ->when($this->search, function($q) {
-                    $q->where(function($subQuery) {
-                        $subQuery->where('nama_lengkap', 'ilike', '%' . $this->search . '%')
-                            ->orWhere('nisn', 'ilike', '%' . $this->search . '%')
-                            ->orWhere('nomor_pendaftaran', 'ilike', '%' . $this->search . '%');
-                    });
-                })
-                ->when($this->filterJalur, function($q) {
-                    $q->where('jalur_pendaftaran_id', $this->filterJalur);
-                })
+                // NOTE: Do NOT apply any filters here (no search, no jalur, no status)
+                // Stats must show TOTAL OVERALL for accurate overview
                 ->groupBy('status_pendaftaran')
                 ->pluck('count', 'status_pendaftaran');
 
             $stats = [
                 'total' => $statsData->sum(),
-                'menunggu' => $statsData->get('menunggu_verifikasi', 0),
-                'lulus' => $statsData->get('data_disetujui', 0),
-                'cadangan' => $statsData->get('lengkapi_data', 0),
-                'tidak_lulus' => $statsData->get('data_ditolak', 0),
+                'data_disetujui' => $statsData->get('data_disetujui', 0) + $statsData->get('lulus', 0) + $statsData->get('diterima', 0) + $statsData->get('tidak_lulus', 0) + $statsData->get('cadangan', 0) + $statsData->get('ditolak', 0),
+                'lulus' => $statsData->get('lulus', 0) + $statsData->get('diterima', 0),
+                'cadangan' => $statsData->get('cadangan', 0),
+                'tidak_lulus' => $statsData->get('tidak_lulus', 0) + $statsData->get('ditolak', 0) + $statsData->get('data_ditolak', 0),
             ];
 
             $pendaftar = $this->applySorting($query)->paginate(10);
@@ -103,7 +97,7 @@ class Kelulusan extends Component
                 'jalurPendaftaran' => collect(),
                 'stats' => [
                     'total' => 0,
-                    'menunggu' => 0,
+                    'data_disetujui' => 0,
                     'lulus' => 0,
                     'cadangan' => 0,
                     'tidak_lulus' => 0,

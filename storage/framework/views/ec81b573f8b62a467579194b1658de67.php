@@ -35,6 +35,32 @@
         <span x-text="message" class="flex-1"></span>
     </div>
 
+    <!-- Countdown Timer -->
+    <div class="mb-6">
+        <?php if (isset($component)) { $__componentOriginald17465fe2db905de05906395c5ac867d = $component; } ?>
+<?php if (isset($attributes)) { $__attributesOriginald17465fe2db905de05906395c5ac867d = $attributes; } ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.countdown-dashboard-pendaftar','data' => []] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component->withName('countdown-dashboard-pendaftar'); ?>
+<?php if ($component->shouldRender()): ?>
+<?php $__env->startComponent($component->resolveView(), $component->data()); ?>
+<?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
+<?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
+<?php endif; ?>
+<?php $component->withAttributes([]); ?>
+<?php \Livewire\Features\SupportCompiledWireKeys\SupportCompiledWireKeys::processComponentKey($component); ?>
+
+<?php echo $__env->renderComponent(); ?>
+<?php endif; ?>
+<?php if (isset($__attributesOriginald17465fe2db905de05906395c5ac867d)): ?>
+<?php $attributes = $__attributesOriginald17465fe2db905de05906395c5ac867d; ?>
+<?php unset($__attributesOriginald17465fe2db905de05906395c5ac867d); ?>
+<?php endif; ?>
+<?php if (isset($__componentOriginald17465fe2db905de05906395c5ac867d)): ?>
+<?php $component = $__componentOriginald17465fe2db905de05906395c5ac867d; ?>
+<?php unset($__componentOriginald17465fe2db905de05906395c5ac867d); ?>
+<?php endif; ?>
+    </div>
+
     <!-- Status Pendaftaran -->
     <div class="bg-gradient-to-r from-emerald-600 to-emerald-700 rounded-lg shadow-lg p-8 mb-8 text-white">
         <div class="flex flex-col lg:flex-row gap-6">
@@ -217,12 +243,21 @@
                         </ol>
                     </div>
                     <div class="flex items-center gap-4">
-                        <a href="/pendaftar/kartu-ujian" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-bold text-lg hover:bg-blue-50 transition transform hover:scale-105 shadow-lg flex items-center">
+                        <a href="/pendaftar/kartu-tes-seleksi" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-bold text-lg hover:bg-blue-50 transition transform hover:scale-105 shadow-lg flex items-center">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                             </svg>
                             Cetak Kartu Ujian
                         </a>
+                        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($linkGrupEnabled && $linkGrupUrl): ?>
+                            <a href="<?php echo e($linkGrupUrl); ?>" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-bold text-lg transition transform hover:scale-105 shadow-lg flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
+                                    <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"></path>
+                                </svg>
+                                Bergabung ke Grup
+                            </a>
+                        <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                     </div>
                 </div>
                 <div class="hidden lg:block">
@@ -237,7 +272,7 @@
 
     <!-- Persetujuan Daftar Ulang (Only for LULUS) -->
     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($pendaftar->status_pendaftaran === 'lulus'): ?>
-        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!$pendaftar->setuju_daftar_ulang): ?>
+        <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if(!$pendaftar->status_persetujuan_daftar_ulang || $pendaftar->status_persetujuan_daftar_ulang === 'belum_memilih'): ?>
             <div class="bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg shadow-lg p-8 mb-8 text-white border-4 border-yellow-400 animate-pulse">
                 <div class="flex items-start justify-between">
                     <div class="flex-1">
@@ -319,21 +354,44 @@
                 </div>
             </div>
             <?php elseif($pendaftar->status_persetujuan_daftar_ulang === 'tidak_setuju'): ?>
-                <div class="bg-gradient-to-r from-gray-500 to-gray-600 rounded-lg shadow-lg p-6 mb-8 text-white">
-                    <div class="flex items-center justify-between">
-                        <div>
-                            <div class="flex items-center mb-2">
-                                <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 mb-8 text-white">
+                    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
+                        <div class="flex-1">
+                            <div class="flex items-center mb-4">
+                                <svg class="w-8 h-8 mr-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"></path>
                                 </svg>
-                                <h3 class="text-xl font-bold">Pilihan Tercatat: Tidak Melanjutkan Daftar Ulang</h3>
+                                <h2 class="text-2xl font-bold">🙏 Terima Kasih atas Partisipasi Anda</h2>
                             </div>
-                            <p class="text-gray-100">Anda telah memilih untuk TIDAK melanjutkan daftar ulang pada <?php echo e($pendaftar->tanggal_pilihan_daftar_ulang?->format('d M Y, H:i')); ?></p>
-                            <p class="text-gray-100 mt-2">Terima kasih atas partisipasi Anda dalam proses seleksi ini.</p>
+                            <p class="text-blue-100 text-lg mb-4">
+                                Kami menghargai keputusan Anda untuk tidak melanjutkan daftar ulang. Terima kasih telah meluangkan waktu untuk mengikuti proses seleksi hingga tahap ini.
+                            </p>
+                            <div class="bg-blue-800 bg-opacity-50 rounded-lg p-4 mb-4">
+                                <p class="text-sm text-blue-100">
+                                    <strong>Waktu Pilihan:</strong> <?php echo e($pendaftar->tanggal_pilihan_daftar_ulang?->format('d M Y, H:i')); ?> WIB
+                                </p>
+                            </div>
+
+                            <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($pendaftar->alasan_tidak_setuju): ?>
+                            <div class="bg-white rounded-lg p-5 shadow-md">
+                                <h3 class="text-lg font-bold text-blue-900 mb-3 flex items-center">
+                                    <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    Alasan yang Anda Berikan:
+                                </h3>
+                                <div class="bg-blue-50 border-l-4 border-blue-500 rounded p-4">
+                                    <p class="text-gray-800 font-medium text-base"><?php echo e($pendaftar->alasan_tidak_setuju); ?></p>
+                                </div>
+                                <p class="text-xs text-gray-600 mt-3 italic">
+                                    Informasi ini akan membantu kami meningkatkan kualitas layanan di masa mendatang.
+                                </p>
+                            </div>
+                            <?php endif; ?><?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if ENDBLOCK]><![endif]--><?php endif; ?>
                         </div>
-                        <div class="hidden md:block">
-                            <svg class="w-16 h-16 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                        <div class="hidden lg:block flex-shrink-0">
+                            <svg class="w-32 h-32 text-white opacity-30" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M2 10.5a1.5 1.5 0 113 0v6a1.5 1.5 0 01-3 0v-6zM6 10.333v5.43a2 2 0 001.106 1.79l.05.025A4 4 0 008.943 18h5.416a2 2 0 001.962-1.608l1.2-6A2 2 0 0015.56 8H12V4a2 2 0 00-2-2 1 1 0 00-1 1v.667a4 4 0 01-.8 2.4L6.8 7.933a4 4 0 00-.8 2.4z"></path>
                             </svg>
                         </div>
                     </div>
@@ -561,7 +619,7 @@
                     </svg>
                     <span class="text-sm font-medium text-gray-900">Daftar Ulang</span>
                 </a>
-                <a href="/pendaftar/kartu-ujian" class="flex items-center px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition">
+                <a href="/pendaftar/kartu-tes-seleksi" class="flex items-center px-4 py-3 bg-purple-50 hover:bg-purple-100 rounded-lg transition">
                     <svg class="w-5 h-5 text-purple-600 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
                     </svg>
@@ -1107,13 +1165,13 @@
     <?php if(\Livewire\Mechanisms\ExtendBlade\ExtendBlade::isRenderingLivewireComponent()): ?><!--[if BLOCK]><![endif]--><?php endif; ?><?php if($showModalAlasan): ?>
     <div class="fixed inset-0 z-[9999] overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="flex items-center justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <!-- Background overlay -->
-            <div class="fixed inset-0 bg-gray-900 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="closeModalAlasan"></div>
+            <!-- Background overlay with blur -->
+            <div class="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity z-[9998]" aria-hidden="true" wire:click="closeModalAlasan"></div>
 
             <!-- Center modal -->
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
 
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full relative z-[10000]">
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div class="sm:flex sm:items-start">
                         <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 sm:mx-0 sm:h-10 sm:w-10">

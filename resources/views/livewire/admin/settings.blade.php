@@ -71,6 +71,64 @@
                                 <input type="date" wire:model="registration_end_date" class="w-full pl-12 rounded-xl border-gray-300 bg-gray-50 px-4 py-3 focus:bg-white focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all duration-200 font-medium text-gray-900">
                             </div>
                         </div>
+
+                        <!-- Divider -->
+                        <div class="md:col-span-2 my-4">
+                            <div class="border-t-2 border-gray-200"></div>
+                        </div>
+
+                        <!-- Countdown Timer Settings -->
+                        <div class="md:col-span-2" x-data="{ countdownEnabled: @entangle('countdown_pendaftar_enabled') }">
+                            <div class="bg-emerald-50 border-2 border-emerald-200 rounded-xl p-4">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center">
+                                        <svg class="w-6 h-6 text-emerald-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <div>
+                                            <h4 class="text-sm font-bold text-emerald-900 uppercase">Countdown Timer Dashboard Pendaftar</h4>
+                                            <p class="text-xs text-emerald-700 mt-0.5">Tampilkan hitung mundur waktu pendaftaran di dashboard pendaftar</p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Toggle Switch -->
+                                    <div class="flex items-center">
+                                        <label class="relative inline-block w-14 h-7">
+                                            <input type="checkbox"
+                                                   wire:model.live="countdown_pendaftar_enabled"
+                                                   class="opacity-0 w-0 h-0"
+                                                   x-model="countdownEnabled">
+                                            <span class="absolute cursor-pointer top-0 left-0 right-0 bottom-0 rounded-full transition-all duration-300"
+                                                  :class="countdownEnabled ? 'bg-emerald-600' : 'bg-gray-300'">
+                                                <span class="absolute left-1 top-0.5 bg-white w-6 h-6 rounded-full transition-transform duration-300"
+                                                      :class="countdownEnabled ? 'transform translate-x-7' : ''"></span>
+                                            </span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div x-show="countdownEnabled" x-transition class="space-y-4 mt-4">
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Label Countdown</label>
+                                        <input type="text" wire:model="countdown_pendaftar_label" class="w-full rounded-xl border-gray-300 bg-white px-4 py-3 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all duration-200 font-medium text-gray-900" placeholder="Waktu Pendaftaran Tersisa">
+                                        <p class="text-xs text-gray-500 mt-1">Label yang ditampilkan di atas countdown timer</p>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-bold text-gray-700 mb-2 uppercase tracking-wide">Deskripsi Countdown</label>
+                                        <textarea wire:model="countdown_pendaftar_description" rows="2" class="w-full rounded-xl border-gray-300 bg-white px-4 py-3 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 transition-all duration-200 font-medium text-gray-900" placeholder="Segera lengkapi data pendaftaran Anda sebelum waktu berakhir."></textarea>
+                                        <p class="text-xs text-gray-500 mt-1">Pesan yang ditampilkan di bawah label countdown</p>
+                                    </div>
+                                    <div class="bg-white border border-emerald-200 rounded-lg p-3">
+                                        <p class="text-xs text-gray-600 flex items-start">
+                                            <svg class="w-4 h-4 text-emerald-500 mr-1.5 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            <span><strong>Info:</strong> Countdown akan menghitung mundur waktu hingga <strong>Tanggal Selesai</strong> di atas. Countdown otomatis muncul di dashboard pendaftar jika fitur ini diaktifkan.</span>
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="mt-8 flex justify-end">
                         <button type="submit" class="bg-emerald-600 text-white px-8 py-3 rounded-xl hover:bg-emerald-700 transition flex items-center font-bold shadow-md hover:shadow-lg transform hover:-translate-y-0.5 active:scale-95">

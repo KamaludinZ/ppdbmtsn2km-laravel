@@ -52,6 +52,10 @@ class PengaturanKartu extends Component
     // Catatan Kartu Ujian
     public $catatan_kartu_ujian = '';
 
+    // Link Grup properties
+    public $link_grup_url = '';
+    public $link_grup_enabled = false;
+
     protected $rules = [
         'nama_tes' => 'required|string|max:255',
         'deskripsi' => 'nullable|string',
@@ -70,6 +74,10 @@ class PengaturanKartu extends Component
     {
         // Load catatan kartu ujian from settings
         $this->catatan_kartu_ujian = Setting::get('catatan_kartu_ujian', '');
+
+        // Load link grup settings
+        $this->link_grup_url = Setting::get('link_grup_url', '');
+        $this->link_grup_enabled = Setting::get('link_grup_enabled', false);
     }
 
     public function saveCatatanKartu()
@@ -80,6 +88,21 @@ class PengaturanKartu extends Component
 
         Setting::set('catatan_kartu_ujian', $this->catatan_kartu_ujian);
         session()->flash('message', 'Catatan kartu tes seleksi berhasil disimpan.');
+    }
+
+    public function saveLinkGrup()
+    {
+        $this->validate([
+            'link_grup_url' => 'nullable|url|max:500',
+            'link_grup_enabled' => 'boolean',
+        ], [
+            'link_grup_url.url' => 'Link grup harus berupa URL yang valid (contoh: https://chat.whatsapp.com/...)',
+            'link_grup_url.max' => 'Link grup maksimal 500 karakter',
+        ]);
+
+        Setting::set('link_grup_url', $this->link_grup_url);
+        Setting::set('link_grup_enabled', $this->link_grup_enabled);
+        session()->flash('message', 'Link grup berhasil disimpan.');
     }
 
     public function saveJadwalTes()

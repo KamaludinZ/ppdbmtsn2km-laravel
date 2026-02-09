@@ -19,63 +19,42 @@ return new class extends Migration
         // ================================================================
         // Table: survey_question_options
         // ================================================================
-        // Index untuk query options by question dan urutan
-        if (!Schema::hasColumn('survey_question_options', 'survey_question_id')) {
-            Schema::table('survey_question_options', function (Blueprint $table) {
-                // Index untuk faster query saat load options dengan urutan
-                $table->index(['survey_question_id', 'urutan'], 'idx_survey_options_question_urutan');
-            });
-        } else {
-            // Cek jika index belum ada
-            $sm = Schema::getConnection()->getDoctrineSchemaManager();
-            $indexesFound = $sm->listTableIndexes('survey_question_options');
-
-            if (!isset($indexesFound['idx_survey_options_question_urutan'])) {
-                Schema::table('survey_question_options', function (Blueprint $table) {
-                    $table->index(['survey_question_id', 'urutan'], 'idx_survey_options_question_urutan');
-                });
+        if (Schema::hasTable('survey_question_options') && Schema::hasColumn('survey_question_options', 'survey_question_id')) {
+            try {
+                \DB::statement('CREATE INDEX IF NOT EXISTS idx_survey_options_question_urutan ON survey_question_options (survey_question_id, urutan)');
+            } catch (\Exception $e) {
+                // Index already exists, skip
             }
         }
 
         // ================================================================
         // Table: survey_answers
         // ================================================================
-        // Prevent duplicate answers untuk question yang sama dari pendaftar yang sama
-        Schema::table('survey_answers', function (Blueprint $table) {
-            // Drop index/constraint lama jika ada
-            $sm = Schema::getConnection()->getDoctrineSchemaManager();
-            $indexesFound = $sm->listTableIndexes('survey_answers');
-
-            // Index untuk query answers by pendaftar
-            if (!isset($indexesFound['idx_survey_answers_pendaftar_question'])) {
-                $table->index(['pendaftar_id', 'survey_question_id'], 'idx_survey_answers_pendaftar_question');
+        if (Schema::hasTable('survey_answers')) {
+            try {
+                \DB::statement('CREATE INDEX IF NOT EXISTS idx_survey_answers_pendaftar_question ON survey_answers (pendaftar_id, survey_question_id)');
+            } catch (\Exception $e) {
+                // Index already exists, skip
             }
 
-            // Unique constraint: Satu pendaftar = satu jawaban per pertanyaan
-            // Ini mencegah duplicate submission
-            if (!isset($indexesFound['unique_pendaftar_question'])) {
-                // Cek apakah sudah ada unique constraint
-                try {
-                    $table->unique(['pendaftar_id', 'survey_question_id'], 'unique_pendaftar_question');
-                } catch (\Exception $e) {
-                    // Jika sudah ada duplicate data, skip constraint ini
-                    \Log::warning('Cannot add unique constraint due to existing duplicates: ' . $e->getMessage());
-                }
+            // Unique constraint
+            try {
+                \DB::statement('ALTER TABLE survey_answers ADD CONSTRAINT unique_pendaftar_question UNIQUE (pendaftar_id, survey_question_id)');
+            } catch (\Exception $e) {
+                // Constraint already exists or duplicate data, skip
             }
-        });
+        }
 
         // ================================================================
         // Table: survey_questions
         // ================================================================
-        // Index untuk query active questions dengan urutan
-        Schema::table('survey_questions', function (Blueprint $table) {
-            $sm = Schema::getConnection()->getDoctrineSchemaManager();
-            $indexesFound = $sm->listTableIndexes('survey_questions');
-
-            if (!isset($indexesFound['idx_survey_questions_context_aktif_urutan'])) {
-                $table->index(['context', 'aktif', 'urutan'], 'idx_survey_questions_context_aktif_urutan');
+        if (Schema::hasTable('survey_questions')) {
+            try {
+                \DB::statement('CREATE INDEX IF NOT EXISTS idx_survey_questions_context_aktif_urutan ON survey_questions (context, aktif, urutan)');
+            } catch (\Exception $e) {
+                // Index already exists, skip
             }
-        });
+        }
     }
 
     /**

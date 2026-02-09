@@ -427,6 +427,7 @@
                             @if($showColumns['riwayat_pesan'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Riwayat Pesan</th>
                             @endif
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ganti Jalur</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -1022,6 +1023,40 @@
                                         @endif
                                     </td>
                                 @endif
+                                <!-- Ganti Jalur Column -->
+                                <td class="px-6 py-4" x-data="{ selectedJalur: {{ $item->jalur_pendaftaran_id }} }">
+                                    <div class="flex flex-col gap-2 min-w-[180px]">
+                                        <!-- Dropdown Jalur -->
+                                        <select
+                                            x-model="selectedJalur"
+                                            class="text-xs border border-gray-300 rounded-md px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                            @foreach($jalurPendaftaran as $jalur)
+                                                <option value="{{ $jalur->id }}" {{ $item->jalur_pendaftaran_id == $jalur->id ? 'selected' : '' }}>
+                                                    {{ $jalur->nama }}
+                                                </option>
+                                            @endforeach
+                                        </select>
+
+                                        <!-- Generate Button -->
+                                        <button
+                                            @click="if(confirm('Yakin ingin mengganti jalur pendaftaran? Nomor pendaftaran akan di-generate ulang.')) { $wire.gantiJalur({{ $item->id }}, selectedJalur) }"
+                                            :disabled="selectedJalur == {{ $item->jalur_pendaftaran_id }}"
+                                            class="inline-flex items-center justify-center px-3 py-1.5 text-xs font-medium rounded-md transition-colors duration-150"
+                                            :class="selectedJalur == {{ $item->jalur_pendaftaran_id }}
+                                                ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                                                : 'bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1'">
+                                            <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                            </svg>
+                                            Generate
+                                        </button>
+
+                                        <!-- Current Info -->
+                                        <div class="text-[10px] text-gray-500 text-center">
+                                            <span class="font-medium">Saat ini:</span> {{ $item->nomor_pendaftaran }}
+                                        </div>
+                                    </div>
+                                </td>
                             </tr>
                         @empty
                             <tr>

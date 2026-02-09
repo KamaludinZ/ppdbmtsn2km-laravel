@@ -92,16 +92,16 @@
                 </div>
             </div>
 
-            <!-- Menunggu -->
+            <!-- Data Disetujui -->
             <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm font-medium opacity-90">Menunggu</p>
-                        <p class="text-3xl font-bold mt-2">{{ number_format($stats['menunggu'] ?? 0) }}</p>
+                        <p class="text-sm font-medium opacity-90">Data Disetujui</p>
+                        <p class="text-3xl font-bold mt-2">{{ number_format($stats['data_disetujui'] ?? 0) }}</p>
                     </div>
                     <div class="bg-black bg-opacity-10 rounded-full p-3">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
                     </div>
                 </div>

@@ -69,6 +69,11 @@ class TesPsikologi extends Component
     public $selectedPendaftar = null;
     public $pendaftarSurveyAnswers = [];
 
+    // Edit Catatan Psikologi modal
+    public $showCatatanModal = false;
+    public $editingCatatanId = null;
+    public $catatanPsikologi = '';
+
     public function mount()
     {
         // Check if user is panitia
@@ -726,6 +731,41 @@ class TesPsikologi extends Component
         } catch (\Exception $e) {
             session()->flash('error', 'Gagal mereset jawaban survey: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Edit Catatan Psikologi Methods
+     */
+    public function openCatatanModal($id)
+    {
+        $tesPsikologi = TesPsikologiPendaftar::findOrFail($id);
+        $this->editingCatatanId = $id;
+        $this->catatanPsikologi = $tesPsikologi->catatan_psikologi ?? '';
+        $this->showCatatanModal = true;
+    }
+
+    public function saveCatatan()
+    {
+        $this->validate([
+            'catatanPsikologi' => 'nullable|string|max:1000',
+        ]);
+
+        $tesPsikologi = TesPsikologiPendaftar::findOrFail($this->editingCatatanId);
+
+        $tesPsikologi->update([
+            'catatan_psikologi' => $this->catatanPsikologi,
+        ]);
+
+        session()->flash('message', 'Catatan psikologi berhasil disimpan.');
+
+        $this->closeCatatanModal();
+    }
+
+    public function closeCatatanModal()
+    {
+        $this->showCatatanModal = false;
+        $this->editingCatatanId = null;
+        $this->catatanPsikologi = '';
     }
 
     public function render()

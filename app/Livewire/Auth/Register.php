@@ -139,13 +139,13 @@ class Register extends Component
             'nilai_matematika_5_1.required' => 'Nilai Matematika Kelas 5 Semester 1 wajib diisi',
             'nilai_ipa_5_1.required' => 'Nilai IPA Kelas 5 Semester 1 wajib diisi',
             'file_rapor.required' => 'Upload scan rapor wajib dilakukan',
-            'file_rapor.mimes' => 'File harus berupa PDF',
-            'file_rapor.max' => 'Ukuran file maksimal 2 MB',
+            'file_rapor.mimes' => 'File rapor harus berupa PDF. Silahkan konversi file Anda ke format PDF terlebih dahulu.',
+            'file_rapor.max' => 'Ukuran file rapor terlalu besar (maksimal 2 MB). Silahkan kompres atau perkecil ukuran file Anda terlebih dahulu.',
             'nisn.required' => 'NISN wajib diisi',
             'nisn.digits' => 'NISN harus 10 digit',
             'nisn.numeric' => 'NISN harus berupa angka',
-            'nisn.unique' => 'NISN sudah terdaftar. Gunakan NISN lain atau hubungi panitia jika ada masalah.',
-            'email.unique' => 'Email sudah terdaftar. Gunakan email lain atau login jika sudah punya akun.',
+            'nisn.unique' => 'NISN ini sudah terdaftar di sistem kami. Silahkan cek email atau WhatsApp Anda untuk informasi akun. Jika Anda lupa password, silahkan gunakan fitur lupa password.',
+            'email.unique' => 'Email ini sudah terdaftar di sistem kami. Silahkan cek email atau WhatsApp Anda untuk informasi akun dan password. Jika Anda lupa password, silahkan gunakan fitur lupa password atau login langsung.',
             'email.email' => 'Format email tidak valid',
             'password.min' => 'Password minimal 8 karakter',
             'password.confirmed' => 'Konfirmasi password tidak cocok',
@@ -541,7 +541,7 @@ class Register extends Component
 
             // Handle duplicate email error
             if (str_contains($e->getMessage(), 'users_email_unique')) {
-                session()->flash('error', 'Email sudah terdaftar. Gunakan email lain atau login jika sudah punya akun.');
+                session()->flash('error', 'Email ini sudah terdaftar di sistem kami. Akun Anda mungkin sudah dibuat sebelumnya. Silahkan cek email atau WhatsApp Anda untuk informasi login. Jika Anda lupa password, silahkan gunakan fitur lupa password atau hubungi panitia.');
                 \Log::warning('Duplicate email registration attempt', [
                     'email' => $this->email,
                     'nama' => $this->nama_lengkap,
@@ -549,7 +549,11 @@ class Register extends Component
             }
             // Handle duplicate NISN error
             elseif (str_contains($e->getMessage(), 'pendaftars_nisn')) {
-                session()->flash('error', 'NISN sudah terdaftar. Gunakan NISN lain atau hubungi panitia jika ada masalah.');
+                session()->flash('error', 'NISN ini sudah terdaftar di sistem kami. Akun Anda mungkin sudah dibuat sebelumnya. Silahkan cek email atau WhatsApp Anda untuk informasi login. Jika Anda lupa password, silahkan gunakan fitur lupa password atau hubungi panitia.');
+                \Log::warning('Duplicate NISN registration attempt', [
+                    'nisn' => $this->nisn,
+                    'nama' => $this->nama_lengkap,
+                ]);
             }
             else {
                 session()->flash('error', 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi atau hubungi panitia.');

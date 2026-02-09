@@ -28,6 +28,8 @@ class DaftarUlang extends Model
         'tanggal_daftar_ulang',
         'batas_daftar_ulang',
         'panitia_id',
+        'opsi_lainnya_dropdown_individual',
+        'opsi_lainnya_konfirmasi_individual',
     ];
 
     protected $casts = [
@@ -39,6 +41,8 @@ class DaftarUlang extends Model
         'berkas_lengkap' => 'boolean',
         'tanggal_daftar_ulang' => 'datetime',
         'batas_daftar_ulang' => 'datetime',
+        'opsi_lainnya_dropdown_individual' => 'boolean',
+        'opsi_lainnya_konfirmasi_individual' => 'boolean',
     ];
 
     /**

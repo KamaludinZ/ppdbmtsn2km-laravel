@@ -4,6 +4,7 @@ namespace App\Livewire\PanitiaSeragam;
 
 use Livewire\Component;
 use Livewire\WithPagination;
+use Livewire\WithFileUploads;
 use Livewire\Attributes\Url;
 use App\Models\Pendaftar;
 use App\Models\Seragam;
@@ -12,7 +13,7 @@ use Illuminate\Support\Facades\Auth;
 
 class DaftarUlang extends Component
 {
-    use WithPagination;
+    use WithPagination, WithFileUploads;
 
     public $activeTab = 'seragam';
     public $search = '';
@@ -20,6 +21,16 @@ class DaftarUlang extends Component
     public $filterStatusUkuran = '';
     public $filterJenisKelamin = '';
     public $filterJalur = '';
+
+    // Query string bindings for URL
+    protected $queryString = [
+        'activeTab' => ['except' => 'seragam'],
+        'search' => ['except' => ''],
+        'filterStatusSeragam' => ['except' => ''],
+        'filterStatusUkuran' => ['except' => ''],
+        'filterJenisKelamin' => ['except' => ''],
+        'filterJalur' => ['except' => ''],
+    ];
 
     // Properties for send message modal
     public $isSendMessageModalOpen = false;
@@ -36,13 +47,51 @@ class DaftarUlang extends Component
     public $catatanPendaftarId = null;
     public $catatanText = '';
 
-    /**
-     * Override queryString untuk exclude activeTab dari URL
-     */
-    protected function queryString()
-    {
-        return []; // No URL tracking for clean URL
-    }
+    // ========== SETTINGS PROPERTIES ==========
+    // Seragam Settings
+    public $seragamInfo = '';
+    public $seragamPackages = [];
+    public $seragamPaymentOptions = ['lunas' => false, 'angsuran' => false, 'potongan' => false];
+    public $seragamBanks = [];
+    public $seragamPaymentStart = null;
+    public $seragamPaymentEnd = null;
+    public $seragamRequirePaymentProof = false;
+    public $seragamEnableOpsiLainnya = false;
+    public $seragamPackagesEnableOpsiLainnya = false;
+
+    // Ukuran Settings
+    public $ukuranInfo = '';
+    public $ukuranByGender = false;
+    public $ukuranJasImage = null;
+    public $ukuranJasOptions = [];
+    public $ukuranJasEnableOpsiLainnya = false;
+    public $ukuranBajuHarianImage = null;
+    public $ukuranBajuHarianOptions = [];
+    public $ukuranBajuHarianEnableOpsiLainnya = false;
+    public $ukuranCelanaRokHarianImage = null;
+    public $ukuranCelanaRokHarianOptions = [];
+    public $ukuranCelanaRokHarianEnableOpsiLainnya = false;
+    public $ukuranBajuOlahragaImage = null;
+    public $ukuranBajuOlahragaOptions = [];
+    public $ukuranBajuOlahragaEnableOpsiLainnya = false;
+    public $ukuranCelanaOlahragaImage = null;
+    public $ukuranCelanaOlahragaOptions = [];
+    public $ukuranCelanaOlahragaEnableOpsiLainnya = false;
+    public $ukuranKopyahImage = null;
+    public $ukuranKopyahOptions = [];
+    public $ukuranKopyahEnableOpsiLainnya = false;
+
+    // Existing uploaded images (for display)
+    public $existingUkuranJasImage = null;
+    public $existingUkuranBajuOlahragaImage = null;
+    public $existingUkuranCelanaOlahragaImage = null;
+    public $existingUkuranBajuHarianImage = null;
+    public $existingUkuranCelanaRokHarianImage = null;
+    public $existingUkuranKopyahImage = null;
+
+    // Legacy
+    public $ukuranAtasanOptions = [];
+    public $ukuranBawahanOptions = [];
 
     public function mount()
     {
@@ -50,11 +99,56 @@ class DaftarUlang extends Component
         if (!$user || $user->role !== 'panitia_seragam') {
             return redirect()->to('/login/admin');
         }
+
+        // Load settings for tab pengaturan
+        $this->loadSettings();
+    }
+
+    private function loadSettings()
+    {
+        // Load Seragam Settings
+        $this->seragamInfo = \App\Models\Setting::get('daftar_ulang_seragam_info', '');
+        $this->seragamPackages = \App\Models\Setting::get('daftar_ulang_seragam_packages', []);
+        $this->seragamPaymentOptions = \App\Models\Setting::get('daftar_ulang_seragam_payment_options', ['lunas' => false, 'angsuran' => false, 'potongan' => false]);
+        $this->seragamBanks = \App\Models\Setting::get('daftar_ulang_seragam_banks', []);
+        $this->seragamPaymentStart = \App\Models\Setting::get('daftar_ulang_seragam_payment_start');
+        $this->seragamPaymentEnd = \App\Models\Setting::get('daftar_ulang_seragam_payment_end');
+        $this->seragamRequirePaymentProof = \App\Models\Setting::get('daftar_ulang_seragam_require_payment_proof', false);
+        $this->seragamEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_seragam_enable_opsi_lainnya', false);
+        $this->seragamPackagesEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_seragam_packages_enable_opsi_lainnya', false);
+
+        // Load Ukuran Settings
+        $this->ukuranInfo = \App\Models\Setting::get('daftar_ulang_ukuran_info', '');
+        $this->ukuranByGender = \App\Models\Setting::get('daftar_ulang_ukuran_by_gender', false);
+        $this->ukuranJasOptions = \App\Models\Setting::get('daftar_ulang_ukuran_jas_options', []);
+        $this->ukuranJasEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_ukuran_jas_enable_opsi_lainnya', false);
+        $this->ukuranBajuHarianOptions = \App\Models\Setting::get('daftar_ulang_ukuran_baju_harian_options', []);
+        $this->ukuranBajuHarianEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_ukuran_baju_harian_enable_opsi_lainnya', false);
+        $this->ukuranCelanaRokHarianOptions = \App\Models\Setting::get('daftar_ulang_ukuran_celana_rok_harian_options', []);
+        $this->ukuranCelanaRokHarianEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_ukuran_celana_rok_harian_enable_opsi_lainnya', false);
+        $this->ukuranBajuOlahragaOptions = \App\Models\Setting::get('daftar_ulang_ukuran_baju_olahraga_options', []);
+        $this->ukuranBajuOlahragaEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_ukuran_baju_olahraga_enable_opsi_lainnya', false);
+        $this->ukuranCelanaOlahragaOptions = \App\Models\Setting::get('daftar_ulang_ukuran_celana_olahraga_options', []);
+        $this->ukuranCelanaOlahragaEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_ukuran_celana_olahraga_enable_opsi_lainnya', false);
+        $this->ukuranKopyahOptions = \App\Models\Setting::get('daftar_ulang_ukuran_kopyah_options', []);
+        $this->ukuranKopyahEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_ukuran_kopyah_enable_opsi_lainnya', false);
+
+        // Load existing uploaded images
+        $this->existingUkuranJasImage = \App\Models\Setting::get('daftar_ulang_ukuran_jas_image');
+        $this->existingUkuranBajuOlahragaImage = \App\Models\Setting::get('daftar_ulang_ukuran_baju_olahraga_image');
+        $this->existingUkuranCelanaOlahragaImage = \App\Models\Setting::get('daftar_ulang_ukuran_celana_olahraga_image');
+        $this->existingUkuranBajuHarianImage = \App\Models\Setting::get('daftar_ulang_ukuran_baju_harian_image');
+        $this->existingUkuranCelanaRokHarianImage = \App\Models\Setting::get('daftar_ulang_ukuran_celana_rok_harian_image');
+        $this->existingUkuranKopyahImage = \App\Models\Setting::get('daftar_ulang_ukuran_kopyah_image');
+
+        // Legacy
+        $this->ukuranAtasanOptions = \App\Models\Setting::get('daftar_ulang_ukuran_atasan_options', []);
+        $this->ukuranBawahanOptions = \App\Models\Setting::get('daftar_ulang_ukuran_bawahan_options', []);
     }
 
     public function switchTab($tab)
     {
-        if (in_array($tab, ['seragam', 'ukuran'])) {
+        if (in_array($tab, ['seragam', 'ukuran', 'settings'])) {
             $this->activeTab = $tab;
             $this->resetPage();
         }
@@ -62,20 +156,24 @@ class DaftarUlang extends Component
 
     private function getSeragamStats()
     {
-        // Get all pendaftar lulus
-        $allPendaftar = Pendaftar::with(['seragam'])
-            ->whereIn('status_pendaftaran', ['data_disetujui', 'lulus', 'diterima'])
-            ->when($this->filterJalur, function ($q) {
-                $q->where('jalur_pendaftaran_id', $this->filterJalur);
-            })
-            ->when($this->filterJenisKelamin, function ($q) {
-                $q->where('jenis_kelamin', $this->filterJenisKelamin);
-            })
-            ->get();
+        // Calculate stats based on active tab (same pattern as Admin)
+        // Get ALL pendaftar for total count (no status filter for stats)
+        $allPendaftar = Pendaftar::with(['seragam'])->get();
+
+        // Get only lulus pendaftar for lulus count
+        $lulusPendaftar = $allPendaftar->filter(function($p) {
+            return in_array($p->status_pendaftaran, ['lulus', 'diterima']);
+        });
 
         $stats = [
-            // Total pendaftar lulus
-            'total_lulus' => $allPendaftar->count(),
+            // Total ALL pendaftar
+            'total_pendaftar' => $allPendaftar->count(),
+
+            // Total pendaftar lulus (from kelulusan menu)
+            'lulus' => $lulusPendaftar->count(),
+
+            // Backward compatibility
+            'total_lulus' => $lulusPendaftar->count(),
 
             // Status seragam (dari seragam.status_seragam)
             'menunggu' => $allPendaftar->filter(function($p) {
@@ -108,20 +206,24 @@ class DaftarUlang extends Component
 
     private function getUkuranStats()
     {
-        // Get all pendaftar lulus
-        $allPendaftar = Pendaftar::with(['seragam'])
-            ->whereIn('status_pendaftaran', ['data_disetujui', 'lulus', 'diterima'])
-            ->when($this->filterJalur, function ($q) {
-                $q->where('jalur_pendaftaran_id', $this->filterJalur);
-            })
-            ->when($this->filterJenisKelamin, function ($q) {
-                $q->where('jenis_kelamin', $this->filterJenisKelamin);
-            })
-            ->get();
+        // Calculate stats based on active tab (same pattern as Admin)
+        // Get ALL pendaftar for total count (no status filter for stats)
+        $allPendaftar = Pendaftar::with(['seragam'])->get();
+
+        // Get only lulus pendaftar for lulus count
+        $lulusPendaftar = $allPendaftar->filter(function($p) {
+            return in_array($p->status_pendaftaran, ['lulus', 'diterima']);
+        });
 
         $stats = [
-            // Total pendaftar lulus
-            'total_lulus' => $allPendaftar->count(),
+            // Total ALL pendaftar
+            'total_pendaftar' => $allPendaftar->count(),
+
+            // Total pendaftar lulus (from kelulusan menu)
+            'lulus' => $lulusPendaftar->count(),
+
+            // Backward compatibility
+            'total_lulus' => $lulusPendaftar->count(),
 
             // Status ukuran (dari seragam.status_ukuran)
             'menunggu' => $allPendaftar->filter(function($p) {
@@ -501,6 +603,247 @@ class DaftarUlang extends Component
         } catch (\Exception $e) {
             $this->dispatch('saved', message: 'Gagal menyimpan catatan: ' . $e->getMessage());
             \Log::error('Error saving catatan: ' . $e->getMessage());
+        }
+    }
+
+    // ========== SERAGAM SETTINGS METHODS ==========
+    public function addSeragamPackage()
+    {
+        $this->seragamPackages[] = [
+            'id' => 'pkg_' . uniqid(),
+            'name' => '',
+            'description' => '',
+            'options' => []
+        ];
+    }
+
+    public function removeSeragamPackage($index)
+    {
+        unset($this->seragamPackages[$index]);
+        $this->seragamPackages = array_values($this->seragamPackages);
+    }
+
+    public function addSeragamPackageOption($packageIndex)
+    {
+        if (!isset($this->seragamPackages[$packageIndex]['options'])) {
+            $this->seragamPackages[$packageIndex]['options'] = [];
+        }
+
+        $this->seragamPackages[$packageIndex]['options'][] = [
+            'id' => 'opt_' . uniqid(),
+            'name' => '',
+            'amount' => ''
+        ];
+    }
+
+    public function removeSeragamPackageOption($packageIndex, $optionIndex)
+    {
+        unset($this->seragamPackages[$packageIndex]['options'][$optionIndex]);
+        $this->seragamPackages[$packageIndex]['options'] = array_values($this->seragamPackages[$packageIndex]['options']);
+    }
+
+    public function addSeragamBank()
+    {
+        $this->seragamBanks[] = ['name' => ''];
+    }
+
+    public function removeSeragamBank($index)
+    {
+        unset($this->seragamBanks[$index]);
+        $this->seragamBanks = array_values($this->seragamBanks);
+    }
+
+    public function saveSeragamSettings()
+    {
+        // Save settings
+        \App\Models\Setting::set('daftar_ulang_seragam_info', $this->seragamInfo);
+        \App\Models\Setting::set('daftar_ulang_seragam_packages', $this->seragamPackages, 'json');
+        \App\Models\Setting::set('daftar_ulang_seragam_payment_options', $this->seragamPaymentOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_seragam_banks', $this->seragamBanks, 'json');
+        \App\Models\Setting::set('daftar_ulang_seragam_payment_start', $this->seragamPaymentStart);
+        \App\Models\Setting::set('daftar_ulang_seragam_payment_end', $this->seragamPaymentEnd);
+        \App\Models\Setting::set('daftar_ulang_seragam_require_payment_proof', $this->seragamRequirePaymentProof, 'boolean');
+        \App\Models\Setting::set('daftar_ulang_seragam_enable_opsi_lainnya', $this->seragamEnableOpsiLainnya, 'boolean');
+        \App\Models\Setting::set('daftar_ulang_seragam_packages_enable_opsi_lainnya', $this->seragamPackagesEnableOpsiLainnya, 'boolean');
+
+        $this->dispatch('saved', message: 'Pengaturan daftar ulang seragam berhasil disimpan.');
+    }
+
+    // ========== UKURAN SETTINGS METHODS ==========
+    public function addUkuranJas()
+    {
+        $this->ukuranJasOptions[] = ['size' => '', 'measurement' => ''];
+    }
+
+    public function removeUkuranJas($index)
+    {
+        unset($this->ukuranJasOptions[$index]);
+        $this->ukuranJasOptions = array_values($this->ukuranJasOptions);
+    }
+
+    public function addUkuranBajuHarian()
+    {
+        $this->ukuranBajuHarianOptions[] = ['size' => '', 'measurement' => ''];
+    }
+
+    public function removeUkuranBajuHarian($index)
+    {
+        unset($this->ukuranBajuHarianOptions[$index]);
+        $this->ukuranBajuHarianOptions = array_values($this->ukuranBajuHarianOptions);
+    }
+
+    public function addUkuranCelanaRokHarian()
+    {
+        $this->ukuranCelanaRokHarianOptions[] = ['size' => '', 'measurement' => ''];
+    }
+
+    public function removeUkuranCelanaRokHarian($index)
+    {
+        unset($this->ukuranCelanaRokHarianOptions[$index]);
+        $this->ukuranCelanaRokHarianOptions = array_values($this->ukuranCelanaRokHarianOptions);
+    }
+
+    public function addUkuranBajuOlahraga()
+    {
+        $this->ukuranBajuOlahragaOptions[] = ['size' => '', 'measurement' => ''];
+    }
+
+    public function removeUkuranBajuOlahraga($index)
+    {
+        unset($this->ukuranBajuOlahragaOptions[$index]);
+        $this->ukuranBajuOlahragaOptions = array_values($this->ukuranBajuOlahragaOptions);
+    }
+
+    public function addUkuranCelanaOlahraga()
+    {
+        $this->ukuranCelanaOlahragaOptions[] = ['size' => '', 'measurement' => ''];
+    }
+
+    public function removeUkuranCelanaOlahraga($index)
+    {
+        unset($this->ukuranCelanaOlahragaOptions[$index]);
+        $this->ukuranCelanaOlahragaOptions = array_values($this->ukuranCelanaOlahragaOptions);
+    }
+
+    public function addUkuranKopyah()
+    {
+        $this->ukuranKopyahOptions[] = ['size' => '', 'measurement' => ''];
+    }
+
+    public function removeUkuranKopyah($index)
+    {
+        unset($this->ukuranKopyahOptions[$index]);
+        $this->ukuranKopyahOptions = array_values($this->ukuranKopyahOptions);
+    }
+
+    public function saveUkuranSettings()
+    {
+        // Handle image uploads
+        if ($this->ukuranJasImage) {
+            $path = $this->ukuranJasImage->store('ukuran', 'public');
+            \App\Models\Setting::set('daftar_ulang_ukuran_jas_image', $path);
+            $this->ukuranJasImage = null;
+        }
+
+        if ($this->ukuranBajuHarianImage) {
+            $path = $this->ukuranBajuHarianImage->store('ukuran', 'public');
+            \App\Models\Setting::set('daftar_ulang_ukuran_baju_harian_image', $path);
+            $this->ukuranBajuHarianImage = null;
+        }
+
+        if ($this->ukuranCelanaRokHarianImage) {
+            $path = $this->ukuranCelanaRokHarianImage->store('ukuran', 'public');
+            \App\Models\Setting::set('daftar_ulang_ukuran_celana_rok_harian_image', $path);
+            $this->ukuranCelanaRokHarianImage = null;
+        }
+
+        if ($this->ukuranBajuOlahragaImage) {
+            $path = $this->ukuranBajuOlahragaImage->store('ukuran', 'public');
+            \App\Models\Setting::set('daftar_ulang_ukuran_baju_olahraga_image', $path);
+            $this->ukuranBajuOlahragaImage = null;
+        }
+
+        if ($this->ukuranCelanaOlahragaImage) {
+            $path = $this->ukuranCelanaOlahragaImage->store('ukuran', 'public');
+            \App\Models\Setting::set('daftar_ulang_ukuran_celana_olahraga_image', $path);
+            $this->ukuranCelanaOlahragaImage = null;
+        }
+
+        if ($this->ukuranKopyahImage) {
+            $path = $this->ukuranKopyahImage->store('ukuran', 'public');
+            \App\Models\Setting::set('daftar_ulang_ukuran_kopyah_image', $path);
+            $this->ukuranKopyahImage = null;
+        }
+
+        // Save settings
+        \App\Models\Setting::set('daftar_ulang_ukuran_info', $this->ukuranInfo);
+        \App\Models\Setting::set('daftar_ulang_ukuran_by_gender', $this->ukuranByGender, 'boolean');
+        \App\Models\Setting::set('daftar_ulang_ukuran_jas_options', $this->ukuranJasOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_ukuran_jas_enable_opsi_lainnya', $this->ukuranJasEnableOpsiLainnya, 'boolean');
+        \App\Models\Setting::set('daftar_ulang_ukuran_baju_harian_options', $this->ukuranBajuHarianOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_ukuran_baju_harian_enable_opsi_lainnya', $this->ukuranBajuHarianEnableOpsiLainnya, 'boolean');
+        \App\Models\Setting::set('daftar_ulang_ukuran_celana_rok_harian_options', $this->ukuranCelanaRokHarianOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_ukuran_celana_rok_harian_enable_opsi_lainnya', $this->ukuranCelanaRokHarianEnableOpsiLainnya, 'boolean');
+        \App\Models\Setting::set('daftar_ulang_ukuran_baju_olahraga_options', $this->ukuranBajuOlahragaOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_ukuran_baju_olahraga_enable_opsi_lainnya', $this->ukuranBajuOlahragaEnableOpsiLainnya, 'boolean');
+        \App\Models\Setting::set('daftar_ulang_ukuran_celana_olahraga_options', $this->ukuranCelanaOlahragaOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_ukuran_celana_olahraga_enable_opsi_lainnya', $this->ukuranCelanaOlahragaEnableOpsiLainnya, 'boolean');
+        \App\Models\Setting::set('daftar_ulang_ukuran_kopyah_options', $this->ukuranKopyahOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_ukuran_kopyah_enable_opsi_lainnya', $this->ukuranKopyahEnableOpsiLainnya, 'boolean');
+        // Legacy
+        \App\Models\Setting::set('daftar_ulang_ukuran_atasan_options', $this->ukuranAtasanOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_ukuran_bawahan_options', $this->ukuranBawahanOptions, 'json');
+
+        $this->dispatch('saved', message: 'Pengaturan ukuran seragam berhasil disimpan.');
+    }
+
+    /**
+     * Toggle Opsi Lainnya Dropdown Individual per Pendaftar (Seragam)
+     * Allows panitia seragam to enable "Opsi Lainnya" in dropdown for specific pendaftar
+     */
+    public function toggleOpsiLainnyaDropdownIndividual($pendaftarId, $tab)
+    {
+        try {
+            if ($tab === 'seragam' || $tab === 'ukuran') {
+                $seragam = Seragam::firstOrCreate(
+                    ['pendaftar_id' => $pendaftarId],
+                    ['opsi_lainnya_dropdown_individual' => false]
+                );
+
+                $newValue = !$seragam->opsi_lainnya_dropdown_individual;
+                $seragam->update(['opsi_lainnya_dropdown_individual' => $newValue]);
+
+                $statusText = $newValue ? 'diaktifkan' : 'dinonaktifkan';
+                $tabLabel = $tab === 'seragam' ? 'Seragam' : 'Ukuran';
+                $this->dispatch('saved', message: "Opsi Lainnya Dropdown ({$tabLabel}) untuk pendaftar ini berhasil {$statusText}.");
+            }
+        } catch (\Exception $e) {
+            $this->dispatch('saved', message: 'Gagal mengubah toggle: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Toggle Opsi Lainnya Konfirmasi Individual per Pendaftar (Seragam)
+     * Allows panitia seragam to enable "Opsi Lainnya" in konfirmasi nominal for specific pendaftar
+     */
+    public function toggleOpsiLainnyaKonfirmasiIndividual($pendaftarId, $tab)
+    {
+        try {
+            if ($tab === 'seragam' || $tab === 'ukuran') {
+                $seragam = Seragam::firstOrCreate(
+                    ['pendaftar_id' => $pendaftarId],
+                    ['opsi_lainnya_konfirmasi_individual' => false]
+                );
+
+                $newValue = !$seragam->opsi_lainnya_konfirmasi_individual;
+                $seragam->update(['opsi_lainnya_konfirmasi_individual' => $newValue]);
+
+                $statusText = $newValue ? 'diaktifkan' : 'dinonaktifkan';
+                $tabLabel = $tab === 'seragam' ? 'Seragam' : 'Ukuran';
+                $this->dispatch('saved', message: "Opsi Lainnya Konfirmasi ({$tabLabel}) untuk pendaftar ini berhasil {$statusText}.");
+            }
+        } catch (\Exception $e) {
+            $this->dispatch('saved', message: 'Gagal mengubah toggle: ' . $e->getMessage());
         }
     }
 }

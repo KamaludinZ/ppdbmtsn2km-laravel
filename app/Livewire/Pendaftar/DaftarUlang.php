@@ -27,6 +27,9 @@ class DaftarUlang extends Component
 
     // Settings
     public $paymentInfoText;
+    public $madrasahInfo;
+    public $seragamInfo;
+    public $ukuranInfo;
 
     // Enable Opsi Lainnya Settings
     public $madrasahEnableOpsiLainnya = false;
@@ -40,7 +43,6 @@ class DaftarUlang extends Component
 
     // Custom Opsi Lainnya Values
     public $madrasahOpsiLainnyaNominal;
-    public $seragamOpsiLainnyaNominal;
     public $ukuranJasOpsiLainnya;
     public $ukuranBajuOlahragaOpsiLainnya;
     public $ukuranCelanaOlahragaOpsiLainnya;
@@ -50,7 +52,6 @@ class DaftarUlang extends Component
 
     // Payment Nominals Enable Opsi Lainnya
     public $madrasahPaymentNominalsEnableOpsiLainnya = false;
-    public $seragamPaymentNominalsEnableOpsiLainnya = false;
 
     // Custom Opsi Lainnya Values for Payment Nominals
     public $konfirmasiNominalBiayaOpsiLainnya;
@@ -69,8 +70,13 @@ class DaftarUlang extends Component
     public $seragamPaymentEnd;
 
     // Form Inputs - Madrasah
-    public $nominalBiaya; // JSON encoded nominal yang dipilih
+    public $paketMadrasah;  // Selected package (JSON) - NEW
+    public $opsiMadrasah;   // Selected option from package (JSON) - NEW
+    public $paketMadrasahCustomName;  // Custom package name for "Paket Lainnya"
+    public $paketMadrasahCustomAmount;  // Custom package amount for "Paket Lainnya"
+    public $nominalBiaya; // JSON encoded nominal yang dipilih (DEPRECATED - kept for backward compatibility)
     public $konfirmasiNominalBiaya; // JSON encoded nominal konfirmasi
+    // Note: $konfirmasiNominalBiayaOpsiLainnya declared at line 54
     public $opsiPembayaran;
     public $bankPilihan;
     public $buktiPembayaran;
@@ -78,9 +84,12 @@ class DaftarUlang extends Component
     public $suratPernyataan;
 
     // Form Inputs - Seragam
-    public $paketSeragam;
-    public $nominalSeragam; // JSON encoded nominal yang dipilih
-    public $konfirmasiNominalSeragam; // JSON encoded nominal konfirmasi
+    public $paketSeragam;  // Selected package (JSON)
+    public $opsiSeragam;  // Selected option from package (JSON) - NEW
+    public $paketSeragamCustomName;  // Custom package name for "Paket Lainnya"
+    public $paketSeragamCustomAmount;  // Custom package amount for "Paket Lainnya"
+    public $konfirmasiNominalSeragam; // Confirmation: auto from opsi or manual
+    // Note: $konfirmasiNominalSeragamOpsiLainnya declared at line 55
     public $opsiPembayaranSeragam;
     public $bankSeragam;
     public $buktiSeragam;
@@ -135,9 +144,52 @@ class DaftarUlang extends Component
         // Load payment info text setting
         $this->paymentInfoText = Setting::get('daftar_ulang_payment_info_text', 'Pembayaran disesuaikan dengan kemampuan orang tua/wali. Apabila ingin berkomunikasi perihal kompensasi waktu/biaya/lainnya lebih lanjut, dapat dibicarakan dengan komite madrasah untuk menemukan solusi secara kesepakatan bersama. Waktu sesuai jadwal yang disampaikan oleh pihak komite madrasah.');
 
+        // Load RTE informasi settings
+        $this->madrasahInfo = Setting::get('daftar_ulang_madrasah_info', '');
+        $this->seragamInfo = Setting::get('daftar_ulang_seragam_info', '');
+        $this->ukuranInfo = Setting::get('daftar_ulang_ukuran_info', '');
+
         // Load "Opsi Lainnya" enable settings
-        $this->madrasahEnableOpsiLainnya = Setting::get('daftar_ulang_madrasah_enable_opsi_lainnya', false);
-        $this->seragamEnableOpsiLainnya = Setting::get('daftar_ulang_seragam_enable_opsi_lainnya', false);
+        // Logic: Global Setting OR Individual Setting
+        // For Madrasah:
+        //   - Dropdown: global OR daftarUlang.opsi_lainnya_dropdown_individual
+        //   - Konfirmasi: global OR daftarUlang.opsi_lainnya_konfirmasi_individual
+        $globalMadrasahSetting = Setting::get('daftar_ulang_madrasah_enable_opsi_lainnya', false);
+        $individualMadrasahDropdown = false;
+        $individualMadrasahKonfirmasi = false;
+
+        try {
+            if ($this->daftarUlang) {
+                $individualMadrasahDropdown = $this->daftarUlang->opsi_lainnya_dropdown_individual ?? false;
+                $individualMadrasahKonfirmasi = $this->daftarUlang->opsi_lainnya_konfirmasi_individual ?? false;
+            }
+        } catch (\Exception $e) {
+            // Silently fail if columns don't exist yet
+        }
+
+        // Enable if EITHER global OR individual is enabled
+        // Note: This enables for BOTH dropdown and konfirmasi if any is enabled
+        // For fine-grained control, check individual flags in blade template
+        $this->madrasahEnableOpsiLainnya = $globalMadrasahSetting || $individualMadrasahDropdown || $individualMadrasahKonfirmasi;
+
+        // For Seragam:
+        //   - Dropdown: global OR seragam.opsi_lainnya_dropdown_individual
+        //   - Konfirmasi: global OR seragam.opsi_lainnya_konfirmasi_individual
+        $globalSeragamSetting = Setting::get('daftar_ulang_seragam_enable_opsi_lainnya', false);
+        $individualSeragamDropdown = false;
+        $individualSeragamKonfirmasi = false;
+
+        try {
+            if ($this->seragam) {
+                $individualSeragamDropdown = $this->seragam->opsi_lainnya_dropdown_individual ?? false;
+                $individualSeragamKonfirmasi = $this->seragam->opsi_lainnya_konfirmasi_individual ?? false;
+            }
+        } catch (\Exception $e) {
+            // Silently fail if columns don't exist yet
+        }
+
+        // Enable if EITHER global OR individual is enabled
+        $this->seragamEnableOpsiLainnya = $globalSeragamSetting || $individualSeragamDropdown || $individualSeragamKonfirmasi;
         $this->ukuranJasEnableOpsiLainnya = Setting::get('daftar_ulang_ukuran_jas_enable_opsi_lainnya', false);
         $this->ukuranBajuOlahragaEnableOpsiLainnya = Setting::get('daftar_ulang_ukuran_baju_olahraga_enable_opsi_lainnya', false);
         $this->ukuranCelanaOlahragaEnableOpsiLainnya = Setting::get('daftar_ulang_ukuran_celana_olahraga_enable_opsi_lainnya', false);
@@ -147,7 +199,6 @@ class DaftarUlang extends Component
 
         // Load payment nominals enable opsi lainnya settings
         $this->madrasahPaymentNominalsEnableOpsiLainnya = Setting::get('daftar_ulang_madrasah_payment_nominals_enable_opsi_lainnya', false);
-        $this->seragamPaymentNominalsEnableOpsiLainnya = Setting::get('daftar_ulang_seragam_payment_nominals_enable_opsi_lainnya', false);
 
         // Load payment deadline settings
         $this->madrasahPaymentStart = Setting::get('daftar_ulang_madrasah_payment_start');
@@ -192,24 +243,13 @@ class DaftarUlang extends Component
         // Initialize seragam inputs if data exists
         if ($this->seragam) {
             $this->paketSeragam = $this->seragam->paket_seragam;
-
-            // Load nominal seragam awal (untuk surat pernyataan)
-            if ($this->seragam->nominal_seragam_awal) {
-                $nominalSeragamAwal = $this->seragam->nominal_seragam_awal;
-                // Check if it's "Opsi Lainnya"
-                if (isset($nominalSeragamAwal['name']) && $nominalSeragamAwal['name'] === 'Opsi Lainnya') {
-                    $this->nominalSeragam = 'opsi_lainnya';
-                    $this->seragamOpsiLainnyaNominal = $nominalSeragamAwal['amount'] ?? null;
-                } else {
-                    $this->nominalSeragam = json_encode($nominalSeragamAwal);
-                }
-            }
+            $this->opsiSeragam = $this->seragam->opsi_seragam;  // NEW: Load selected option
 
             // Load konfirmasi nominal (untuk pembayaran)
             if ($this->seragam->nominal_seragam) {
                 $nominalSeragamKonfirmasi = $this->seragam->nominal_seragam;
                 // Check if it's "Opsi Lainnya"
-                if (isset($nominalSeragamKonfirmasi['name']) && $nominalSeragamKonfirmasi['name'] === 'Opsi Lainnya') {
+                if (isset($nominalSeragamKonfirmasi['name']) && str_contains($nominalSeragamKonfirmasi['name'], 'Opsi Lainnya')) {
                     $this->konfirmasiNominalSeragam = 'opsi_lainnya';
                     $this->konfirmasiNominalSeragamOpsiLainnya = $nominalSeragamKonfirmasi['amount'] ?? null;
                 } else {
@@ -328,6 +368,69 @@ class DaftarUlang extends Component
         }
     }
 
+    public function saveSuratPernyataan()
+    {
+        // Validate surat pernyataan upload
+        $this->validate([
+            'suratPernyataan' => 'required|mimes:pdf|max:2048',
+        ], [
+            'suratPernyataan.required' => 'Surat pernyataan harus diupload.',
+            'suratPernyataan.mimes' => 'Surat pernyataan harus berupa file PDF.',
+            'suratPernyataan.max' => 'Ukuran file surat pernyataan maksimal 2MB.',
+        ]);
+
+        try {
+            // Get or create DaftarUlang record
+            if (!$this->daftarUlang) {
+                $this->daftarUlang = DaftarUlang::firstOrCreate(
+                    ['pendaftar_id' => auth()->user()->pendaftar->id],
+                    ['status' => 'proses']
+                );
+            }
+
+            // Delete old file if exists
+            if ($this->daftarUlang->surat_pernyataan_path) {
+                Storage::disk('private')->delete($this->daftarUlang->surat_pernyataan_path);
+            }
+
+            // Generate nama file sistematis: surat_pernyataan-{nomor_pendaftaran}-{nama_pendaftar}-{timestamp}.{ext}
+            $extension = FileNamingService::getFileExtension($this->suratPernyataan);
+            $customFileName = FileNamingService::generateFileName(
+                'surat_pernyataan',
+                $this->pendaftar->nomor_pendaftaran,
+                $extension,
+                $this->pendaftar->nama_lengkap
+            );
+
+            // Upload new file ke private storage dengan nama file sistematis
+            $path = $this->suratPernyataan->storeAs(
+                'dokumen/' . $this->pendaftar->id,
+                $customFileName,
+                'private'
+            );
+
+            // Update database
+            $this->daftarUlang->update([
+                'surat_pernyataan_path' => $path
+            ]);
+
+            // Reset temporary file
+            $this->suratPernyataan = null;
+
+            // Success message
+            session()->flash('message_madrasah', 'Surat pernyataan berhasil disimpan! Silakan lanjutkan mengisi form di bawah.');
+
+            // Refresh component state
+            $this->mount();
+
+            // Auto reload to show updated UI
+            return $this->redirect('/pendaftar/daftarulang?activeTab=madrasah', navigate: true);
+
+        } catch (\Exception $e) {
+            session()->flash('error', 'Gagal menyimpan surat pernyataan: ' . $e->getMessage());
+        }
+    }
+
     public function saveMadrasah()
     {
         // Check if payment is still open
@@ -351,7 +454,6 @@ class DaftarUlang extends Component
             'bankPilihan' => 'required|string',
             'buktiPembayaran' => 'required|mimes:pdf,jpg,jpeg,png|max:2048',
             'namaPengirim' => 'required|string|max:255',
-            'suratPernyataan' => 'required|mimes:pdf|max:2048',
         ], [
             'nominalBiaya.required' => 'Silakan pilih nominal biaya terlebih dahulu.',
             'konfirmasiNominalBiaya.required' => 'Silakan pilih nominal yang akan dibayarkan.',
@@ -362,9 +464,6 @@ class DaftarUlang extends Component
             'buktiPembayaran.max' => 'Ukuran file bukti pembayaran maksimal 2MB.',
             'namaPengirim.required' => 'Nama pengirim harus diisi.',
             'namaPengirim.max' => 'Nama pengirim maksimal 255 karakter.',
-            'suratPernyataan.required' => 'Surat pernyataan harus diupload.',
-            'suratPernyataan.mimes' => 'Surat pernyataan harus berupa file PDF.',
-            'suratPernyataan.max' => 'Ukuran file surat pernyataan maksimal 2MB.',
         ]);
 
         if (!$this->daftarUlang) {
@@ -432,32 +531,17 @@ class DaftarUlang extends Component
             $dataToUpdate['status'] = 'menunggu';
         }
 
-        if ($this->suratPernyataan) {
-            // Generate nama file sistematis: surat_pernyataan-{nomor_pendaftaran}-{nama_pendaftar}-{timestamp}.pdf
-            $extension = FileNamingService::getFileExtension($this->suratPernyataan);
-            $customFileName = FileNamingService::generateFileName(
-                'surat_pernyataan',
-                $this->pendaftar->nomor_pendaftaran,
-                $extension,
-                $this->pendaftar->nama_lengkap
-            );
-
-            // Simpan ke private storage
-            $path = $this->suratPernyataan->storeAs(
-                'dokumen/' . $this->pendaftar->id,
-                $customFileName,
-                'private'
-            );
-
-            $dataToUpdate['surat_pernyataan_path'] = $path;
-        }
+        // Surat pernyataan sudah dihandle oleh method saveSuratPernyataan() terpisah
+        // Jadi tidak perlu diupload lagi di sini
 
         $this->daftarUlang->update($dataToUpdate);
 
         session()->flash('message', 'Data daftar ulang madrasah berhasil disimpan.');
         $this->buktiPembayaran = null;
-        $this->suratPernyataan = null;
         $this->daftarUlang = $this->daftarUlang->fresh();
+
+        // Auto reload to show updated status (menunggu/disetujui)
+        return $this->redirect('/pendaftar/daftarulang?activeTab=madrasah', navigate: true);
     }
 
     public function saveSeragam()
@@ -472,16 +556,20 @@ class DaftarUlang extends Component
 
         $this->validate([
             'paketSeragam' => 'required|string',
-            'nominalSeragam' => 'required|string',
+            'opsiSeragam' => 'required|string',  // NEW: validate selected option from package
             'konfirmasiNominalSeragam' => 'required|string',
+            'konfirmasiNominalSeragamOpsiLainnya' => 'required_if:konfirmasiNominalSeragam,opsi_lainnya|nullable|numeric|min:0',
             'opsiPembayaranSeragam' => 'required|string',
             'bankSeragam' => 'required|string',
             'buktiSeragam' => 'required|mimes:pdf,jpg,jpeg,png|max:5120',
             'namaPengirimSeragam' => 'required|string|max:255',
         ], [
             'paketSeragam.required' => 'Silakan pilih paket seragam.',
-            'nominalSeragam.required' => 'Silakan pilih nominal biaya seragam terlebih dahulu.',
+            'opsiSeragam.required' => 'Silakan pilih opsi dari paket seragam.',
             'konfirmasiNominalSeragam.required' => 'Silakan pilih nominal yang akan dibayarkan.',
+            'konfirmasiNominalSeragamOpsiLainnya.required_if' => 'Silakan masukkan nominal untuk Opsi Lainnya.',
+            'konfirmasiNominalSeragamOpsiLainnya.numeric' => 'Nominal harus berupa angka.',
+            'konfirmasiNominalSeragamOpsiLainnya.min' => 'Nominal tidak boleh negatif.',
             'opsiPembayaranSeragam.required' => 'Silakan pilih opsi pembayaran.',
             'bankSeragam.required' => 'Silakan pilih bank.',
             'buktiSeragam.required' => 'Bukti pembayaran seragam harus diupload.',
@@ -495,31 +583,17 @@ class DaftarUlang extends Component
             $this->seragam = \App\Models\Seragam::create([
                 'pendaftar_id' => $this->pendaftar->id,
                 'status_seragam' => 'menunggu',
+                'status_ukuran' => null,  // Explicitly set to null to prevent auto-fill
             ]);
         }
 
-        // Decode nominal yang dipilih atau gunakan custom nominal jika opsi lainnya
-        if ($this->nominalSeragam === 'opsi_lainnya') {
-            if (!$this->seragamOpsiLainnyaNominal) {
-                session()->flash('error_seragam', 'Silakan masukkan nominal untuk Opsi Lainnya.');
-                return;
-            }
-            $nominalSeragamData = [
-                'name' => 'Opsi Lainnya',
-                'amount' => $this->seragamOpsiLainnyaNominal
-            ];
-        } else {
-            $nominalSeragamData = json_decode($this->nominalSeragam, true);
-        }
+        // Parse selected option from package
+        $selectedOption = json_decode($this->opsiSeragam, true);
 
-        // Handle konfirmasi nominal - decode atau gunakan custom nominal
+        // Handle konfirmasi nominal - either auto from option or manual "Opsi Lainnya"
         if ($this->konfirmasiNominalSeragam === 'opsi_lainnya') {
-            if (!$this->konfirmasiNominalSeragamOpsiLainnya) {
-                session()->flash('error_seragam', 'Silakan masukkan nominal konfirmasi untuk Opsi Lainnya.');
-                return;
-            }
             $konfirmasiNominalSeragamData = [
-                'name' => 'Opsi Lainnya',
+                'name' => 'Opsi Lainnya (Manual)',
                 'amount' => $this->konfirmasiNominalSeragamOpsiLainnya
             ];
         } else {
@@ -527,13 +601,14 @@ class DaftarUlang extends Component
         }
 
         $dataToUpdate = [
-            'paket_seragam' => $this->paketSeragam,
-            'nominal_seragam_awal' => $nominalSeragamData, // Nominal yang dipilih untuk surat pernyataan
-            'nominal_seragam' => $konfirmasiNominalSeragamData, // Konfirmasi nominal yang dibayarkan
+            'paket_seragam' => $this->paketSeragam,  // Package JSON
+            'opsi_seragam' => $this->opsiSeragam,  // NEW: Selected option JSON
+            'nominal_seragam_awal' => $selectedOption,  // Original option (for reference)
+            'nominal_seragam' => $konfirmasiNominalSeragamData,  // Confirmation nominal (auto or manual)
             'opsi_pembayaran_seragam' => $this->opsiPembayaranSeragam,
             'bank_seragam' => $this->bankSeragam,
             'nama_pengirim_seragam' => $this->namaPengirimSeragam,
-            'waktu_pembayaran_seragam' => now(), // Timestamp pembayaran
+            'waktu_pembayaran_seragam' => now(),
         ];
 
         if ($this->buktiSeragam) {
@@ -561,6 +636,9 @@ class DaftarUlang extends Component
         $this->buktiSeragam = null;
         $this->seragam = $this->seragam->fresh();
         $this->pendaftar->load('seragam');
+
+        // Auto reload to show updated status
+        return $this->redirect('/pendaftar/daftarulang?activeTab=seragam', navigate: true);
     }
 
     public function saveUkuran()
@@ -586,6 +664,7 @@ class DaftarUlang extends Component
             $this->seragam = \App\Models\Seragam::create([
                 'pendaftar_id' => $this->pendaftar->id,
                 'status_ukuran' => 'menunggu',
+                'status_seragam' => null,  // Explicitly set to null to prevent auto-fill
             ]);
         }
 
@@ -636,6 +715,9 @@ class DaftarUlang extends Component
         session()->flash('message_ukuran', 'Data ukuran seragam berhasil disimpan.');
         $this->seragam = $this->seragam->fresh();
         $this->pendaftar->load('seragam');
+
+        // Auto reload to show updated status - stay in ukuran tab
+        return $this->redirect('/pendaftar/daftarulang?activeTab=ukuran', navigate: true);
     }
 
     /**
@@ -1012,6 +1094,88 @@ class DaftarUlang extends Component
 
         session()->flash('success', 'Bukti pembayaran seragam berhasil diupload.');
         $this->dispatch('saved');
+    }
+
+    // ========== COMPUTED PROPERTIES FOR FINE-GRAINED OPSI LAINNYA CONTROL ==========
+
+    /**
+     * Check if "Opsi Lainnya" dropdown should be shown for Madrasah paket
+     * Logic: Global Setting OR Individual Dropdown Setting
+     */
+    public function getShouldShowMadrasahOpsiLainnyaDropdownProperty()
+    {
+        $globalSetting = Setting::get('daftar_ulang_madrasah_enable_opsi_lainnya', false);
+        $individualSetting = false;
+
+        try {
+            if ($this->daftarUlang) {
+                $individualSetting = $this->daftarUlang->opsi_lainnya_dropdown_individual ?? false;
+            }
+        } catch (\Exception $e) {
+            // Silently fail
+        }
+
+        return $globalSetting || $individualSetting;
+    }
+
+    /**
+     * Check if "Opsi Lainnya" konfirmasi should be shown for Madrasah payment
+     * Logic: Global Setting OR Individual Konfirmasi Setting
+     */
+    public function getShouldShowMadrasahOpsiLainnyaKonfirmasiProperty()
+    {
+        $globalSetting = Setting::get('daftar_ulang_madrasah_enable_opsi_lainnya', false);
+        $individualSetting = false;
+
+        try {
+            if ($this->daftarUlang) {
+                $individualSetting = $this->daftarUlang->opsi_lainnya_konfirmasi_individual ?? false;
+            }
+        } catch (\Exception $e) {
+            // Silently fail
+        }
+
+        return $globalSetting || $individualSetting;
+    }
+
+    /**
+     * Check if "Opsi Lainnya" dropdown should be shown for Seragam paket
+     * Logic: Global Setting OR Individual Dropdown Setting
+     */
+    public function getShouldShowSeragamOpsiLainnyaDropdownProperty()
+    {
+        $globalSetting = Setting::get('daftar_ulang_seragam_enable_opsi_lainnya', false);
+        $individualSetting = false;
+
+        try {
+            if ($this->seragam) {
+                $individualSetting = $this->seragam->opsi_lainnya_dropdown_individual ?? false;
+            }
+        } catch (\Exception $e) {
+            // Silently fail
+        }
+
+        return $globalSetting || $individualSetting;
+    }
+
+    /**
+     * Check if "Opsi Lainnya" konfirmasi should be shown for Seragam payment
+     * Logic: Global Setting OR Individual Konfirmasi Setting
+     */
+    public function getShouldShowSeragamOpsiLainnyaKonfirmasiProperty()
+    {
+        $globalSetting = Setting::get('daftar_ulang_seragam_enable_opsi_lainnya', false);
+        $individualSetting = false;
+
+        try {
+            if ($this->seragam) {
+                $individualSetting = $this->seragam->opsi_lainnya_konfirmasi_individual ?? false;
+            }
+        } catch (\Exception $e) {
+            // Silently fail
+        }
+
+        return $globalSetting || $individualSetting;
     }
 
     public function render()

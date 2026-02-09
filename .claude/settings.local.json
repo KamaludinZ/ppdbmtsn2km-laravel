@@ -43,7 +43,19 @@
       "Bash(./upload_fix_catatan_styling.bat)",
       "Bash(timeout 60 scp:*)",
       "Bash(./upload_catatan_pendaftar_complete.bat)",
-      "Bash(./upload_fix_catatan_styling_pendaftar.bat)"
+      "Bash(./upload_fix_catatan_styling_pendaftar.bat)",
+      "Bash(cmd /c \"C:\\ppdbmtsn2km-laravel\\upload_fix_kode_pos_error_500.bat\")",
+      "Bash(./upload_fix_kode_pos_error_500.bat)",
+      "Bash(./upload_fix_export_code_column.bat)",
+      "Bash(cmd /c \"C:\\ppdbmtsn2km-laravel\\fix_migration_production.bat\")",
+      "Bash(cmd /c \"C:\\ppdbmtsn2km-laravel\\upload_catatan_psikologi_complete.bat\")",
+      "Bash({ sed -n '1,1342p' \"C:\\ppdbmtsn2km-laravel\\resources\\views\\livewire\\pendaftar\\daftar-ulang.blade.php\")",
+      "Bash(})",
+      "Bash(awk:*)",
+      "Bash(cmd /c \"C:\\ppdbmtsn2km-laravel\\upload_fix_pembatasan_waktu_jam_menit.bat\")",
+      "Bash(cmd /c \"dir upload_*.bat /b\")",
+      "Bash(cmd /c \"dir *8_FEB_2026*.* /b\")",
+      "Bash(cmd /c \"C:\\ppdbmtsn2km-laravel\\check_production_stats.bat\")"
     ],
     "deny": [],
     "ask": []

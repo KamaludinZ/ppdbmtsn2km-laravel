@@ -541,7 +541,45 @@
                                         Paket Seragam
                                     </h5>
                                     @if($seragam && $seragam->paket_seragam)
-                                        <p class="text-sm text-gray-700"><strong>Paket yang dipilih:</strong> {{ $seragam->paket_seragam }}</p>
+                                        @php
+                                            try {
+                                                $paketData = is_string($seragam->paket_seragam)
+                                                    ? json_decode($seragam->paket_seragam, true)
+                                                    : $seragam->paket_seragam;
+                                            } catch (\Exception $e) {
+                                                $paketData = null;
+                                            }
+                                        @endphp
+
+                                        @if($paketData && is_array($paketData))
+                                            <div class="bg-white border border-indigo-200 rounded-lg p-3 space-y-2">
+                                                <div>
+                                                    <span class="text-xs font-medium text-gray-500 uppercase">Nama Paket:</span>
+                                                    <p class="text-sm font-semibold text-gray-900">{{ $paketData['name'] ?? 'N/A' }}</p>
+                                                </div>
+                                                @if(!empty($paketData['description']))
+                                                    <div>
+                                                        <span class="text-xs font-medium text-gray-500 uppercase">Deskripsi:</span>
+                                                        <p class="text-sm text-gray-700">{{ $paketData['description'] }}</p>
+                                                    </div>
+                                                @endif
+                                                @if(!empty($paketData['options']) && is_array($paketData['options']))
+                                                    <div>
+                                                        <span class="text-xs font-medium text-gray-500 uppercase block mb-1">Opsi Paket:</span>
+                                                        <ul class="space-y-1">
+                                                            @foreach($paketData['options'] as $option)
+                                                                <li class="flex items-center justify-between text-sm bg-indigo-50 px-2 py-1 rounded">
+                                                                    <span class="font-medium text-gray-700">{{ $option['name'] ?? 'N/A' }}</span>
+                                                                    <span class="text-indigo-600 font-semibold">Rp {{ number_format($option['amount'] ?? 0, 0, ',', '.') }}</span>
+                                                                </li>
+                                                            @endforeach
+                                                        </ul>
+                                                    </div>
+                                                @endif
+                                            </div>
+                                        @else
+                                            <p class="text-sm text-gray-700">{{ $seragam->paket_seragam }}</p>
+                                        @endif
                                     @else
                                         <p class="text-sm text-gray-500 italic">Belum memilih paket seragam</p>
                                     @endif

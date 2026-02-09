@@ -14,6 +14,39 @@
             <span x-text="message"></span>
         </div>
 
+        {{-- Header --}}
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-900">Daftar Ulang Madrasah</h2>
+            <p class="text-gray-600">Manajemen daftar ulang pendaftar baru</p>
+        </div>
+
+        {{-- Tabs Navigation --}}
+        <div class="mb-6">
+            <div class="border-b border-gray-200">
+                <nav class="-mb-px flex space-x-8">
+                    <button
+                        wire:click="switchTab('madrasah')"
+                        class="group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'madrasah' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                        <svg class="w-5 h-5 mr-2 {{ $activeTab === 'madrasah' ? 'text-emerald-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                        </svg>
+                        Data Daftar Ulang
+                    </button>
+                    <button
+                        wire:click="switchTab('settings')"
+                        class="group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'settings' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                        <svg class="w-5 h-5 mr-2 {{ $activeTab === 'settings' ? 'text-purple-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        </svg>
+                        Pengaturan
+                    </button>
+                </nav>
+            </div>
+        </div>
+
+        {{-- Content for Madrasah Tab --}}
+        @if($activeTab !== 'settings')
         <!-- Stats Overview -->
         @include('livewire.admin.partials.daftar-ulang-stats', ['tab' => 'madrasah'])
 
@@ -103,9 +136,11 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal yang Dibayar</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opsi Pembayaran</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bank/Metode</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pengirim</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bukti Pembayaran</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu Pembayaran</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi Opsi</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ubah Status</th>
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi Pesan</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Riwayat Pesan</th>
@@ -323,6 +358,17 @@
                                     @endif
                                 </td>
 
+                                <!-- Nama Pengirim -->
+                                <td class="px-6 py-4">
+                                    @if($item->daftarUlang && $item->daftarUlang->nama_pengirim)
+                                        <div class="text-xs text-gray-900">
+                                            <span class="font-medium">{{ $item->daftarUlang->nama_pengirim }}</span>
+                                        </div>
+                                    @else
+                                        <span class="text-xs text-gray-500">-</span>
+                                    @endif
+                                </td>
+
                                 <!-- Bukti Pembayaran -->
                                 <td class="px-6 py-4">
                                     @if($item->daftarUlang && $item->daftarUlang->bukti_pembayaran_madrasah)
@@ -394,6 +440,65 @@
                                                 </svg>
                                                 Internal
                                             </button>
+                                        </div>
+                                    </div>
+                                </td>
+
+                                <!-- Aksi Opsi (Individual Toggles) - Madrasah -->
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col gap-3">
+                                        <!-- Toggle 1: Opsi Lainnya Dropdown -->
+                                        @php
+                                            $dropdownEnabled = false;
+                                            try {
+                                                $dropdownEnabled = isset($item->daftarUlang->opsi_lainnya_dropdown_individual)
+                                                    && $item->daftarUlang->opsi_lainnya_dropdown_individual == true;
+                                            } catch (\Exception $e) {
+                                                // Silently fail if column doesn't exist
+                                            }
+                                        @endphp
+                                        <div x-data="{
+                                            enabled: {{ $dropdownEnabled ? 'true' : 'false' }}
+                                        }" class="flex flex-col">
+                                            <label class="text-[10px] font-semibold text-gray-600 mb-1">Dropdown Opsi Lainnya</label>
+                                            <button
+                                                @click="enabled = !enabled; $wire.toggleOpsiLainnyaDropdownIndividual({{ $item->id }}, 'madrasah')"
+                                                type="button"
+                                                class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                                :class="enabled ? 'bg-blue-600' : 'bg-gray-200'"
+                                                role="switch"
+                                                :aria-checked="enabled">
+                                                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                                                      :class="enabled ? 'translate-x-5' : 'translate-x-0'"></span>
+                                            </button>
+                                            <span class="text-[9px] text-gray-500 mt-1" x-text="enabled ? 'Aktif untuk orang ini' : 'Tidak aktif'"></span>
+                                        </div>
+
+                                        <!-- Toggle 2: Opsi Lainnya Konfirmasi -->
+                                        @php
+                                            $konfirmasiEnabled = false;
+                                            try {
+                                                $konfirmasiEnabled = isset($item->daftarUlang->opsi_lainnya_konfirmasi_individual)
+                                                    && $item->daftarUlang->opsi_lainnya_konfirmasi_individual == true;
+                                            } catch (\Exception $e) {
+                                                // Silently fail if column doesn't exist
+                                            }
+                                        @endphp
+                                        <div x-data="{
+                                            enabled: {{ $konfirmasiEnabled ? 'true' : 'false' }}
+                                        }" class="flex flex-col">
+                                            <label class="text-[10px] font-semibold text-gray-600 mb-1">Konfirmasi Opsi Lainnya</label>
+                                            <button
+                                                @click="enabled = !enabled; $wire.toggleOpsiLainnyaKonfirmasiIndividual({{ $item->id }}, 'madrasah')"
+                                                type="button"
+                                                class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                                                :class="enabled ? 'bg-emerald-600' : 'bg-gray-200'"
+                                                role="switch"
+                                                :aria-checked="enabled">
+                                                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                                                      :class="enabled ? 'translate-x-5' : 'translate-x-0'"></span>
+                                            </button>
+                                            <span class="text-[9px] text-gray-500 mt-1" x-text="enabled ? 'Aktif untuk orang ini' : 'Tidak aktif'"></span>
                                         </div>
                                     </div>
                                 </td>
@@ -787,5 +892,11 @@
             </div>
         </div>
     </div>
+    @endif
+    @endif
+
+    {{-- Content for Settings Tab --}}
+    @if($activeTab === 'settings')
+        @include('livewire.panitia.partials.settings-madrasah-tab')
     @endif
 </div>

@@ -29,6 +29,11 @@
                 Catatan Kartu
             </button>
             <button
+                wire:click="$set('activeTab', 'link-grup')"
+                class="py-2 px-3 md:px-4 border-b-2 font-medium text-xs md:text-sm {{ $activeTab === 'link-grup' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                Link Grup
+            </button>
+            <button
                 wire:click="$set('activeTab', 'preview-kartu')"
                 class="py-2 px-3 md:px-4 border-b-2 font-medium text-xs md:text-sm {{ $activeTab === 'preview-kartu' ? 'border-emerald-500 text-emerald-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                 Preview Kartu
@@ -309,6 +314,128 @@
                     <h4 class="text-sm font-semibold text-gray-700 mb-2">Preview Catatan:</h4>
                     <div class="border-2 border-gray-300 rounded-lg p-4 bg-gray-50">
                         <div class="whitespace-pre-wrap text-sm text-gray-700">{{ $catatan_kartu_ujian }}</div>
+                    </div>
+                </div>
+            @endif
+        </div>
+    @endif
+
+    <!-- Link Grup Tab -->
+    @if($activeTab === 'link-grup')
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <h3 class="text-lg font-semibold text-gray-800 mb-4">Link Grup WhatsApp/Telegram</h3>
+
+            <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <p class="text-sm text-blue-800">
+                    <strong>Info:</strong> Link grup akan ditampilkan sebagai tombol "Bergabung ke Grup" di dashboard pendaftar (di sebelah tombol Cetak Kartu) dan di halaman cetak kartu tes seleksi. Tombol hanya muncul jika link grup diaktifkan.
+                </p>
+            </div>
+
+            <form wire:submit.prevent="saveLinkGrup">
+                <!-- Toggle Enable/Disable -->
+                <div class="mb-6" x-data="{ enabled: @entangle('link_grup_enabled') }">
+                    <label class="flex items-center cursor-pointer">
+                        <div class="relative inline-block w-14 h-7 transition duration-200 ease-in-out">
+                            <input
+                                type="checkbox"
+                                x-model="enabled"
+                                class="opacity-0 w-0 h-0 absolute">
+                            <span
+                                class="absolute cursor-pointer inset-0 rounded-full transition-colors duration-200"
+                                :class="enabled ? 'bg-emerald-600' : 'bg-gray-300'">
+                            </span>
+                            <span
+                                class="absolute left-1 top-1 bg-white w-5 h-5 rounded-full transition-transform duration-200 shadow-md"
+                                :class="enabled ? 'translate-x-7' : 'translate-x-0'">
+                            </span>
+                        </div>
+                        <span class="ml-3 text-sm font-medium text-gray-700">
+                            Aktifkan Link Grup (Tombol "Bergabung ke Grup" akan muncul di dashboard dan kartu tes)
+                        </span>
+                    </label>
+                    <p class="text-xs text-gray-500 mt-1 ml-17">Toggle ini untuk mengontrol apakah link grup ditampilkan atau tidak</p>
+                </div>
+
+                <!-- Link Grup URL -->
+                <div class="mb-4">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        URL Link Grup
+                        @if($link_grup_enabled)
+                            <span class="text-red-500">*</span>
+                        @endif
+                    </label>
+                    <input
+                        type="url"
+                        wire:model="link_grup_url"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
+                        placeholder="https://chat.whatsapp.com/... atau https://t.me/...">
+                    @error('link_grup_url') <span class="text-red-500 text-sm">{{ $message }}</span> @enderror
+                    <p class="text-xs text-gray-500 mt-1">
+                        Masukkan link grup WhatsApp atau Telegram. Contoh:<br>
+                        - WhatsApp: https://chat.whatsapp.com/ABC123<br>
+                        - Telegram: https://t.me/nama_grup
+                    </p>
+                </div>
+
+                <!-- Preview Link -->
+                @if($link_grup_url)
+                    <div class="mb-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+                        <h4 class="text-sm font-semibold text-gray-700 mb-2">Preview Link:</h4>
+                        <a href="{{ $link_grup_url }}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline break-all">
+                            {{ $link_grup_url }}
+                        </a>
+                        <p class="text-xs text-gray-500 mt-2">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Link akan dibuka di tab baru ketika diklik
+                        </p>
+                    </div>
+                @endif
+
+                <button type="submit"
+                    class="bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 px-4 rounded-lg transition">
+                    Simpan Link Grup
+                </button>
+            </form>
+
+            <!-- Preview Tombol -->
+            @if($link_grup_enabled && $link_grup_url)
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <h4 class="text-sm font-semibold text-gray-700 mb-3">Preview Tombol di Dashboard Pendaftar:</h4>
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg p-6">
+                        <div class="flex items-center gap-4">
+                            <a href="{{ $link_grup_url }}" target="_blank" class="bg-white text-blue-600 px-8 py-3 rounded-lg font-bold text-lg hover:bg-blue-50 transition transform hover:scale-105 shadow-lg flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                </svg>
+                                Cetak Kartu Ujian
+                            </a>
+                            <a href="{{ $link_grup_url }}" target="_blank" class="bg-green-500 hover:bg-green-600 text-white px-8 py-3 rounded-lg font-bold text-lg hover:bg-green-600 transition transform hover:scale-105 shadow-lg flex items-center">
+                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
+                                    <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"></path>
+                                </svg>
+                                Bergabung ke Grup
+                            </a>
+                        </div>
+                        <p class="text-sm text-white mt-3 opacity-90">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Tombol "Bergabung ke Grup" akan muncul di sebelah kanan tombol "Cetak Kartu Ujian"
+                        </p>
+                    </div>
+                </div>
+            @elseif(!$link_grup_enabled)
+                <div class="mt-6 pt-6 border-t border-gray-200">
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <p class="text-sm text-yellow-800">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                            Link grup tidak aktif. Aktifkan toggle di atas untuk menampilkan tombol "Bergabung ke Grup" di dashboard pendaftar.
+                        </p>
                     </div>
                 </div>
             @endif

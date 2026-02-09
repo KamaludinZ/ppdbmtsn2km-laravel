@@ -45,31 +45,32 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
 
     /**
      * Preload region names to cache
+     * FIXED: Use 'id' instead of 'code' column (production doesn't have 'code' column)
      */
     private function loadRegionCache()
     {
-        // Load provinces
-        $provinces = \DB::table('indonesia_provinces')->get(['code', 'name']);
+        // Load provinces - use id as key (production DB stores id in pendaftar fields)
+        $provinces = \DB::table('indonesia_provinces')->get(['id', 'name']);
         foreach ($provinces as $province) {
-            $this->regionCache[trim($province->code)] = $province->name;
+            $this->regionCache[(string)$province->id] = $province->name;
         }
 
         // Load cities (kabupaten/kota)
-        $cities = \DB::table('indonesia_cities')->get(['code', 'name']);
+        $cities = \DB::table('indonesia_cities')->get(['id', 'name']);
         foreach ($cities as $city) {
-            $this->regionCache[trim($city->code)] = $city->name;
+            $this->regionCache[(string)$city->id] = $city->name;
         }
 
         // Load districts (kecamatan)
-        $districts = \DB::table('indonesia_districts')->get(['code', 'name']);
+        $districts = \DB::table('indonesia_districts')->get(['id', 'name']);
         foreach ($districts as $district) {
-            $this->regionCache[trim($district->code)] = $district->name;
+            $this->regionCache[(string)$district->id] = $district->name;
         }
 
         // Load villages (kelurahan/desa)
-        $villages = \DB::table('indonesia_villages')->get(['code', 'name']);
+        $villages = \DB::table('indonesia_villages')->get(['id', 'name']);
         foreach ($villages as $village) {
-            $this->regionCache[trim($village->code)] = $village->name;
+            $this->regionCache[(string)$village->id] = $village->name;
         }
     }
 
@@ -945,42 +946,25 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
     }
 
     /**
-     * Get region name from code
+     * Get region name from ID
+     * FIXED: Changed from code to id (production uses id not code)
      */
-    private function getRegionName($code)
+    private function getRegionName($id)
     {
-        if (empty($code)) {
+        if (empty($id)) {
             return '';
         }
 
-        // Trim whitespace before lookup (some codes have trailing spaces in database)
-        $code = trim($code);
+        // Convert to string for cache lookup
+        $idStr = (string)$id;
 
-        // Try exact match first
-        if (isset($this->regionCache[$code])) {
-            return $this->regionCache[$code];
+        // Lookup in cache
+        if (isset($this->regionCache[$idStr])) {
+            return $this->regionCache[$idStr];
         }
 
-        // Handle 7-digit district codes (should be 6 digits)
-        // Some data has extra trailing digit, try removing it
-        if (strlen($code) == 7) {
-            $code6 = substr($code, 0, 6);
-            if (isset($this->regionCache[$code6])) {
-                return $this->regionCache[$code6];
-            }
-        }
-
-        // Handle 11-digit village codes (should be 10 digits)
-        // Some data has extra trailing digit, try removing it
-        if (strlen($code) == 11) {
-            $code10 = substr($code, 0, 10);
-            if (isset($this->regionCache[$code10])) {
-                return $this->regionCache[$code10];
-            }
-        }
-
-        // Return original code if not found (fallback)
-        return $code;
+        // Return empty if not found (should not happen if cache loaded correctly)
+        return '';
     }
 
     /**

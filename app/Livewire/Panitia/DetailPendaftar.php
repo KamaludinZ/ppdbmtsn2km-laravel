@@ -78,6 +78,7 @@ class DetailPendaftar extends Component
 
     // Status Pendaftaran
     public $status_pendaftaran;
+    public $catatan_verifikasi;
 
     // Data Pribadi
     public $nama_lengkap;
@@ -602,6 +603,7 @@ class DetailPendaftar extends Component
 
         // Status Pendaftaran
         $this->status_pendaftaran = $this->pendaftar->status_pendaftaran;
+        $this->catatan_verifikasi = $this->pendaftar->catatan_verifikasi;
 
         // EMIS - Data Siswa
         $this->nik = $this->pendaftar->nik;
@@ -1214,6 +1216,7 @@ class DetailPendaftar extends Component
     {
         $this->pendaftar->update([
             'status_pendaftaran' => $this->status_pendaftaran,
+            'catatan_verifikasi' => $this->catatan_verifikasi,
             'diperbarui_oleh' => Auth::id(),
         ]);
 
@@ -1223,7 +1226,7 @@ class DetailPendaftar extends Component
                 new \App\Notifications\StatusChangeNotification(
                     'formulir',
                     $this->status_pendaftaran,
-                    $this->pendaftar->catatan_verifikasi
+                    $this->catatan_verifikasi
                 )
             );
         }
@@ -1290,11 +1293,14 @@ class DetailPendaftar extends Component
             'imunisasi_covid' => 'nullable|boolean',
             'berkebutuhan_khusus' => 'nullable|boolean',
             'jenis_kebutuhan_khusus' => 'nullable|array',
+            'nomor_kip' => 'nullable|string|max:25|regex:/^[A-Za-z0-9]+$/',
             'newFoto' => $fotoValidation,
         ], [
             'newFoto.required' => 'Foto pendaftar wajib diupload',
             'newFoto.image' => 'File harus berupa gambar',
             'newFoto.max' => 'Ukuran foto maksimal 2MB',
+            'nomor_kip.max' => 'Nomor KIP maksimal 25 karakter',
+            'nomor_kip.regex' => 'Nomor KIP hanya boleh berisi huruf dan angka',
         ]);
 
         $dataToUpdate = [
@@ -1331,6 +1337,7 @@ class DetailPendaftar extends Component
             'imunisasi_covid' => $this->imunisasi_covid ?? false,
             'berkebutuhan_khusus' => $this->berkebutuhan_khusus ?? false,
             'jenis_kebutuhan_khusus' => $this->jenis_kebutuhan_khusus,
+            'nomor_kip' => $this->nomor_kip,
         ];
 
         // Handle foto upload
@@ -1559,29 +1566,59 @@ class DetailPendaftar extends Component
             'no_hp' => 'nullable|numeric|digits_between:10,15',
             'email' => 'required|email',
 
-            // Ayah address fields
+            // Ayah address fields - base validation
             'ayah_tinggal_luar_negeri' => 'nullable|boolean',
-            'ayah_status_kepemilikan_rumah' => 'nullable|string|max:100',
-            'ayah_provinsi' => 'nullable',
-            'ayah_kabupaten' => 'nullable',
-            'ayah_kecamatan' => 'nullable',
-            'ayah_kelurahan' => 'nullable',
-            'ayah_rt' => 'nullable|string|max:3',
-            'ayah_rw' => 'nullable|string|max:3',
-            'ayah_kode_pos' => 'nullable|string|max:6',
+        ];
 
-            // Ibu address fields
-            'ibu_tinggal_luar_negeri' => 'nullable|boolean',
-            'ibu_sama_dengan_ayah' => 'nullable|boolean',
-            'ibu_status_kepemilikan_rumah' => 'nullable|string|max:100',
-            'ibu_provinsi' => 'nullable',
-            'ibu_kabupaten' => 'nullable',
-            'ibu_kecamatan' => 'nullable',
-            'ibu_kelurahan' => 'nullable',
-            'ibu_rt' => 'nullable|string|max:3',
-            'ibu_rw' => 'nullable|string|max:3',
-            'ibu_kode_pos' => 'nullable|string|max:6',
-            'ibu_alamat' => 'nullable|string',
+        // AYAH ADDRESS - Conditional validation based on ayah_status
+        if ($this->ayah_status === 'masih_hidup' && !$this->ayah_tinggal_luar_negeri) {
+            $validationRules['ayah_status_kepemilikan_rumah'] = 'nullable|string|max:100';
+            $validationRules['ayah_provinsi'] = 'nullable';
+            $validationRules['ayah_kabupaten'] = 'nullable';
+            $validationRules['ayah_kecamatan'] = 'nullable';
+            $validationRules['ayah_kelurahan'] = 'nullable';
+            $validationRules['ayah_rt'] = 'nullable|string|max:3';
+            $validationRules['ayah_rw'] = 'nullable|string|max:3';
+            $validationRules['ayah_kode_pos'] = 'nullable|string|max:6';
+        } else {
+            $validationRules['ayah_status_kepemilikan_rumah'] = 'nullable|string|max:100';
+            $validationRules['ayah_provinsi'] = 'nullable';
+            $validationRules['ayah_kabupaten'] = 'nullable';
+            $validationRules['ayah_kecamatan'] = 'nullable';
+            $validationRules['ayah_kelurahan'] = 'nullable';
+            $validationRules['ayah_rt'] = 'nullable|string|max:3';
+            $validationRules['ayah_rw'] = 'nullable|string|max:3';
+            $validationRules['ayah_kode_pos'] = 'nullable|string|max:6';
+        }
+
+        // IBU ADDRESS - Conditional validation based on ibu_status
+        $validationRules['ibu_tinggal_luar_negeri'] = 'nullable|boolean';
+        $validationRules['ibu_sama_dengan_ayah'] = 'nullable|boolean';
+
+        if ($this->ibu_status === 'masih_hidup' && !$this->ibu_sama_dengan_ayah && !$this->ibu_tinggal_luar_negeri) {
+            $validationRules['ibu_status_kepemilikan_rumah'] = 'nullable|string|max:100';
+            $validationRules['ibu_provinsi'] = 'nullable';
+            $validationRules['ibu_kabupaten'] = 'nullable';
+            $validationRules['ibu_kecamatan'] = 'nullable';
+            $validationRules['ibu_kelurahan'] = 'nullable';
+            $validationRules['ibu_rt'] = 'nullable|string|max:3';
+            $validationRules['ibu_rw'] = 'nullable|string|max:3';
+            $validationRules['ibu_kode_pos'] = 'nullable|string|max:6';
+            $validationRules['ibu_alamat'] = 'nullable|string';
+        } else {
+            $validationRules['ibu_status_kepemilikan_rumah'] = 'nullable|string|max:100';
+            $validationRules['ibu_provinsi'] = 'nullable';
+            $validationRules['ibu_kabupaten'] = 'nullable';
+            $validationRules['ibu_kecamatan'] = 'nullable';
+            $validationRules['ibu_kelurahan'] = 'nullable';
+            $validationRules['ibu_rt'] = 'nullable|string|max:3';
+            $validationRules['ibu_rw'] = 'nullable|string|max:3';
+            $validationRules['ibu_kode_pos'] = 'nullable|string|max:6';
+            $validationRules['ibu_alamat'] = 'nullable|string';
+        }
+
+        // Continue with other validation rules
+        $validationRules = array_merge($validationRules, [
 
             // Siswa address fields
             'status_tempat_tinggal' => 'nullable|string|max:100',
@@ -1599,7 +1636,7 @@ class DetailPendaftar extends Component
             'jarak_ke_sekolah' => 'nullable|string|max:50',
             'transportasi' => 'nullable|string|max:100',
             'waktu_tempuh' => 'nullable|string|max:50',
-        ];
+        ]);
 
         // WALI ADDRESS - Conditional validation based on wali_status_wali
         $validationRules['wali_status_wali'] = 'nullable|string|max:50';
@@ -2010,10 +2047,31 @@ class DetailPendaftar extends Component
 
     public function updatedAyahKelurahan()
     {
-        if ($this->ayah_kelurahan) {
-            $village = Village::where('code', $this->ayah_kelurahan)->first();
-            if ($village && isset($village->meta['pos'])) {
-                $this->ayah_kode_pos = $village->meta['pos'];
+        if ($this->ayah_kelurahan && $this->ayah_kecamatan && $this->ayah_kabupaten) {
+            // Get village, district, and city names
+            $village = Village::where('id', $this->ayah_kelurahan)->first();
+            $district = District::where('id', $this->ayah_kecamatan)->first();
+            $regency = Regency::where('id', $this->ayah_kabupaten)->first();
+
+            if ($village && $district && $regency) {
+                try {
+                    // Remove KABUPATEN/KOTA prefix from regency name for matching
+                    $cityName = preg_replace('/^(KABUPATEN|KOTA)\s+/i', '', $regency->name);
+
+                    // Query postal_codes table
+                    $postalCode = \DB::table('postal_codes')
+                        ->where('urban', 'LIKE', '%' . $village->name . '%')
+                        ->where('sub_district', 'LIKE', '%' . $district->name . '%')
+                        ->where('city', 'LIKE', '%' . $cityName . '%')
+                        ->first();
+
+                    if ($postalCode) {
+                        $this->ayah_kode_pos = $postalCode->postal_code;
+                    }
+                } catch (\Exception $e) {
+                    // If postal_codes table doesn't exist or query fails, keep field empty
+                    \Log::warning('Failed to auto-fill ayah_kode_pos: ' . $e->getMessage());
+                }
             }
         }
     }
@@ -2121,10 +2179,31 @@ class DetailPendaftar extends Component
 
     public function updatedIbuKelurahan()
     {
-        if ($this->ibu_kelurahan) {
-            $village = Village::where('code', $this->ibu_kelurahan)->first();
-            if ($village && isset($village->meta['pos'])) {
-                $this->ibu_kode_pos = $village->meta['pos'];
+        if ($this->ibu_kelurahan && $this->ibu_kecamatan && $this->ibu_kabupaten) {
+            // Get village, district, and city names
+            $village = Village::where('id', $this->ibu_kelurahan)->first();
+            $district = District::where('id', $this->ibu_kecamatan)->first();
+            $regency = Regency::where('id', $this->ibu_kabupaten)->first();
+
+            if ($village && $district && $regency) {
+                try {
+                    // Remove KABUPATEN/KOTA prefix from regency name for matching
+                    $cityName = preg_replace('/^(KABUPATEN|KOTA)\s+/i', '', $regency->name);
+
+                    // Query postal_codes table
+                    $postalCode = \DB::table('postal_codes')
+                        ->where('urban', 'LIKE', '%' . $village->name . '%')
+                        ->where('sub_district', 'LIKE', '%' . $district->name . '%')
+                        ->where('city', 'LIKE', '%' . $cityName . '%')
+                        ->first();
+
+                    if ($postalCode) {
+                        $this->ibu_kode_pos = $postalCode->postal_code;
+                    }
+                } catch (\Exception $e) {
+                    // If postal_codes table doesn't exist or query fails, keep field empty
+                    \Log::warning('Failed to auto-fill ibu_kode_pos: ' . $e->getMessage());
+                }
             }
         }
     }
@@ -2265,10 +2344,31 @@ class DetailPendaftar extends Component
 
     public function updatedWaliKelurahan()
     {
-        if ($this->wali_kelurahan) {
-            $village = Village::where('code', $this->wali_kelurahan)->first();
-            if ($village && isset($village->meta['pos'])) {
-                $this->wali_kode_pos = $village->meta['pos'];
+        if ($this->wali_kelurahan && $this->wali_kecamatan && $this->wali_kabupaten) {
+            // Get village, district, and city names
+            $village = Village::where('id', $this->wali_kelurahan)->first();
+            $district = District::where('id', $this->wali_kecamatan)->first();
+            $regency = Regency::where('id', $this->wali_kabupaten)->first();
+
+            if ($village && $district && $regency) {
+                try {
+                    // Remove KABUPATEN/KOTA prefix from regency name for matching
+                    $cityName = preg_replace('/^(KABUPATEN|KOTA)\s+/i', '', $regency->name);
+
+                    // Query postal_codes table
+                    $postalCode = \DB::table('postal_codes')
+                        ->where('urban', 'LIKE', '%' . $village->name . '%')
+                        ->where('sub_district', 'LIKE', '%' . $district->name . '%')
+                        ->where('city', 'LIKE', '%' . $cityName . '%')
+                        ->first();
+
+                    if ($postalCode) {
+                        $this->wali_kode_pos = $postalCode->postal_code;
+                    }
+                } catch (\Exception $e) {
+                    // If postal_codes table doesn't exist or query fails, keep field empty
+                    \Log::warning('Failed to auto-fill wali_kode_pos: ' . $e->getMessage());
+                }
             }
         }
     }
@@ -2396,10 +2496,31 @@ class DetailPendaftar extends Component
 
     public function updatedSiswaKelurahan()
     {
-        if ($this->siswa_kelurahan) {
-            $village = Village::where('code', $this->siswa_kelurahan)->first();
-            if ($village && isset($village->meta['pos'])) {
-                $this->siswa_kode_pos = $village->meta['pos'];
+        if ($this->siswa_kelurahan && $this->siswa_kecamatan && $this->siswa_kabupaten) {
+            // Get village, district, and city names
+            $village = Village::where('id', $this->siswa_kelurahan)->first();
+            $district = District::where('id', $this->siswa_kecamatan)->first();
+            $regency = Regency::where('id', $this->siswa_kabupaten)->first();
+
+            if ($village && $district && $regency) {
+                try {
+                    // Remove KABUPATEN/KOTA prefix from regency name for matching
+                    $cityName = preg_replace('/^(KABUPATEN|KOTA)\s+/i', '', $regency->name);
+
+                    // Query postal_codes table
+                    $postalCode = \DB::table('postal_codes')
+                        ->where('urban', 'LIKE', '%' . $village->name . '%')
+                        ->where('sub_district', 'LIKE', '%' . $district->name . '%')
+                        ->where('city', 'LIKE', '%' . $cityName . '%')
+                        ->first();
+
+                    if ($postalCode) {
+                        $this->siswa_kode_pos = $postalCode->postal_code;
+                    }
+                } catch (\Exception $e) {
+                    // If postal_codes table doesn't exist or query fails, keep field empty
+                    \Log::warning('Failed to auto-fill siswa_kode_pos: ' . $e->getMessage());
+                }
             }
         }
     }

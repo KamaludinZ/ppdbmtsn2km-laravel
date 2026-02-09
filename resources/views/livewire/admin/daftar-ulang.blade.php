@@ -296,17 +296,39 @@
                                         <p class="text-xs text-indigo-700 mt-1">Informasi ini akan ditampilkan di halaman daftar ulang madrasah pendaftar</p>
                                     </div>
                                 </div>
-                                <textarea
-                                    wire:model="madrasahInfo"
-                                    rows="4"
-                                    placeholder="Tulis informasi, pengumuman, atau petunjuk untuk pendaftar terkait daftar ulang madrasah..."
-                                    class="w-full rounded-lg border-indigo-300 text-sm focus:border-indigo-500 focus:ring-indigo-500"
-                                ></textarea>
+                                <!-- Trix Rich Text Editor -->
+                                <div wire:ignore x-data="{ trixId: 'madrasah-info-{{ uniqid() }}' }" x-init="
+                                    $nextTick(() => {
+                                        const hiddenInput = document.getElementById(trixId);
+                                        const editor = document.querySelector(`trix-editor[input='${trixId}']`);
+
+                                        if (editor) {
+                                            // Set initial content from Livewire property
+                                            const initialContent = @js($madrasahInfo ?? '');
+                                            if (initialContent) {
+                                                editor.editor.loadHTML(initialContent);
+                                            }
+
+                                            // Listen for changes and sync to Livewire
+                                            editor.addEventListener('trix-change', function(e) {
+                                                @this.set('madrasahInfo', editor.value);
+                                            });
+                                        }
+                                    });
+                                ">
+                                    <input :id="trixId" type="hidden" name="madrasahInfo">
+                                    <trix-editor
+                                        :input="trixId"
+                                        class="trix-content rounded-lg border border-indigo-300 shadow-sm focus-within:border-indigo-500 focus-within:ring focus-within:ring-indigo-200 focus-within:ring-opacity-50"
+                                        placeholder="Tulis informasi, pengumuman, atau petunjuk untuk pendaftar terkait daftar ulang madrasah..."
+                                    ></trix-editor>
+                                </div>
+
                                 <div class="mt-2 flex items-center text-xs text-indigo-600">
                                     <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                                     </svg>
-                                    <span>Mendukung format HTML sederhana (bold, italic, list, dll)</span>
+                                    <span>Gunakan toolbar untuk format (Bold, Italic, Link, List, dll)</span>
                                 </div>
                             </div>
 
@@ -325,65 +347,116 @@
                                 </div>
                             </div>
 
-                            <!-- Nominal Biaya Daftar Ulang -->
+                            <!-- Paket Madrasah (Hierarchical) -->
                             <div class="bg-green-50 border border-green-200 rounded-lg p-4">
                                 <div class="flex items-center justify-between mb-3">
-                                    <label class="block text-sm font-semibold text-green-900">Nominal Biaya</label>
-                                    <button type="button" wire:click="addMadrasahNominal" class="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">+ Tambah</button>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-green-900">Paket Daftar Ulang Madrasah</label>
+                                        <p class="text-xs text-gray-600 mt-1">Buat paket daftar ulang dengan opsi-opsi dan nominal yang berbeda</p>
+                                    </div>
+                                    <button type="button" wire:click="addMadrasahPackage" class="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">+ Tambah Paket</button>
                                 </div>
 
-                                <!-- Enable Opsi Lainnya Toggle -->
-                                <div class="mb-4 p-3 bg-white rounded-lg border border-green-300">
-                                    <label class="flex items-center">
-                                        <input type="checkbox" wire:model="madrasahEnableOpsiLainnya" class="rounded border-gray-300 text-green-600">
-                                        <span class="ml-2 text-sm font-medium text-gray-700">Aktifkan Opsi "Lainnya" (Input Manual)</span>
-                                    </label>
-                                    <p class="text-xs text-gray-600 mt-1 ml-6">Jika diaktifkan, pendaftar dapat memilih "Opsi Lainnya" dan mengisi nominal pembayaran secara manual.</p>
-                                </div>
-
-                                @foreach($madrasahNominals as $index => $nominal)
-                                    <div class="bg-white border border-green-300 rounded-lg p-3 mb-2">
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                            <input type="text" wire:model="madrasahNominals.{{ $index }}.name" placeholder="Nama biaya (contoh: SPP Bulanan)" class="rounded border-gray-300 text-sm">
-                                            <input type="number" wire:model="madrasahNominals.{{ $index }}.amount" placeholder="Nominal (Rp)" class="rounded border-gray-300 text-sm">
+                                @foreach($madrasahPackages as $pkgIndex => $package)
+                                    <div class="bg-white border-2 border-green-300 rounded-lg p-4 mb-4">
+                                        <!-- Package Header -->
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                                            <input type="text"
+                                                   wire:model="madrasahPackages.{{ $pkgIndex }}.name"
+                                                   placeholder="Nama Paket (contoh: Paket Lengkap)"
+                                                   class="rounded border-green-400 text-sm font-semibold">
+                                            <textarea wire:model="madrasahPackages.{{ $pkgIndex }}.description"
+                                                      placeholder="Deskripsi paket"
+                                                      rows="2"
+                                                      class="rounded border-green-400 text-sm"></textarea>
                                             <button type="button"
-                                                    wire:click="removeMadrasahNominal({{ $index }})"
-                                                    wire:confirm="Yakin ingin menghapus nominal madrasah ini?"
-                                                    class="text-red-600 hover:text-red-800 text-sm">Hapus</button>
+                                                    wire:click="removeMadrasahPackage({{ $pkgIndex }})"
+                                                    wire:confirm="Yakin ingin menghapus paket ini beserta semua opsinya?"
+                                                    class="text-red-600 hover:text-red-800 text-sm font-medium">
+                                                🗑️ Hapus Paket
+                                            </button>
+                                        </div>
+
+                                        <!-- Package Options -->
+                                        <div class="bg-cyan-50 border border-cyan-300 rounded-lg p-3">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <label class="text-xs font-semibold text-cyan-900">Opsi dari {{ $package['name'] ?? 'Paket ini' }}</label>
+                                                <button type="button"
+                                                        wire:click="addMadrasahPackageOption({{ $pkgIndex }})"
+                                                        class="text-xs bg-cyan-600 text-white px-2 py-1 rounded hover:bg-cyan-700">
+                                                    + Tambah Opsi
+                                                </button>
+                                            </div>
+
+                                            @if(isset($package['options']) && is_array($package['options']))
+                                                @foreach($package['options'] as $optIndex => $option)
+                                                    <div class="bg-white border border-cyan-300 rounded p-2 mb-2">
+                                                        <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+                                                            <input type="text"
+                                                                   wire:model="madrasahPackages.{{ $pkgIndex }}.options.{{ $optIndex }}.name"
+                                                                   placeholder="Nama Opsi (contoh: SPP Bulanan)"
+                                                                   class="rounded border-gray-300 text-xs col-span-2">
+                                                            <input type="number"
+                                                                   wire:model="madrasahPackages.{{ $pkgIndex }}.options.{{ $optIndex }}.amount"
+                                                                   placeholder="Nominal (Rp)"
+                                                                   class="rounded border-gray-300 text-xs">
+                                                            <button type="button"
+                                                                    wire:click="removeMadrasahPackageOption({{ $pkgIndex }}, {{ $optIndex }})"
+                                                                    wire:confirm="Yakin ingin menghapus opsi ini?"
+                                                                    class="text-red-600 hover:text-red-800 text-xs">
+                                                                Hapus
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            @endif
+
+                                            @if(!isset($package['options']) || count($package['options']) == 0)
+                                                <p class="text-xs text-gray-500 italic text-center py-2">Belum ada opsi. Klik "+ Tambah Opsi" untuk menambah.</p>
+                                            @endif
                                         </div>
                                     </div>
                                 @endforeach
+
+                                @if(count($madrasahPackages) == 0)
+                                    <div class="text-center py-8 text-gray-500">
+                                        <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                                        </svg>
+                                        <p class="text-sm">Belum ada paket daftar ulang madrasah</p>
+                                        <p class="text-xs mt-1">Klik "Tambah Paket" untuk membuat paket baru</p>
+                                    </div>
+                                @endif
                             </div>
 
-                            <!-- Opsi Nominal yang Dibayarkan -->
-                            <div class="bg-cyan-50 border border-cyan-200 rounded-lg p-4">
-                                <div class="flex items-center justify-between mb-3">
-                                    <label class="block text-sm font-semibold text-cyan-900">Opsi Nominal yang Dibayarkan</label>
-                                    <button type="button" wire:click="addMadrasahPaymentNominal" class="text-xs bg-cyan-600 text-white px-3 py-1 rounded hover:bg-cyan-700">+ Tambah</button>
-                                </div>
-                                <p class="text-xs text-gray-600 mb-3">Opsi nominal yang muncul pada field konfirmasi nominal yang dibayarkan (terpisah dari nominal surat pernyataan)</p>
+                            <!-- Checkbox: Aktifkan Opsi Lainnya untuk Dropdown Paket -->
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                                <label class="flex items-center">
+                                    <input type="checkbox"
+                                           wire:model="madrasahPackagesEnableOpsiLainnya"
+                                           class="rounded border-gray-300 text-blue-600">
+                                    <span class="ml-2 text-sm font-semibold text-blue-900">
+                                        Aktifkan "Opsi Lainnya" untuk Dropdown Paket Madrasah
+                                    </span>
+                                </label>
+                                <p class="text-xs text-blue-700 mt-2 ml-6">
+                                    Jika diaktifkan, pendaftar dapat memilih "Paket Lainnya" di dropdown dan mengisi nama paket secara manual (untuk paket yang tidak ada di daftar).
+                                </p>
+                            </div>
 
-                                @foreach($madrasahPaymentNominals as $index => $nominal)
-                                    <div class="bg-white border border-cyan-300 rounded-lg p-3 mb-2">
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                            <input type="text" wire:model="madrasahPaymentNominals.{{ $index }}.name" placeholder="Nama biaya (contoh: SPP Bulanan)" class="rounded border-gray-300 text-sm">
-                                            <input type="number" wire:model="madrasahPaymentNominals.{{ $index }}.amount" placeholder="Nominal (Rp)" class="rounded border-gray-300 text-sm">
-                                            <button type="button"
-                                                    wire:click="removeMadrasahPaymentNominal({{ $index }})"
-                                                    wire:confirm="Yakin ingin menghapus opsi nominal ini?"
-                                                    class="text-red-600 hover:text-red-800 text-sm">Hapus</button>
-                                        </div>
-                                    </div>
-                                @endforeach
-
-                                <!-- Checkbox untuk Opsi Lainnya -->
-                                <div class="mt-4 pt-3 border-t border-cyan-300">
-                                    <label class="flex items-center">
-                                        <input type="checkbox" wire:model="madrasahPaymentNominalsEnableOpsiLainnya" class="rounded border-gray-300 text-cyan-600">
-                                        <span class="ml-2 text-sm text-gray-700">Aktifkan Opsi "Lainnya" (Input Manual)</span>
-                                    </label>
-                                    <p class="text-xs text-gray-500 ml-6 mt-1">Jika diaktifkan, pendaftar dapat memilih "Opsi Lainnya" dan mengisi nominal pembayaran secara manual.</p>
-                                </div>
+                            <!-- Checkbox: Aktifkan Opsi Lainnya untuk Konfirmasi Nominal -->
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                <label class="flex items-center">
+                                    <input type="checkbox"
+                                           wire:model="madrasahEnableOpsiLainnya"
+                                           class="rounded border-gray-300 text-yellow-600">
+                                    <span class="ml-2 text-sm font-semibold text-yellow-900">
+                                        Aktifkan "Opsi Lainnya" untuk Konfirmasi Nominal yang Dibayarkan
+                                    </span>
+                                </label>
+                                <p class="text-xs text-yellow-700 mt-2 ml-6">
+                                    Jika diaktifkan, pendaftar dapat memilih "Opsi Lainnya" dan mengisi nominal pembayaran secara manual pada form konfirmasi nominal.
+                                </p>
                             </div>
 
                             <!-- Opsi Pembayaran -->
@@ -428,14 +501,17 @@
                             <!-- Waktu Pembayaran -->
                             <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
                                 <label class="block text-sm font-semibold text-indigo-900 mb-2">Waktu Pembayaran</label>
+                                <p class="text-xs text-indigo-700 mb-3">Tentukan waktu mulai dan berakhir pembayaran daftar ulang madrasah (termasuk jam dan menit)</p>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-xs text-gray-700 mb-1">Tanggal Mulai</label>
-                                        <input type="date" wire:model="madrasahPaymentStart" class="w-full rounded border-gray-300 text-sm">
+                                        <label class="block text-xs text-gray-700 mb-1">Waktu Mulai</label>
+                                        <input type="datetime-local" wire:model="madrasahPaymentStart" class="w-full rounded border-gray-300 text-sm">
+                                        <p class="text-xs text-gray-500 mt-1">Format: Tanggal dan Waktu (24 jam)</p>
                                     </div>
                                     <div>
-                                        <label class="block text-xs text-gray-700 mb-1">Tanggal Berakhir</label>
-                                        <input type="date" wire:model="madrasahPaymentEnd" class="w-full rounded border-gray-300 text-sm">
+                                        <label class="block text-xs text-gray-700 mb-1">Waktu Berakhir</label>
+                                        <input type="datetime-local" wire:model="madrasahPaymentEnd" class="w-full rounded border-gray-300 text-sm">
+                                        <p class="text-xs text-gray-500 mt-1">Format: Tanggal dan Waktu (24 jam)</p>
                                     </div>
                                 </div>
                             </div>
@@ -485,100 +561,152 @@
                                         <p class="text-xs text-cyan-700 mt-1">Informasi ini akan ditampilkan di halaman daftar ulang seragam pendaftar</p>
                                     </div>
                                 </div>
-                                <textarea
-                                    wire:model="seragamInfo"
-                                    rows="4"
-                                    placeholder="Tulis informasi, pengumuman, atau petunjuk untuk pendaftar terkait pembelian seragam..."
-                                    class="w-full rounded-lg border-cyan-300 text-sm focus:border-cyan-500 focus:ring-cyan-500"
-                                ></textarea>
+                                <!-- Trix Rich Text Editor -->
+                                <div wire:ignore x-data="{ trixId: 'seragam-info-{{ uniqid() }}' }" x-init="
+                                    $nextTick(() => {
+                                        const hiddenInput = document.getElementById(trixId);
+                                        const editor = document.querySelector(`trix-editor[input='${trixId}']`);
+
+                                        if (editor) {
+                                            // Set initial content from Livewire property
+                                            const initialContent = @js($seragamInfo ?? '');
+                                            if (initialContent) {
+                                                editor.editor.loadHTML(initialContent);
+                                            }
+
+                                            // Listen for changes and sync to Livewire
+                                            editor.addEventListener('trix-change', function(e) {
+                                                @this.set('seragamInfo', editor.value);
+                                            });
+                                        }
+                                    });
+                                ">
+                                    <input :id="trixId" type="hidden" name="seragamInfo">
+                                    <trix-editor
+                                        :input="trixId"
+                                        class="trix-content rounded-lg border border-cyan-300 shadow-sm focus-within:border-cyan-500 focus-within:ring focus-within:ring-cyan-200 focus-within:ring-opacity-50"
+                                        placeholder="Tulis informasi, pengumuman, atau petunjuk untuk pendaftar terkait pembelian seragam..."
+                                    ></trix-editor>
+                                </div>
+
                                 <div class="mt-2 flex items-center text-xs text-cyan-600">
                                     <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                                     </svg>
-                                    <span>Mendukung format HTML sederhana (bold, italic, list, dll)</span>
+                                    <span>Gunakan toolbar untuk format (Bold, Italic, Link, List, dll)</span>
                                 </div>
                             </div>
 
-                            <!-- Paket Seragam -->
+                            <!-- Paket Seragam (Hierarchical) -->
                             <div class="bg-cyan-50 border border-cyan-200 rounded-lg p-4">
                                 <div class="flex items-center justify-between mb-3">
-                                    <label class="block text-sm font-semibold text-cyan-900">Paket Seragam</label>
+                                    <div>
+                                        <label class="block text-sm font-semibold text-cyan-900">Paket Seragam</label>
+                                        <p class="text-xs text-gray-600 mt-1">Buat paket seragam dengan opsi-opsi dan harga yang berbeda</p>
+                                    </div>
                                     <button type="button" wire:click="addSeragamPackage" class="text-xs bg-cyan-600 text-white px-3 py-1 rounded hover:bg-cyan-700">+ Tambah Paket</button>
                                 </div>
 
-                                @foreach($seragamPackages as $index => $package)
-                                    <div class="bg-white border border-cyan-300 rounded-lg p-3 mb-2">
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                            <input type="text" wire:model="seragamPackages.{{ $index }}.name" placeholder="Nama Paket (contoh: Paket Lengkap)" class="rounded border-gray-300 text-sm">
-                                            <textarea wire:model="seragamPackages.{{ $index }}.description" placeholder="Deskripsi paket" rows="2" class="rounded border-gray-300 text-sm"></textarea>
+                                @foreach($seragamPackages as $pkgIndex => $package)
+                                    <div class="bg-white border-2 border-cyan-300 rounded-lg p-4 mb-4">
+                                        <!-- Package Header -->
+                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
+                                            <input type="text"
+                                                   wire:model="seragamPackages.{{ $pkgIndex }}.name"
+                                                   placeholder="Nama Paket (contoh: Paket Lengkap)"
+                                                   class="rounded border-cyan-400 text-sm font-semibold">
+                                            <textarea wire:model="seragamPackages.{{ $pkgIndex }}.description"
+                                                      placeholder="Deskripsi paket"
+                                                      rows="2"
+                                                      class="rounded border-cyan-400 text-sm"></textarea>
                                             <button type="button"
-                                                    wire:click="removeSeragamPackage({{ $index }})"
-                                                    wire:confirm="Yakin ingin menghapus paket seragam ini?"
-                                                    class="text-red-600 hover:text-red-800 text-sm">Hapus</button>
+                                                    wire:click="removeSeragamPackage({{ $pkgIndex }})"
+                                                    wire:confirm="Yakin ingin menghapus paket ini beserta semua opsinya?"
+                                                    class="text-red-600 hover:text-red-800 text-sm font-medium">
+                                                🗑️ Hapus Paket
+                                            </button>
+                                        </div>
+
+                                        <!-- Package Options -->
+                                        <div class="bg-green-50 border border-green-300 rounded-lg p-3">
+                                            <div class="flex items-center justify-between mb-2">
+                                                <label class="text-xs font-semibold text-green-900">Opsi dari {{ $package['name'] ?? 'Paket ini' }}</label>
+                                                <button type="button"
+                                                        wire:click="addSeragamPackageOption({{ $pkgIndex }})"
+                                                        class="text-xs bg-green-600 text-white px-2 py-1 rounded hover:bg-green-700">
+                                                    + Tambah Opsi
+                                                </button>
+                                            </div>
+
+                                            @if(isset($package['options']) && is_array($package['options']))
+                                                @foreach($package['options'] as $optIndex => $option)
+                                                    <div class="bg-white border border-green-300 rounded p-2 mb-2">
+                                                        <div class="grid grid-cols-1 md:grid-cols-4 gap-2">
+                                                            <input type="text"
+                                                                   wire:model="seragamPackages.{{ $pkgIndex }}.options.{{ $optIndex }}.name"
+                                                                   placeholder="Nama Opsi (contoh: Semua dengan Jas)"
+                                                                   class="rounded border-gray-300 text-xs col-span-2">
+                                                            <input type="number"
+                                                                   wire:model="seragamPackages.{{ $pkgIndex }}.options.{{ $optIndex }}.amount"
+                                                                   placeholder="Harga (Rp)"
+                                                                   class="rounded border-gray-300 text-xs">
+                                                            <button type="button"
+                                                                    wire:click="removeSeragamPackageOption({{ $pkgIndex }}, {{ $optIndex }})"
+                                                                    wire:confirm="Yakin ingin menghapus opsi ini?"
+                                                                    class="text-red-600 hover:text-red-800 text-xs">
+                                                                Hapus
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            @endif
+
+                                            @if(!isset($package['options']) || count($package['options']) == 0)
+                                                <p class="text-xs text-gray-500 italic text-center py-2">Belum ada opsi. Klik "+ Tambah Opsi" untuk menambah.</p>
+                                            @endif
                                         </div>
                                     </div>
                                 @endforeach
+
+                                @if(count($seragamPackages) == 0)
+                                    <div class="text-center py-8 text-gray-500">
+                                        <svg class="w-12 h-12 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                                        </svg>
+                                        <p class="text-sm">Belum ada paket seragam</p>
+                                        <p class="text-xs mt-1">Klik "Tambah Paket" untuk membuat paket baru</p>
+                                    </div>
+                                @endif
                             </div>
 
-                            <!-- Nominal Biaya Seragam -->
-                            <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                                <div class="flex items-center justify-between mb-3">
-                                    <label class="block text-sm font-semibold text-green-900">Nominal Biaya Seragam</label>
-                                    <button type="button" wire:click="addSeragamNominal" class="text-xs bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700">+ Tambah</button>
-                                </div>
-
-                                <!-- Enable Opsi Lainnya Toggle -->
-                                <div class="mb-4 p-3 bg-white rounded-lg border border-green-300">
-                                    <label class="flex items-center">
-                                        <input type="checkbox" wire:model="seragamEnableOpsiLainnya" class="rounded border-gray-300 text-green-600">
-                                        <span class="ml-2 text-sm font-medium text-gray-700">Aktifkan Opsi "Lainnya" (Input Manual)</span>
-                                    </label>
-                                    <p class="text-xs text-gray-600 mt-1 ml-6">Jika diaktifkan, pendaftar dapat memilih "Opsi Lainnya" dan mengisi nominal pembayaran seragam secara manual.</p>
-                                </div>
-
-                                @foreach($seragamNominals as $index => $nominal)
-                                    <div class="bg-white border border-green-300 rounded-lg p-3 mb-2">
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                            <input type="text" wire:model="seragamNominals.{{ $index }}.name" placeholder="Nama biaya (contoh: Seragam Putih)" class="rounded border-gray-300 text-sm">
-                                            <input type="number" wire:model="seragamNominals.{{ $index }}.amount" placeholder="Nominal (Rp)" class="rounded border-gray-300 text-sm">
-                                            <button type="button"
-                                                    wire:click="removeSeragamNominal({{ $index }})"
-                                                    wire:confirm="Yakin ingin menghapus nominal seragam ini?"
-                                                    class="text-red-600 hover:text-red-800 text-sm">Hapus</button>
-                                        </div>
-                                    </div>
-                                @endforeach
+                            <!-- Checkbox: Aktifkan Opsi Lainnya untuk Dropdown Paket -->
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                                <label class="flex items-center">
+                                    <input type="checkbox"
+                                           wire:model="seragamPackagesEnableOpsiLainnya"
+                                           class="rounded border-gray-300 text-blue-600">
+                                    <span class="ml-2 text-sm font-semibold text-blue-900">
+                                        Aktifkan "Opsi Lainnya" untuk Dropdown Paket Seragam
+                                    </span>
+                                </label>
+                                <p class="text-xs text-blue-700 mt-2 ml-6">
+                                    Jika diaktifkan, pendaftar dapat memilih "Paket Lainnya" di dropdown dan mengisi nama paket secara manual (untuk paket yang tidak ada di daftar).
+                                </p>
                             </div>
 
-                            <!-- Opsi Nominal yang Dibayarkan -->
-                            <div class="bg-cyan-50 border border-cyan-200 rounded-lg p-4">
-                                <div class="flex items-center justify-between mb-3">
-                                    <label class="block text-sm font-semibold text-cyan-900">Opsi Nominal yang Dibayarkan</label>
-                                    <button type="button" wire:click="addSeragamPaymentNominal" class="text-xs bg-cyan-600 text-white px-3 py-1 rounded hover:bg-cyan-700">+ Tambah</button>
-                                </div>
-                                <p class="text-xs text-gray-600 mb-3">Opsi nominal yang muncul pada field konfirmasi nominal yang dibayarkan (terpisah dari nominal surat pernyataan)</p>
-
-                                @foreach($seragamPaymentNominals as $index => $nominal)
-                                    <div class="bg-white border border-cyan-300 rounded-lg p-3 mb-2">
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-                                            <input type="text" wire:model="seragamPaymentNominals.{{ $index }}.name" placeholder="Nama biaya (contoh: Seragam Putih)" class="rounded border-gray-300 text-sm">
-                                            <input type="number" wire:model="seragamPaymentNominals.{{ $index }}.amount" placeholder="Nominal (Rp)" class="rounded border-gray-300 text-sm">
-                                            <button type="button"
-                                                    wire:click="removeSeragamPaymentNominal({{ $index }})"
-                                                    wire:confirm="Yakin ingin menghapus opsi nominal ini?"
-                                                    class="text-red-600 hover:text-red-800 text-sm">Hapus</button>
-                                        </div>
-                                    </div>
-                                @endforeach
-
-                                <!-- Checkbox untuk Opsi Lainnya -->
-                                <div class="mt-4 pt-3 border-t border-cyan-300">
-                                    <label class="flex items-center">
-                                        <input type="checkbox" wire:model="seragamPaymentNominalsEnableOpsiLainnya" class="rounded border-gray-300 text-cyan-600">
-                                        <span class="ml-2 text-sm text-gray-700">Aktifkan Opsi "Lainnya" (Input Manual)</span>
-                                    </label>
-                                    <p class="text-xs text-gray-500 ml-6 mt-1">Jika diaktifkan, pendaftar dapat memilih "Opsi Lainnya" dan mengisi nominal pembayaran secara manual.</p>
-                                </div>
+                            <!-- Checkbox: Aktifkan Opsi Lainnya untuk Konfirmasi Nominal -->
+                            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                                <label class="flex items-center">
+                                    <input type="checkbox"
+                                           wire:model="seragamEnableOpsiLainnya"
+                                           class="rounded border-gray-300 text-yellow-600">
+                                    <span class="ml-2 text-sm font-semibold text-yellow-900">
+                                        Aktifkan "Opsi Lainnya" untuk Konfirmasi Nominal yang Dibayarkan
+                                    </span>
+                                </label>
+                                <p class="text-xs text-yellow-700 mt-2 ml-6">
+                                    Jika diaktifkan, pendaftar dapat memilih "Opsi Lainnya" untuk mengisi nominal pembayaran secara manual (misalnya untuk pembayaran tidak penuh/angsuran).
+                                </p>
                             </div>
 
                             <!-- Opsi Pembayaran Seragam -->
@@ -623,14 +751,29 @@
                             <!-- Waktu Pembayaran Seragam -->
                             <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
                                 <label class="block text-sm font-semibold text-indigo-900 mb-2">Waktu Pembayaran</label>
+                                <p class="text-xs text-indigo-700 mb-3">Tentukan waktu mulai dan berakhir pembayaran daftar ulang seragam (termasuk jam dan menit). Waktu ini juga berlaku untuk pengisian ukuran seragam.</p>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label class="block text-xs text-gray-700 mb-1">Tanggal Mulai</label>
-                                        <input type="date" wire:model="seragamPaymentStart" class="w-full rounded border-gray-300 text-sm">
+                                        <label class="block text-xs text-gray-700 mb-1">Waktu Mulai</label>
+                                        <input type="datetime-local" wire:model="seragamPaymentStart" class="w-full rounded border-gray-300 text-sm">
+                                        <p class="text-xs text-gray-500 mt-1">Format: Tanggal dan Waktu (24 jam)</p>
                                     </div>
                                     <div>
-                                        <label class="block text-xs text-gray-700 mb-1">Tanggal Berakhir</label>
-                                        <input type="date" wire:model="seragamPaymentEnd" class="w-full rounded border-gray-300 text-sm">
+                                        <label class="block text-xs text-gray-700 mb-1">Waktu Berakhir</label>
+                                        <input type="datetime-local" wire:model="seragamPaymentEnd" class="w-full rounded border-gray-300 text-sm">
+                                        <p class="text-xs text-gray-500 mt-1">Format: Tanggal dan Waktu (24 jam)</p>
+                                    </div>
+                                </div>
+                                <div class="mt-3 flex items-start p-3 bg-blue-100 border-l-4 border-blue-500 rounded">
+                                    <svg class="w-5 h-5 text-blue-600 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <div class="text-xs text-blue-800">
+                                        <p class="font-semibold mb-1">⚠️ Penting:</p>
+                                        <ul class="list-disc list-inside space-y-1">
+                                            <li>Waktu ini berlaku untuk tab <strong>Seragam</strong> dan tab <strong>Ukuran</strong></li>
+                                            <li>Jika di luar waktu yang ditentukan, kedua tab tidak akan dapat diakses oleh pendaftar</li>
+                                        </ul>
                                     </div>
                                 </div>
                             </div>
@@ -680,17 +823,39 @@
                                         <p class="text-xs text-purple-700 mt-1">Informasi ini akan ditampilkan di halaman pemilihan ukuran seragam pendaftar</p>
                                     </div>
                                 </div>
-                                <textarea
-                                    wire:model="ukuranInfo"
-                                    rows="4"
-                                    placeholder="Tulis informasi, pengumuman, atau petunjuk untuk pendaftar terkait pemilihan ukuran seragam..."
-                                    class="w-full rounded-lg border-purple-300 text-sm focus:border-purple-500 focus:ring-purple-500"
-                                ></textarea>
+                                <!-- Trix Rich Text Editor -->
+                                <div wire:ignore x-data="{ trixId: 'ukuran-info-{{ uniqid() }}' }" x-init="
+                                    $nextTick(() => {
+                                        const hiddenInput = document.getElementById(trixId);
+                                        const editor = document.querySelector(`trix-editor[input='${trixId}']`);
+
+                                        if (editor) {
+                                            // Set initial content from Livewire property
+                                            const initialContent = @js($ukuranInfo ?? '');
+                                            if (initialContent) {
+                                                editor.editor.loadHTML(initialContent);
+                                            }
+
+                                            // Listen for changes and sync to Livewire
+                                            editor.addEventListener('trix-change', function(e) {
+                                                @this.set('ukuranInfo', editor.value);
+                                            });
+                                        }
+                                    });
+                                ">
+                                    <input :id="trixId" type="hidden" name="ukuranInfo">
+                                    <trix-editor
+                                        :input="trixId"
+                                        class="trix-content rounded-lg border border-purple-300 shadow-sm focus-within:border-purple-500 focus-within:ring focus-within:ring-purple-200 focus-within:ring-opacity-50"
+                                        placeholder="Tulis informasi, pengumuman, atau petunjuk untuk pendaftar terkait pemilihan ukuran seragam..."
+                                    ></trix-editor>
+                                </div>
+
                                 <div class="mt-2 flex items-center text-xs text-purple-600">
                                     <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                                     </svg>
-                                    <span>Mendukung format HTML sederhana (bold, italic, list, dll)</span>
+                                    <span>Gunakan toolbar untuk format (Bold, Italic, Link, List, dll)</span>
                                 </div>
                             </div>
 
@@ -1046,18 +1211,24 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal yang Dibayar</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opsi Pembayaran</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bank/Metode</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pengirim</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bukti Pembayaran</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu Pembayaran</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi Opsi</th>
                             @elseif($activeTab == 'seragam')
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paket Seragam</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal Biaya</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal yang Dibayar</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ukuran Baju Harian</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Celana/Rok Harian</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opsi Pembayaran</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bank/Metode</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pengirim</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bukti Pembayaran</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu Pembayaran</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
+                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi Opsi</th>
                             @else
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ukuran Jas</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Baju Olahraga</th>
@@ -1282,6 +1453,16 @@
                                             <span class="text-xs text-gray-500">-</span>
                                         @endif
                                     </td>
+                                    <!-- Nama Pengirim -->
+                                    <td class="px-6 py-4">
+                                        @if($item->daftarUlang && $item->daftarUlang->nama_pengirim)
+                                            <div class="text-xs text-gray-900">
+                                                <span class="font-medium">{{ $item->daftarUlang->nama_pengirim }}</span>
+                                            </div>
+                                        @else
+                                            <span class="text-xs text-gray-500">-</span>
+                                        @endif
+                                    </td>
                                     <!-- Bukti Pembayaran -->
                                     <td class="px-6 py-4">
                                         @if($item->daftarUlang && $item->daftarUlang->bukti_pembayaran_madrasah)
@@ -1354,16 +1535,97 @@
                                             </div>
                                         </div>
                                     </td>
+
+                                    <!-- Aksi Opsi (Individual Toggles) - Madrasah -->
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col gap-3">
+                                            <!-- Toggle 1: Opsi Lainnya Dropdown -->
+                                            @php
+                                                $dropdownEnabled = false;
+                                                try {
+                                                    $dropdownEnabled = isset($item->daftarUlang->opsi_lainnya_dropdown_individual)
+                                                        && $item->daftarUlang->opsi_lainnya_dropdown_individual == true;
+                                                } catch (\Exception $e) {
+                                                    // Silently fail if column doesn't exist
+                                                }
+                                            @endphp
+                                            <div x-data="{
+                                                enabled: {{ $dropdownEnabled ? 'true' : 'false' }}
+                                            }" class="flex flex-col">
+                                                <label class="text-[10px] font-semibold text-gray-600 mb-1">Dropdown Opsi Lainnya</label>
+                                                <button
+                                                    @click="enabled = !enabled; $wire.toggleOpsiLainnyaDropdownIndividual({{ $item->id }}, 'madrasah')"
+                                                    type="button"
+                                                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                                    :class="enabled ? 'bg-blue-600' : 'bg-gray-200'"
+                                                    role="switch"
+                                                    :aria-checked="enabled">
+                                                    <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                                                          :class="enabled ? 'translate-x-5' : 'translate-x-0'"></span>
+                                                </button>
+                                                <span class="text-[9px] text-gray-500 mt-1" x-text="enabled ? 'Aktif untuk orang ini' : 'Tidak aktif'"></span>
+                                            </div>
+
+                                            <!-- Toggle 2: Opsi Lainnya Konfirmasi -->
+                                            @php
+                                                $konfirmasiEnabled = false;
+                                                try {
+                                                    $konfirmasiEnabled = isset($item->daftarUlang->opsi_lainnya_konfirmasi_individual)
+                                                        && $item->daftarUlang->opsi_lainnya_konfirmasi_individual == true;
+                                                } catch (\Exception $e) {
+                                                    // Silently fail if column doesn't exist
+                                                }
+                                            @endphp
+                                            <div x-data="{
+                                                enabled: {{ $konfirmasiEnabled ? 'true' : 'false' }}
+                                            }" class="flex flex-col">
+                                                <label class="text-[10px] font-semibold text-gray-600 mb-1">Konfirmasi Opsi Lainnya</label>
+                                                <button
+                                                    @click="enabled = !enabled; $wire.toggleOpsiLainnyaKonfirmasiIndividual({{ $item->id }}, 'madrasah')"
+                                                    type="button"
+                                                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                                                    :class="enabled ? 'bg-emerald-600' : 'bg-gray-200'"
+                                                    role="switch"
+                                                    :aria-checked="enabled">
+                                                    <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                                                          :class="enabled ? 'translate-x-5' : 'translate-x-0'"></span>
+                                                </button>
+                                                <span class="text-[9px] text-gray-500 mt-1" x-text="enabled ? 'Aktif untuk orang ini' : 'Tidak aktif'"></span>
+                                            </div>
+                                        </div>
+                                    </td>
                                 @elseif($activeTab == 'seragam')
                                     <!-- Paket Seragam -->
                                     <td class="px-6 py-4">
-                                        @if($item->seragam && $item->seragam->paket_seragam)
+                                        @php
+                                            $paketSeragamData = null;
+                                            if ($item->seragam && $item->seragam->paket_seragam) {
+                                                if (is_string($item->seragam->paket_seragam) && $item->seragam->paket_seragam !== 'paket_lainnya') {
+                                                    $paketSeragamData = json_decode($item->seragam->paket_seragam, true);
+                                                } elseif (is_array($item->seragam->paket_seragam)) {
+                                                    $paketSeragamData = $item->seragam->paket_seragam;
+                                                }
+                                            }
+                                        @endphp
+
+                                        @if($paketSeragamData && isset($paketSeragamData['name']))
                                             <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">
+                                                {{ $paketSeragamData['name'] }}
+                                            </span>
+                                            @if(isset($paketSeragamData['description']) && $paketSeragamData['description'])
+                                                <div class="text-xs text-gray-600 mt-1">{{ $paketSeragamData['description'] }}</div>
+                                            @endif
+                                        @elseif($item->seragam && $item->seragam->paket_seragam === 'paket_lainnya')
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                {{ $item->seragam->paket_seragam_custom_name ?? 'Paket Lainnya' }}
+                                            </span>
+                                            @if($item->seragam->paket_seragam_custom_amount)
+                                                <div class="text-xs text-gray-600 mt-1">Rp {{ number_format($item->seragam->paket_seragam_custom_amount, 0, ',', '.') }}</div>
+                                            @endif
+                                        @elseif($item->seragam && $item->seragam->paket_seragam)
+                                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                                 {{ $item->seragam->paket_seragam }}
                                             </span>
-                                            @if($item->seragam->paket_description)
-                                                <div class="text-xs text-gray-600 mt-1">{{ $item->seragam->paket_description }}</div>
-                                            @endif
                                         @else
                                             <span class="text-xs text-gray-500">Belum dipilih</span>
                                         @endif
@@ -1392,6 +1654,26 @@
                                             <span class="text-xs text-gray-500">Belum konfirmasi</span>
                                         @endif
                                     </td>
+                                    <!-- Ukuran Baju Seragam Harian -->
+                                    <td class="px-6 py-4">
+                                        @if($item->seragam && $item->seragam->ukuran_baju_harian)
+                                            <span class="px-2 py-1 inline-flex text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                                {{ $item->seragam->ukuran_baju_harian }}
+                                            </span>
+                                        @else
+                                            <span class="text-xs text-gray-500">-</span>
+                                        @endif
+                                    </td>
+                                    <!-- Celana/Rok Seragam Harian -->
+                                    <td class="px-6 py-4">
+                                        @if($item->seragam && $item->seragam->ukuran_celana_rok_harian)
+                                            <span class="px-2 py-1 inline-flex text-xs font-semibold rounded-full bg-teal-100 text-teal-800">
+                                                {{ $item->seragam->ukuran_celana_rok_harian }}
+                                            </span>
+                                        @else
+                                            <span class="text-xs text-gray-500">-</span>
+                                        @endif
+                                    </td>
                                     <!-- Opsi Pembayaran -->
                                     <td class="px-6 py-4">
                                         @if($item->seragam && $item->seragam->opsi_pembayaran_seragam)
@@ -1407,6 +1689,16 @@
                                         @if($item->seragam && $item->seragam->bank_seragam)
                                             <div class="text-xs text-gray-900">
                                                 <span class="font-medium">{{ $item->seragam->bank_seragam }}</span>
+                                            </div>
+                                        @else
+                                            <span class="text-xs text-gray-500">-</span>
+                                        @endif
+                                    </td>
+                                    <!-- Nama Pengirim -->
+                                    <td class="px-6 py-4">
+                                        @if($item->seragam && $item->seragam->nama_pengirim)
+                                            <div class="text-xs text-gray-900">
+                                                <span class="font-medium">{{ $item->seragam->nama_pengirim }}</span>
                                             </div>
                                         @else
                                             <span class="text-xs text-gray-500">-</span>
@@ -1481,6 +1773,65 @@
                                                     </svg>
                                                     Internal
                                                 </button>
+                                            </div>
+                                        </div>
+                                    </td>
+
+                                    <!-- Aksi Opsi (Individual Toggles) - Seragam -->
+                                    <td class="px-6 py-4">
+                                        <div class="flex flex-col gap-3">
+                                            <!-- Toggle 1: Opsi Lainnya Dropdown -->
+                                            @php
+                                                $dropdownEnabledSeragam = false;
+                                                try {
+                                                    $dropdownEnabledSeragam = isset($item->seragam->opsi_lainnya_dropdown_individual)
+                                                        && $item->seragam->opsi_lainnya_dropdown_individual == true;
+                                                } catch (\Exception $e) {
+                                                    // Silently fail if column doesn't exist
+                                                }
+                                            @endphp
+                                            <div x-data="{
+                                                enabled: {{ $dropdownEnabledSeragam ? 'true' : 'false' }}
+                                            }" class="flex flex-col">
+                                                <label class="text-[10px] font-semibold text-gray-600 mb-1">Dropdown Opsi Lainnya</label>
+                                                <button
+                                                    @click="enabled = !enabled; $wire.toggleOpsiLainnyaDropdownIndividual({{ $item->id }}, 'seragam')"
+                                                    type="button"
+                                                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                                    :class="enabled ? 'bg-blue-600' : 'bg-gray-200'"
+                                                    role="switch"
+                                                    :aria-checked="enabled">
+                                                    <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                                                          :class="enabled ? 'translate-x-5' : 'translate-x-0'"></span>
+                                                </button>
+                                                <span class="text-[9px] text-gray-500 mt-1" x-text="enabled ? 'Aktif untuk orang ini' : 'Tidak aktif'"></span>
+                                            </div>
+
+                                            <!-- Toggle 2: Opsi Lainnya Konfirmasi -->
+                                            @php
+                                                $konfirmasiEnabledSeragam = false;
+                                                try {
+                                                    $konfirmasiEnabledSeragam = isset($item->seragam->opsi_lainnya_konfirmasi_individual)
+                                                        && $item->seragam->opsi_lainnya_konfirmasi_individual == true;
+                                                } catch (\Exception $e) {
+                                                    // Silently fail if column doesn't exist
+                                                }
+                                            @endphp
+                                            <div x-data="{
+                                                enabled: {{ $konfirmasiEnabledSeragam ? 'true' : 'false' }}
+                                            }" class="flex flex-col">
+                                                <label class="text-[10px] font-semibold text-gray-600 mb-1">Konfirmasi Opsi Lainnya</label>
+                                                <button
+                                                    @click="enabled = !enabled; $wire.toggleOpsiLainnyaKonfirmasiIndividual({{ $item->id }}, 'seragam')"
+                                                    type="button"
+                                                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                                                    :class="enabled ? 'bg-emerald-600' : 'bg-gray-200'"
+                                                    role="switch"
+                                                    :aria-checked="enabled">
+                                                    <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                                                          :class="enabled ? 'translate-x-5' : 'translate-x-0'"></span>
+                                                </button>
+                                                <span class="text-[9px] text-gray-500 mt-1" x-text="enabled ? 'Aktif untuk orang ini' : 'Tidak aktif'"></span>
                                             </div>
                                         </div>
                                     </td>

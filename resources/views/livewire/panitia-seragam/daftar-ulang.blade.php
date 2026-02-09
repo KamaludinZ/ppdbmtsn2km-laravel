@@ -43,14 +43,25 @@
                     </svg>
                     Ukuran Seragam & Atribut
                 </button>
+                <button
+                    wire:click="switchTab('settings')"
+                    class="group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm {{ $activeTab === 'settings' ? 'border-purple-500 text-purple-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                    <svg class="w-5 h-5 mr-2 {{ $activeTab === 'settings' ? 'text-purple-500' : 'text-gray-400 group-hover:text-gray-500' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                    </svg>
+                    Pengaturan
+                </button>
             </nav>
         </div>
     </div>
 
-    {{-- Stats Overview --}}
-    @include('livewire.admin.partials.daftar-ulang-stats', ['stats' => $stats, 'tab' => $activeTab])
+    {{-- Content for Seragam and Ukuran Tabs --}}
+    @if($activeTab !== 'settings')
+        {{-- Stats Overview --}}
+        @include('livewire.admin.partials.daftar-ulang-stats', ['stats' => $stats, 'tab' => $activeTab])
 
-    {{-- Filters --}}
+        {{-- Filters --}}
     <div class="bg-white rounded-lg shadow mb-6 p-6">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             {{-- Search --}}
@@ -149,6 +160,9 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kopyah (L)</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
                         @endif
+                        @if($activeTab === 'seragam')
+                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi Opsi</th>
+                        @endif
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ubah Status</th>
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi Pesan</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Riwayat Pesan</th>
@@ -216,13 +230,35 @@
                             @if($activeTab === 'seragam')
                                 <!-- Paket Seragam -->
                                 <td class="px-6 py-4">
-                                    @if($item->seragam && $item->seragam->paket_seragam)
+                                    @php
+                                        $paketSeragamData = null;
+                                        if ($item->seragam && $item->seragam->paket_seragam) {
+                                            if (is_string($item->seragam->paket_seragam) && $item->seragam->paket_seragam !== 'paket_lainnya') {
+                                                $paketSeragamData = json_decode($item->seragam->paket_seragam, true);
+                                            } elseif (is_array($item->seragam->paket_seragam)) {
+                                                $paketSeragamData = $item->seragam->paket_seragam;
+                                            }
+                                        }
+                                    @endphp
+
+                                    @if($paketSeragamData && isset($paketSeragamData['name']))
                                         <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-cyan-100 text-cyan-800">
+                                            {{ $paketSeragamData['name'] }}
+                                        </span>
+                                        @if(isset($paketSeragamData['description']) && $paketSeragamData['description'])
+                                            <div class="text-xs text-gray-600 mt-1">{{ $paketSeragamData['description'] }}</div>
+                                        @endif
+                                    @elseif($item->seragam && $item->seragam->paket_seragam === 'paket_lainnya')
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            {{ $item->seragam->paket_seragam_custom_name ?? 'Paket Lainnya' }}
+                                        </span>
+                                        @if($item->seragam->paket_seragam_custom_amount)
+                                            <div class="text-xs text-gray-600 mt-1">Rp {{ number_format($item->seragam->paket_seragam_custom_amount, 0, ',', '.') }}</div>
+                                        @endif
+                                    @elseif($item->seragam && $item->seragam->paket_seragam)
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                             {{ $item->seragam->paket_seragam }}
                                         </span>
-                                        @if($item->seragam->paket_description)
-                                            <div class="text-xs text-gray-600 mt-1">{{ $item->seragam->paket_description }}</div>
-                                        @endif
                                     @else
                                         <span class="text-xs text-gray-500">Belum dipilih</span>
                                     @endif
@@ -408,6 +444,67 @@
                                 </td>
                             @endif
 
+                            <!-- Aksi Opsi (Individual Toggles) - Seragam Only -->
+                            @if($activeTab === 'seragam')
+                                <td class="px-6 py-4">
+                                    <div class="flex flex-col gap-3">
+                                        <!-- Toggle 1: Opsi Lainnya Dropdown -->
+                                        @php
+                                            $dropdownEnabled = false;
+                                            try {
+                                                $dropdownEnabled = isset($item->seragam->opsi_lainnya_dropdown_individual)
+                                                    && $item->seragam->opsi_lainnya_dropdown_individual == true;
+                                            } catch (\Exception $e) {
+                                                // Silently fail if column doesn't exist
+                                            }
+                                        @endphp
+                                        <div x-data="{
+                                            enabled: {{ $dropdownEnabled ? 'true' : 'false' }}
+                                        }" class="flex flex-col">
+                                            <label class="text-[10px] font-semibold text-gray-600 mb-1">Dropdown Opsi Lainnya</label>
+                                            <button
+                                                @click="enabled = !enabled; $wire.toggleOpsiLainnyaDropdownIndividual({{ $item->id }}, '{{ $activeTab }}')"
+                                                type="button"
+                                                class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                                                :class="enabled ? 'bg-blue-600' : 'bg-gray-200'"
+                                                role="switch"
+                                                :aria-checked="enabled">
+                                                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                                                      :class="enabled ? 'translate-x-5' : 'translate-x-0'"></span>
+                                            </button>
+                                            <span class="text-[9px] text-gray-500 mt-1" x-text="enabled ? 'Aktif untuk orang ini' : 'Tidak aktif'"></span>
+                                        </div>
+
+                                        <!-- Toggle 2: Opsi Lainnya Konfirmasi -->
+                                        @php
+                                            $konfirmasiEnabled = false;
+                                            try {
+                                                $konfirmasiEnabled = isset($item->seragam->opsi_lainnya_konfirmasi_individual)
+                                                    && $item->seragam->opsi_lainnya_konfirmasi_individual == true;
+                                            } catch (\Exception $e) {
+                                                // Silently fail if column doesn't exist
+                                            }
+                                        @endphp
+                                        <div x-data="{
+                                            enabled: {{ $konfirmasiEnabled ? 'true' : 'false' }}
+                                        }" class="flex flex-col">
+                                            <label class="text-[10px] font-semibold text-gray-600 mb-1">Konfirmasi Opsi Lainnya</label>
+                                            <button
+                                                @click="enabled = !enabled; $wire.toggleOpsiLainnyaKonfirmasiIndividual({{ $item->id }}, '{{ $activeTab }}')"
+                                                type="button"
+                                                class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2"
+                                                :class="enabled ? 'bg-emerald-600' : 'bg-gray-200'"
+                                                role="switch"
+                                                :aria-checked="enabled">
+                                                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
+                                                      :class="enabled ? 'translate-x-5' : 'translate-x-0'"></span>
+                                            </button>
+                                            <span class="text-[9px] text-gray-500 mt-1" x-text="enabled ? 'Aktif untuk orang ini' : 'Tidak aktif'"></span>
+                                        </div>
+                                    </div>
+                                </td>
+                            @endif
+
                             <!-- Ubah Status -->
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <div class="flex items-center justify-center gap-2">
@@ -549,6 +646,12 @@
             {{ $pendaftar->links() }}
         </div>
     </div>
+    @endif
+
+    {{-- Content for Settings Tab --}}
+    @if($activeTab === 'settings')
+        @include('livewire.panitia-seragam.partials.settings-tab')
+    @endif
 
     {{-- Send Message Modal --}}
     @include('livewire.admin.partials.send-message-modal')

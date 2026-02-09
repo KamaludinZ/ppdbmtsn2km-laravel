@@ -69,6 +69,11 @@ class TesPsikologi extends Component
     public $verificationStatus = null;
     public $verificationNote = '';
 
+    // Edit Catatan Psikologi modal
+    public $showCatatanModal = false;
+    public $editingCatatanId = null;
+    public $catatanPsikologi = '';
+
     // Message modal (simple notification)
     public $showMessageModal = false;
     public $messagingId = null;
@@ -701,6 +706,38 @@ class TesPsikologi extends Component
         session()->flash('message', "Bukti pembayaran berhasil {$statusLabel}.");
 
         $this->closeVerificationModal();
+    }
+
+    public function openCatatanModal($id)
+    {
+        $tesPsikologi = TesPsikologiPendaftar::findOrFail($id);
+        $this->editingCatatanId = $id;
+        $this->catatanPsikologi = $tesPsikologi->catatan_psikologi ?? '';
+        $this->showCatatanModal = true;
+    }
+
+    public function saveCatatan()
+    {
+        $this->validate([
+            'catatanPsikologi' => 'nullable|string|max:1000',
+        ]);
+
+        $tesPsikologi = TesPsikologiPendaftar::findOrFail($this->editingCatatanId);
+
+        $tesPsikologi->update([
+            'catatan_psikologi' => $this->catatanPsikologi,
+        ]);
+
+        session()->flash('message', 'Catatan psikologi berhasil disimpan.');
+
+        $this->closeCatatanModal();
+    }
+
+    public function closeCatatanModal()
+    {
+        $this->showCatatanModal = false;
+        $this->editingCatatanId = null;
+        $this->catatanPsikologi = '';
     }
 
     public function changeStatus($id, $status)

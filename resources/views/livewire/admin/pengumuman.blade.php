@@ -183,32 +183,47 @@
                                         <label class="block text-sm font-medium text-gray-700 mb-1">
                                             Isi Pengumuman <span class="text-red-500">*</span>
                                         </label>
-                                        <textarea
-                                            wire:model="konten"
-                                            rows="10"
-                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 resize-y font-mono"
-                                            placeholder="Tulis detail pengumuman di sini...
 
-Contoh formatting:
-*PENTING* untuk segera melakukan verifikasi dokumen.
-Link pendaftaran: https://ppdb.mtsn2kotamalang.sch.id
-Silakan hubungi _panitia_ jika ada pertanyaan."
-                                        ></textarea>
+                                        <!-- Trix Rich Text Editor -->
+                                        <div wire:ignore x-data="{ trixId: 'konten-{{ $pengumuman_id ?? uniqid() }}' }" x-init="
+                                            // Wait for Trix to be ready
+                                            $nextTick(() => {
+                                                const hiddenInput = document.getElementById(trixId);
+                                                const editor = document.querySelector(`trix-editor[input='${trixId}']`);
 
-                                        <!-- Panduan Formatting -->
-                                        <div class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                                if (editor) {
+                                                    // Set initial content
+                                                    editor.editor.loadHTML('{{ addslashes($konten) }}');
+
+                                                    // Listen for changes
+                                                    editor.addEventListener('trix-change', function(e) {
+                                                        @this.set('konten', editor.value);
+                                                    });
+                                                }
+                                            });
+                                        ">
+                                            <input :id="trixId" type="hidden" name="konten" value="{{ $konten }}">
+                                            <trix-editor
+                                                :input="trixId"
+                                                class="trix-content rounded-lg border border-gray-300 shadow-sm focus-within:border-emerald-500 focus-within:ring focus-within:ring-emerald-200 focus-within:ring-opacity-50"
+                                                placeholder="Tulis detail pengumuman di sini dengan format yang lebih kaya..."
+                                            ></trix-editor>
+                                        </div>
+
+                                        <!-- Info Helper -->
+                                        <div class="mt-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
                                             <div class="flex items-start">
-                                                <svg class="w-4 h-4 text-blue-600 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                <svg class="w-4 h-4 text-emerald-600 mr-2 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                                                 </svg>
-                                                <div class="flex-1 text-xs text-blue-800">
-                                                    <p class="font-semibold mb-1">Panduan Formatting:</p>
+                                                <div class="flex-1 text-xs text-emerald-800">
+                                                    <p class="font-semibold mb-1">Editor dengan Format Kaya:</p>
                                                     <ul class="space-y-1">
-                                                        <li>• <span class="font-mono bg-blue-100 px-1 rounded">*teks*</span> → <strong>teks tebal</strong></li>
-                                                        <li>• <span class="font-mono bg-blue-100 px-1 rounded">_teks_</span> → <em>teks miring</em></li>
-                                                        <li>• Tulis URL lengkap (https://...) untuk membuat link yang bisa diklik</li>
-                                                        <li>• Tekan Enter 2x untuk membuat paragraf baru</li>
-                                                        <li>• Tekan Enter 1x untuk pindah baris</li>
+                                                        <li>• Gunakan toolbar di atas untuk format teks (Bold, Italic, Link, dll)</li>
+                                                        <li>• Klik ikon <strong>B</strong> untuk teks tebal, <em>I</em> untuk miring</li>
+                                                        <li>• Klik ikon 🔗 untuk membuat link yang bisa diklik</li>
+                                                        <li>• Klik ikon bullet/number untuk membuat list</li>
+                                                        <li>• Format akan otomatis tersimpan sebagai HTML</li>
                                                     </ul>
                                                 </div>
                                             </div>

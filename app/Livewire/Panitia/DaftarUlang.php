@@ -55,20 +55,37 @@ class DaftarUlang extends Component
     public $catatanInternalPendaftarId = null;
     public $catatanInternalText = '';
 
-    // MADRASAH SETTINGS (Panitia Daftar Ulang fokus ke Madrasah saja)
+    // Tab navigation
+    public $activeTab = 'madrasah';
+
+    // Query string bindings for URL
+    protected $queryString = [
+        'activeTab' => ['except' => 'madrasah'],
+        'search' => ['except' => ''],
+        'filterStatus' => ['except' => ''],
+        'filterJalur' => ['except' => ''],
+    ];
+
+    // Settings variables (Panitia Daftar Ulang fokus ke Madrasah saja)
     public $madrasahContent = '';
-    public $nominalsMadrasah = [];
-    public $nominalBayarMadrasah = '';
-    public $banksMadrasah = [];
-    public $bankMadrasah = '';
-    public $templateSuratMadrasah = null;
-    public $templateEmailMadrasah = '';
-    public $templateWaMadrasah = '';
-    public $imageMadrasah = null;
-    public $currentImageMadrasah = '';
-    public $paymentInfoText = '';
+    public $madrasahInfo = '';  // Informasi untuk pendaftar - Madrasah
+    public $paymentInfoText = ''; // Informasi Pembayaran untuk semua halaman daftar ulang
     public $showPernyataan = true;
     public $showPembayaranMadrasah = true;
+
+    // Madrasah Settings
+    public $madrasahTemplateSuratPernyataan = null;
+    public $existingMadrasahTemplate = null;
+    public $madrasahPackages = []; // Hierarchical: packages with options and prices (NEW - replaces madrasahNominals & madrasahPaymentNominals)
+    public $madrasahNominals = []; // DEPRECATED: Untuk surat pernyataan (backward compatibility)
+    public $madrasahPaymentNominals = []; // DEPRECATED: Untuk konfirmasi nominal yang dibayarkan (backward compatibility)
+    public $madrasahPaymentOptions = ['lunas' => false, 'angsuran' => false, 'potongan' => false];
+    public $madrasahBanks = [];
+    public $madrasahPaymentStart = null;
+    public $madrasahPaymentEnd = null;
+    public $madrasahRequirePaymentProof = false;
+    public $madrasahEnableOpsiLainnya = false; // For manual input in konfirmasi nominal (unified)
+    public $madrasahPackagesEnableOpsiLainnya = false; // For manual input in dropdown paket
 
     public function mount()
     {
@@ -78,21 +95,30 @@ class DaftarUlang extends Component
         }
 
         // Load MADRASAH settings only (Panitia Daftar Ulang fokus ke Madrasah)
+        $this->loadSettings();
+    }
+
+    protected function loadSettings()
+    {
+        // Text & Boolean Settings
         $this->madrasahContent = \App\Models\Setting::get('daftar_ulang_madrasah_content', '');
-
-        // Setting::get() already handles JSON decode, no need for json_decode()
-        $nominals = \App\Models\Setting::get('daftar_ulang_madrasah_nominals', []);
-        $this->nominalsMadrasah = is_array($nominals) ? $nominals : [];
-
-        $banks = \App\Models\Setting::get('daftar_ulang_madrasah_banks', []);
-        $this->banksMadrasah = is_array($banks) ? $banks : [];
-
-        $this->templateEmailMadrasah = \App\Models\Setting::get('daftar_ulang_madrasah_template_email', '');
-        $this->templateWaMadrasah = \App\Models\Setting::get('daftar_ulang_madrasah_template_wa', '');
-        $this->currentImageMadrasah = \App\Models\Setting::get('daftar_ulang_madrasah_image', '');
+        $this->madrasahInfo = \App\Models\Setting::get('daftar_ulang_madrasah_info', '');
         $this->paymentInfoText = \App\Models\Setting::get('daftar_ulang_payment_info_text', 'Pembayaran disesuaikan dengan kemampuan orang tua/wali. Apabila ingin berkomunikasi perihal kompensasi waktu/biaya/lainnya lebih lanjut, dapat dibicarakan dengan komite madrasah untuk menemukan solusi secara kesepakatan bersama. Waktu sesuai jadwal yang disampaikan oleh pihak komite madrasah.');
         $this->showPernyataan = \App\Models\Setting::get('daftar_ulang_show_pernyataan', true);
         $this->showPembayaranMadrasah = \App\Models\Setting::get('daftar_ulang_show_pembayaran_madrasah', true);
+
+        // Madrasah JSON/Array Settings
+        $this->existingMadrasahTemplate = \App\Models\Setting::get('daftar_ulang_madrasah_template');
+        $this->madrasahPackages = \App\Models\Setting::get('daftar_ulang_madrasah_packages', []); // NEW: Load hierarchical packages
+        $this->madrasahNominals = \App\Models\Setting::get('daftar_ulang_madrasah_nominals', []); // DEPRECATED: backward compatibility
+        $this->madrasahPaymentNominals = \App\Models\Setting::get('daftar_ulang_madrasah_payment_nominals', []); // DEPRECATED: backward compatibility
+        $this->madrasahPaymentOptions = \App\Models\Setting::get('daftar_ulang_madrasah_payment_options', ['lunas' => false, 'angsuran' => false, 'potongan' => false]);
+        $this->madrasahBanks = \App\Models\Setting::get('daftar_ulang_madrasah_banks', []);
+        $this->madrasahPaymentStart = \App\Models\Setting::get('daftar_ulang_madrasah_payment_start');
+        $this->madrasahPaymentEnd = \App\Models\Setting::get('daftar_ulang_madrasah_payment_end');
+        $this->madrasahRequirePaymentProof = \App\Models\Setting::get('daftar_ulang_madrasah_require_payment_proof', false);
+        $this->madrasahEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_madrasah_enable_opsi_lainnya', false);
+        $this->madrasahPackagesEnableOpsiLainnya = \App\Models\Setting::get('daftar_ulang_madrasah_packages_enable_opsi_lainnya', false);
     }
 
     // Message Methods
@@ -239,14 +265,25 @@ class DaftarUlang extends Component
 
         $pendaftar = $this->applySorting($query)->paginate(10);
 
-        // Calculate stats for madrasah
-        $allPendaftar = Pendaftar::with(['daftarUlang', 'pembayaran', 'seragam'])
-            ->whereIn('status_pendaftaran', ['data_disetujui', 'lulus', 'diterima'])
-            ->get();
+        // Calculate stats based on active tab (same pattern as Admin)
+        // Get ALL pendaftar for total count (no status filter for stats)
+        $allPendaftar = Pendaftar::with(['daftarUlang', 'pembayaran', 'seragam'])->get();
 
+        // Get only lulus pendaftar for lulus count
+        $lulusPendaftar = $allPendaftar->filter(function($p) {
+            return in_array($p->status_pendaftaran, ['lulus', 'diterima']);
+        });
+
+        // Panitia Daftar Ulang only handles madrasah tab
         $stats = [
-            // Total pendaftar lulus
-            'total_lulus' => $allPendaftar->count(),
+            // Total ALL pendaftar
+            'total_pendaftar' => $allPendaftar->count(),
+
+            // Total pendaftar lulus (from kelulusan menu)
+            'lulus' => $lulusPendaftar->count(),
+
+            // Backward compatibility
+            'total_lulus' => $lulusPendaftar->count(),
 
             // Status persetujuan daftar ulang (dari pendaftar.status_persetujuan_daftar_ulang)
             'setuju' => $allPendaftar->filter(function($p) {
@@ -267,7 +304,7 @@ class DaftarUlang extends Component
                 return $p->daftarUlang && $p->daftarUlang->status === 'ditolak';
             })->count(),
             'perlu_perbaikan' => $allPendaftar->filter(function($p) {
-                return $p->daftarUlang && $p->daftarUlang->status === 'perlu_perbaikan';
+                return $p->daftarUlang && $p->daftarUlang->status === 'perbaiki';
             })->count(),
 
             // Status upload surat pernyataan
@@ -295,6 +332,113 @@ class DaftarUlang extends Component
     public function switchTab($tab)
     {
         $this->activeTab = $tab;
+    }
+
+    // ========== MADRASAH SETTINGS METHODS ==========
+    public function addMadrasahPackage()
+    {
+        $this->madrasahPackages[] = [
+            'id' => 'pkg_' . uniqid(),
+            'name' => '',
+            'description' => '',
+            'options' => []
+        ];
+    }
+
+    /**
+     * Remove madrasah package by index
+     */
+    public function removeMadrasahPackage($index)
+    {
+        unset($this->madrasahPackages[$index]);
+        $this->madrasahPackages = array_values($this->madrasahPackages);
+    }
+
+    /**
+     * Add option to a specific madrasah package
+     */
+    public function addMadrasahPackageOption($packageIndex)
+    {
+        if (!isset($this->madrasahPackages[$packageIndex]['options'])) {
+            $this->madrasahPackages[$packageIndex]['options'] = [];
+        }
+
+        $this->madrasahPackages[$packageIndex]['options'][] = [
+            'id' => 'opt_' . uniqid(),
+            'name' => '',
+            'amount' => ''
+        ];
+    }
+
+    /**
+     * Remove option from a specific madrasah package
+     */
+    public function removeMadrasahPackageOption($packageIndex, $optionIndex)
+    {
+        unset($this->madrasahPackages[$packageIndex]['options'][$optionIndex]);
+        $this->madrasahPackages[$packageIndex]['options'] = array_values($this->madrasahPackages[$packageIndex]['options']);
+    }
+
+    // DEPRECATED: Old flat structure methods (kept for backward compatibility, but not used in new UI)
+    public function addMadrasahNominal()
+    {
+        $this->madrasahNominals[] = ['name' => '', 'amount' => ''];
+    }
+
+    public function removeMadrasahNominal($index)
+    {
+        unset($this->madrasahNominals[$index]);
+        $this->madrasahNominals = array_values($this->madrasahNominals);
+    }
+
+    public function addMadrasahPaymentNominal()
+    {
+        $this->madrasahPaymentNominals[] = ['name' => '', 'amount' => ''];
+    }
+
+    public function removeMadrasahPaymentNominal($index)
+    {
+        unset($this->madrasahPaymentNominals[$index]);
+        $this->madrasahPaymentNominals = array_values($this->madrasahPaymentNominals);
+    }
+
+    public function addMadrasahBank()
+    {
+        $this->madrasahBanks[] = ['name' => ''];
+    }
+
+    public function removeMadrasahBank($index)
+    {
+        unset($this->madrasahBanks[$index]);
+        $this->madrasahBanks = array_values($this->madrasahBanks);
+    }
+
+    public function saveMadrasahSettings()
+    {
+        // Handle Template Upload
+        if ($this->madrasahTemplateSuratPernyataan) {
+            $path = $this->madrasahTemplateSuratPernyataan->store('templates', 'public');
+            \App\Models\Setting::set('daftar_ulang_madrasah_template', $path);
+            $this->existingMadrasahTemplate = $path;
+            $this->madrasahTemplateSuratPernyataan = null;
+        }
+
+        // Save settings (NEW: hierarchical packages)
+        \App\Models\Setting::set('daftar_ulang_madrasah_info', $this->madrasahInfo);
+        \App\Models\Setting::set('daftar_ulang_madrasah_packages', $this->madrasahPackages, 'json'); // NEW: Save hierarchical packages
+        \App\Models\Setting::set('daftar_ulang_madrasah_payment_options', $this->madrasahPaymentOptions, 'json');
+        \App\Models\Setting::set('daftar_ulang_madrasah_banks', $this->madrasahBanks, 'json');
+        \App\Models\Setting::set('daftar_ulang_madrasah_payment_start', $this->madrasahPaymentStart);
+        \App\Models\Setting::set('daftar_ulang_madrasah_payment_end', $this->madrasahPaymentEnd);
+        \App\Models\Setting::set('daftar_ulang_madrasah_require_payment_proof', $this->madrasahRequirePaymentProof, 'boolean');
+        \App\Models\Setting::set('daftar_ulang_madrasah_enable_opsi_lainnya', $this->madrasahEnableOpsiLainnya, 'boolean'); // Unified flag for konfirmasi nominal
+        \App\Models\Setting::set('daftar_ulang_madrasah_packages_enable_opsi_lainnya', $this->madrasahPackagesEnableOpsiLainnya, 'boolean'); // Flag for dropdown paket
+
+        // DEPRECATED: Old flat structures (kept for backward compatibility)
+        \App\Models\Setting::set('daftar_ulang_madrasah_nominals', $this->madrasahNominals, 'json');
+        \App\Models\Setting::set('daftar_ulang_madrasah_payment_nominals', $this->madrasahPaymentNominals, 'json');
+
+        $this->dispatch('saved', message: 'Pengaturan daftar ulang madrasah berhasil disimpan.');
     }
 
     public function prepareVerification($pendaftarId, $documentType = null, $paymentType = null)
@@ -771,6 +915,78 @@ class DaftarUlang extends Component
 
         } catch (\Exception $e) {
             $this->dispatch('saved', message: 'Gagal mengubah status persetujuan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Toggle Opsi Lainnya Dropdown Individual per Pendaftar
+     * Allows panitia to enable "Opsi Lainnya" in dropdown for specific pendaftar
+     */
+    public function toggleOpsiLainnyaDropdownIndividual($pendaftarId, $tab)
+    {
+        try {
+            if ($tab === 'madrasah') {
+                $daftarUlang = DaftarUlangModel::firstOrCreate(
+                    ['pendaftar_id' => $pendaftarId],
+                    ['opsi_lainnya_dropdown_individual' => false]
+                );
+
+                $newValue = !$daftarUlang->opsi_lainnya_dropdown_individual;
+                $daftarUlang->update(['opsi_lainnya_dropdown_individual' => $newValue]);
+
+                $statusText = $newValue ? 'diaktifkan' : 'dinonaktifkan';
+                $this->dispatch('saved', message: "Opsi Lainnya Dropdown (Madrasah) untuk pendaftar ini berhasil {$statusText}.");
+            }
+            elseif ($tab === 'seragam') {
+                $seragam = Seragam::firstOrCreate(
+                    ['pendaftar_id' => $pendaftarId],
+                    ['opsi_lainnya_dropdown_individual' => false]
+                );
+
+                $newValue = !$seragam->opsi_lainnya_dropdown_individual;
+                $seragam->update(['opsi_lainnya_dropdown_individual' => $newValue]);
+
+                $statusText = $newValue ? 'diaktifkan' : 'dinonaktifkan';
+                $this->dispatch('saved', message: "Opsi Lainnya Dropdown (Seragam) untuk pendaftar ini berhasil {$statusText}.");
+            }
+        } catch (\Exception $e) {
+            $this->dispatch('saved', message: 'Gagal mengubah toggle: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Toggle Opsi Lainnya Konfirmasi Individual per Pendaftar
+     * Allows panitia to enable "Opsi Lainnya" in konfirmasi nominal for specific pendaftar
+     */
+    public function toggleOpsiLainnyaKonfirmasiIndividual($pendaftarId, $tab)
+    {
+        try {
+            if ($tab === 'madrasah') {
+                $daftarUlang = DaftarUlangModel::firstOrCreate(
+                    ['pendaftar_id' => $pendaftarId],
+                    ['opsi_lainnya_konfirmasi_individual' => false]
+                );
+
+                $newValue = !$daftarUlang->opsi_lainnya_konfirmasi_individual;
+                $daftarUlang->update(['opsi_lainnya_konfirmasi_individual' => $newValue]);
+
+                $statusText = $newValue ? 'diaktifkan' : 'dinonaktifkan';
+                $this->dispatch('saved', message: "Opsi Lainnya Konfirmasi (Madrasah) untuk pendaftar ini berhasil {$statusText}.");
+            }
+            elseif ($tab === 'seragam') {
+                $seragam = Seragam::firstOrCreate(
+                    ['pendaftar_id' => $pendaftarId],
+                    ['opsi_lainnya_konfirmasi_individual' => false]
+                );
+
+                $newValue = !$seragam->opsi_lainnya_konfirmasi_individual;
+                $seragam->update(['opsi_lainnya_konfirmasi_individual' => $newValue]);
+
+                $statusText = $newValue ? 'diaktifkan' : 'dinonaktifkan';
+                $this->dispatch('saved', message: "Opsi Lainnya Konfirmasi (Seragam) untuk pendaftar ini berhasil {$statusText}.");
+            }
+        } catch (\Exception $e) {
+            $this->dispatch('saved', message: 'Gagal mengubah toggle: ' . $e->getMessage());
         }
     }
 }

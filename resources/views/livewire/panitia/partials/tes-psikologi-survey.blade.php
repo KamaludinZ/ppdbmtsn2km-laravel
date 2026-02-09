@@ -26,7 +26,30 @@
             <!-- Informasi Survey -->
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Informasi Survey (ditampilkan ke pendaftar)</label>
-                <textarea wire:model="survey_informasi" rows="3" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" placeholder="Masukkan informasi atau instruksi untuk survey..."></textarea>
+                <!-- Trix Rich Text Editor -->
+                <div wire:ignore x-data="{ trixId: 'panitia-survey-informasi-{{ uniqid() }}' }" x-init="
+                    $nextTick(() => {
+                        const hiddenInput = document.getElementById(trixId);
+                        const editor = document.querySelector(`trix-editor[input='${trixId}']`);
+
+                        if (editor) {
+                            // Set initial content
+                            editor.editor.loadHTML('{{ addslashes($survey_informasi ?? '') }}');
+
+                            // Listen for changes
+                            editor.addEventListener('trix-change', function(e) {
+                                @this.set('survey_informasi', editor.value);
+                            });
+                        }
+                    });
+                ">
+                    <input :id="trixId" type="hidden" name="survey_informasi" value="{{ $survey_informasi ?? '' }}">
+                    <trix-editor
+                        :input="trixId"
+                        class="trix-content rounded-lg border border-gray-300 shadow-sm focus-within:border-purple-500 focus-within:ring focus-within:ring-purple-200 focus-within:ring-opacity-50"
+                        placeholder="Masukkan informasi atau instruksi untuk survey..."
+                    ></trix-editor>
+                </div>
             </div>
 
             <!-- Save Button -->

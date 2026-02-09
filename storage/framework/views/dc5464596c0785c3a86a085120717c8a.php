@@ -768,6 +768,42 @@ if (isset($__slots)) unset($__slots);
 
     <?php echo \Livewire\Mechanisms\FrontendAssets\FrontendAssets::scripts(); ?>
 
+
+    <!-- Countdown Timer Function -->
+    <script>
+        function countdown(targetDate) {
+            return {
+                days: '00',
+                hours: '00',
+                minutes: '00',
+                seconds: '00',
+                init() {
+                    this.updateCountdown();
+                    setInterval(() => {
+                        this.updateCountdown();
+                    }, 1000);
+                },
+                updateCountdown() {
+                    const now = new Date().getTime();
+                    const target = new Date(targetDate).getTime();
+                    const distance = target - now;
+
+                    if (distance < 0) {
+                        this.days = '00';
+                        this.hours = '00';
+                        this.minutes = '00';
+                        this.seconds = '00';
+                        return;
+                    }
+
+                    this.days = Math.floor(distance / (1000 * 60 * 60 * 24)).toString().padStart(2, '0');
+                    this.hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)).toString().padStart(2, '0');
+                    this.minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60)).toString().padStart(2, '0');
+                    this.seconds = Math.floor((distance % (1000 * 60)) / 1000).toString().padStart(2, '0');
+                }
+            };
+        }
+    </script>
 </body>
 </html>
 <?php /**PATH C:\ppdbmtsn2km-laravel\resources\views/components/layouts/dashboard.blade.php ENDPATH**/ ?>

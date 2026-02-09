@@ -1,0 +1,189 @@
+╔═══════════════════════════════════════════════════════════════════╗
+║         QUICK UPLOAD CHECKLIST - 8 FEBRUARI 2026                 ║
+╚═══════════════════════════════════════════════════════════════════╝
+
+█ PRE-UPLOAD CHECKS
+═══════════════════════════════════════════════════════════════════
+[ ] Backup files on production created
+[ ] Local files are latest version
+[ ] No uncommitted changes in local
+
+█ FILES TO UPLOAD (4 files)
+═══════════════════════════════════════════════════════════════════
+[ ] app/Livewire/Admin/DaftarUlang.php
+[ ] app/Livewire/Pendaftar/DaftarUlang.php
+[ ] resources/views/livewire/pendaftar/daftar-ulang.blade.php
+[ ] resources/views/livewire/admin/daftar-ulang.blade.php
+
+█ POST-UPLOAD CACHE CLEARING
+═══════════════════════════════════════════════════════════════════
+[ ] php artisan view:clear
+[ ] php artisan optimize:clear
+[ ] php artisan config:clear
+[ ] php artisan route:clear
+
+█ TESTING - ADMIN SETTINGS
+═══════════════════════════════════════════════════════════════════
+URL: https://pmbm.mtsn2kotamalang.sch.id/admin/daftar-ulang?activeTab=settings
+
+Madrasah Tab:
+[ ] Hard refresh (Ctrl + Shift + R)
+[ ] VERIFY: Toggle BIRU "Opsi Lainnya untuk Dropdown Paket" exists
+[ ] VERIFY: Toggle KUNING "Opsi Lainnya untuk Konfirmasi Nominal" exists
+[ ] Enable toggle BIRU
+[ ] Click "Simpan Pengaturan Madrasah"
+[ ] VERIFY: Success notification appears
+
+Seragam Tab:
+[ ] VERIFY: Toggle BIRU "Opsi Lainnya untuk Dropdown Paket" exists
+[ ] VERIFY: Toggle KUNING "Opsi Lainnya untuk Konfirmasi Nominal" exists
+[ ] Enable toggle BIRU
+[ ] Click "Simpan Pengaturan Seragam"
+[ ] VERIFY: Success notification appears
+
+█ TESTING - PENDAFTAR MADRASAH
+═══════════════════════════════════════════════════════════════════
+URL: https://pmbm.mtsn2kotamalang.sch.id/pendaftar/daftarulang?activeTab=madrasah
+
+Visual Check:
+[ ] Hard refresh (Ctrl + Shift + R)
+[ ] VERIFY: No error 500
+[ ] VERIFY: No undefined variable error
+[ ] VERIFY: Step 1 has gradient background (emerald to teal)
+[ ] VERIFY: Step 2 has gradient background (same as Step 1)
+[ ] VERIFY: Both headers bold with icons (💰 and 💳)
+[ ] VERIFY: Footer displays correctly (not broken)
+
+Dropdown Paket:
+[ ] VERIFY: Dropdown shows paket dari daftar
+[ ] VERIFY: Dropdown shows "Paket Lainnya (Input Manual)" at bottom
+[ ] Select "Paket Lainnya (Input Manual)"
+[ ] VERIFY: Blue box appears with 2 inputs:
+    - Nama Paket Custom *
+    - Nominal Biaya (Rp) *
+[ ] Input nama: "Paket Testing"
+[ ] Input nominal: 500000
+[ ] VERIFY: "Pilih Opsi dari Paket" section NOT shown
+[ ] VERIFY: Can scroll to Step 2
+
+Switch Test:
+[ ] Select normal paket from dropdown
+[ ] VERIFY: Blue box manual input disappears
+[ ] VERIFY: "Pilih Opsi dari Paket" section appears
+[ ] Select an option
+[ ] VERIFY: "Konfirmasi Nominal" section appears
+
+Opsi Lainnya Konfirmasi:
+[ ] In "Konfirmasi Nominal yang Dibayarkan"
+[ ] VERIFY: 2 options appear:
+    - Bayar Penuh (GREEN) ✓
+    - Opsi Lainnya (YELLOW) ✓ ← Must appear!
+[ ] Click "Opsi Lainnya"
+[ ] VERIFY: Manual input field appears
+[ ] Input: 250000
+[ ] VERIFY: Accepted
+
+█ TESTING - PENDAFTAR SERAGAM
+═══════════════════════════════════════════════════════════════════
+URL: https://pmbm.mtsn2kotamalang.sch.id/pendaftar/daftarulang?activeTab=seragam
+
+[ ] Hard refresh (Ctrl + Shift + R)
+[ ] VERIFY: No error 500
+[ ] VERIFY: Step 1 gradient background
+[ ] VERIFY: Step 2 gradient background
+[ ] VERIFY: Footer displays correctly
+[ ] VERIFY: Dropdown shows "Paket Lainnya (Input Manual)"
+[ ] Test manual input (same as Madrasah)
+[ ] Test switch between normal and custom package
+[ ] Test "Opsi Lainnya" konfirmasi nominal
+
+█ EDGE CASES
+═══════════════════════════════════════════════════════════════════
+[ ] Select "Paket Lainnya" without filling → Validation error expected
+[ ] Enter negative amount → Validation error expected
+[ ] Browser refresh after partial fill → Data should persist
+[ ] Test on Chrome browser
+[ ] Test on Firefox browser
+[ ] Test on mobile view
+
+█ SUCCESS CRITERIA (ALL MUST PASS!)
+═══════════════════════════════════════════════════════════════════
+[ ] ✓ No error 500 anywhere
+[ ] ✓ No undefined variable errors
+[ ] ✓ Step 1 and Step 2 have matching gradient backgrounds
+[ ] ✓ Footer displays correctly (not broken)
+[ ] ✓ Admin settings show 2 toggles for Madrasah (BLUE + YELLOW)
+[ ] ✓ Admin settings show 2 toggles for Seragam (BLUE + YELLOW)
+[ ] ✓ Dropdown shows "Paket Lainnya" when toggle enabled
+[ ] ✓ Manual input fields work correctly
+[ ] ✓ Can submit with custom package
+[ ] ✓ Opsi Lainnya konfirmasi nominal appears and works
+
+█ ROLLBACK PROCEDURE (IF NEEDED)
+═══════════════════════════════════════════════════════════════════
+If upload fails or errors occur:
+
+ssh mtsnkot4@103.30.244.77
+cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id
+
+# Restore from backup
+cp app/Livewire/Admin/DaftarUlang.php.backup-8feb2026 app/Livewire/Admin/DaftarUlang.php
+cp app/Livewire/Pendaftar/DaftarUlang.php.backup-8feb2026 app/Livewire/Pendaftar/DaftarUlang.php
+cp resources/views/livewire/pendaftar/daftar-ulang.blade.php.backup-8feb2026 resources/views/livewire/pendaftar/daftar-ulang.blade.php
+cp resources/views/livewire/admin/daftar-ulang.blade.php.backup-8feb2026 resources/views/livewire/admin/daftar-ulang.blade.php
+
+# Clear cache
+php artisan view:clear
+php artisan optimize:clear
+
+█ TROUBLESHOOTING
+═══════════════════════════════════════════════════════════════════
+Issue: Error 500 after upload
+Fix: Check logs → tail -100 storage/logs/laravel.log
+     Clear cache → php artisan optimize:clear
+
+Issue: Opsi Lainnya not appearing
+Fix: Check setting exists:
+     php artisan tinker --execute="echo \App\Models\Setting::where('key', 'like', '%packages_enable_opsi_lainnya%')->get(['key', 'value'])->toJson(JSON_PRETTY_PRINT);"
+
+Issue: Styling not changed
+Fix: Hard refresh browser (Ctrl + Shift + R)
+     Clear server cache → php artisan view:clear
+
+Issue: Footer still broken
+Fix: Verify line 880-882 removed (no orphaned divs)
+     grep -n "End of bg-emerald-50 container" resources/views/livewire/pendaftar/daftar-ulang.blade.php
+     Should return: NOTHING
+
+═══════════════════════════════════════════════════════════════════
+
+FEATURES ACTIVATED AFTER UPLOAD:
+─────────────────────────────────────────────────────────────────
+✓ Fix undefined variable $paketMadrasah
+✓ Step 2 styling matches Step 1 (gradient + header + icon)
+✓ Footer layout fixed (no more broken)
+✓ Opsi Lainnya konfirmasi nominal works (setting key fixed)
+✓ NEW: Opsi Lainnya dropdown paket Madrasah (with manual input)
+✓ NEW: Opsi Lainnya dropdown paket Seragam (with manual input)
+
+SETTING KEYS CREATED:
+─────────────────────────────────────────────────────────────────
+- daftar_ulang_madrasah_packages_enable_opsi_lainnya (boolean)
+- daftar_ulang_seragam_packages_enable_opsi_lainnya (boolean)
+
+ESTIMATED TIME:
+─────────────────────────────────────────────────────────────────
+Upload: 5-10 minutes
+Testing: 10-15 minutes
+Total: 15-25 minutes
+
+═══════════════════════════════════════════════════════════════════
+                    STATUS: READY FOR UPLOAD
+═══════════════════════════════════════════════════════════════════
+Date: 8 Februari 2026
+Files: 4 files modified
+Documentation: Complete
+Testing: Checklist ready
+Rollback: Backup created
+
+═══════════════════════════════════════════════════════════════════

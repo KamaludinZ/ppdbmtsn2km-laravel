@@ -96,46 +96,7 @@
                             </div>
                         </div>
 
-                        <!-- Status Daftar Ulang Seragam -->
-                        <div class="border border-gray-200 rounded-lg p-4">
-                            <div class="flex items-center mb-2">
-                                <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
-                                </svg>
-                                <h4 class="text-sm font-semibold text-gray-700">Daftar Ulang Seragam</h4>
-                            </div>
-                            @php
-                                // Determine status based on bukti pembayaran and actual status
-                                if ($seragam && ($seragam->status_seragam === 'disetujui' || $seragam->status_seragam === 'selesai')) {
-                                    $statusSeragam = 'disetujui';
-                                } elseif ($seragam && $seragam->status_seragam === 'ditolak') {
-                                    $statusSeragam = 'ditolak';
-                                } elseif ($seragam && $seragam->status_seragam === 'perbaiki') {
-                                    $statusSeragam = 'perbaiki';
-                                } elseif ($seragam && $seragam->bukti_pembayaran) {
-                                    // If bukti uploaded but status not set or 'menunggu'
-                                    $statusSeragam = 'menunggu';
-                                } else {
-                                    // No bukti uploaded yet
-                                    $statusSeragam = 'belum_upload';
-                                }
-
-                                $statusSeragamInfo = match($statusSeragam) {
-                                    'disetujui' => ['label' => 'DISETUJUI', 'color' => 'bg-green-100 text-green-800 border-green-300'],
-                                    'ditolak' => ['label' => 'DITOLAK', 'color' => 'bg-red-100 text-red-800 border-red-300'],
-                                    'perbaiki' => ['label' => 'PERLU PERBAIKI', 'color' => 'bg-orange-100 text-orange-800 border-orange-300'],
-                                    'menunggu' => ['label' => 'MENUNGGU', 'color' => 'bg-yellow-100 text-yellow-800 border-yellow-300'],
-                                    default => ['label' => 'BELUM UPLOAD', 'color' => 'bg-gray-100 text-gray-800 border-gray-300'],
-                                };
-                            @endphp
-                            <div class="flex items-center justify-center py-3">
-                                <span class="px-3 py-1.5 rounded-full text-xs font-bold border {{ $statusSeragamInfo['color'] }}">
-                                    {{ $statusSeragamInfo['label'] }}
-                                </span>
-                            </div>
-                        </div>
-
-                        <!-- Status Ukuran Seragam -->
+                        <!-- Status Ukuran Seragam - MOVED TO CENTER -->
                         <div class="border border-gray-200 rounded-lg p-4">
                             <div class="flex items-center mb-2">
                                 <svg class="w-5 h-5 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -177,6 +138,45 @@
                             <div class="flex items-center justify-center py-3">
                                 <span class="px-3 py-1.5 rounded-full text-xs font-bold border {{ $statusUkuranInfo['color'] }}">
                                     {{ $statusUkuranInfo['label'] }}
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- Status Daftar Ulang Seragam - MOVED TO RIGHT -->
+                        <div class="border border-gray-200 rounded-lg p-4">
+                            <div class="flex items-center mb-2">
+                                <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"></path>
+                                </svg>
+                                <h4 class="text-sm font-semibold text-gray-700">Daftar Ulang Seragam</h4>
+                            </div>
+                            @php
+                                // Determine status based on bukti pembayaran and actual status
+                                if ($seragam && ($seragam->status_seragam === 'disetujui' || $seragam->status_seragam === 'selesai')) {
+                                    $statusSeragam = 'disetujui';
+                                } elseif ($seragam && $seragam->status_seragam === 'ditolak') {
+                                    $statusSeragam = 'ditolak';
+                                } elseif ($seragam && $seragam->status_seragam === 'perbaiki') {
+                                    $statusSeragam = 'perbaiki';
+                                } elseif ($seragam && $seragam->bukti_pembayaran) {
+                                    // If bukti uploaded but status not set or 'menunggu'
+                                    $statusSeragam = 'menunggu';
+                                } else {
+                                    // No bukti uploaded yet
+                                    $statusSeragam = 'belum_upload';
+                                }
+
+                                $statusSeragamInfo = match($statusSeragam) {
+                                    'disetujui' => ['label' => 'DISETUJUI', 'color' => 'bg-green-100 text-green-800 border-green-300'],
+                                    'ditolak' => ['label' => 'DITOLAK', 'color' => 'bg-red-100 text-red-800 border-red-300'],
+                                    'perbaiki' => ['label' => 'PERLU PERBAIKI', 'color' => 'bg-orange-100 text-orange-800 border-orange-300'],
+                                    'menunggu' => ['label' => 'MENUNGGU', 'color' => 'bg-yellow-100 text-yellow-800 border-yellow-300'],
+                                    default => ['label' => 'BELUM UPLOAD', 'color' => 'bg-gray-100 text-gray-800 border-gray-300'],
+                                };
+                            @endphp
+                            <div class="flex items-center justify-center py-3">
+                                <span class="px-3 py-1.5 rounded-full text-xs font-bold border {{ $statusSeragamInfo['color'] }}">
+                                    {{ $statusSeragamInfo['label'] }}
                                 </span>
                             </div>
                         </div>
@@ -255,11 +255,11 @@
                         <button wire:click="$set('activeTab', 'madrasah')" class="flex-1 py-4 px-1 text-center border-b-2 font-medium text-sm transition focus:outline-none {{ $activeTab === 'madrasah' ? 'border-emerald-500 text-emerald-600 bg-emerald-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                             Daftar Ulang Madrasah
                         </button>
-                        <button wire:click="$set('activeTab', 'seragam')" class="flex-1 py-4 px-1 text-center border-b-2 font-medium text-sm transition focus:outline-none {{ $activeTab === 'seragam' ? 'border-blue-500 text-blue-600 bg-blue-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-                            Daftar Ulang Seragam
-                        </button>
                         <button wire:click="$set('activeTab', 'ukuran')" class="flex-1 py-4 px-1 text-center border-b-2 font-medium text-sm transition focus:outline-none {{ $activeTab === 'ukuran' ? 'border-purple-500 text-purple-600 bg-purple-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                             Ukuran Seragam & Atribut
+                        </button>
+                        <button wire:click="$set('activeTab', 'seragam')" class="flex-1 py-4 px-1 text-center border-b-2 font-medium text-sm transition focus:outline-none {{ $activeTab === 'seragam' ? 'border-blue-500 text-blue-600 bg-blue-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
+                            Daftar Ulang Seragam
                         </button>
                     </nav>
                 </div>
@@ -334,19 +334,18 @@
 
                     <!-- Informasi/Pengumuman dari Admin -->
                     @php
-                        $madrasahInfo = \App\Models\Setting::get('daftar_ulang_madrasah_info', '');
                         $showPernyataan = \App\Models\Setting::get('daftar_ulang_show_pernyataan', true);
                         $showPembayaranMadrasah = \App\Models\Setting::get('daftar_ulang_show_pembayaran_madrasah', true);
                     @endphp
 
-                    @if($madrasahInfo)
+                    @if($this->madrasahInfo)
                         <div class="bg-gradient-to-r from-indigo-50 to-blue-50 border border-indigo-200 rounded-lg p-4">
                             <div class="flex items-start space-x-2">
                                 <svg class="w-5 h-5 text-indigo-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                <div class="flex-1 text-sm text-indigo-900">
-                                    {!! $madrasahInfo !!}
+                                <div class="flex-1 text-sm text-indigo-900 prose prose-sm prose-indigo max-w-none">
+                                    {!! $this->madrasahInfo !!}
                                 </div>
                             </div>
                         </div>
@@ -370,139 +369,563 @@
                         </div>
                     @endif
 
-                    <div class="{{ $isMadrasahApproved ? 'pointer-events-none opacity-60' : '' }}">
                     @if($showPembayaranMadrasah)
-                    <!-- Biaya & Pembayaran Madrasah -->
-                    <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
-                        <h5 class="font-semibold text-gray-900 mb-3 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            Pilih Nominal Biaya Daftar Ulang
-                        </h5>
 
-                        @php
-                            $madrasahNominals = \App\Models\Setting::get('daftar_ulang_madrasah_nominals', []);
-                        @endphp
-
-                        @if($madrasahNominals && count($madrasahNominals) > 0)
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Nominal Biaya <span class="text-red-500">*</span></label>
-                                <div class="space-y-2">
-                                    @foreach($madrasahNominals as $index => $nominal)
-                                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-emerald-50 transition-colors {{ $nominalBiaya == json_encode($nominal) ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
-                                            <input type="radio"
-                                                   wire:model.live="nominalBiaya"
-                                                   value="{{ json_encode($nominal) }}"
-                                                   class="text-emerald-600 focus:ring-emerald-500">
-                                            <div class="ml-3 flex-1 flex justify-between items-center">
-                                                <span class="font-medium text-gray-900">{{ $nominal['name'] ?? '-' }}</span>
-                                                <span class="font-bold text-emerald-700">Rp {{ number_format($nominal['amount'] ?? 0, 0, ',', '.') }}</span>
+                    @if(!$isMadrasahPaymentOpen)
+                        <!-- Pesan jika di luar waktu pembayaran -->
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+                            <div class="flex items-start">
+                                <svg class="w-6 h-6 text-red-600 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-semibold text-red-900 mb-2">
+                                        🕐 Di Luar Waktu Pembayaran Daftar Ulang Madrasah
+                                    </h3>
+                                    <p class="text-sm text-red-800 mb-3">
+                                        Saat ini Anda tidak dapat mengisi form daftar ulang madrasah karena berada di luar waktu yang telah ditentukan.
+                                    </p>
+                                    @if($madrasahPaymentStart && $madrasahPaymentEnd)
+                                        <div class="bg-red-100 border-l-4 border-red-500 rounded p-3">
+                                            <p class="text-xs text-red-800 font-semibold mb-2">Jadwal Pembayaran Daftar Ulang Madrasah:</p>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-red-700">
+                                                <div>
+                                                    <span class="font-medium">Mulai:</span> {{ \Carbon\Carbon::parse($madrasahPaymentStart)->locale('id')->isoFormat('D MMMM YYYY, HH:mm') }} WIB
+                                                </div>
+                                                <div>
+                                                    <span class="font-medium">Berakhir:</span> {{ \Carbon\Carbon::parse($madrasahPaymentEnd)->locale('id')->isoFormat('D MMMM YYYY, HH:mm') }} WIB
+                                                </div>
                                             </div>
-                                        </label>
-                                    @endforeach
-
-                                    @if($madrasahEnableOpsiLainnya)
-                                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-emerald-50 transition-colors {{ $nominalBiaya == 'opsi_lainnya' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
-                                            <input type="radio"
-                                                   wire:model.live="nominalBiaya"
-                                                   value="opsi_lainnya"
-                                                   class="text-emerald-600 focus:ring-emerald-500">
-                                            <div class="ml-3 flex-1">
-                                                <span class="font-medium text-gray-900">Opsi Lainnya</span>
-                                                <p class="text-xs text-gray-500 mt-1">Isi nominal secara manual</p>
-                                            </div>
-                                        </label>
-
-                                        @if($nominalBiaya == 'opsi_lainnya')
-                                            <div class="ml-6 mt-3 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">Masukkan Nominal (Rp)</label>
-                                                <input type="number"
-                                                       wire:model.live="madrasahOpsiLainnyaNominal"
-                                                       placeholder="Contoh: 500000"
-                                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                                @error('madrasahOpsiLainnyaNominal')
-                                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                                @enderror
-                                            </div>
-                                        @endif
-                                    @endif
-                                </div>
-
-                                @php
-                                    $selectedNominal = $nominalBiaya ? json_decode($nominalBiaya, true) : null;
-                                @endphp
-
-                                @if($selectedNominal)
-                                    <div class="mt-3 p-3 bg-emerald-50 border border-emerald-300 rounded-lg">
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-sm font-medium text-gray-700">Nominal yang dipilih:</span>
-                                            <span class="text-lg font-bold text-emerald-700">Rp {{ number_format($selectedNominal['amount'] ?? 0, 0, ',', '.') }}</span>
                                         </div>
+                                    @endif
+                                    <div class="mt-3 flex items-start p-3 bg-yellow-100 border-l-4 border-yellow-500 rounded">
+                                        <svg class="w-4 h-4 text-yellow-600 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <p class="text-xs text-yellow-800">
+                                            Silakan kembali ke halaman ini pada waktu yang telah ditentukan untuk melanjutkan proses daftar ulang madrasah.
+                                        </p>
                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    @else
+                    {{-- Check if status is 'menunggu' or 'disetujui' - show status display only --}}
+                    @if($daftarUlang && in_array($daftarUlang->status, ['menunggu', 'disetujui']))
+
+                    <!-- Status Display untuk Menunggu dan Disetujui -->
+                    <div class="space-y-4">
+                        @if($daftarUlang->status === 'menunggu')
+                        <!-- Status Menunggu -->
+                        <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6">
+                            <div class="flex items-start">
+                                <svg class="w-8 h-8 text-yellow-600 mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div class="flex-1">
+                                    <h3 class="text-xl font-bold text-yellow-900 mb-2">
+                                        ⏳ Status: Menunggu Persetujuan
+                                    </h3>
+                                    <p class="text-base text-yellow-800 mb-4">
+                                        Data daftar ulang madrasah Anda telah berhasil dikirim dan sedang dalam proses verifikasi oleh panitia.
+                                    </p>
+                                    <div class="bg-yellow-100 border-l-4 border-yellow-500 rounded p-4">
+                                        <p class="text-sm text-yellow-800 font-medium mb-2">📌 Informasi:</p>
+                                        <ul class="list-disc list-inside space-y-1 text-sm text-yellow-700">
+                                            <li>Bukti pembayaran dan surat pernyataan Anda sedang diverifikasi</li>
+                                            <li>Proses verifikasi biasanya memakan waktu 1-3 hari kerja</li>
+                                            <li>Anda akan mendapat notifikasi jika data disetujui atau perlu perbaikan</li>
+                                            <li>Pantau terus status di halaman ini</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @elseif($daftarUlang->status === 'disetujui')
+                        <!-- Status Disetujui -->
+                        <div class="bg-green-50 border-2 border-green-400 rounded-lg p-6">
+                            <div class="flex items-start">
+                                <svg class="w-8 h-8 text-green-600 mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div class="flex-1">
+                                    <h3 class="text-xl font-bold text-green-900 mb-2">
+                                        ✅ Status: Disetujui
+                                    </h3>
+                                    <p class="text-base text-green-800 mb-4">
+                                        Selamat! Data daftar ulang madrasah Anda telah disetujui oleh panitia.
+                                    </p>
+                                    <div class="bg-green-100 border-l-4 border-green-500 rounded p-4 mb-4">
+                                        <p class="text-sm text-green-800 font-medium mb-2">✓ Data Telah Diverifikasi:</p>
+                                        <ul class="list-disc list-inside space-y-1 text-sm text-green-700">
+                                            <li>Surat pernyataan telah divalidasi</li>
+                                            <li>Bukti pembayaran telah diverifikasi</li>
+                                            <li>Data nominal pembayaran sesuai</li>
+                                            <li>Proses daftar ulang madrasah selesai</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- Action Buttons -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <!-- Tombol Lihat Surat Pernyataan -->
+                            @if($daftarUlang->surat_pernyataan_path)
+                            <a href="{{ route('pendaftar.daftarulang.view-file', ['type' => 'pernyataan', 'file' => basename($daftarUlang->surat_pernyataan_path)]) }}"
+                               target="_blank"
+                               class="flex items-center justify-center px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition duration-200 transform hover:scale-105">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <span>Lihat Surat Pernyataan</span>
+                            </a>
+                            @endif
+
+                            <!-- Tombol Lihat Bukti Pembayaran -->
+                            @if($daftarUlang->bukti_pembayaran_madrasah)
+                            <a href="{{ route('pendaftar.daftarulang.view-file', ['type' => 'madrasah', 'file' => basename($daftarUlang->bukti_pembayaran_madrasah)]) }}"
+                               target="_blank"
+                               class="flex items-center justify-center px-6 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-lg shadow-md transition duration-200 transform hover:scale-105">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                <span>Lihat Bukti Pembayaran</span>
+                            </a>
+                            @endif
+
+                            <!-- Tombol Download Invoice -->
+                            @if($daftarUlang->status === 'disetujui')
+                            <button wire:click="previewInvoiceMadrasah"
+                                    class="flex items-center justify-center px-6 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-md transition duration-200 transform hover:scale-105">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <span>Download Invoice</span>
+                            </button>
+                            @endif
+                        </div>
+
+                        <!-- Info Data yang Telah Disubmit -->
+                        <div class="bg-white border border-gray-200 rounded-lg p-6">
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Data yang Telah Dikirim
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                @if($daftarUlang->nominal_biaya)
+                                <div class="p-3 bg-gray-50 rounded-lg">
+                                    <p class="text-gray-600 mb-1">Nominal Biaya (Surat Pernyataan):</p>
+                                    <p class="font-semibold text-gray-900">
+                                        Rp {{ number_format($daftarUlang->nominal_biaya['amount'] ?? 0, 0, ',', '.') }}
+                                        @if(isset($daftarUlang->nominal_biaya['name']))
+                                            <span class="text-xs text-gray-500">({{ $daftarUlang->nominal_biaya['name'] }})</span>
+                                        @endif
+                                    </p>
+                                </div>
                                 @endif
 
-                                @error('nominalBiaya')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            @php
-                                $madrasahPaymentNominals = \App\Models\Setting::get('daftar_ulang_madrasah_payment_nominals', []);
-                            @endphp
-
-                            <!-- Konfirmasi Nominal Biaya -->
-                            @if($madrasahPaymentNominals && count($madrasahPaymentNominals) > 0)
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Konfirmasi Nominal yang Dibayarkan <span class="text-red-500">*</span>
-                                </label>
-                                <p class="text-xs text-gray-600 mb-2">Pilih nominal yang akan dibayarkan</p>
-                                <div class="space-y-2">
-                                    @foreach($madrasahPaymentNominals as $index => $nominal)
-                                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-emerald-50 transition-colors {{ $konfirmasiNominalBiaya == json_encode($nominal) ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
-                                            <input type="radio"
-                                                   wire:model.live="konfirmasiNominalBiaya"
-                                                   value="{{ json_encode($nominal) }}"
-                                                   class="text-emerald-600 focus:ring-emerald-500">
-                                            <div class="ml-3 flex-1 flex justify-between items-center">
-                                                <span class="font-medium text-gray-900">{{ $nominal['name'] ?? '-' }}</span>
-                                                <span class="font-bold text-emerald-700">Rp {{ number_format($nominal['amount'] ?? 0, 0, ',', '.') }}</span>
-                                            </div>
-                                        </label>
-                                    @endforeach
-
-                                    @if($madrasahPaymentNominalsEnableOpsiLainnya)
-                                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-emerald-50 transition-colors {{ $konfirmasiNominalBiaya == 'opsi_lainnya' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
-                                            <input type="radio"
-                                                   wire:model.live="konfirmasiNominalBiaya"
-                                                   value="opsi_lainnya"
-                                                   class="text-emerald-600 focus:ring-emerald-500">
-                                            <div class="ml-3 flex-1">
-                                                <span class="font-medium text-gray-900">Opsi Lainnya</span>
-                                                <p class="text-xs text-gray-500 mt-1">Isi nominal secara manual</p>
-                                            </div>
-                                        </label>
-
-                                        @if($konfirmasiNominalBiaya == 'opsi_lainnya')
-                                            <div class="ml-6 mt-3 p-4 bg-emerald-50 border border-emerald-200 rounded-lg">
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">Masukkan Nominal (Rp)</label>
-                                                <input type="number"
-                                                       wire:model.live="konfirmasiNominalBiayaOpsiLainnya"
-                                                       placeholder="Contoh: 500000"
-                                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
-                                                @error('konfirmasiNominalBiayaOpsiLainnya')
-                                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                                @enderror
-                                            </div>
+                                @if($daftarUlang->nominal_biaya_awal)
+                                <div class="p-3 bg-gray-50 rounded-lg">
+                                    <p class="text-gray-600 mb-1">Nominal Dibayarkan:</p>
+                                    <p class="font-semibold text-gray-900">
+                                        Rp {{ number_format($daftarUlang->nominal_biaya_awal['amount'] ?? 0, 0, ',', '.') }}
+                                        @if(isset($daftarUlang->nominal_biaya_awal['name']))
+                                            <span class="text-xs text-gray-500">({{ $daftarUlang->nominal_biaya_awal['name'] }})</span>
                                         @endif
-                                    @endif
+                                    </p>
+                                </div>
+                                @endif
+
+                                @if($daftarUlang->opsi_pembayaran)
+                                <div class="p-3 bg-gray-50 rounded-lg">
+                                    <p class="text-gray-600 mb-1">Opsi Pembayaran:</p>
+                                    <p class="font-semibold text-gray-900 capitalize">{{ $daftarUlang->opsi_pembayaran }}</p>
+                                </div>
+                                @endif
+
+                                @if($daftarUlang->metode_pembayaran)
+                                <div class="p-3 bg-gray-50 rounded-lg">
+                                    <p class="text-gray-600 mb-1">Bank/Metode Pembayaran:</p>
+                                    <p class="font-semibold text-gray-900">{{ $daftarUlang->metode_pembayaran }}</p>
+                                </div>
+                                @endif
+
+                                @if($daftarUlang->nama_pengirim)
+                                <div class="p-3 bg-gray-50 rounded-lg">
+                                    <p class="text-gray-600 mb-1">Nama Pengirim:</p>
+                                    <p class="font-semibold text-gray-900">{{ $daftarUlang->nama_pengirim }}</p>
+                                </div>
+                                @endif
+
+                                @if($daftarUlang->waktu_pembayaran_madrasah)
+                                <div class="p-3 bg-gray-50 rounded-lg">
+                                    <p class="text-gray-600 mb-1">Waktu Submit:</p>
+                                    <p class="font-semibold text-gray-900">{{ \Carbon\Carbon::parse($daftarUlang->waktu_pembayaran_madrasah)->locale('id')->isoFormat('D MMMM YYYY, HH:mm') }} WIB</p>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    @else
+                    {{-- Form untuk mengisi data (status belum menunggu/disetujui) --}}
+                    @if($showPernyataan)
+                    <!-- Surat Pernyataan -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                        <h5 class="font-semibold text-gray-900 mb-3 flex items-center">
+                            <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            Surat Pernyataan
+                        </h5>
+                        <p class="text-sm text-gray-600 mb-3">Download template surat pernyataan, isi, tandatangani, lalu upload kembali.</p>
+
+                        @php
+                            $templatePath = \App\Models\Setting::get('daftar_ulang_madrasah_template', null);
+                        @endphp
+
+                        @if($templatePath)
+                            <a href="{{ Storage::url($templatePath) }}" download class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium mb-4">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                                Download Template
+                            </a>
+                        @endif
+
+                        @if($daftarUlang && $daftarUlang->surat_pernyataan_path)
+                            <div class="flex items-center p-3 bg-green-50 border border-green-200 rounded mb-3">
+                                <svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
+                                <span class="text-sm text-gray-700 flex-1">Surat pernyataan telah diupload</span>
+                                <a href="{{ route('pendaftar.daftarulang.view-file', ['type' => 'pernyataan', 'file' => basename($daftarUlang->surat_pernyataan_path)]) }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Lihat</a>
+                            </div>
+                        @endif
+
+                        <div class="{{ $isMadrasahApproved ? 'pointer-events-none opacity-60' : '' }}">
+                        @if($daftarUlang && $daftarUlang->status === 'disetujui')
+                            <div class="p-3 bg-green-50 border border-green-200 rounded-lg">
+                                <div class="flex items-start">
+                                    <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <div class="flex-1">
+                                        <p class="text-sm text-green-800 font-medium">Data Sudah Disetujui</p>
+                                        <p class="text-xs text-green-600 mt-1">Upload tidak dapat dilakukan karena data daftar ulang madrasah sudah disetujui.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        @else
+                            @if($suratPernyataan)
+                            {{-- File Selected State --}}
+                            <div class="border-2 border-solid border-green-400 bg-green-50 rounded-lg p-4" wire:loading.class="opacity-50" wire:target="suratPernyataan">
+                                <div class="flex items-start space-x-4">
+                                    {{-- PDF Icon --}}
+                                    <div class="flex-shrink-0">
+                                        <div class="w-16 h-16 bg-red-100 rounded-lg flex items-center justify-center">
+                                            <svg class="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+                                            </svg>
+                                        </div>
+                                    </div>
+
+                                    {{-- File Info --}}
+                                    <div class="flex-1 min-w-0">
+                                        <div class="flex items-start justify-between">
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-sm font-semibold text-gray-900 mb-1 flex items-center">
+                                                    <svg class="w-4 h-4 text-green-600 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    File Siap Disimpan
+                                                </p>
+                                                <p class="text-sm text-gray-800 font-medium truncate mb-1">
+                                                    {{ $suratPernyataan->getClientOriginalName() }}
+                                                </p>
+                                                <div class="flex items-center space-x-3 text-xs text-gray-600">
+                                                    <span class="flex items-center">
+                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                                        </svg>
+                                                        PDF
+                                                    </span>
+                                                    <span class="flex items-center">
+                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                        </svg>
+                                                        {{ number_format($suratPernyataan->getSize() / 1024, 0) }} KB
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        {{-- Change File Button --}}
+                                        <div class="mt-3">
+                                            <input type="file" wire:model="suratPernyataan" id="surat-pernyataan-change" class="hidden" accept=".pdf">
+                                            <label for="surat-pernyataan-change" class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-colors">
+                                                <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                                </svg>
+                                                Ganti File
+                                            </label>
+                                        </div>
+                                    </div>
                                 </div>
 
-                                @error('konfirmasiNominalBiaya')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
+                                {{-- Loading State --}}
+                                <div wire:loading wire:target="suratPernyataan" class="mt-3 pt-3 border-t border-green-200">
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Memuat file...
+                                    </div>
+                                </div>
+                            </div>
+                            @else
+                            {{-- Empty State --}}
+                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors" wire:loading.class="opacity-50" wire:target="suratPernyataan">
+                                <input type="file" wire:model="suratPernyataan" id="surat-pernyataan" class="hidden" accept=".pdf">
+                                <label for="surat-pernyataan" class="cursor-pointer block">
+                                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                    </svg>
+                                    <p class="mt-2 text-sm font-medium text-gray-700">
+                                        Klik untuk upload surat pernyataan
+                                    </p>
+                                    <p class="mt-1 text-xs text-gray-500">atau drag and drop file di sini</p>
+                                    <p class="mt-2 text-xs text-gray-500">
+                                        <span class="font-medium">Format:</span> PDF
+                                        <span class="mx-2">•</span>
+                                        <span class="font-medium">Ukuran Maks:</span> 2MB
+                                    </p>
+                                </label>
+                                <div wire:loading wire:target="suratPernyataan" class="mt-3">
+                                    <div class="flex items-center justify-center text-sm text-gray-600">
+                                        <svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        Memuat file...
+                                    </div>
+                                </div>
                             </div>
                             @endif
+
+                            @if($suratPernyataan)
+                                <div class="mt-3 flex justify-end">
+                                    <button
+                                        wire:click="saveSuratPernyataan"
+                                        wire:loading.attr="disabled"
+                                        wire:target="saveSuratPernyataan"
+                                        class="inline-flex items-center px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                                        <svg wire:loading.remove wire:target="saveSuratPernyataan" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <svg wire:loading wire:target="saveSuratPernyataan" class="animate-spin w-5 h-5 mr-2" fill="none" viewBox="0 0 24 24">
+                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                        </svg>
+                                        <span wire:loading.remove wire:target="saveSuratPernyataan">Simpan Surat Pernyataan</span>
+                                        <span wire:loading wire:target="saveSuratPernyataan">Menyimpan...</span>
+                                    </button>
+                                </div>
+                            @endif
                         @endif
+                        @error('suratPernyataan') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($daftarUlang && $daftarUlang->surat_pernyataan_path)
+                    <!-- Form akan tampil setelah surat pernyataan diupload -->
+
+                    <!-- SECTION 1: PILIH PAKET & NOMINAL -->
+                    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-lg p-6 mb-6">
+                        <h4 class="text-lg font-bold text-emerald-900 mb-4 flex items-center">
+                            <svg class="w-6 h-6 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Step 1: Pilih Paket Madrasah & Nominal
+                        </h4>
+
+                        @php
+                            $madrasahPackages = \App\Models\Setting::get('daftar_ulang_madrasah_packages', []);
+                            // Use computed property for Global OR Individual logic
+                            $madrasahPackagesEnableOpsiLainnya = $this->shouldShowMadrasahOpsiLainnyaDropdown;
+                        @endphp
+
+                        <!-- 1. Pilih Paket Madrasah -->
+                        @if($madrasahPackages && count($madrasahPackages) > 0)
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Pilih Paket Madrasah <span class="text-red-500">*</span>
+                                </label>
+                                <select wire:model.live="paketMadrasah"
+                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200">
+                                    <option value="">-- Pilih Paket Madrasah --</option>
+                                    @foreach($madrasahPackages as $package)
+                                        <option value="{{ json_encode($package) }}">
+                                            {{ $package['name'] ?? 'Paket' }}
+                                            @if(!empty($package['description'])) - {{ $package['description'] }}@endif
+                                        </option>
+                                    @endforeach
+                                    @if($madrasahPackagesEnableOpsiLainnya)
+                                        <option value="paket_lainnya">Paket Lainnya (Input Manual)</option>
+                                    @endif
+                                </select>
+                                @error('paketMadrasah')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+
+                            {{-- Manual Input Paket Lainnya --}}
+                            @if($paketMadrasah === 'paket_lainnya')
+                                <div class="mb-4 ml-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Nama Paket Custom <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text"
+                                           wire:model.live="paketMadrasahCustomName"
+                                           placeholder="Contoh: Paket Khusus Beasiswa"
+                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+                                    <p class="text-xs text-gray-600 mt-1">Masukkan nama paket yang tidak tersedia di daftar</p>
+                                    @error('paketMadrasahCustomName')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            @endif
+
+                            <!-- 2. Pilih Opsi dari Paket (Dependent Dropdown) -->
+                            @if($paketMadrasah && $paketMadrasah !== 'paket_lainnya')
+                                @php
+                                    $selectedPackage = json_decode($paketMadrasah, true);
+                                    $packageOptions = $selectedPackage['options'] ?? [];
+                                @endphp
+
+                                @if(count($packageOptions) > 0)
+                                    <div class="mb-4 ml-4 p-4 bg-white border-l-4 border-emerald-500 rounded-lg">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                                            Pilih Opsi dari {{ $selectedPackage['name'] ?? 'Paket' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <div class="space-y-2">
+                                            @foreach($packageOptions as $option)
+                                                <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-emerald-50 transition-colors {{ $opsiMadrasah == json_encode($option) ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
+                                                    <input type="radio"
+                                                           wire:model.live="opsiMadrasah"
+                                                           value="{{ json_encode($option) }}"
+                                                           class="text-emerald-600 focus:ring-emerald-500">
+                                                    <div class="ml-3 flex-1 flex justify-between items-center">
+                                                        <span class="font-medium text-gray-900">{{ $option['name'] ?? '-' }}</span>
+                                                        <span class="font-bold text-emerald-700">Rp {{ number_format($option['amount'] ?? 0, 0, ',', '.') }}</span>
+                                                    </div>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                        @error('opsiMadrasah')
+                                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                @else
+                                    <div class="mb-4 ml-4 p-4 bg-yellow-50 border border-yellow-300 rounded-lg">
+                                        <p class="text-sm text-yellow-800">Paket ini belum memiliki opsi. Silakan hubungi admin.</p>
+                                    </div>
+                                @endif
+                            @endif
+
+                            {{-- Manual Input Nominal untuk Paket Lainnya --}}
+                            @if($paketMadrasah === 'paket_lainnya')
+                                <div class="mb-4 ml-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Nominal Biaya (Rp) <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="number"
+                                           wire:model.live="paketMadrasahCustomAmount"
+                                           placeholder="Contoh: 500000"
+                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200">
+                                    <p class="text-xs text-gray-600 mt-1">Masukkan nominal biaya untuk paket custom</p>
+                                    @error('paketMadrasahCustomAmount')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            @endif
+
+                            <!-- 3. Konfirmasi Nominal yang Dibayarkan -->
+                            @if($opsiMadrasah || ($paketMadrasah === 'paket_lainnya' && $paketMadrasahCustomAmount))
+                                @php
+                                    $selectedOption = json_decode($opsiMadrasah, true);
+                                    // Use computed property for Global OR Individual logic
+                                    $madrasahEnableOpsiLainnyaPayment = $this->shouldShowMadrasahOpsiLainnyaKonfirmasi;
+                                @endphp
+
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Konfirmasi Nominal yang Dibayarkan <span class="text-red-500">*</span>
+                                    </label>
+                                    <p class="text-xs text-gray-600 mb-2">Pilih nominal yang akan dibayarkan (default: sesuai opsi yang dipilih)</p>
+
+                                    <div class="space-y-2">
+                                        <!-- Option: Bayar Penuh (Auto from selected option) -->
+                                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-green-50 transition-colors {{ $konfirmasiNominalBiaya == json_encode($selectedOption) ? 'border-green-500 bg-green-50' : 'border-gray-300' }}">
+                                            <input type="radio"
+                                                   wire:model.live="konfirmasiNominalBiaya"
+                                                   value="{{ json_encode($selectedOption) }}"
+                                                   class="text-green-600 focus:ring-green-500">
+                                            <div class="ml-3 flex-1 flex justify-between items-center">
+                                                <div>
+                                                    <span class="font-medium text-gray-900">Bayar Penuh</span>
+                                                    <p class="text-xs text-gray-600 mt-1">{{ $selectedOption['name'] ?? '' }}</p>
+                                                </div>
+                                                <span class="font-bold text-green-700">Rp {{ number_format($selectedOption['amount'] ?? 0, 0, ',', '.') }}</span>
+                                            </div>
+                                        </label>
+
+                                        <!-- Option: Opsi Lainnya (Manual Input) -->
+                                        @if($madrasahEnableOpsiLainnyaPayment)
+                                            <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-yellow-50 transition-colors {{ $konfirmasiNominalBiaya == 'opsi_lainnya' ? 'border-yellow-500 bg-yellow-50' : 'border-gray-300' }}">
+                                                <input type="radio"
+                                                       wire:model.live="konfirmasiNominalBiaya"
+                                                       value="opsi_lainnya"
+                                                       class="text-yellow-600 focus:ring-yellow-500">
+                                                <div class="ml-3 flex-1">
+                                                    <span class="font-medium text-gray-900">Opsi Lainnya (Bayar Tidak Penuh)</span>
+                                                    <p class="text-xs text-gray-500 mt-1">Isi nominal secara manual (untuk angsuran/potongan)</p>
+                                                </div>
+                                            </label>
+
+                                            @if($konfirmasiNominalBiaya == 'opsi_lainnya')
+                                                <div class="ml-6 mt-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                                    <label class="block text-sm font-medium text-gray-700 mb-2">Masukkan Nominal (Rp)</label>
+                                                    <input type="number"
+                                                           wire:model.live="konfirmasiNominalBiayaOpsiLainnya"
+                                                           placeholder="Contoh: 500000"
+                                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring focus:ring-yellow-200">
+                                                    @error('konfirmasiNominalBiayaOpsiLainnya')
+                                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                                    @enderror
+                                                </div>
+                                            @endif
+                                        @endif
+                                    </div>
+
+                                    @error('konfirmasiNominalBiaya')
+                                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            @endif
+                        @endif
+                    </div>
+                    {{-- End of Step 1 container --}}
+
+                    <!-- SECTION 2: INFORMASI PEMBAYARAN & UPLOAD BUKTI -->
+                    <div class="bg-gradient-to-br from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-lg p-6 mb-6">
+                        <h4 class="text-lg font-bold text-emerald-900 mb-4 flex items-center">
+                            <svg class="w-6 h-6 mr-2 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+                            </svg>
+                            Step 2: Informasi Pembayaran & Upload Bukti
+                        </h4>
 
                         <!-- Opsi Pembayaran -->
                         @php
@@ -542,13 +965,25 @@
                                 </select>
                             </div>
                         @endif
-                    </div>
-                    <!-- End of bg-emerald-50 container for form fields -->
-                    </div>
-                    <!-- End of disabled wrapper for form fields -->
 
-                    <!-- Upload Bukti Pembayaran -->
-                    <div class="bg-emerald-50 border border-emerald-200 rounded-lg p-4">
+                        <!-- Nama Pengirim -->
+                        <div class="mb-6">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Nama Pengirim <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text"
+                                   wire:model="namaPengirim"
+                                   placeholder="Masukkan nama pengirim sesuai bukti transfer"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                            <p class="mt-1 text-xs text-gray-500">Nama pengirim harus sesuai dengan yang tertera pada bukti transfer</p>
+                            @error('namaPengirim')
+                                <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <!-- Divider -->
+                        <div class="border-t border-emerald-300 mb-4"></div>
+
                         <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">Upload Bukti Pembayaran</label>
 
@@ -566,7 +1001,7 @@
                                 </div>
                             @endif
 
-                            @if($daftarUlang && $daftarUlang->bukti_pembayaran_madrasah)
+                            @if($daftarUlang && $daftarUlang->bukti_pembayaran_madrasah && !in_array($daftarUlang->status, ['perbaiki', 'ditolak']))
                                 <div class="p-4 bg-green-50 border-2 border-green-200 rounded-lg mb-3">
                                     <div class="flex items-center mb-3">
                                         <svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -632,99 +1067,119 @@
                                     </div>
                                 </div>
                             @else
-                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center" wire:loading.class="opacity-50" wire:target="buktiPembayaran">
+                                @if($buktiPembayaran)
+                                {{-- File Selected State --}}
+                                <div class="border-2 border-solid border-green-400 bg-green-50 rounded-lg p-4" wire:loading.class="opacity-50" wire:target="buktiPembayaran">
+                                    <div class="flex items-start space-x-4">
+                                        {{-- File Icon (Dynamic based on type) --}}
+                                        <div class="flex-shrink-0">
+                                            @php
+                                                $extension = strtolower($buktiPembayaran->getClientOriginalExtension());
+                                                $isPdf = $extension === 'pdf';
+                                                $isImage = in_array($extension, ['jpg', 'jpeg', 'png']);
+                                            @endphp
+                                            <div class="w-16 h-16 {{ $isPdf ? 'bg-red-100' : 'bg-blue-100' }} rounded-lg flex items-center justify-center">
+                                                @if($isPdf)
+                                                    {{-- PDF Icon --}}
+                                                    <svg class="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                @else
+                                                    {{-- Image Icon --}}
+                                                    <svg class="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M4 3a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V5a2 2 0 00-2-2H4zm12 12H4l4-8 3 6 2-4 3 6z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        {{-- File Info --}}
+                                        <div class="flex-1 min-w-0">
+                                            <div class="flex items-start justify-between">
+                                                <div class="flex-1 min-w-0">
+                                                    <p class="text-sm font-semibold text-gray-900 mb-1 flex items-center">
+                                                        <svg class="w-4 h-4 text-green-600 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                                        </svg>
+                                                        File Siap Disimpan
+                                                    </p>
+                                                    <p class="text-sm text-gray-800 font-medium truncate mb-1">
+                                                        {{ $buktiPembayaran->getClientOriginalName() }}
+                                                    </p>
+                                                    <div class="flex items-center space-x-3 text-xs text-gray-600">
+                                                        <span class="flex items-center">
+                                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                                            </svg>
+                                                            {{ strtoupper($extension) }}
+                                                        </span>
+                                                        <span class="flex items-center">
+                                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                            </svg>
+                                                            {{ number_format($buktiPembayaran->getSize() / 1024, 0) }} KB
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {{-- Change File Button --}}
+                                            <div class="mt-3">
+                                                <input type="file" wire:model="buktiPembayaran" id="bukti-madrasah-change" class="hidden" accept=".pdf,.jpg,.jpeg,.png">
+                                                <label for="bukti-madrasah-change" class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 cursor-pointer transition-colors">
+                                                    <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                                    </svg>
+                                                    Ganti File
+                                                </label>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {{-- Loading State --}}
+                                    <div wire:loading wire:target="buktiPembayaran" class="mt-3 pt-3 border-t border-green-200">
+                                        <div class="flex items-center text-sm text-gray-600">
+                                            <svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Memuat file...
+                                        </div>
+                                    </div>
+                                </div>
+                                @else
+                                {{-- Empty State --}}
+                                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors" wire:loading.class="opacity-50" wire:target="buktiPembayaran">
                                     <input type="file" wire:model="buktiPembayaran" id="bukti-madrasah" class="hidden" accept=".pdf,.jpg,.jpeg,.png">
-                                    <label for="bukti-madrasah" class="cursor-pointer">
+                                    <label for="bukti-madrasah" class="cursor-pointer block">
                                         <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
                                         </svg>
-                                        <p class="mt-2 text-sm text-gray-600">
-                                            @if($buktiPembayaran)
-                                                File terpilih: {{ $buktiPembayaran->getClientOriginalName() }}
-                                            @else
-                                                Klik untuk upload bukti pembayaran
-                                            @endif
+                                        <p class="mt-2 text-sm font-medium text-gray-700">
+                                            Klik untuk upload bukti pembayaran
                                         </p>
-                                        <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG (Max. 2MB)</p>
+                                        <p class="mt-1 text-xs text-gray-500">atau drag and drop file di sini</p>
+                                        <p class="mt-2 text-xs text-gray-500">
+                                            <span class="font-medium">Format:</span> PDF, JPG, PNG
+                                            <span class="mx-2">•</span>
+                                            <span class="font-medium">Ukuran Maks:</span> 2MB
+                                        </p>
                                     </label>
-                                    <div wire:loading wire:target="buktiPembayaran" class="mt-2">
-                                        <span class="text-sm text-gray-600">Uploading...</span>
+                                    <div wire:loading wire:target="buktiPembayaran" class="mt-3">
+                                        <div class="flex items-center justify-center text-sm text-gray-600">
+                                            <svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                            </svg>
+                                            Memuat file...
+                                        </div>
                                     </div>
                                 </div>
+                                @endif
                             @endif
                             @error('buktiPembayaran') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                         </div>
                     </div>
-                    @endif
-
-                    @if($showPernyataan)
-                    <!-- Surat Pernyataan -->
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                        <h5 class="font-semibold text-gray-900 mb-3 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
-                            Surat Pernyataan
-                        </h5>
-                        <p class="text-sm text-gray-600 mb-3">Download template surat pernyataan, isi, tandatangani, lalu upload kembali.</p>
-
-                        @php
-                            $templatePath = \App\Models\Setting::get('daftar_ulang_madrasah_template', null);
-                        @endphp
-
-                        @if($templatePath)
-                            <a href="{{ Storage::url($templatePath) }}" download class="inline-flex items-center px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 text-sm font-medium mb-4">
-                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                                Download Template
-                            </a>
-                        @endif
-
-                        @if($daftarUlang && $daftarUlang->surat_pernyataan_path)
-                            <div class="flex items-center p-3 bg-green-50 border border-green-200 rounded mb-3">
-                                <svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
-                                <span class="text-sm text-gray-700 flex-1">Surat pernyataan telah diupload</span>
-                                <a href="{{ route('pendaftar.daftarulang.view-file', ['type' => 'pernyataan', 'file' => basename($daftarUlang->surat_pernyataan_path)]) }}" target="_blank" class="text-sm text-blue-600 hover:text-blue-800 font-medium">Lihat</a>
-                            </div>
-                        @endif
-
-                        <div class="{{ $isMadrasahApproved ? 'pointer-events-none opacity-60' : '' }}">
-                        <!-- Start of disabled wrapper for surat pernyataan upload -->
-                        @if($daftarUlang && $daftarUlang->status === 'disetujui')
-                            <div class="p-3 bg-green-50 border border-green-200 rounded-lg">
-                                <div class="flex items-start">
-                                    <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                    </svg>
-                                    <div class="flex-1">
-                                        <p class="text-sm text-green-800 font-medium">Data Sudah Disetujui</p>
-                                        <p class="text-xs text-green-600 mt-1">Upload tidak dapat dilakukan karena data daftar ulang madrasah sudah disetujui.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        @else
-                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center" wire:loading.class="opacity-50" wire:target="suratPernyataan">
-                                <input type="file" wire:model="suratPernyataan" id="surat-pernyataan" class="hidden" accept=".pdf">
-                                <label for="surat-pernyataan" class="cursor-pointer block w-full h-full">
-                                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                                    </svg>
-                                    <p class="mt-2 text-sm text-gray-600">
-                                        @if($suratPernyataan)
-                                            File terpilih: {{ $suratPernyataan->getClientOriginalName() }}
-                                        @else
-                                            Klik untuk upload surat pernyataan
-                                        @endif
-                                    </p>
-                                    <p class="text-xs text-gray-500 mt-1">Hanya PDF (Max. 2MB)</p>
-                                </label>
-                                <div wire:loading wire:target="suratPernyataan" class="mt-2">
-                                    <span class="text-sm text-gray-600">Uploading...</span>
-                                </div>
-                            </div>
-                        @endif
-                        @error('suratPernyataan') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
-                        </div>
-                        <!-- End of disabled wrapper for surat pernyataan upload -->
-                    </div>
-                    @endif
 
                     <!-- Tombol Simpan -->
                     <div class="flex justify-end pt-4 border-t border-gray-200">
@@ -745,8 +1200,47 @@
                             <span wire:loading wire:target="saveMadrasah">Menyimpan...</span>
                         </button>
                     </div>
+
+                    @else
+                    <!-- Pesan jika belum upload surat pernyataan -->
+                    <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
+                        <div class="flex items-start">
+                            <svg class="w-6 h-6 text-yellow-600 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                            </svg>
+                            <div class="flex-1">
+                                <h3 class="text-lg font-semibold text-yellow-900 mb-2">
+                                    📋 Upload Surat Pernyataan Terlebih Dahulu
+                                </h3>
+                                <p class="text-sm text-yellow-800 mb-3">
+                                    Untuk melanjutkan proses daftar ulang madrasah, Anda harus menyelesaikan langkah berikut:
+                                </p>
+                                <ol class="list-decimal list-inside space-y-2 text-sm text-yellow-800 mb-4">
+                                    <li>Download template Surat Pernyataan dari bagian di atas</li>
+                                    <li>Isi dan tandatangani surat pernyataan tersebut</li>
+                                    <li>Scan atau foto surat dalam format PDF</li>
+                                    <li>Upload surat pernyataan menggunakan tombol "Upload"</li>
+                                    <li>Klik tombol <strong>"Simpan Surat Pernyataan"</strong> untuk menyimpan</li>
+                                </ol>
+                                <div class="bg-yellow-100 border-l-4 border-yellow-500 rounded p-3">
+                                    <p class="text-xs text-yellow-800 flex items-start">
+                                        <svg class="w-4 h-4 mr-1.5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <span>
+                                            Setelah surat pernyataan berhasil disimpan, form untuk memilih nominal biaya dan upload bukti pembayaran akan muncul di bawah ini.
+                                        </span>
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+                    @endif {{-- End of @if(!$isMadrasahPaymentOpen) --}}
+                    @endif {{-- End of @if($showPembayaranMadrasah) --}}
                 </div>
-                @endif
+                @endif {{-- End of @else (form untuk mengisi data) --}}
+                @endif {{-- End of @if($daftarUlang && in_array($daftarUlang->status, ['menunggu', 'disetujui'])) - Progressive Disclosure --}}
 
                 <!-- Seragam Tab -->
                 @if($activeTab === 'seragam')
@@ -795,6 +1289,45 @@
                         </div>
                     @endif
 
+                    @if(!$isSeragamPaymentOpen)
+                        <!-- Pesan jika di luar waktu pembayaran seragam -->
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+                            <div class="flex items-start">
+                                <svg class="w-6 h-6 text-red-600 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-semibold text-red-900 mb-2">
+                                        🕐 Di Luar Waktu Pembayaran Daftar Ulang Seragam
+                                    </h3>
+                                    <p class="text-sm text-red-800 mb-3">
+                                        Saat ini Anda tidak dapat mengisi form daftar ulang seragam karena berada di luar waktu yang telah ditentukan.
+                                    </p>
+                                    @if($seragamPaymentStart && $seragamPaymentEnd)
+                                        <div class="bg-red-100 border-l-4 border-red-500 rounded p-3">
+                                            <p class="text-xs text-red-800 font-semibold mb-2">Jadwal Pembayaran Daftar Ulang Seragam:</p>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-red-700">
+                                                <div>
+                                                    <span class="font-medium">Mulai:</span> {{ \Carbon\Carbon::parse($seragamPaymentStart)->locale('id')->isoFormat('D MMMM YYYY, HH:mm') }} WIB
+                                                </div>
+                                                <div>
+                                                    <span class="font-medium">Berakhir:</span> {{ \Carbon\Carbon::parse($seragamPaymentEnd)->locale('id')->isoFormat('D MMMM YYYY, HH:mm') }} WIB
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                    <div class="mt-3 flex items-start p-3 bg-yellow-100 border-l-4 border-yellow-500 rounded">
+                                        <svg class="w-4 h-4 text-yellow-600 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <p class="text-xs text-yellow-800">
+                                            Silakan kembali ke halaman ini pada waktu yang telah ditentukan untuk melanjutkan proses daftar ulang seragam.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @else
                     <!-- Success/Error Messages -->
                     @if(session()->has('message_seragam'))
                         <div class="bg-green-50 border border-green-200 rounded-lg p-4">
@@ -818,18 +1351,17 @@
 
                     <!-- Informasi/Pengumuman dari Admin -->
                     @php
-                        $seragamInfo = \App\Models\Setting::get('daftar_ulang_seragam_info', '');
                         $showPembayaranSeragam = \App\Models\Setting::get('daftar_ulang_show_pembayaran_seragam', true);
                     @endphp
 
-                    @if($seragamInfo)
+                    @if($this->seragamInfo)
                         <div class="bg-gradient-to-r from-cyan-50 to-teal-50 border border-cyan-200 rounded-lg p-4">
                             <div class="flex items-start space-x-2">
                                 <svg class="w-5 h-5 text-cyan-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                <div class="flex-1 text-sm text-cyan-900">
-                                    {!! $seragamInfo !!}
+                                <div class="flex-1 text-sm text-cyan-900 prose prose-sm prose-cyan max-w-none">
+                                    {!! $this->seragamInfo !!}
                                 </div>
                             </div>
                         </div>
@@ -839,174 +1371,433 @@
                         <h4 class="text-lg font-semibold text-gray-900 mb-4">Daftar Ulang Seragam</h4>
                     </div>
 
-                    <!-- Paket Seragam -->
-                    <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4">
-                        <h5 class="font-semibold text-gray-900 mb-3 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path></svg>
-                            Paket Seragam
-                        </h5>
+                    {{-- PHP Logic for Warning Perbedaan Ukuran --}}
+                    @php
+                        // Get ukuran data from seragam table
+                        $actualUkuranBajuHarian = $seragam->ukuran_baju_harian ?? '';
+                        $actualUkuranCelanaHarian = $seragam->ukuran_celana_rok_harian ?? '';
+
+                        // Check if there's a difference between baju harian and celana harian
+                        $hasSizeDifference = false;
+                        $largerSize = '';
+                        if ($actualUkuranBajuHarian && $actualUkuranCelanaHarian && $actualUkuranBajuHarian != $actualUkuranCelanaHarian) {
+                            $hasSizeDifference = true;
+
+                            // Determine which size is larger (simple comparison based on common sizes)
+                            $sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+                            $bajuIndex = array_search($actualUkuranBajuHarian, $sizeOrder);
+                            $celanaIndex = array_search($actualUkuranCelanaHarian, $sizeOrder);
+
+                            if ($bajuIndex !== false && $celanaIndex !== false) {
+                                $largerSize = $bajuIndex > $celanaIndex ? $actualUkuranBajuHarian : $actualUkuranCelanaHarian;
+                            } else {
+                                // If not standard sizes, just mention both
+                                $largerSize = 'ukuran terbesar antara ' . $actualUkuranBajuHarian . ' dan ' . $actualUkuranCelanaHarian;
+                            }
+                        }
+                    @endphp
+
+                    {{-- Warning Perbedaan Ukuran - Shows ONLY if there's a size difference --}}
+                    @if($hasSizeDifference)
+                    <div class="bg-orange-50 border-l-4 border-orange-500 rounded-lg p-5 shadow-md mb-6">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <svg class="w-6 h-6 text-orange-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-3 flex-1">
+                                <h3 class="text-base font-bold text-orange-900 mb-2">
+                                    ⚠️ Perhatian: Perbedaan Ukuran Seragam Harian Terdeteksi!
+                                </h3>
+                                <div class="text-sm text-orange-800 space-y-2">
+                                    <p class="font-semibold">
+                                        Anda memilih ukuran yang berbeda untuk baju seragam harian (<span class="font-bold text-orange-900">{{ $actualUkuranBajuHarian }}</span>)
+                                        dan celana/rok harian (<span class="font-bold text-orange-900">{{ $actualUkuranCelanaHarian }}</span>).
+                                    </p>
+                                    <div class="bg-orange-100 border border-orange-300 rounded-md p-3 mt-3">
+                                        <p class="font-semibold text-orange-900 mb-2">📌 Informasi Penting untuk Pembayaran:</p>
+                                        <p class="leading-relaxed">
+                                            Saat melakukan pembayaran daftar ulang seragam, <span class="font-bold underline">Anda diharuskan memilih dan membayar sesuai dengan ukuran terbesar</span> dari pilihan ukuran seragam harian Anda.
+                                        </p>
+                                        <p class="mt-2 font-bold text-orange-900">
+                                            💰 Ukuran untuk pembayaran: <span class="text-lg">{{ $largerSize }}</span>
+                                        </p>
+                                    </div>
+                                    <p class="text-xs mt-2 italic">
+                                        Pastikan Anda memilih paket seragam dan nominal pembayaran yang sesuai dengan ukuran terbesar tersebut pada saat mengisi form pembayaran di bawah ini.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    @if($showPembayaranSeragam)
+
+                    {{-- Check if status is 'menunggu' or 'disetujui' - show status display only --}}
+                    @if($seragam && in_array($seragam->status_seragam, ['menunggu', 'disetujui']))
+
+                    <!-- Status Display untuk Menunggu dan Disetujui -->
+                    <div class="space-y-4">
+                        @if($seragam->status_seragam === 'menunggu')
+                        <!-- Status Menunggu -->
+                        <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6">
+                            <div class="flex items-start">
+                                <svg class="w-8 h-8 text-yellow-600 mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div class="flex-1">
+                                    <h3 class="text-xl font-bold text-yellow-900 mb-2">
+                                        ⏳ Status: Menunggu Persetujuan
+                                    </h3>
+                                    <p class="text-base text-yellow-800 mb-4">
+                                        Data daftar ulang seragam Anda telah berhasil dikirim dan sedang dalam proses verifikasi oleh panitia.
+                                    </p>
+                                    <div class="bg-yellow-100 border-l-4 border-yellow-500 rounded p-4">
+                                        <p class="text-sm text-yellow-800 font-medium mb-2">📌 Informasi:</p>
+                                        <ul class="list-disc list-inside space-y-1 text-sm text-yellow-700">
+                                            <li>Bukti pembayaran seragam Anda sedang diverifikasi</li>
+                                            <li>Proses verifikasi biasanya memakan waktu 1-3 hari kerja</li>
+                                            <li>Anda akan mendapat notifikasi jika data disetujui atau perlu perbaikan</li>
+                                            <li>Pantau terus status di halaman ini</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @elseif($seragam->status_seragam === 'disetujui')
+                        <!-- Status Disetujui -->
+                        <div class="bg-green-50 border-2 border-green-400 rounded-lg p-6">
+                            <div class="flex items-start">
+                                <svg class="w-8 h-8 text-green-600 mr-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div class="flex-1">
+                                    <h3 class="text-xl font-bold text-green-900 mb-2">
+                                        ✅ Status: Disetujui
+                                    </h3>
+                                    <p class="text-base text-green-800 mb-4">
+                                        Selamat! Data daftar ulang seragam Anda telah disetujui oleh panitia.
+                                    </p>
+                                    <div class="bg-green-100 border-l-4 border-green-500 rounded p-4 mb-4">
+                                        <p class="text-sm text-green-800 font-medium mb-2">✓ Data Telah Diverifikasi:</p>
+                                        <ul class="list-disc list-inside space-y-1 text-sm text-green-700">
+                                            <li>Bukti pembayaran seragam telah diverifikasi</li>
+                                            <li>Data nominal pembayaran sesuai</li>
+                                            <li>Proses daftar ulang seragam selesai</li>
+                                            <li>Anda dapat mengunduh invoice pembayaran</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @endif
+
+                        <!-- Action Buttons -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Tombol Lihat Bukti Pembayaran -->
+                            @if($seragam->bukti_pembayaran)
+                            <a href="{{ route('pendaftar.daftarulang.view-file', ['type' => 'seragam', 'file' => basename($seragam->bukti_pembayaran)]) }}"
+                               target="_blank"
+                               class="flex items-center justify-center px-6 py-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow-md transition duration-200 transform hover:scale-105">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                </svg>
+                                <span>Lihat Bukti Pembayaran</span>
+                            </a>
+                            @endif
+
+                            <!-- Tombol Download Invoice (hanya muncul jika disetujui) -->
+                            @if($seragam->status_seragam === 'disetujui')
+                            <button wire:click="downloadInvoiceSeragam"
+                                    class="flex items-center justify-center px-6 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-md transition duration-200 transform hover:scale-105">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                <span>Download Invoice Seragam</span>
+                            </button>
+                            @endif
+                        </div>
+
+                        <!-- Ringkasan Data yang Telah Dikirim -->
+                        <div class="bg-white border border-gray-200 rounded-lg p-6">
+                            <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                Data yang Telah Dikirim
+                            </h4>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                                @php
+                                    $paketSeragamData = is_string($seragam->paket_seragam) ? json_decode($seragam->paket_seragam, true) : $seragam->paket_seragam;
+                                    $opsiSeragamData = is_string($seragam->opsi_seragam) ? json_decode($seragam->opsi_seragam, true) : $seragam->opsi_seragam;
+                                    $nominalSeragamData = is_string($seragam->nominal_seragam) ? json_decode($seragam->nominal_seragam, true) : $seragam->nominal_seragam;
+                                @endphp
+
+                                @if($paketSeragamData)
+                                <div class="p-3 bg-gray-50 rounded-lg">
+                                    <p class="text-gray-600 mb-1">Paket Seragam:</p>
+                                    <p class="font-semibold text-gray-900">{{ $paketSeragamData['name'] ?? '-' }}</p>
+                                </div>
+                                @endif
+
+                                @if($opsiSeragamData)
+                                <div class="p-3 bg-gray-50 rounded-lg">
+                                    <p class="text-gray-600 mb-1">Opsi Paket:</p>
+                                    <p class="font-semibold text-gray-900">
+                                        {{ $opsiSeragamData['name'] ?? '-' }}
+                                        @if(isset($opsiSeragamData['amount']))
+                                            <span class="text-xs text-gray-500">(Rp {{ number_format($opsiSeragamData['amount'], 0, ',', '.') }})</span>
+                                        @endif
+                                    </p>
+                                </div>
+                                @endif
+
+                                @if($nominalSeragamData)
+                                <div class="p-3 bg-gray-50 rounded-lg">
+                                    <p class="text-gray-600 mb-1">Nominal yang Dibayarkan:</p>
+                                    <p class="font-semibold text-gray-900">
+                                        Rp {{ number_format($nominalSeragamData['amount'] ?? 0, 0, ',', '.') }}
+                                        @if(isset($nominalSeragamData['name']) && $nominalSeragamData['name'] !== ($opsiSeragamData['name'] ?? ''))
+                                            <span class="text-xs text-gray-500">({{ $nominalSeragamData['name'] }})</span>
+                                        @endif
+                                    </p>
+                                </div>
+                                @endif
+
+                                @if($seragam->opsi_pembayaran_seragam)
+                                <div class="p-3 bg-gray-50 rounded-lg">
+                                    <p class="text-gray-600 mb-1">Opsi Pembayaran:</p>
+                                    <p class="font-semibold text-gray-900 capitalize">{{ $seragam->opsi_pembayaran_seragam }}</p>
+                                </div>
+                                @endif
+
+                                @if($seragam->bank_seragam)
+                                <div class="p-3 bg-gray-50 rounded-lg">
+                                    <p class="text-gray-600 mb-1">Bank/Metode Pembayaran:</p>
+                                    <p class="font-semibold text-gray-900">{{ $seragam->bank_seragam }}</p>
+                                </div>
+                                @endif
+
+                                @if($seragam->nama_pengirim_seragam)
+                                <div class="p-3 bg-gray-50 rounded-lg">
+                                    <p class="text-gray-600 mb-1">Nama Pengirim:</p>
+                                    <p class="font-semibold text-gray-900">{{ $seragam->nama_pengirim_seragam }}</p>
+                                </div>
+                                @endif
+
+                                @if($seragam->waktu_pembayaran_seragam)
+                                <div class="p-3 bg-gray-50 rounded-lg">
+                                    <p class="text-gray-600 mb-1">Waktu Pembayaran:</p>
+                                    <p class="font-semibold text-gray-900">
+                                        {{ \Carbon\Carbon::parse($seragam->waktu_pembayaran_seragam)->locale('id')->isoFormat('D MMMM YYYY, HH:mm') }} WIB
+                                    </p>
+                                </div>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+
+                    @else
+                    {{-- Show form if status is NOT menunggu or disetujui (belum isi, ditolak, atau perbaiki) --}}
+
+                    <!-- SECTION 1: PILIH PAKET & NOMINAL -->
+                    <div class="bg-gradient-to-br from-blue-50 to-cyan-50 border-2 border-blue-200 rounded-lg p-6 mb-6">
+                        <h4 class="text-lg font-bold text-blue-900 mb-4 flex items-center">
+                            <svg class="w-6 h-6 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                            </svg>
+                            Step 1: Pilih Paket Seragam & Nominal
+                        </h4>
 
                         @php
                             $seragamPackages = \App\Models\Setting::get('daftar_ulang_seragam_packages', []);
+                            // Use computed property for Global OR Individual logic
+                            $seragamPackagesEnableOpsiLainnya = $this->shouldShowSeragamOpsiLainnyaDropdown;
                         @endphp
 
+                        <!-- 1. Pilih Paket Seragam -->
                         @if($seragamPackages && count($seragamPackages) > 0)
-                            <div class="space-y-2">
-                                @foreach($seragamPackages as $index => $package)
-                                    <label class="flex items-start p-3 border-2 border-gray-300 rounded-lg {{ $isSeragamApproved ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:border-indigo-500' }} transition">
-                                        <input type="radio" wire:model="paketSeragam" name="paket_seragam" value="{{ $index }}" class="mt-1 text-indigo-600 focus:ring-indigo-500" {{ $isSeragamApproved ? 'disabled' : '' }}>
-                                        <div class="ml-3">
-                                            <p class="font-semibold text-gray-900">{{ $package['name'] ?? '-' }}</p>
-                                            <p class="text-sm text-gray-600">{{ $package['description'] ?? '-' }}</p>
-                                        </div>
-                                    </label>
-                                @endforeach
+                            <div class="mb-4">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Pilih Paket Seragam <span class="text-red-500">*</span>
+                                </label>
+                                <select wire:model.live="paketSeragam"
+                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 {{ $isSeragamApproved ? 'opacity-60 cursor-not-allowed' : '' }}"
+                                        {{ $isSeragamApproved ? 'disabled' : '' }}>
+                                    <option value="">-- Pilih Paket Seragam --</option>
+                                    @foreach($seragamPackages as $package)
+                                        <option value="{{ json_encode($package) }}">
+                                            {{ $package['name'] ?? 'Paket' }}
+                                            @if(!empty($package['description'])) - {{ $package['description'] }}@endif
+                                        </option>
+                                    @endforeach
+                                    @if($seragamPackagesEnableOpsiLainnya && !$isSeragamApproved)
+                                        <option value="paket_lainnya">Paket Lainnya (Input Manual)</option>
+                                    @endif
+                                </select>
+                                @error('paketSeragam')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
+
+                            {{-- Manual Input Paket Lainnya --}}
+                            @if($paketSeragam === 'paket_lainnya')
+                                <div class="mb-4 ml-6 p-4 bg-blue-50 border-l-4 border-blue-500 rounded-lg">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Nama Paket Custom <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="text"
+                                           wire:model.live="paketSeragamCustomName"
+                                           placeholder="Contoh: Paket Khusus Beasiswa"
+                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                           {{ $isSeragamApproved ? 'disabled' : '' }}>
+                                    <p class="text-xs text-gray-600 mt-1">Masukkan nama paket yang tidak tersedia di daftar</p>
+                                    @error('paketSeragamCustomName')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+
+                                    <label class="block text-sm font-medium text-gray-700 mb-2 mt-4">
+                                        Nominal Biaya (Rp) <span class="text-red-500">*</span>
+                                    </label>
+                                    <input type="number"
+                                           wire:model.live="paketSeragamCustomAmount"
+                                           placeholder="Contoh: 1000000"
+                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200"
+                                           {{ $isSeragamApproved ? 'disabled' : '' }}>
+                                    <p class="text-xs text-gray-600 mt-1">Masukkan nominal biaya untuk paket custom</p>
+                                    @error('paketSeragamCustomAmount')
+                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            @endif
+
+                            <!-- 2. Pilih Opsi dari Paket (Dependent Dropdown) -->
+                            @if($paketSeragam && $paketSeragam !== 'paket_lainnya')
+                                @php
+                                    $selectedPackage = json_decode($paketSeragam, true);
+                                    $packageOptions = $selectedPackage['options'] ?? [];
+                                @endphp
+
+                                @if(count($packageOptions) > 0)
+                                    <div class="mb-4 ml-4 p-4 bg-white border-l-4 border-blue-500 rounded-lg">
+                                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                                            Pilih Opsi dari {{ $selectedPackage['name'] ?? 'Paket' }} <span class="text-red-500">*</span>
+                                        </label>
+                                        <div class="space-y-2">
+                                            @foreach($packageOptions as $option)
+                                                <label class="flex items-center p-3 border rounded-lg {{ $isSeragamApproved ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-blue-50' }} transition-colors {{ $opsiSeragam == json_encode($option) ? 'border-blue-500 bg-blue-50' : 'border-gray-300' }}">
+                                                    <input type="radio"
+                                                           wire:model.live="opsiSeragam"
+                                                           value="{{ json_encode($option) }}"
+                                                           class="text-blue-600 focus:ring-blue-500"
+                                                           {{ $isSeragamApproved ? 'disabled' : '' }}>
+                                                    <div class="ml-3 flex-1 flex justify-between items-center">
+                                                        <span class="font-medium text-gray-900">{{ $option['name'] ?? '-' }}</span>
+                                                        <span class="font-bold text-blue-700">Rp {{ number_format($option['amount'] ?? 0, 0, ',', '.') }}</span>
+                                                    </div>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                        @error('opsiSeragam')
+                                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                        @enderror
+                                    </div>
+                                @else
+                                    <div class="mb-4 ml-4 p-4 bg-yellow-50 border border-yellow-300 rounded-lg">
+                                        <p class="text-sm text-yellow-800">Paket ini belum memiliki opsi. Silakan hubungi admin.</p>
+                                    </div>
+                                @endif
+                            @endif
+
+                            <!-- 3. Konfirmasi Nominal yang Dibayarkan -->
+                            @if($opsiSeragam)
+                                @php
+                                    $selectedOption = json_decode($opsiSeragam, true);
+                                    // Use computed property for Global OR Individual logic
+                                    $seragamEnableOpsiLainnya = $this->shouldShowSeragamOpsiLainnyaKonfirmasi;
+                                @endphp
+
+                                <div class="mb-4">
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                                        Konfirmasi Nominal yang Dibayarkan <span class="text-red-500">*</span>
+                                    </label>
+                                    <p class="text-xs text-gray-600 mb-2">Pilih nominal yang akan dibayarkan (default: sesuai opsi yang dipilih)</p>
+
+                                    <div class="space-y-2">
+                                        <!-- Option: Bayar Penuh (Auto from selected option) -->
+                                        <label class="flex items-center p-3 border rounded-lg {{ $isSeragamApproved ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-green-50' }} transition-colors {{ $konfirmasiNominalSeragam == json_encode($selectedOption) ? 'border-green-500 bg-green-50' : 'border-gray-300' }}">
+                                            <input type="radio"
+                                                   wire:model.live="konfirmasiNominalSeragam"
+                                                   value="{{ json_encode($selectedOption) }}"
+                                                   class="text-green-600 focus:ring-green-500"
+                                                   {{ $isSeragamApproved ? 'disabled' : '' }}>
+                                            <div class="ml-3 flex-1 flex justify-between items-center">
+                                                <div>
+                                                    <span class="font-medium text-gray-900">Bayar Penuh</span>
+                                                    <p class="text-xs text-gray-600 mt-1">{{ $selectedOption['name'] ?? '' }}</p>
+                                                </div>
+                                                <span class="font-bold text-green-700">Rp {{ number_format($selectedOption['amount'] ?? 0, 0, ',', '.') }}</span>
+                                            </div>
+                                        </label>
+
+                                        <!-- Option: Opsi Lainnya (Manual Input) -->
+                                        @if($seragamEnableOpsiLainnya)
+                                            <label class="flex items-center p-3 border rounded-lg {{ $isSeragamApproved ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-yellow-50' }} transition-colors {{ $konfirmasiNominalSeragam == 'opsi_lainnya' ? 'border-yellow-500 bg-yellow-50' : 'border-gray-300' }}">
+                                                <input type="radio"
+                                                       wire:model.live="konfirmasiNominalSeragam"
+                                                       value="opsi_lainnya"
+                                                       class="text-yellow-600 focus:ring-yellow-500"
+                                                       {{ $isSeragamApproved ? 'disabled' : '' }}>
+                                                <div class="ml-3 flex-1">
+                                                    <span class="font-medium text-gray-900">Opsi Lainnya (Bayar Tidak Penuh)</span>
+                                                    <p class="text-xs text-gray-500 mt-1">Isi nominal secara manual (untuk angsuran/potongan)</p>
+                                                </div>
+                                            </label>
+
+                                            @if($konfirmasiNominalSeragam == 'opsi_lainnya')
+                                                <div class="ml-6 mt-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                                                    <label class="block text-sm font-medium text-gray-700 mb-2">Masukkan Nominal (Rp)</label>
+                                                    <input type="number"
+                                                           wire:model.live="konfirmasiNominalSeragamOpsiLainnya"
+                                                           placeholder="Contoh: 750000"
+                                                           class="w-full rounded-md border-gray-300 shadow-sm focus:border-yellow-500 focus:ring focus:ring-yellow-200"
+                                                           {{ $isSeragamApproved ? 'disabled' : '' }}>
+                                                    @error('konfirmasiNominalSeragamOpsiLainnya')
+                                                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                                    @enderror
+                                                </div>
+                                            @endif
+                                        @endif
+                                    </div>
+
+                                    @error('konfirmasiNominalSeragam')
+                                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            @endif
                         @else
-                            <p class="text-sm text-gray-500">Paket seragam belum tersedia</p>
+                            <div class="p-4 bg-gray-50 border border-gray-300 rounded-lg text-center">
+                                <p class="text-sm text-gray-600">Belum ada paket seragam yang tersedia. Silakan hubungi admin.</p>
+                            </div>
                         @endif
                     </div>
 
-                    @if($showPembayaranSeragam)
-                    <!-- Biaya & Pembayaran Seragam -->
-                    <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                        <h5 class="font-semibold text-gray-900 mb-3 flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                            Pilih Nominal Biaya Seragam
-                        </h5>
+                    <!-- SECTION BREAK -->
+                    <div class="my-6 border-t-4 border-dashed border-gray-300"></div>
 
-                        @php
-                            $seragamNominals = \App\Models\Setting::get('daftar_ulang_seragam_nominals', []);
-                        @endphp
+                    <!-- SECTION 2: PEMBAYARAN & UPLOAD -->
+                    <div class="bg-gradient-to-br from-green-50 to-emerald-50 border-2 border-green-200 rounded-lg p-6">
+                        <h4 class="text-lg font-bold text-green-900 mb-4 flex items-center">
+                            <svg class="w-6 h-6 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                            Step 2: Informasi Pembayaran & Upload Bukti
+                        </h4>
 
-                        @if($seragamNominals && count($seragamNominals) > 0)
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Nominal Biaya <span class="text-red-500">*</span></label>
-                                <div class="space-y-2">
-                                    @foreach($seragamNominals as $index => $nominal)
-                                        <label class="flex items-center p-3 border rounded-lg {{ $isSeragamApproved ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-green-50' }} transition-colors {{ $nominalSeragam == json_encode($nominal) ? 'border-green-500 bg-green-50' : 'border-gray-300' }}">
-                                            <input type="radio"
-                                                   wire:model.live="nominalSeragam"
-                                                   value="{{ json_encode($nominal) }}"
-                                                   class="text-green-600 focus:ring-green-500"
-                                                   {{ $isSeragamApproved ? 'disabled' : '' }}>
-                                            <div class="ml-3 flex-1 flex justify-between items-center">
-                                                <span class="font-medium text-gray-900">{{ $nominal['name'] ?? '-' }}</span>
-                                                <span class="font-bold text-green-700">Rp {{ number_format($nominal['amount'] ?? 0, 0, ',', '.') }}</span>
-                                            </div>
-                                        </label>
-                                    @endforeach
-
-                                    @if($seragamEnableOpsiLainnya)
-                                        <label class="flex items-center p-3 border rounded-lg {{ $isSeragamApproved ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-green-50' }} transition-colors {{ $nominalSeragam == 'opsi_lainnya' ? 'border-green-500 bg-green-50' : 'border-gray-300' }}">
-                                            <input type="radio"
-                                                   wire:model.live="nominalSeragam"
-                                                   value="opsi_lainnya"
-                                                   class="text-green-600 focus:ring-green-500"
-                                                   {{ $isSeragamApproved ? 'disabled' : '' }}>
-                                            <div class="ml-3 flex-1">
-                                                <span class="font-medium text-gray-900">Opsi Lainnya</span>
-                                                <p class="text-xs text-gray-500 mt-1">Isi nominal secara manual</p>
-                                            </div>
-                                        </label>
-
-                                        @if($nominalSeragam == 'opsi_lainnya')
-                                            <div class="ml-6 mt-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">Masukkan Nominal (Rp)</label>
-                                                <input type="number"
-                                                       wire:model.live="seragamOpsiLainnyaNominal"
-                                                       placeholder="Contoh: 750000"
-                                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200"
-                                                       {{ $isSeragamApproved ? 'disabled' : '' }}>
-                                                @error('seragamOpsiLainnyaNominal')
-                                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                                @enderror
-                                            </div>
-                                        @endif
-                                    @endif
-                                </div>
-
-                                @php
-                                    $selectedSeragamNominal = $nominalSeragam ? json_decode($nominalSeragam, true) : null;
-                                @endphp
-
-                                @if($selectedSeragamNominal)
-                                    <div class="mt-3 p-3 bg-green-50 border border-green-300 rounded-lg">
-                                        <div class="flex justify-between items-center">
-                                            <span class="text-sm font-medium text-gray-700">Nominal yang dipilih:</span>
-                                            <span class="text-lg font-bold text-green-700">Rp {{ number_format($selectedSeragamNominal['amount'] ?? 0, 0, ',', '.') }}</span>
-                                        </div>
-                                    </div>
-                                @endif
-
-                                @error('nominalSeragam')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            @php
-                                $seragamPaymentNominals = \App\Models\Setting::get('daftar_ulang_seragam_payment_nominals', []);
-                            @endphp
-
-                            <!-- Konfirmasi Nominal Biaya Seragam -->
-                            @if($seragamPaymentNominals && count($seragamPaymentNominals) > 0)
-                            <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Konfirmasi Nominal yang Dibayarkan <span class="text-red-500">*</span>
-                                </label>
-                                <p class="text-xs text-gray-600 mb-2">Pilih nominal yang akan dibayarkan</p>
-                                <div class="space-y-2">
-                                    @foreach($seragamPaymentNominals as $index => $nominal)
-                                        <label class="flex items-center p-3 border rounded-lg {{ $isSeragamApproved ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-green-50' }} transition-colors {{ $konfirmasiNominalSeragam == json_encode($nominal) ? 'border-green-500 bg-green-50' : 'border-gray-300' }}">
-                                            <input type="radio"
-                                                   wire:model.live="konfirmasiNominalSeragam"
-                                                   value="{{ json_encode($nominal) }}"
-                                                   class="text-green-600 focus:ring-green-500"
-                                                   {{ $isSeragamApproved ? 'disabled' : '' }}>
-                                            <div class="ml-3 flex-1 flex justify-between items-center">
-                                                <span class="font-medium text-gray-900">{{ $nominal['name'] ?? '-' }}</span>
-                                                <span class="font-bold text-green-700">Rp {{ number_format($nominal['amount'] ?? 0, 0, ',', '.') }}</span>
-                                            </div>
-                                        </label>
-                                    @endforeach
-
-                                    @if($seragamPaymentNominalsEnableOpsiLainnya)
-                                        <label class="flex items-center p-3 border rounded-lg {{ $isSeragamApproved ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-green-50' }} transition-colors {{ $konfirmasiNominalSeragam == 'opsi_lainnya' ? 'border-green-500 bg-green-50' : 'border-gray-300' }}">
-                                            <input type="radio"
-                                                   wire:model.live="konfirmasiNominalSeragam"
-                                                   value="opsi_lainnya"
-                                                   class="text-green-600 focus:ring-green-500"
-                                                   {{ $isSeragamApproved ? 'disabled' : '' }}>
-                                            <div class="ml-3 flex-1">
-                                                <span class="font-medium text-gray-900">Opsi Lainnya</span>
-                                                <p class="text-xs text-gray-500 mt-1">Isi nominal secara manual</p>
-                                            </div>
-                                        </label>
-
-                                        @if($konfirmasiNominalSeragam == 'opsi_lainnya')
-                                            <div class="ml-6 mt-3 p-4 bg-green-50 border border-green-200 rounded-lg">
-                                                <label class="block text-sm font-medium text-gray-700 mb-2">Masukkan Nominal (Rp)</label>
-                                                <input type="number"
-                                                       wire:model.live="konfirmasiNominalSeragamOpsiLainnya"
-                                                       placeholder="Contoh: 1200000"
-                                                       class="w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring focus:ring-green-200"
-                                                       {{ $isSeragamApproved ? 'disabled' : '' }}>
-                                                @error('konfirmasiNominalSeragamOpsiLainnya')
-                                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                                @enderror
-                                            </div>
-                                        @endif
-                                    @endif
-                                </div>
-
-                                @error('konfirmasiNominalSeragam')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-                            @endif
-                        @endif
-
-                        <!-- Opsi Pembayaran Seragam -->
+                        <!-- 4. Opsi Pembayaran -->
                         @php
                             $seragamPaymentOptions = \App\Models\Setting::get('daftar_ulang_seragam_payment_options', ['lunas' => false, 'angsuran' => false, 'potongan' => false]);
                             $availableSeragamOptions = array_filter($seragamPaymentOptions);
@@ -1014,8 +1805,10 @@
 
                         @if(!empty($availableSeragamOptions))
                             <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Opsi Pembayaran</label>
-                                <select wire:model="opsiPembayaranSeragam" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 {{ $isSeragamApproved ? 'opacity-60 cursor-not-allowed' : '' }}" {{ $isSeragamApproved ? 'disabled' : '' }}>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Pilih Opsi Pembayaran <span class="text-red-500">*</span></label>
+                                <select wire:model="opsiPembayaranSeragam"
+                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 {{ $isSeragamApproved ? 'opacity-60 cursor-not-allowed' : '' }}"
+                                        {{ $isSeragamApproved ? 'disabled' : '' }}>
                                     <option value="">-- Pilih Opsi --</option>
                                     @foreach($availableSeragamOptions as $option => $enabled)
                                         @if($enabled)
@@ -1023,18 +1816,23 @@
                                         @endif
                                     @endforeach
                                 </select>
+                                @error('opsiPembayaranSeragam')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
                         @endif
 
-                        <!-- Bank Selection Seragam -->
+                        <!-- 5. Bank/Metode Pembayaran -->
                         @php
                             $seragamBanks = \App\Models\Setting::get('daftar_ulang_seragam_banks', []);
                         @endphp
 
                         @if($seragamBanks && count($seragamBanks) > 0)
                             <div class="mb-4">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">Daftar Bank/Metode Pembayaran</label>
-                                <select wire:model="bankSeragam" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 {{ $isSeragamApproved ? 'opacity-60 cursor-not-allowed' : '' }}" {{ $isSeragamApproved ? 'disabled' : '' }}>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Daftar Bank/Metode Pembayaran <span class="text-red-500">*</span></label>
+                                <select wire:model="bankSeragam"
+                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 {{ $isSeragamApproved ? 'opacity-60 cursor-not-allowed' : '' }}"
+                                        {{ $isSeragamApproved ? 'disabled' : '' }}>
                                     <option value="">-- Pilih Bank/Metode Pembayaran --</option>
                                     @foreach($seragamBanks as $bank)
                                         <option value="{{ $bank['name'] ?? '' }}">
@@ -1042,8 +1840,27 @@
                                         </option>
                                     @endforeach
                                 </select>
+                                @error('bankSeragam')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
                             </div>
                         @endif
+
+                        <!-- 6. Nama Pengirim -->
+                        <div class="mb-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Nama Pengirim <span class="text-red-500">*</span>
+                            </label>
+                            <p class="text-xs text-gray-600 mb-2">Nama orang yang mengirimkan pembayaran (sesuai bukti transfer)</p>
+                            <input type="text"
+                                   wire:model="namaPengirimSeragam"
+                                   placeholder="Contoh: Ahmad Zulkifli"
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 {{ $isSeragamApproved ? 'opacity-60 cursor-not-allowed' : '' }}"
+                                   {{ $isSeragamApproved ? 'disabled' : '' }}>
+                            @error('namaPengirimSeragam')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
 
                         <!-- Upload Bukti Pembayaran Seragam -->
                         @php
@@ -1068,7 +1885,7 @@
                                     </div>
                                 @endif
 
-                                @if($pendaftar->seragam && $pendaftar->seragam->bukti_pembayaran)
+                                @if($pendaftar->seragam && $pendaftar->seragam->bukti_pembayaran && !in_array($pendaftar->seragam->status_seragam, ['perbaiki', 'ditolak']))
                                     <div class="p-4 bg-green-50 border-2 border-green-200 rounded-lg mb-3">
                                         <div class="flex items-center mb-3">
                                             <svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
@@ -1133,44 +1950,116 @@
                                             </div>
                                         </div>
                                     @else
-                                        <div class="border-2 border-dashed border-gray-300 rounded-lg p-4 text-center" wire:loading.class="opacity-50" wire:target="buktiSeragam">
-                                            <input type="file" wire:model="buktiSeragam" id="bukti-seragam" class="hidden" accept=".pdf,.jpg,.jpeg,.png">
-                                            <label for="bukti-seragam" class="cursor-pointer">
-                                                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                                                </svg>
-                                                <p class="mt-2 text-sm text-gray-600">
-                                                    @if($buktiSeragam)
-                                                        File terpilih: {{ $buktiSeragam->getClientOriginalName() }}
-                                                    @else
-                                                        Klik untuk upload bukti
-                                                    @endif
-                                                </p>
-                                                <p class="text-xs text-gray-500 mt-1">PDF, JPG, PNG (Max. 5MB)</p>
-                                            </label>
-                                            <div wire:loading wire:target="buktiSeragam" class="mt-2">
-                                                <span class="text-sm text-gray-600">Uploading...</span>
+                                        <div class="{{ $isSeragamApproved ? 'pointer-events-none opacity-60' : '' }}">
+                                            @if($buktiSeragam)
+                                            {{-- File Selected State --}}
+                                            <div class="border-2 border-solid border-green-400 bg-green-50 rounded-lg p-4" wire:loading.class="opacity-50" wire:target="buktiSeragam">
+                                                <div class="flex items-start space-x-4">
+                                                    {{-- File Icon --}}
+                                                    <div class="flex-shrink-0">
+                                                        <div class="w-16 h-16 bg-red-100 rounded-lg flex items-center justify-center">
+                                                            <svg class="w-8 h-8 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                                                                <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd"></path>
+                                                            </svg>
+                                                        </div>
+                                                    </div>
+
+                                                    {{-- File Info --}}
+                                                    <div class="flex-1 min-w-0">
+                                                        <div class="flex items-start justify-between">
+                                                            <div class="flex-1 min-w-0">
+                                                                <p class="text-sm font-semibold text-gray-900 mb-1 flex items-center">
+                                                                    <svg class="w-4 h-4 text-green-600 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                                                    </svg>
+                                                                    File Siap Disimpan
+                                                                </p>
+                                                                <p class="text-sm text-gray-800 font-medium truncate mb-1">
+                                                                    {{ $buktiSeragam->getClientOriginalName() }}
+                                                                </p>
+                                                                <div class="flex items-center space-x-3 text-xs text-gray-600">
+                                                                    <span class="flex items-center">
+                                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                                                        </svg>
+                                                                        {{ strtoupper(pathinfo($buktiSeragam->getClientOriginalName(), PATHINFO_EXTENSION)) }}
+                                                                    </span>
+                                                                    <span class="flex items-center">
+                                                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                                                        </svg>
+                                                                        {{ number_format($buktiSeragam->getSize() / 1024, 0) }} KB
+                                                                    </span>
+                                                                </div>
+                                                            </div>
+                                                        </div>
+
+                                                        {{-- Change File Button --}}
+                                                        <div class="mt-3">
+                                                            <input type="file" wire:model="buktiSeragam" id="bukti-seragam-change" class="hidden" accept=".pdf,.jpg,.jpeg,.png">
+                                                            <label for="bukti-seragam-change" class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 cursor-pointer transition-colors">
+                                                                <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                                                                </svg>
+                                                                Ganti File
+                                                            </label>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                {{-- Loading State --}}
+                                                <div wire:loading wire:target="buktiSeragam" class="mt-3 pt-3 border-t border-green-200">
+                                                    <div class="flex items-center text-sm text-gray-600">
+                                                        <svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        Memuat file...
+                                                    </div>
+                                                </div>
                                             </div>
+                                            @else
+                                            {{-- Empty State --}}
+                                            <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:border-gray-400 transition-colors" wire:loading.class="opacity-50" wire:target="buktiSeragam">
+                                                <input type="file" wire:model="buktiSeragam" id="bukti-seragam" class="hidden" accept=".pdf,.jpg,.jpeg,.png">
+                                                <label for="bukti-seragam" class="cursor-pointer block">
+                                                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
+                                                    </svg>
+                                                    <p class="mt-2 text-sm font-medium text-gray-700">
+                                                        Klik untuk upload bukti pembayaran
+                                                    </p>
+                                                    <p class="mt-1 text-xs text-gray-500">atau drag and drop file di sini</p>
+                                                    <p class="mt-2 text-xs text-gray-500">PDF, JPG, PNG (Max. 5MB)</p>
+                                                </label>
+
+                                                {{-- Loading State --}}
+                                                <div wire:loading wire:target="buktiSeragam" class="mt-3">
+                                                    <div class="inline-flex items-center text-sm text-gray-600">
+                                                        <svg class="animate-spin h-4 w-4 mr-2" fill="none" viewBox="0 0 24 24">
+                                                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                                                        </svg>
+                                                        Memuat file...
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            @endif
                                         </div>
+                                        @error('buktiSeragam') <span class="text-red-500 text-xs mt-2 block">{{ $message }}</span> @enderror
                                     @endif
-                                    @error('buktiSeragam') <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span> @enderror
                                 @endif
                             </div>
                         @endif
                     </div>
-                    @endif
 
                     <!-- Tombol Simpan -->
                     <div class="flex justify-end pt-4 border-t border-gray-200">
-                        @php
-                            $isSeragamApproved = $seragam && $seragam->status_seragam === 'disetujui';
-                        @endphp
                         <button
                             wire:click="saveSeragam"
                             wire:loading.attr="disabled"
                             wire:target="saveSeragam"
-                            @if($isSeragamApproved) disabled title="Data sudah disetujui, tidak dapat diubah" @endif
-                            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed {{ $isSeragamApproved ? 'opacity-50 cursor-not-allowed' : '' }}">
+                            class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed">
                             <svg wire:loading.remove wire:target="saveSeragam" class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                             </svg>
@@ -1178,12 +2067,17 @@
                                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                             </svg>
-                            <span wire:loading.remove wire:target="saveSeragam">{{ $isSeragamApproved ? 'Data Sudah Disetujui' : 'Simpan Data Seragam' }}</span>
+                            <span wire:loading.remove wire:target="saveSeragam">Simpan Data Seragam</span>
                             <span wire:loading wire:target="saveSeragam">Menyimpan...</span>
                         </button>
                     </div>
+                    @endif {{-- End of @if($requireSeragamPaymentProof) --}}
+
+                    @endif {{-- End of @else (show form for ditolak/perbaiki/belum isi) --}}
+                    @endif {{-- End of @if($seragam && in_array($seragam->status_seragam, ['menunggu', 'disetujui'])) --}}
+
                 </div>
-                @endif
+                @endif {{-- End of @if($showPembayaranSeragam) --}}
 
                 <!-- Ukuran Tab -->
                 @if($activeTab === 'ukuran')
@@ -1191,6 +2085,8 @@
                     @php
                         // Check if ukuran is approved - disable all fields if true
                         $isUkuranApproved = $seragam && $seragam->status_ukuran === 'disetujui';
+                        // Check if ukuran is waiting for approval - hide form completely
+                        $isUkuranWaiting = $seragam && $seragam->status_ukuran === 'menunggu';
                     @endphp
 
                     <!-- Success/Error Messages -->
@@ -1205,6 +2101,46 @@
                         </div>
                     @endif
 
+                    @if(!$isSeragamPaymentOpen)
+                        <!-- Pesan jika di luar waktu pembayaran seragam -->
+                        <div class="bg-red-50 border border-red-200 rounded-lg p-6">
+                            <div class="flex items-start">
+                                <svg class="w-6 h-6 text-red-600 mr-3 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div class="flex-1">
+                                    <h3 class="text-lg font-semibold text-red-900 mb-2">
+                                        🕐 Di Luar Waktu Pengisian Ukuran Seragam
+                                    </h3>
+                                    <p class="text-sm text-red-800 mb-3">
+                                        Saat ini Anda tidak dapat mengisi form ukuran seragam karena berada di luar waktu yang telah ditentukan.
+                                    </p>
+                                    @if($seragamPaymentStart && $seragamPaymentEnd)
+                                        <div class="bg-red-100 border-l-4 border-red-500 rounded p-3">
+                                            <p class="text-xs text-red-800 font-semibold mb-2">Jadwal Pengisian Ukuran Seragam (Sama dengan Pembayaran Seragam):</p>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs text-red-700">
+                                                <div>
+                                                    <span class="font-medium">Mulai:</span> {{ \Carbon\Carbon::parse($seragamPaymentStart)->locale('id')->isoFormat('D MMMM YYYY, HH:mm') }} WIB
+                                                </div>
+                                                <div>
+                                                    <span class="font-medium">Berakhir:</span> {{ \Carbon\Carbon::parse($seragamPaymentEnd)->locale('id')->isoFormat('D MMMM YYYY, HH:mm') }} WIB
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endif
+                                    <div class="mt-3 flex items-start p-3 bg-yellow-100 border-l-4 border-yellow-500 rounded">
+                                        <svg class="w-4 h-4 text-yellow-600 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <div class="text-xs text-yellow-800">
+                                            <p class="mb-1"><strong>ℹ️ Informasi Penting:</strong></p>
+                                            <p>Pengisian ukuran seragam mengikuti jadwal pembayaran daftar ulang seragam. Silakan kembali ke halaman ini pada waktu yang telah ditentukan.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @else
                     <!-- Status Alert Ukuran Seragam -->
                     @if($seragam && $seragam->status_ukuran && in_array($seragam->status_ukuran, ['ditolak', 'perbaiki', 'menunggu']))
                         <x-status-alert
@@ -1216,20 +2152,19 @@
 
                     <!-- Informasi/Pengumuman dari Admin -->
                     @php
-                        $ukuranInfo = \App\Models\Setting::get('daftar_ulang_ukuran_info', '');
                         $showUkuranAtasan = \App\Models\Setting::get('daftar_ulang_show_ukuran_atasan', true);
                         $showUkuranBawahan = \App\Models\Setting::get('daftar_ulang_show_ukuran_bawahan', true);
                         $showAtribut = \App\Models\Setting::get('daftar_ulang_show_atribut', true);
                     @endphp
 
-                    @if($ukuranInfo)
+                    @if($this->ukuranInfo)
                         <div class="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-4">
                             <div class="flex items-start space-x-2">
                                 <svg class="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
-                                <div class="flex-1 text-sm text-purple-900">
-                                    {!! $ukuranInfo !!}
+                                <div class="flex-1 text-sm text-purple-900 prose prose-sm prose-purple max-w-none">
+                                    {!! $this->ukuranInfo !!}
                                 </div>
                             </div>
                         </div>
@@ -1253,6 +2188,22 @@
                         </div>
                     @endif
 
+                    @if($isUkuranWaiting)
+                        <div class="p-4 bg-yellow-50 border border-yellow-200 rounded-lg mb-6">
+                            <div class="flex items-start">
+                                <svg class="w-5 h-5 text-yellow-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div class="flex-1">
+                                    <p class="text-sm text-yellow-800 font-medium">Data Ukuran Sedang Menunggu Persetujuan</p>
+                                    <p class="text-xs text-yellow-600 mt-1">Data ukuran seragam yang Anda kirim sedang dalam proses verifikasi oleh panitia. Form tidak dapat diubah saat menunggu persetujuan.</p>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if(!$isUkuranWaiting && !$isUkuranApproved)
+                    {{-- Only show form if NOT waiting and NOT approved --}}
                     <div class="{{ $isUkuranApproved ? 'pointer-events-none opacity-60' : '' }}">
                     @php
                         $ukuranJasImage = \App\Models\Setting::get('daftar_ulang_ukuran_jas_image', null);
@@ -1517,8 +2468,190 @@
                             <span wire:loading wire:target="saveUkuran">Menyimpan...</span>
                         </button>
                     </div>
+                    @endif {{-- End of @if(!$isUkuranWaiting && !$isUkuranApproved) - Form only shown if not waiting and not approved --}}
+
+                    {{-- PHP Logic for Ringkasan and Warning - OUTSIDE form conditional so it works even when form is hidden --}}
+                    @php
+                        // Determine actual values - use database values if form is hidden (waiting/approved)
+                        // Otherwise use livewire properties (form is active)
+                        if ($isUkuranWaiting || $isUkuranApproved) {
+                            // Get from database - form is hidden, livewire properties not populated
+                            $actualUkuranJas = $seragam->ukuran_jas ?? '';
+                            $actualUkuranBajuOlahraga = $seragam->ukuran_baju_olahraga ?? '';
+                            $actualUkuranCelanaOlahraga = $seragam->ukuran_celana_olahraga ?? '';
+                            $actualUkuranBajuHarian = $seragam->ukuran_baju_harian ?? '';
+                            $actualUkuranCelanaHarian = $seragam->ukuran_celana_rok_harian ?? '';
+                            $actualUkuranKopyah = $seragam->ukuran_kopyah ?? '';
+                        } else {
+                            // Get from livewire properties - form is active, user may be editing
+                            $actualUkuranJas = $ukuran_jas == 'opsi_lainnya' ? $ukuranJasOpsiLainnya : $ukuran_jas;
+                            $actualUkuranBajuOlahraga = $ukuran_baju_olahraga == 'opsi_lainnya' ? $ukuranBajuOlahragaOpsiLainnya : $ukuran_baju_olahraga;
+                            $actualUkuranCelanaOlahraga = $ukuran_celana_olahraga == 'opsi_lainnya' ? $ukuranCelanaOlahragaOpsiLainnya : $ukuran_celana_olahraga;
+                            $actualUkuranBajuHarian = $ukuran_baju_harian == 'opsi_lainnya' ? $ukuranBajuHarianOpsiLainnya : $ukuran_baju_harian;
+                            $actualUkuranCelanaHarian = $ukuran_celana_rok_harian == 'opsi_lainnya' ? $ukuranCelanaRokHarianOpsiLainnya : $ukuran_celana_rok_harian;
+                            $actualUkuranKopyah = $ukuran_kopyah == 'opsi_lainnya' ? $ukuranKopyahOpsiLainnya : $ukuran_kopyah;
+                        }
+
+                        // Check if any size is selected
+                        $anyUkuranSelected = $actualUkuranJas || $actualUkuranBajuOlahraga || $actualUkuranCelanaOlahraga || $actualUkuranBajuHarian || $actualUkuranCelanaHarian || $actualUkuranKopyah;
+
+                        // Check if there's a difference between baju harian and celana harian
+                        $hasSizeDifference = false;
+                        $largerSize = '';
+                        if ($actualUkuranBajuHarian && $actualUkuranCelanaHarian && $actualUkuranBajuHarian != $actualUkuranCelanaHarian) {
+                            $hasSizeDifference = true;
+
+                            // Determine which size is larger (simple comparison based on common sizes)
+                            $sizeOrder = ['XS', 'S', 'M', 'L', 'XL', 'XXL', 'XXXL'];
+                            $bajuIndex = array_search($actualUkuranBajuHarian, $sizeOrder);
+                            $celanaIndex = array_search($actualUkuranCelanaHarian, $sizeOrder);
+
+                            if ($bajuIndex !== false && $celanaIndex !== false) {
+                                $largerSize = $bajuIndex > $celanaIndex ? $actualUkuranBajuHarian : $actualUkuranCelanaHarian;
+                            } else {
+                                // If not standard sizes, just mention both
+                                $largerSize = 'ukuran terbesar antara ' . $actualUkuranBajuHarian . ' dan ' . $actualUkuranCelanaHarian;
+                            }
+                        }
+                    @endphp
+
+                    {{-- Ringkasan Pilihan Ukuran - OUTSIDE form conditional so it shows even when form is hidden --}}
+                    @if($anyUkuranSelected)
+                    <div class="bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-300 rounded-lg p-6 shadow-md mt-6">
+                        <div class="flex items-center mb-4">
+                            <svg class="w-6 h-6 text-purple-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"></path>
+                            </svg>
+                            <h4 class="text-lg font-bold text-purple-900">📋 Ringkasan Pilihan Ukuran Anda</h4>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            @if($actualUkuranJas)
+                            <div class="bg-white rounded-lg p-4 border border-red-200">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-red-600 font-bold text-lg">👔</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500 font-medium">Ukuran Jas</p>
+                                        <p class="text-base font-bold text-gray-900">{{ $actualUkuranJas }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+
+                            @if($actualUkuranBajuOlahraga)
+                            <div class="bg-white rounded-lg p-4 border border-blue-200">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-blue-600 font-bold text-lg">👕</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500 font-medium">Baju Olahraga</p>
+                                        <p class="text-base font-bold text-gray-900">{{ $actualUkuranBajuOlahraga }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+
+                            @if($actualUkuranCelanaOlahraga)
+                            <div class="bg-white rounded-lg p-4 border border-indigo-200">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-indigo-600 font-bold text-lg">👖</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500 font-medium">Celana Olahraga</p>
+                                        <p class="text-base font-bold text-gray-900">{{ $actualUkuranCelanaOlahraga }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+
+                            @if($actualUkuranBajuHarian)
+                            <div class="bg-white rounded-lg p-4 border border-green-200">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-green-600 font-bold text-lg">👔</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500 font-medium">Baju Seragam Harian</p>
+                                        <p class="text-base font-bold text-gray-900">{{ $actualUkuranBajuHarian }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+
+                            @if($actualUkuranCelanaHarian)
+                            <div class="bg-white rounded-lg p-4 border border-teal-200">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-teal-100 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-teal-600 font-bold text-lg">👗</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500 font-medium">Celana/Rok Harian</p>
+                                        <p class="text-base font-bold text-gray-900">{{ $actualUkuranCelanaHarian }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+
+                            @if($actualUkuranKopyah && $pendaftar->jenis_kelamin === 'L')
+                            <div class="bg-white rounded-lg p-4 border border-cyan-200">
+                                <div class="flex items-center">
+                                    <div class="w-10 h-10 bg-cyan-100 rounded-full flex items-center justify-center mr-3">
+                                        <span class="text-cyan-600 font-bold text-lg">🧢</span>
+                                    </div>
+                                    <div>
+                                        <p class="text-xs text-gray-500 font-medium">Ukuran Kopyah</p>
+                                        <p class="text-base font-bold text-gray-900">{{ $actualUkuranKopyah }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                            @endif
+                        </div>
+                    </div>
+                    @endif
+
+                    {{-- Warning Perbedaan Ukuran - OUTSIDE form conditional so it shows even when form is hidden --}}
+                    @if($hasSizeDifference)
+                    <div class="bg-orange-50 border-l-4 border-orange-500 rounded-lg p-5 shadow-md mt-6">
+                        <div class="flex items-start">
+                            <div class="flex-shrink-0">
+                                <svg class="w-6 h-6 text-orange-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                </svg>
+                            </div>
+                            <div class="ml-3 flex-1">
+                                <h3 class="text-base font-bold text-orange-900 mb-2">
+                                    ⚠️ Perhatian: Perbedaan Ukuran Seragam Harian Terdeteksi!
+                                </h3>
+                                <div class="text-sm text-orange-800 space-y-2">
+                                    <p class="font-semibold">
+                                        Anda memilih ukuran yang berbeda untuk baju seragam harian (<span class="font-bold text-orange-900">{{ $actualUkuranBajuHarian }}</span>)
+                                        dan celana/rok harian (<span class="font-bold text-orange-900">{{ $actualUkuranCelanaHarian }}</span>).
+                                    </p>
+                                    <div class="bg-orange-100 border border-orange-300 rounded-md p-3 mt-3">
+                                        <p class="font-semibold text-orange-900 mb-2">📌 Informasi Penting untuk Pembayaran:</p>
+                                        <p class="leading-relaxed">
+                                            Saat melakukan pembayaran daftar ulang seragam, <span class="font-bold underline">Anda diharuskan memilih dan membayar sesuai dengan ukuran terbesar</span> dari pilihan ukuran seragam harian Anda.
+                                        </p>
+                                        <p class="mt-2 font-bold text-orange-900">
+                                            💰 Ukuran untuk pembayaran: <span class="text-lg">{{ $largerSize }}</span>
+                                        </p>
+                                    </div>
+                                    <p class="text-xs mt-2 italic">
+                                        Pastikan Anda memilih paket seragam dan nominal pembayaran yang sesuai dengan ukuran terbesar tersebut pada saat mengisi form pembayaran di tab "Daftar Ulang Seragam".
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    @endif {{-- End of @if(!$isSeragamPaymentOpen) --}}
                 </div>
-                @endif
+                @endif {{-- End of @if($activeTab === 'ukuran') --}}
             </div>
         @endif
     @endif

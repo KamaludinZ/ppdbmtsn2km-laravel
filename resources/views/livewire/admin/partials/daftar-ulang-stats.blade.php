@@ -8,17 +8,17 @@
 
     // Determine grid layout based on tab
     if ($isMadrasah) {
-        $gridClass = 'grid-cols-1 md:grid-cols-4 lg:grid-cols-8'; // 8 cards in 1 row
+        $gridClass = 'grid-cols-1 md:grid-cols-3 lg:grid-cols-9'; // 9 cards in 1 row (added Lulus card)
     } elseif ($isSeragam) {
-        $gridClass = 'grid-cols-1 md:grid-cols-4 lg:grid-cols-8'; // 8 cards in 1 row
+        $gridClass = 'grid-cols-1 md:grid-cols-3 lg:grid-cols-9'; // 9 cards in 1 row (added Lulus card)
     } elseif ($isUkuran) {
-        $gridClass = 'grid-cols-1 md:grid-cols-3 lg:grid-cols-5'; // 5 cards in 1 row
+        $gridClass = 'grid-cols-1 md:grid-cols-3 lg:grid-cols-6'; // 6 cards in 1 row (added Lulus card)
     } else {
         $gridClass = 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4'; // default 4 cols
     }
 @endphp
 <div class="grid {{ $gridClass }} gap-4 mb-6">
-    <!-- Total Pendaftar Lulus Card -->
+    <!-- Total Pendaftar Card -->
     <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
         <div class="flex items-center">
             <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
@@ -27,8 +27,23 @@
                 </svg>
             </div>
             <div>
-                <p class="text-xs font-medium text-gray-500">Total Pendaftar Lulus</p>
-                <p class="text-2xl font-bold text-gray-900">{{ $stats['total_lulus'] ?? $stats['total'] ?? 0 }}</p>
+                <p class="text-xs font-medium text-gray-500">Total Pendaftar</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $stats['total_pendaftar'] ?? $stats['total'] ?? 0 }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Lulus Card -->
+    <div class="bg-white rounded-xl shadow-sm p-5 border border-gray-100">
+        <div class="flex items-center">
+            <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"></path>
+                </svg>
+            </div>
+            <div>
+                <p class="text-xs font-medium text-gray-500">Lulus</p>
+                <p class="text-2xl font-bold text-gray-900">{{ $stats['lulus'] ?? 0 }}</p>
             </div>
         </div>
     </div>

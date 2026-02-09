@@ -109,29 +109,24 @@ class Kelulusan extends Component
             $query->where('status_pendaftaran', $this->filterStatus);
         }
 
-        // Calculate statistics using single query with groupBy
+        // Calculate statistics WITHOUT ANY FILTERS
+        // Stats should show TOTAL OVERALL DATA regardless of ANY filter (search, jalur, status)
+        // This gives accurate overview of ALL data in system
         $statsData = Pendaftar::query()
-            ->when($this->search, function ($q) {
-                $q->where(function($subQ) {
-                    $subQ->where('nama_lengkap', 'ilike', '%' . $this->search . '%')
-                      ->orWhere('nisn', 'ilike', '%' . $this->search . '%')
-                      ->orWhere('nomor_pendaftaran', 'ilike', '%' . $this->search . '%');
-                });
-            })
-            ->when($this->filterJalur, fn($q) => $q->where('jalur_pendaftaran_id', $this->filterJalur))
-            ->when($this->filterStatus, fn($q) => $q->where('status_pendaftaran', $this->filterStatus))
+            // NOTE: Do NOT apply any filters here (no search, no jalur, no status)
+            // Stats must show TOTAL OVERALL for accurate overview
             ->selectRaw("
                 COUNT(*) as total,
-                SUM(CASE WHEN status_pendaftaran IN ('menunggu_verifikasi', 'data_disetujui') THEN 1 ELSE 0 END) as menunggu,
+                SUM(CASE WHEN status_pendaftaran IN ('data_disetujui', 'lulus', 'diterima', 'tidak_lulus', 'cadangan', 'ditolak') THEN 1 ELSE 0 END) as data_disetujui,
                 SUM(CASE WHEN status_pendaftaran IN ('lulus', 'diterima') THEN 1 ELSE 0 END) as lulus,
-                SUM(CASE WHEN status_pendaftaran IN ('cadangan', 'lengkapi_data') THEN 1 ELSE 0 END) as cadangan,
+                SUM(CASE WHEN status_pendaftaran = 'cadangan' THEN 1 ELSE 0 END) as cadangan,
                 SUM(CASE WHEN status_pendaftaran IN ('tidak_lulus', 'ditolak', 'data_ditolak') THEN 1 ELSE 0 END) as tidak_lulus
             ")
             ->first();
 
         $stats = [
             'total' => $statsData->total ?? 0,
-            'menunggu' => $statsData->menunggu ?? 0,
+            'data_disetujui' => $statsData->data_disetujui ?? 0,
             'lulus' => $statsData->lulus ?? 0,
             'cadangan' => $statsData->cadangan ?? 0,
             'tidak_lulus' => $statsData->tidak_lulus ?? 0,

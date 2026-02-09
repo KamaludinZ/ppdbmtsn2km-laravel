@@ -18,6 +18,7 @@ class TesPsikologiPendaftar extends Model
         'tanggal_upload',
         'status_verifikasi',
         'catatan_verifikasi',
+        'catatan_psikologi',
         'tanggal_verifikasi',
         'verified_by'
     ];
