@@ -1044,11 +1044,11 @@ class DetailPendaftar extends Component
         // Define wajib documents
         $wajibDokumen = ['rapor', 'akte', 'kk', 'nisn', 'ijazah'];
 
-        // Check all wajib documents must be disetujui
+        // Check if any wajib documents are still "menunggu_verifikasi"
         foreach ($wajibDokumen as $dok) {
             $statusField = 'status_' . $dok;
-            if ($this->$statusField !== 'disetujui') {
-                return false;
+            if ($this->$statusField === 'menunggu_verifikasi') {
+                return false; // Ada dokumen wajib yang masih menunggu verifikasi
             }
         }
 
@@ -1074,14 +1074,16 @@ class DetailPendaftar extends Component
                 $isConditionalFilled = true;
             }
 
-            // If uploaded or conditional field filled, must be disetujui
+            // If uploaded or conditional field filled, check if still "menunggu_verifikasi"
             if ($hasUpload || $isConditionalFilled) {
-                if ($this->$statusField !== 'disetujui') {
-                    return false;
+                if ($this->$statusField === 'menunggu_verifikasi') {
+                    return false; // Ada dokumen optional yang masih menunggu verifikasi
                 }
             }
         }
 
+        // Semua dokumen sudah diverifikasi (disetujui/perbaiki_data/data_ditolak)
+        // Tombol Ubah Status aktif
         return true;
     }
 

@@ -211,7 +211,7 @@
                         <div class="space-y-1 mb-2">
                             @if($pendaftar->jalurPendaftaran && str_contains(strtolower($pendaftar->jalurPendaftaran->nama), 'prestasi'))
                                 <p class="text-xs bg-amber-50 border border-amber-200 rounded px-2 py-1 inline-block">
-                                    <span class="font-semibold text-amber-800">Catatan Jalur Prestasi:</span> <span class="text-amber-700">Tab <strong>Prestasi Siswa</strong> wajib diisi</span>
+                                    <span class="font-semibold text-amber-800">Catatan Jalur Prestasi:</span> <span class="text-amber-700">Tab <strong>Prestasi Siswa</strong> wajib diisi bagi Jalur Prestasi Non-Akademik</span>
                                 </p>
                             @endif
 
