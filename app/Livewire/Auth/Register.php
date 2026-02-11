@@ -539,27 +539,39 @@ class Register extends Component
 
             $this->showConfirmModal = false;
 
-            // Handle duplicate email error
-            if (str_contains($e->getMessage(), 'users_email_unique')) {
-                session()->flash('error', 'Email ini sudah terdaftar di sistem kami. Akun Anda mungkin sudah dibuat sebelumnya. Silahkan cek email atau WhatsApp Anda untuk informasi login. Jika Anda lupa password, silahkan gunakan fitur lupa password atau hubungi panitia.');
+            $errorMessage = $e->getMessage();
+
+            // Handle duplicate email error (cek berbagai variasi pesan error)
+            if (str_contains($errorMessage, 'users_email_unique') ||
+                str_contains($errorMessage, 'duplicate key') && str_contains($errorMessage, 'email')) {
+                session()->flash('error', 'Email ini sudah terdaftar di sistem kami. Silahkan gunakan email lain atau login jika Anda sudah memiliki akun. Jika lupa password, gunakan fitur reset password.');
                 \Log::warning('Duplicate email registration attempt', [
                     'email' => $this->email,
                     'nama' => $this->nama_lengkap,
                 ]);
+
+                // Set validation error pada field email
+                $this->addError('email', 'Email ini sudah terdaftar. Silahkan gunakan email lain.');
             }
-            // Handle duplicate NISN error
-            elseif (str_contains($e->getMessage(), 'pendaftars_nisn')) {
-                session()->flash('error', 'NISN ini sudah terdaftar di sistem kami. Akun Anda mungkin sudah dibuat sebelumnya. Silahkan cek email atau WhatsApp Anda untuk informasi login. Jika Anda lupa password, silahkan gunakan fitur lupa password atau hubungi panitia.');
+            // Handle duplicate NISN error (cek berbagai variasi pesan error)
+            elseif (str_contains($errorMessage, 'pendaftar_nisn_unique') ||
+                    str_contains($errorMessage, 'pendaftars_nisn') ||
+                    (str_contains($errorMessage, 'duplicate key') && str_contains($errorMessage, 'nisn'))) {
+                session()->flash('error', 'NISN ini sudah terdaftar di sistem kami. Silahkan cek email atau WhatsApp Anda untuk informasi login. Jika lupa password, gunakan fitur reset password atau hubungi panitia.');
                 \Log::warning('Duplicate NISN registration attempt', [
                     'nisn' => $this->nisn,
                     'nama' => $this->nama_lengkap,
                 ]);
+
+                // Set validation error pada field NISN
+                $this->addError('nisn', 'NISN ini sudah terdaftar. Silahkan hubungi panitia jika ada masalah.');
             }
             else {
                 session()->flash('error', 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi atau hubungi panitia.');
                 \Log::error('Registration database error', [
-                    'error' => $e->getMessage(),
+                    'error' => $errorMessage,
                     'email' => $this->email,
+                    'nisn' => $this->nisn,
                 ]);
             }
         } catch (\Exception $e) {
