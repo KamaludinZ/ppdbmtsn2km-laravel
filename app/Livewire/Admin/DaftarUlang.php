@@ -97,6 +97,9 @@ class DaftarUlang extends Component
 
     // Ukuran Settings
     public $ukuranByGender = false;
+    public $ukuranFieldsRequired = false;  // Kontrol apakah field ukuran wajib diisi semua (true) atau optional (false)
+    public $ukuranAlertPerbedaanEnabled = true;  // Kontrol tampil/sembunyikan alert perbedaan ukuran
+    public $ukuranAlertPerhitunganMode = 'terbesar';  // 'terbesar' atau 'baju_harian'
     public $ukuranJasImage = null;
     public $existingUkuranJasImage = null;
     public $ukuranJasOptions = [];
@@ -177,6 +180,9 @@ class DaftarUlang extends Component
 
         // Ukuran JSON/Array Settings
         $this->ukuranByGender = \App\Models\Setting::get('ukuran_by_gender', false);
+        $this->ukuranFieldsRequired = \App\Models\Setting::get('ukuran_fields_required', false);
+        $this->ukuranAlertPerbedaanEnabled = \App\Models\Setting::get('ukuran_alert_perbedaan_enabled', true);
+        $this->ukuranAlertPerhitunganMode = \App\Models\Setting::get('ukuran_alert_perhitungan_mode', 'terbesar');
         $this->existingUkuranJasImage = \App\Models\Setting::get('daftar_ulang_ukuran_jas_image');
         $this->existingUkuranBajuOlahragaImage = \App\Models\Setting::get('daftar_ulang_ukuran_baju_olahraga_image');
         $this->existingUkuranCelanaOlahragaImage = \App\Models\Setting::get('daftar_ulang_ukuran_celana_olahraga_image');
@@ -871,6 +877,9 @@ class DaftarUlang extends Component
         // Save Settings
         \App\Models\Setting::set('daftar_ulang_ukuran_info', $this->ukuranInfo);
         \App\Models\Setting::set('ukuran_by_gender', $this->ukuranByGender, 'boolean');
+        \App\Models\Setting::set('ukuran_fields_required', $this->ukuranFieldsRequired, 'boolean');
+        \App\Models\Setting::set('ukuran_alert_perbedaan_enabled', $this->ukuranAlertPerbedaanEnabled, 'boolean');
+        \App\Models\Setting::set('ukuran_alert_perhitungan_mode', $this->ukuranAlertPerhitunganMode, 'string');
         \App\Models\Setting::set('daftar_ulang_ukuran_jas_options', $this->ukuranJasOptions, 'json');
         \App\Models\Setting::set('daftar_ulang_ukuran_jas_enable_opsi_lainnya', $this->ukuranJasEnableOpsiLainnya, 'boolean');
         \App\Models\Setting::set('daftar_ulang_ukuran_baju_olahraga_options', $this->ukuranBajuOlahragaOptions, 'json');

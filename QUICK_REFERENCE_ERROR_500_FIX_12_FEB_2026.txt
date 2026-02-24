@@ -1,0 +1,79 @@
+╔══════════════════════════════════════════════════════════════════════════════╗
+║                   QUICK REFERENCE - ERROR 500 FIX                            ║
+║                           12 Februari 2026                                   ║
+╚══════════════════════════════════════════════════════════════════════════════╝
+
+🔴 CRITICAL FIX - HALAMAN TES PSIKOLOGI ERROR 500
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📤 FILE TO UPLOAD:
+
+   Local:      C:\ppdbmtsn2km-laravel\resources\views\livewire\admin\partials\
+               tes-psikologi-data.blade.php
+
+   Production: /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/resources/views/
+               livewire/admin/partials/tes-psikologi-data.blade.php
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🔧 UPLOAD VIA CPANEL:
+
+   1. Login cPanel
+   2. File Manager
+   3. Navigate: resources/views/livewire/admin/partials/
+   4. Upload: tes-psikologi-data.blade.php
+   5. REPLACE file lama
+   6. TEST SEGERA!
+
+═══════════════════════════════════════════════════════════════════════════════
+
+✅ TESTING CHECKLIST:
+
+   Test 1: Akses /admin/tes-psikologi → Load tanpa error 500
+   Test 2: Akses /panitia/tes-psikologi → Load tanpa error 500
+   Test 3: Filter dropdown → 5 options (no "Belum Upload")
+   Test 4: Filter "Semua Status" → Load normal
+   Test 5: Filter "Menunggu" → Load normal
+   Test 6: WhatsApp clickable → Buka chat
+   Test 7: Sorting → Works
+   Test 8: Survey modal → Works
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📊 WHAT CHANGED:
+
+   ✅ REMOVED: Filter "Belum Upload" (causing error 500)
+   ✅ SIMPLIFIED: View structure (1 model only: TesPsikologiPendaftar)
+   ✅ FIXED: All property access errors
+   ✅ KEPT: Sorting, WhatsApp clickable, all core features
+
+═══════════════════════════════════════════════════════════════════════════════
+
+🎯 SUCCESS CRITERIA:
+
+   ✅ No error 500 when accessing /admin/tes-psikologi
+   ✅ No error 500 when accessing /panitia/tes-psikologi
+   ✅ All 5 filters work normal
+   ✅ WhatsApp clickable works
+   ✅ Sorting works
+   ✅ All extended columns accessible
+
+═══════════════════════════════════════════════════════════════════════════════
+
+📚 DOCUMENTATION:
+
+   Main Fix:    FIX_ERROR_500_TES_PSIKOLOGI_REMOVE_BELUM_UPLOAD_FILTER_12_FEB_2026.md
+   Summary:     FINAL_SOLUTION_ERROR_500_TES_PSIKOLOGI_12_FEB_2026.md
+   Manual:      MANUAL_UPLOAD_ERROR_500_FIX_12_FEB_2026.md
+   Upload Bat:  upload_fix_error_500_remove_belum_upload_12_feb_2026.bat
+
+═══════════════════════════════════════════════════════════════════════════════
+
+⏰ ESTIMATED TIME: 10-15 minutes
+
+🔴 PRIORITY: URGENT - CRITICAL FIX
+
+🚀 ACTION: UPLOAD SEGERA VIA CPANEL!
+
+═══════════════════════════════════════════════════════════════════════════════

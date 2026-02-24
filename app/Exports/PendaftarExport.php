@@ -19,9 +19,11 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
     protected $statusPendaftaran;
     protected $search;
     protected $surveyQuestions;
+    protected $surveyQuestionsUmum;
     protected $maxPrestasi = 3;  // Show up to 3 prestasi records
     protected $maxBeasiswa = 3;  // Show up to 3 beasiswa records
     protected $maxPendidikanLain = 3;  // Show up to 3 pendidikan lain records
+    protected $maxKeahlian = 3;  // Show up to 3 keahlian records
     protected $regionCache = [];  // Cache for region names
 
     public function __construct($jalurId = null, $statusPendaftaran = null, $search = null)
@@ -31,7 +33,7 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
         $this->search = $search;
 
         // Load active survey questions untuk kolom dinamis (hanya jika survey aktif)
-        // PENTING: Filter by context 'tes_psikologi' karena ini export untuk Tes Psikologi
+        // Survey Tes Psikologi
         $setting = \App\Models\TesPsikologiSetting::first();
         if ($setting && $setting->survey_aktif) {
             $this->surveyQuestions = SurveyQuestion::tesPsikologi()->aktif()->ordered()->get();
@@ -39,38 +41,123 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
             $this->surveyQuestions = collect(); // Empty collection jika survey tidak aktif
         }
 
+        // Survey Umum
+        $this->surveyQuestionsUmum = SurveyQuestion::umum()->aktif()->ordered()->get();
+
         // Preload all regions to cache for performance
         $this->loadRegionCache();
     }
 
     /**
      * Preload region names to cache
-     * FIXED: Use 'id' instead of 'code' column (production doesn't have 'code' column)
+     * FIXED: Cache BOTH 'id' and 'code' for universal compatibility
+     * FIXED: Added trim to handle whitespace
+     * FIXED: Error handling if 'code' column doesn't exist
      */
     private function loadRegionCache()
     {
-        // Load provinces - use id as key (production DB stores id in pendaftar fields)
-        $provinces = \DB::table('indonesia_provinces')->get(['id', 'name']);
-        foreach ($provinces as $province) {
-            $this->regionCache[(string)$province->id] = $province->name;
+        try {
+            // Load provinces - cache by BOTH id and code
+            $provinces = \DB::table('provinces')->get(['id', 'code', 'name']);
+            foreach ($provinces as $province) {
+                // Cache by ID
+                if (!empty($province->id)) {
+                    $key = trim((string)$province->id);
+                    $this->regionCache[$key] = $province->name;
+                }
+                // Cache by CODE (if exists)
+                if (isset($province->code) && !empty($province->code)) {
+                    $key = trim((string)$province->code);
+                    $this->regionCache[$key] = $province->name;
+                }
+            }
+        } catch (\Exception $e) {
+            // Fallback: Load only with id if code column doesn't exist
+            $provinces = \DB::table('provinces')->get(['id', 'name']);
+            foreach ($provinces as $province) {
+                if (!empty($province->id)) {
+                    $key = trim((string)$province->id);
+                    $this->regionCache[$key] = $province->name;
+                }
+            }
         }
 
-        // Load cities (kabupaten/kota)
-        $cities = \DB::table('indonesia_cities')->get(['id', 'name']);
-        foreach ($cities as $city) {
-            $this->regionCache[(string)$city->id] = $city->name;
+        try {
+            // Load cities (kabupaten/kota) - cache by BOTH id and code
+            $cities = \DB::table('regencies')->get(['id', 'code', 'name']);
+            foreach ($cities as $city) {
+                // Cache by ID
+                if (!empty($city->id)) {
+                    $key = trim((string)$city->id);
+                    $this->regionCache[$key] = $city->name;
+                }
+                // Cache by CODE (if exists)
+                if (isset($city->code) && !empty($city->code)) {
+                    $key = trim((string)$city->code);
+                    $this->regionCache[$key] = $city->name;
+                }
+            }
+        } catch (\Exception $e) {
+            // Fallback
+            $cities = \DB::table('regencies')->get(['id', 'name']);
+            foreach ($cities as $city) {
+                if (!empty($city->id)) {
+                    $key = trim((string)$city->id);
+                    $this->regionCache[$key] = $city->name;
+                }
+            }
         }
 
-        // Load districts (kecamatan)
-        $districts = \DB::table('indonesia_districts')->get(['id', 'name']);
-        foreach ($districts as $district) {
-            $this->regionCache[(string)$district->id] = $district->name;
+        try {
+            // Load districts (kecamatan) - cache by BOTH id and code
+            $districts = \DB::table('districts')->get(['id', 'code', 'name']);
+            foreach ($districts as $district) {
+                // Cache by ID
+                if (!empty($district->id)) {
+                    $key = trim((string)$district->id);
+                    $this->regionCache[$key] = $district->name;
+                }
+                // Cache by CODE (if exists)
+                if (isset($district->code) && !empty($district->code)) {
+                    $key = trim((string)$district->code);
+                    $this->regionCache[$key] = $district->name;
+                }
+            }
+        } catch (\Exception $e) {
+            // Fallback
+            $districts = \DB::table('districts')->get(['id', 'name']);
+            foreach ($districts as $district) {
+                if (!empty($district->id)) {
+                    $key = trim((string)$district->id);
+                    $this->regionCache[$key] = $district->name;
+                }
+            }
         }
 
-        // Load villages (kelurahan/desa)
-        $villages = \DB::table('indonesia_villages')->get(['id', 'name']);
-        foreach ($villages as $village) {
-            $this->regionCache[(string)$village->id] = $village->name;
+        try {
+            // Load villages (kelurahan/desa) - cache by BOTH id and code
+            $villages = \DB::table('villages')->get(['id', 'code', 'name']);
+            foreach ($villages as $village) {
+                // Cache by ID
+                if (!empty($village->id)) {
+                    $key = trim((string)$village->id);
+                    $this->regionCache[$key] = $village->name;
+                }
+                // Cache by CODE (if exists)
+                if (isset($village->code) && !empty($village->code)) {
+                    $key = trim((string)$village->code);
+                    $this->regionCache[$key] = $village->name;
+                }
+            }
+        } catch (\Exception $e) {
+            // Fallback
+            $villages = \DB::table('villages')->get(['id', 'name']);
+            foreach ($villages as $village) {
+                if (!empty($village->id)) {
+                    $key = trim((string)$village->id);
+                    $this->regionCache[$key] = $village->name;
+                }
+            }
         }
     }
 
@@ -83,6 +170,8 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
             'prestasis',
             'beasiswas',
             'pendidikanLains',
+            'keahlian',
+            'tahfidz',
             'surveyAnswers.question.options',
             'tesPsikologiPendaftar',
             'daftarUlang',
@@ -136,8 +225,8 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
 
             // Kewarganegaraan (conditional)
             $pendaftar->kewarganegaraan,
-            // NIK (only for WNI)
-            $pendaftar->kewarganegaraan === 'WNI' ? $pendaftar->nik : '',
+            // NIK (only for WNI) - Add \t prefix to prevent Excel from converting to number
+            $pendaftar->kewarganegaraan === 'WNI' ? "\t" . $pendaftar->nik : '',
             // Asal Negara & Nomor Izin Tinggal (only for WNA)
             $pendaftar->kewarganegaraan === 'WNA' ? $pendaftar->negara_asal : '',
             $pendaftar->kewarganegaraan === 'WNA' ? $pendaftar->nomor_kitas : '',
@@ -167,9 +256,9 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
             $this->formatBoolean($pendaftar->imunisasi_campak, 'Ya', 'Tidak'),
             $this->formatBoolean($pendaftar->imunisasi_covid, 'Ya', 'Tidak'),
 
-            // Nomor Kartu
+            // Nomor Kartu - Add \t prefix to prevent Excel from converting to number
             $pendaftar->nomor_kip,
-            $pendaftar->nomor_kk,
+            $pendaftar->nomor_kk ? "\t" . $pendaftar->nomor_kk : '',
             $pendaftar->nama_kepala_keluarga,
 
             // Asal Sekolah
@@ -191,8 +280,8 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
         if ($pendaftar->ayah_status === 'masih_hidup') {
             $baseData = array_merge($baseData, [
                 $pendaftar->ayah_kewarganegaraan,
-                // NIK or WNA fields
-                $pendaftar->ayah_kewarganegaraan === 'WNI' ? $pendaftar->ayah_nik : '',
+                // NIK or WNA fields - Add \t prefix to prevent Excel from converting to number
+                $pendaftar->ayah_kewarganegaraan === 'WNI' ? "\t" . $pendaftar->ayah_nik : '',
                 $pendaftar->ayah_kewarganegaraan === 'WNA' ? $pendaftar->ayah_negara_asal : '',
                 $pendaftar->ayah_kewarganegaraan === 'WNA' ? $pendaftar->ayah_nomor_kitas : '',
                 // Detail
@@ -203,13 +292,13 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
                 $pendaftar->ayah_penghasilan,
                 // HP (conditional)
                 $pendaftar->ayah_tidak_punya_hp ? 'Tidak Ada' : $pendaftar->ayah_no_hp,
-                // Kartu Bantuan
-                $pendaftar->nomor_kks,
-                $pendaftar->nomor_pkh,
+                // Kartu Bantuan - Add \t prefix to prevent Excel from converting to number
+                $pendaftar->nomor_kks ? "\t" . $pendaftar->nomor_kks : '',
+                $pendaftar->nomor_pkh ? "\t" . $pendaftar->nomor_pkh : '',
             ]);
         } else {
-            // Fill empty values if not alive
-            $baseData = array_merge($baseData, array_fill(0, 13, ''));
+            // Fill empty values if not alive (12 columns to match headings)
+            $baseData = array_merge($baseData, array_fill(0, 12, ''));
         }
 
         // ========================================
@@ -224,8 +313,8 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
         if ($pendaftar->ibu_status === 'masih_hidup') {
             $baseData = array_merge($baseData, [
                 $pendaftar->ibu_kewarganegaraan,
-                // NIK or WNA fields
-                $pendaftar->ibu_kewarganegaraan === 'WNI' ? $pendaftar->ibu_nik : '',
+                // NIK or WNA fields - Add \t prefix to prevent Excel from converting to number
+                $pendaftar->ibu_kewarganegaraan === 'WNI' ? "\t" . $pendaftar->ibu_nik : '',
                 $pendaftar->ibu_kewarganegaraan === 'WNA' ? $pendaftar->ibu_negara_asal : '',
                 $pendaftar->ibu_kewarganegaraan === 'WNA' ? $pendaftar->ibu_nomor_kitas : '',
                 // Detail
@@ -238,8 +327,8 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
                 $pendaftar->ibu_tidak_punya_hp ? 'Tidak Ada' : $pendaftar->ibu_no_hp,
             ]);
         } else {
-            // Fill empty values if not alive
-            $baseData = array_merge($baseData, array_fill(0, 11, ''));
+            // Fill empty values if not alive (10 columns to match headings)
+            $baseData = array_merge($baseData, array_fill(0, 10, ''));
         }
 
         // ========================================
@@ -255,8 +344,8 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
                 $pendaftar->wali_nama,
                 $pendaftar->wali_status,
                 $pendaftar->wali_kewarganegaraan,
-                // NIK or WNA fields
-                $pendaftar->wali_kewarganegaraan === 'WNI' ? $pendaftar->wali_nik : '',
+                // NIK or WNA fields - Add \t prefix to prevent Excel from converting to number
+                $pendaftar->wali_kewarganegaraan === 'WNI' ? "\t" . $pendaftar->wali_nik : '',
                 $pendaftar->wali_kewarganegaraan === 'WNA' ? $pendaftar->wali_negara_asal : '',
                 $pendaftar->wali_kewarganegaraan === 'WNA' ? $pendaftar->wali_nomor_kitas : '',
                 // Detail
@@ -279,24 +368,17 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
         if ($pendaftar->ayah_status === 'masih_hidup') {
             $baseData = array_merge($baseData, [
                 $this->formatBoolean($pendaftar->ayah_tinggal_luar_negeri, 'Ya', 'Tidak'),
+                // Always show address data if exists (regardless of tinggal_luar_negeri)
+                $pendaftar->ayah_status_kepemilikan_rumah,
+                $this->getRegionName($pendaftar->ayah_provinsi),
+                $this->getRegionName($pendaftar->ayah_kabupaten),
+                $this->getRegionName($pendaftar->ayah_kecamatan),
+                $this->getRegionName($pendaftar->ayah_kelurahan),
+                $pendaftar->ayah_rt,
+                $pendaftar->ayah_rw,
+                $pendaftar->alamat_ayah,
+                $pendaftar->ayah_kode_pos,
             ]);
-
-            // Detail address (only if not living abroad)
-            if (!$pendaftar->ayah_tinggal_luar_negeri) {
-                $baseData = array_merge($baseData, [
-                    $pendaftar->ayah_status_kepemilikan_rumah,
-                    $this->getRegionName($pendaftar->ayah_provinsi),
-                    $this->getRegionName($pendaftar->ayah_kabupaten),
-                    $this->getRegionName($pendaftar->ayah_kecamatan),
-                    $this->getRegionName($pendaftar->ayah_kelurahan),
-                    $pendaftar->ayah_rt,
-                    $pendaftar->ayah_rw,
-                    $pendaftar->alamat_ayah,
-                    $pendaftar->ayah_kode_pos,
-                ]);
-            } else {
-                $baseData = array_merge($baseData, array_fill(0, 9, ''));
-            }
         } else {
             // Fill empty values if ayah not alive
             $baseData = array_merge($baseData, array_fill(0, 10, ''));
@@ -308,33 +390,18 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
         if ($pendaftar->ibu_status === 'masih_hidup') {
             $baseData = array_merge($baseData, [
                 $this->formatBoolean($pendaftar->ibu_sama_dengan_ayah, 'Sama dengan Ayah', 'Berbeda'),
+                $this->formatBoolean($pendaftar->ibu_tinggal_luar_negeri, 'Ya', 'Tidak'),
+                // Always show address data if exists (regardless of sama_dengan_ayah or tinggal_luar_negeri)
+                $pendaftar->ibu_status_kepemilikan_rumah,
+                $this->getRegionName($pendaftar->ibu_provinsi),
+                $this->getRegionName($pendaftar->ibu_kabupaten),
+                $this->getRegionName($pendaftar->ibu_kecamatan),
+                $this->getRegionName($pendaftar->ibu_kelurahan),
+                $pendaftar->ibu_rt,
+                $pendaftar->ibu_rw,
+                $pendaftar->alamat_ibu,
+                $pendaftar->ibu_kode_pos,
             ]);
-
-            // Detail address (only if not same as ayah)
-            if (!$pendaftar->ibu_sama_dengan_ayah) {
-                $baseData = array_merge($baseData, [
-                    $this->formatBoolean($pendaftar->ibu_tinggal_luar_negeri, 'Ya', 'Tidak'),
-                ]);
-
-                // Detail (only if not living abroad)
-                if (!$pendaftar->ibu_tinggal_luar_negeri) {
-                    $baseData = array_merge($baseData, [
-                        $pendaftar->ibu_status_kepemilikan_rumah,
-                        $this->getRegionName($pendaftar->ibu_provinsi),
-                        $this->getRegionName($pendaftar->ibu_kabupaten),
-                        $this->getRegionName($pendaftar->ibu_kecamatan),
-                        $this->getRegionName($pendaftar->ibu_kelurahan),
-                        $pendaftar->ibu_rt,
-                        $pendaftar->ibu_rw,
-                        $pendaftar->alamat_ibu,
-                        $pendaftar->ibu_kode_pos,
-                    ]);
-                } else {
-                    $baseData = array_merge($baseData, array_fill(0, 9, ''));
-                }
-            } else {
-                $baseData = array_merge($baseData, array_fill(0, 10, ''));
-            }
         } else {
             // Fill empty values if ibu not alive
             $baseData = array_merge($baseData, array_fill(0, 11, ''));
@@ -351,47 +418,38 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
         if ($pendaftar->wali_status_wali === 'lainnya') {
             $baseData = array_merge($baseData, [
                 $this->formatBoolean($pendaftar->wali_sama_dengan_ayah, 'Sama dengan Ayah', 'Berbeda'),
+                $this->formatBoolean($pendaftar->wali_tinggal_luar_negeri, 'Ya', 'Tidak'),
+                // Always show address data if exists (regardless of sama_dengan_ayah or tinggal_luar_negeri)
+                $pendaftar->wali_status_kepemilikan_rumah,
+                $this->getRegionName($pendaftar->wali_provinsi),
+                $this->getRegionName($pendaftar->wali_kabupaten),
+                $this->getRegionName($pendaftar->wali_kecamatan),
+                $this->getRegionName($pendaftar->wali_kelurahan),
+                $pendaftar->wali_rt,
+                $pendaftar->wali_rw,
+                $pendaftar->alamat_wali,
+                $pendaftar->wali_kode_pos,
             ]);
-
-            // Detail (only if not same as ayah)
-            if (!$pendaftar->wali_sama_dengan_ayah) {
-                $baseData = array_merge($baseData, [
-                    $this->formatBoolean($pendaftar->wali_tinggal_luar_negeri, 'Ya', 'Tidak'),
-                ]);
-
-                // Detail (only if not living abroad)
-                if (!$pendaftar->wali_tinggal_luar_negeri) {
-                    $baseData = array_merge($baseData, [
-                        $pendaftar->wali_status_kepemilikan_rumah,
-                        $this->getRegionName($pendaftar->wali_provinsi),
-                        $this->getRegionName($pendaftar->wali_kabupaten),
-                        $this->getRegionName($pendaftar->wali_kecamatan),
-                        $this->getRegionName($pendaftar->wali_kelurahan),
-                        $pendaftar->wali_rt,
-                        $pendaftar->wali_rw,
-                        $pendaftar->alamat_wali,
-                        $pendaftar->wali_kode_pos,
-                    ]);
-                } else {
-                    $baseData = array_merge($baseData, array_fill(0, 9, ''));
-                }
-            } else {
-                $baseData = array_merge($baseData, array_fill(0, 10, ''));
-            }
         } else {
             // Fill empty values if wali not 'lainnya'
             $baseData = array_merge($baseData, array_fill(0, 11, ''));
         }
 
         // ========================================
-        // DATA ALAMAT SISWA (12+ columns)
+        // DATA ALAMAT SISWA (9+ columns)
         // ========================================
         $baseData = array_merge($baseData, [
             $pendaftar->status_tempat_tinggal,
         ]);
 
-        // Detail address (only if status_tempat_tinggal = lainnya)
-        if ($pendaftar->status_tempat_tinggal === 'lainnya') {
+        // Detail address (only if NOT tinggal dengan ayah/ibu kandung)
+        // Show address if status is lainnya, yatim (no father), or piatu (no mother)
+        $showSiswaAddress = !in_array($pendaftar->status_tempat_tinggal, [
+            'Tinggal dengan Ayah Kandung',
+            'Tinggal dengan Ibu Kandung'
+        ]);
+
+        if ($showSiswaAddress) {
             $baseData = array_merge($baseData, [
                 $pendaftar->siswa_status_kepemilikan_rumah,
                 $this->getRegionName($pendaftar->siswa_provinsi ?? $pendaftar->provinsi),
@@ -402,14 +460,19 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
                 $pendaftar->siswa_rw ?? $pendaftar->rw,
                 $pendaftar->siswa_alamat ?? $pendaftar->alamat,
                 $pendaftar->siswa_kode_pos ?? $pendaftar->kode_pos,
-                // Transport
-                $pendaftar->jarak_tempat_tinggal ?? $pendaftar->jarak_ke_sekolah,
-                $pendaftar->alat_transportasi ?? $pendaftar->transportasi,
-                $pendaftar->waktu_tempuh,
             ]);
         } else {
-            $baseData = array_merge($baseData, array_fill(0, 12, ''));
+            $baseData = array_merge($baseData, array_fill(0, 9, ''));
         }
+
+        // ========================================
+        // TRANSPORTASI SISWA (3 columns - always show)
+        // ========================================
+        $baseData = array_merge($baseData, [
+            $pendaftar->jarak_tempat_tinggal ?? $pendaftar->jarak_ke_sekolah,
+            $pendaftar->alat_transportasi ?? $pendaftar->transportasi,
+            $pendaftar->waktu_tempuh,
+        ]);
 
         // ========================================
         // PRESTASI SISWA (7 fields x 3 records = 21 columns)
@@ -473,6 +536,42 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
                 // Empty columns if no pendidikan lain
                 $baseData = array_merge($baseData, array_fill(0, 5, ''));
             }
+        }
+
+        // ========================================
+        // KEAHLIAN (6 fields x 3 records = 18 columns)
+        // ========================================
+        $keahlians = $pendaftar->keahlian->take($this->maxKeahlian);
+        for ($i = 0; $i < $this->maxKeahlian; $i++) {
+            if (isset($keahlians[$i])) {
+                $keahlian = $keahlians[$i];
+                $baseData = array_merge($baseData, [
+                    $keahlian->bidang_keahlian,
+                    $keahlian->nama_keahlian,
+                    $keahlian->sertifikasi,
+                    $keahlian->lembaga_penyelenggara,
+                    $keahlian->hasil_tingkat_skor,
+                    $keahlian->file_bukti_sertifikat ? basename($keahlian->file_bukti_sertifikat) : '',
+                ]);
+            } else {
+                // Empty columns if no keahlian
+                $baseData = array_merge($baseData, array_fill(0, 6, ''));
+            }
+        }
+
+        // ========================================
+        // TAHFIDZ (3 columns)
+        // ========================================
+        $tahfidz = $pendaftar->tahfidz;
+        if ($tahfidz) {
+            $baseData = array_merge($baseData, [
+                $tahfidz->juz_alquran_dihafal,
+                $tahfidz->file_bukti_syahadah ? basename($tahfidz->file_bukti_syahadah) : '',
+                $tahfidz->file_bukti_tahsin ? basename($tahfidz->file_bukti_tahsin) : '',
+            ]);
+        } else {
+            // Empty columns if no tahfidz
+            $baseData = array_merge($baseData, array_fill(0, 3, ''));
         }
 
         // ========================================
@@ -544,7 +643,24 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
         ]);
 
         // ========================================
-        // SURVEY ANSWERS (dynamic columns)
+        // SURVEY UMUM ANSWERS (dynamic columns)
+        // ========================================
+        $surveyAnswersUmum = [];
+        foreach ($this->surveyQuestionsUmum as $question) {
+            // Cari jawaban pendaftar untuk pertanyaan ini
+            $answer = $pendaftar->surveyAnswers->firstWhere('survey_question_id', $question->id);
+
+            if ($answer) {
+                // Format jawaban dengan helper method (handles checkbox dengan comma-separated)
+                $surveyAnswersUmum[] = $answer->getJawabanFormatted();
+            } else {
+                // Jika tidak ada jawaban untuk pertanyaan ini
+                $surveyAnswersUmum[] = '';
+            }
+        }
+
+        // ========================================
+        // SURVEY TES PSIKOLOGI ANSWERS (dynamic columns)
         // ========================================
         $surveyAnswers = [];
         foreach ($this->surveyQuestions as $question) {
@@ -591,8 +707,8 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
             $pendaftar->created_at ? Carbon::parse($pendaftar->created_at)->format('d-m-Y H:i') : '',
         ]);
 
-        // Gabungkan base data dengan survey answers
-        return array_merge($baseData, $surveyAnswers);
+        // Gabungkan base data dengan survey answers (umum + tes psikologi)
+        return array_merge($baseData, $surveyAnswersUmum, $surveyAnswers);
     }
 
     public function headings(): array
@@ -818,6 +934,29 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
         }
 
         // ========================================
+        // KEAHLIAN (6 fields x 3 = 18 columns)
+        // ========================================
+        for ($i = 1; $i <= $this->maxKeahlian; $i++) {
+            $baseHeadings = array_merge($baseHeadings, [
+                "Keahlian $i - Bidang",
+                "Keahlian $i - Nama",
+                "Keahlian $i - Sertifikasi",
+                "Keahlian $i - Lembaga Penyelenggara",
+                "Keahlian $i - Hasil/Tingkat/Skor",
+                "Keahlian $i - File Bukti Sertifikat",
+            ]);
+        }
+
+        // ========================================
+        // TAHFIDZ (3 columns)
+        // ========================================
+        $baseHeadings = array_merge($baseHeadings, [
+            'Tahfidz - Juz Al-Quran yang Dihafal',
+            'Tahfidz - File Bukti Syahadah',
+            'Tahfidz - File Bukti Tahsin',
+        ]);
+
+        // ========================================
         // UPLOAD BERKAS (16 columns - filename + status for each)
         // ========================================
         $baseHeadings = array_merge($baseHeadings, [
@@ -870,11 +1009,19 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
         ]);
 
         // ========================================
-        // SURVEY ANSWERS (dynamic columns)
+        // SURVEY UMUM ANSWERS (dynamic columns)
+        // ========================================
+        $surveyHeadingsUmum = [];
+        foreach ($this->surveyQuestionsUmum as $question) {
+            $surveyHeadingsUmum[] = 'SURVEI UMUM: ' . $question->pertanyaan;
+        }
+
+        // ========================================
+        // SURVEY TES PSIKOLOGI ANSWERS (dynamic columns)
         // ========================================
         $surveyHeadings = [];
         foreach ($this->surveyQuestions as $question) {
-            $surveyHeadings[] = 'SURVEI: ' . $question->pertanyaan;
+            $surveyHeadings[] = 'SURVEI TES PSIKOLOGI: ' . $question->pertanyaan;
         }
 
         // ========================================
@@ -897,7 +1044,7 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
             'Tanggal Input Data',
         ]);
 
-        return array_merge($baseHeadings, $surveyHeadings);
+        return array_merge($baseHeadings, $surveyHeadingsUmum, $surveyHeadings);
     }
 
     public function styles(Worksheet $sheet)
@@ -946,8 +1093,9 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
     }
 
     /**
-     * Get region name from ID
-     * FIXED: Changed from code to id (production uses id not code)
+     * Get region name from ID or CODE
+     * FIXED: Try both 'id' and 'code' columns (universal solution)
+     * FIXED: Added trim and fallback query for missing cache
      */
     private function getRegionName($id)
     {
@@ -955,15 +1103,74 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
             return '';
         }
 
-        // Convert to string for cache lookup
-        $idStr = (string)$id;
+        // Trim whitespace and convert to string for cache lookup
+        $idStr = trim((string)$id);
 
         // Lookup in cache
         if (isset($this->regionCache[$idStr])) {
             return $this->regionCache[$idStr];
         }
 
-        // Return empty if not found (should not happen if cache loaded correctly)
+        // Fallback: Try to query directly if not in cache
+        // TRY BOTH 'id' AND 'code' columns for maximum compatibility
+
+        // Check provinces (try id first, then code)
+        $province = \DB::table('provinces')->where('id', $idStr)->value('name');
+        if (!$province) {
+            try {
+                $province = \DB::table('provinces')->where('code', $idStr)->value('name');
+            } catch (\Exception $e) {
+                // Code column doesn't exist, skip
+            }
+        }
+        if ($province) {
+            $this->regionCache[$idStr] = $province; // Cache for next time
+            return $province;
+        }
+
+        // Check cities (try id first, then code)
+        $city = \DB::table('regencies')->where('id', $idStr)->value('name');
+        if (!$city) {
+            try {
+                $city = \DB::table('regencies')->where('code', $idStr)->value('name');
+            } catch (\Exception $e) {
+                // Code column doesn't exist, skip
+            }
+        }
+        if ($city) {
+            $this->regionCache[$idStr] = $city;
+            return $city;
+        }
+
+        // Check districts (try id first, then code)
+        $district = \DB::table('districts')->where('id', $idStr)->value('name');
+        if (!$district) {
+            try {
+                $district = \DB::table('districts')->where('code', $idStr)->value('name');
+            } catch (\Exception $e) {
+                // Code column doesn't exist, skip
+            }
+        }
+        if ($district) {
+            $this->regionCache[$idStr] = $district;
+            return $district;
+        }
+
+        // Check villages (try id first, then code)
+        $village = \DB::table('villages')->where('id', $idStr)->value('name');
+        if (!$village) {
+            try {
+                $village = \DB::table('villages')->where('code', $idStr)->value('name');
+            } catch (\Exception $e) {
+                // Code column doesn't exist, skip
+            }
+        }
+        if ($village) {
+            $this->regionCache[$idStr] = $village;
+            return $village;
+        }
+
+        // Return empty if not found anywhere
         return '';
     }
 

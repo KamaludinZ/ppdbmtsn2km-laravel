@@ -45,7 +45,17 @@ class DaftarUlangMadrasahSheet implements FromQuery, WithHeadings, WithMapping, 
     {
         $pendaftar = $daftarUlang->pendaftar;
 
-        // Get nominal biaya (supports both predefined and custom "opsi lainnya")
+        // Get nominal biaya awal (opsi yang dipilih dari paket)
+        $nominalBiayaAwal = $daftarUlang->nominal_biaya_awal;
+        $opsiName = '';
+        $opsiAmount = 0;
+
+        if (is_array($nominalBiayaAwal)) {
+            $opsiName = $nominalBiayaAwal['name'] ?? '';
+            $opsiAmount = $nominalBiayaAwal['amount'] ?? 0;
+        }
+
+        // Get nominal biaya (konfirmasi nominal yang dibayarkan)
         $nominalBiaya = $daftarUlang->nominal_biaya;
         $nominalBiayaName = '';
         $nominalBiayaAmount = 0;
@@ -53,6 +63,15 @@ class DaftarUlangMadrasahSheet implements FromQuery, WithHeadings, WithMapping, 
         if (is_array($nominalBiaya)) {
             $nominalBiayaName = $nominalBiaya['name'] ?? '';
             $nominalBiayaAmount = $nominalBiaya['amount'] ?? 0;
+        }
+
+        // Parse paket madrasah (could be NULL, 'paket_lainnya', or JSON)
+        $paketName = 'Belum Dipilih';
+        if (!empty($daftarUlang->paket_madrasah)) {
+            // Note: paket_madrasah is not stored in database by default
+            // If it exists, it would be from paketMadrasah field in Livewire
+            // For paket_lainnya, the name is in nominal_biaya_awal
+            $paketName = $opsiName ? $opsiName : 'Paket Madrasah';
         }
 
         return [
@@ -71,8 +90,10 @@ class DaftarUlangMadrasahSheet implements FromQuery, WithHeadings, WithMapping, 
             $pendaftar->asal_sekolah ?? '',
             $pendaftar->nsm_sekolah_asal ?? $pendaftar->npsn_sekolah_asal ?? '',
             $this->getStatusLabel($daftarUlang->status_daftar_ulang),
-            $nominalBiayaName,
-            'Rp ' . number_format($nominalBiayaAmount, 0, ',', '.'),
+            $opsiName, // Opsi yang dipilih dari paket (atau nama paket custom)
+            'Rp ' . number_format($opsiAmount, 0, ',', '.'), // Nominal opsi yang dipilih
+            $nominalBiayaName, // Konfirmasi nominal (bisa sama atau "Opsi Lainnya")
+            'Rp ' . number_format($nominalBiayaAmount, 0, ',', '.'), // Nominal yang dikonfirmasi
             $daftarUlang->opsi_pembayaran ?? '',
             $daftarUlang->metode_pembayaran ?? '',
             $daftarUlang->nama_pengirim ?? '-',
@@ -100,8 +121,10 @@ class DaftarUlangMadrasahSheet implements FromQuery, WithHeadings, WithMapping, 
             'Asal Sekolah',
             'NSM/NPSN Sekolah',
             'Status Daftar Ulang',
-            'Jenis Nominal Biaya',
-            'Nominal Biaya',
+            'Opsi yang Dipilih', // NEW: Nama opsi dari paket atau nama paket custom
+            'Nominal Opsi', // NEW: Nominal dari opsi yang dipilih
+            'Konfirmasi Nominal', // RENAMED: Konfirmasi pembayaran (bisa sama atau Opsi Lainnya)
+            'Nominal yang Dibayarkan', // RENAMED: Nominal yang dikonfirmasi untuk dibayar
             'Opsi Pembayaran',
             'Metode Pembayaran',
             'Nama Pengirim',

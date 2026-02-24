@@ -283,18 +283,24 @@
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
-                        <tr>
+                        <tr class="group">
                             @if($showColumns['no'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                             @endif
                             @if($showColumns['nomor_pendaftaran'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Pendaftaran</th>
+                                <x-sortable-header field="nomor_pendaftaran" :sort-field="$sortField" :sort-direction="$sortDirection">
+                                    Nomor Pendaftaran
+                                </x-sortable-header>
                             @endif
                             @if($showColumns['pendaftar'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pendaftar</th>
+                                <x-sortable-header field="nama_lengkap" :sort-field="$sortField" :sort-direction="$sortDirection">
+                                    Pendaftar
+                                </x-sortable-header>
                             @endif
                             @if($showColumns['jenis_kelamin'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Kelamin</th>
+                                <x-sortable-header field="jenis_kelamin" :sort-field="$sortField" :sort-direction="$sortDirection">
+                                    Jenis Kelamin
+                                </x-sortable-header>
                             @endif
                             @if($showColumns['jalur'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jalur</th>
@@ -309,28 +315,42 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ortu WhatsApp</th>
                             @endif
                             @if($showColumns['asal_kabkota'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asal Kab/Kota</th>
+                                <x-sortable-header field="asal_kabkota" :sort-field="$sortField" :sort-direction="$sortDirection">
+                                    Asal Kab/Kota
+                                </x-sortable-header>
                             @endif
                             @if($showColumns['jenis_sekolah'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Sekolah</th>
+                                <x-sortable-header field="jenis_sekolah_asal" :sort-field="$sortField" :sort-direction="$sortDirection">
+                                    Jenis Sekolah
+                                </x-sortable-header>
                             @endif
                             @if($showColumns['nsm_npsn'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NSM/NPSN</th>
+                                <x-sortable-header field="npsn_sekolah_asal" :sort-field="$sortField" :sort-direction="$sortDirection">
+                                    NSM/NPSN
+                                </x-sortable-header>
                             @endif
                             @if($showColumns['asal_sekolah'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Asal Sekolah</th>
+                                <x-sortable-header field="asal_sekolah" :sort-field="$sortField" :sort-direction="$sortDirection">
+                                    Asal Sekolah
+                                </x-sortable-header>
                             @endif
                             @if($showColumns['nama_ayah'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Ayah</th>
+                                <x-sortable-header field="nama_ayah" :sort-field="$sortField" :sort-direction="$sortDirection">
+                                    Nama Ayah
+                                </x-sortable-header>
                             @endif
                             @if($showColumns['nama_ibu'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Ibu</th>
+                                <x-sortable-header field="nama_ibu" :sort-field="$sortField" :sort-direction="$sortDirection">
+                                    Nama Ibu
+                                </x-sortable-header>
                             @endif
                             @if($showColumns['verif_psikologi'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verif. Psikologi</th>
                             @endif
                             @if($showColumns['status'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Pendaftaran</th>
+                                <x-sortable-header field="status_pendaftaran" :sort-field="$sortField" :sort-direction="$sortDirection">
+                                    Status Pendaftaran
+                                </x-sortable-header>
                             @endif
                             @if($showColumns['status_keahlian'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Keahlian</th>
@@ -339,10 +359,14 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Tahfidz</th>
                             @endif
                             @if($showColumns['status_tes'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Tes</th>
+                                <x-sortable-header field="status_kelulusan_tes" :sort-field="$sortField" :sort-direction="$sortDirection">
+                                    Status Tes
+                                </x-sortable-header>
                             @endif
                             @if($showColumns['setuju_daftar_ulang'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Persetujuan Daftar Ulang</th>
+                                <x-sortable-header field="setuju_daftar_ulang" :sort-field="$sortField" :sort-direction="$sortDirection">
+                                    Persetujuan Daftar Ulang
+                                </x-sortable-header>
                             @endif
                             @if($showColumns['status_du_madrasah'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status DU Madrasah</th>
@@ -378,13 +402,17 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Verif. KIP/PKH/KKS</th>
                             @endif
                             @if($showColumns['diperbarui'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Diperbarui</th>
+                                <x-sortable-header field="updated_at" :sort-field="$sortField" :sort-direction="$sortDirection">
+                                    Diperbarui
+                                </x-sortable-header>
                             @endif
                             @if($showColumns['diperbarui_oleh'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Diperbarui Oleh</th>
                             @endif
                             @if($showColumns['tanggal'])
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Daftar</th>
+                                <x-sortable-header field="tanggal_daftar" :sort-field="$sortField" :sort-direction="$sortDirection">
+                                    Tanggal Daftar
+                                </x-sortable-header>
                             @endif
                             @if($showColumns['password'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Password</th>
@@ -472,7 +500,25 @@
                                 @if($showColumns['ortu_whatsapp'])
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center space-x-2">
-                                            <span class="text-sm text-gray-900">{{ $item->telepon_ortu ?? '-' }}</span>
+                                            @if($item->telepon_ortu)
+                                                @php
+                                                    $cleanPhone = preg_replace('/[^0-9]/', '', $item->telepon_ortu);
+                                                    if (substr($cleanPhone, 0, 1) === '0') {
+                                                        $cleanPhone = '62' . substr($cleanPhone, 1);
+                                                    } elseif (substr($cleanPhone, 0, 2) !== '62') {
+                                                        $cleanPhone = '62' . $cleanPhone;
+                                                    }
+                                                    $waUrl = 'https://wa.me/' . $cleanPhone;
+                                                @endphp
+                                                <a href="{{ $waUrl }}" target="_blank" class="inline-flex items-center text-sm text-green-600 hover:text-green-800 hover:underline transition">
+                                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"></path>
+                                                    </svg>
+                                                    {{ $item->telepon_ortu }}
+                                                </a>
+                                            @else
+                                                <span class="text-sm text-gray-400">-</span>
+                                            @endif
                                             <button
                                                 wire:click="showEditTeleponOrtuModal({{ $item->id }})"
                                                 class="text-blue-600 hover:text-blue-900 transition"

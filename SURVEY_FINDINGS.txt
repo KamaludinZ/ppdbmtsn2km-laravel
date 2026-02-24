@@ -1,0 +1,214 @@
+TES PSIKOLOGI EXPORT SURVEY ANSWERS - ANALYSIS REPORT
+=====================================================
+
+ISSUE SUMMARY
+=============
+Export shows survey answer IDs (like "10") instead of labels (like "Pendek").
+Both admin and panitia panels show labels correctly.
+
+ROOT CAUSE
+==========
+1. Missing relationship: Export does not load ".options" in query
+2. No conversion: Export uses raw jawaban value without conversion
+3. Working code exists: SurveyAnswer model has getJawabanFormatted() helper
+
+FILES ANALYZED
+==============
+
+1. TesPsikologiExport.php (203 lines)
+   - Line 41-48: query() method
+     PROBLEM: Does NOT load 'pendaftar.surveyAnswers.question.options'
+   - Line 142-158: map() method
+     PROBLEM: Uses $answer->jawaban directly without conversion
+
+2. SurveyAnswer.php (166 lines)
+   - Line 81-165: getJawabanFormatted() method
+     SOLUTION: Converts ID to label with 4 fallback methods
+   - Already used by admin panel, NOT used by export
+
+3. SurveyQuestion.php (83 lines)
+   - Defines question structure
+   - Has .options relationship
+
+4. SurveyQuestionOption.php (38 lines)
+   - Stores: label, value, urutan
+
+5. Admin/TesPsikologi.php (1524 lines)
+   - Line 1360-1484: Proper label conversion
+   - Uses 5 fallback matching methods
+
+6. Panitia/TesPsikologi.php (979 lines)
+   - Line 847-941: Same working logic
+
+DATA STORAGE FORMAT
+===================
+
+Survey Answer Database Column: jawaban (TEXT/JSONB)
+
+By Question Type:
+- text/textarea: String (e.g., "Long text")
+- radio: Single ID or VALUE (e.g., 10 or "pendek")
+- select: Single ID or VALUE (e.g., 12 or "sedang")
+- checkbox: JSON array (e.g., [10, 12, 15])
+
+Two Data Approaches:
+1. NEW (Feb 2026+): Store OPTION ID (e.g., 10)
+   - Better data integrity
+   - Admin can change label without breaking answers
+   
+2. OLD (before Feb 2026): Store OPTION VALUE (e.g., "pendek")
+   - Backward compatibility
+
+SURVEY QUESTION OPTIONS
+=======================
+
+SurveyQuestionOption fields:
+- id: Option ID (primary key)
+- survey_question_id: Foreign key
+- label: Display text (e.g., "Pendek (150-160cm)")
+- value: Alternative identifier (e.g., "pendek")
+- urutan: Sort order
+
+Example:
+Question 5: "Berapa tinggi badanmu?"
+├─ Option ID 10: label="Pendek", value="pendek"
+├─ Option ID 11: label="Sedang", value="sedang"
+└─ Option ID 12: label="Tinggi", value="tinggi"
+
+EXPORT PROBLEMS
+===============
+
+Problem 1: Missing Relationship (Line 44)
+Current:
+  'pendaftar.surveyAnswers.question',
+Missing:
+  'pendaftar.surveyAnswers.question.options',
+
+Without options, cannot convert ID to label.
+
+Problem 2: No Conversion (Line 148-154)
+Current:
+  $jawaban = $answer->jawaban;  // Gets: 10
+  if (is_array($jawaban)) {
+    $baseData[] = implode(', ', $jawaban);  // Shows: "10, 12"
+  } else {
+    $baseData[] = $jawaban;  // Shows: "10"
+  }
+
+Should be:
+  $baseData[] = $answer->getJawabanFormatted();  // Shows: "Pendek"
+
+SOLUTION EXISTS
+===============
+
+SurveyAnswer Model: getJawabanFormatted()
+- Lines 81-165 in SurveyAnswer.php
+- Already implements complete solution
+- Used in admin panel (WORKS)
+- Used in panitia panel (WORKS)
+- NOT used in export (BROKEN)
+
+Conversion Logic:
+1. Check question type
+   - If text/textarea: return as-is
+   - If radio/select/checkbox: convert to label
+
+2. Try 4 matching methods (with priority):
+   Method 1: Match by OPTION ID (numeric like "10")
+   Method 2: Exact match by OPTION VALUE
+   Method 3: Case-insensitive VALUE match
+   Method 4: Case-insensitive LABEL match
+
+3. Return label if found, or value with warning if not found
+
+WHY ADMIN/PANITIA PANELS WORK
+=============================
+
+Admin TesPsikologi.php (Lines 1360-1484):
+1. Queries options: SurveyQuestionOption::where(...)
+2. Tries 5 matching methods
+3. Converts ID to label
+4. Result: Shows "Pendek" instead of "10"
+
+Panitia TesPsikologi.php (Lines 847-941):
+1. Same logic as admin
+2. Both panels display labels correctly
+
+FIX REQUIRED
+============
+
+Changes needed in TesPsikologiExport.php:
+
+1. Line 44: Add .options to relationships
+   FROM: 'pendaftar.surveyAnswers.question',
+   TO:   'pendaftar.surveyAnswers.question.options',
+
+2. Lines 146-154: Use helper method
+   FROM: 
+     $jawaban = $answer->jawaban;
+     if (is_array($jawaban)) {
+       $baseData[] = implode(', ', $jawaban);
+     } else {
+       $baseData[] = $jawaban;
+     }
+   
+   TO:
+     $baseData[] = $answer->getJawabanFormatted();
+
+Total changes: 2 sections, about 5-10 lines of code
+
+RISK ASSESSMENT
+===============
+- Risk Level: VERY LOW
+- No database changes needed
+- No breaking changes
+- Only improves display
+- Uses existing proven code
+- Both admin and panitia panels use this approach
+
+DATA EXAMPLES
+=============
+
+Before Fix (Export):
+Question: "Berapa tinggi badanmu?"
+Answer shown: "10"
+
+After Fix (Export):
+Question: "Berapa tinggi badanmu?"
+Answer shown: "Pendek"
+
+Checkbox Example:
+Before: "10, 12, 15"
+After: "Pendek, Sedang, Tinggi"
+
+BACKWARD COMPATIBILITY
+=====================
+The solution handles both:
+- NEW data (IDs like 10, 12, 15)
+- OLD data (VALUES like "pendek", "sedang")
+- LEGACY data (LABELS if stored that way)
+
+All stored data formats will work with the fix.
+
+FILES TO MODIFY
+===============
+1. app/Exports/TesPsikologiExport.php
+   - Line 44: Add .options relationship
+   - Lines 146-154: Use getJawabanFormatted()
+
+REFERENCE CODE
+==============
+Working implementation in:
+- app/Livewire/Admin/TesPsikologi.php (Lines 1360-1484)
+- app/Livewire/Panitia/TesPsikologi.php (Lines 847-941)
+
+Helper method in:
+- app/Models/SurveyAnswer.php (Lines 81-165)
+
+CONCLUSION
+==========
+The survey export issue is well-understood and easily fixable.
+The solution code already exists and works in other parts of the system.
+Fix complexity: LOW
+Time to implement: 5-10 minutes
+Risk level: VERY LOW

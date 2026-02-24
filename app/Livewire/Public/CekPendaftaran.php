@@ -24,8 +24,13 @@ class CekPendaftaran extends Component
             'searchQuery.min' => 'Minimal 3 karakter',
         ]);
 
-        // Search by nomor_pendaftaran or nisn
-        $pendaftar = Pendaftar::with('jalurPendaftaran')
+        // Search by nomor_pendaftaran or nisn with all related data
+        $pendaftar = Pendaftar::with([
+                'jalurPendaftaran',
+                'tesPsikologiPendaftar',
+                'daftarUlang',
+                'seragam'
+            ])
             ->where(function($query) {
                 $query->where('nomor_pendaftaran', $this->searchQuery)
                       ->orWhere('nisn', $this->searchQuery);

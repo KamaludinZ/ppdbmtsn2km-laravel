@@ -201,6 +201,51 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Tombol Cetak Section -->
+                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
+                    <div class="flex items-center justify-between mb-3">
+                        <h3 class="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                            </svg>
+                            Cetak Dokumen
+                        </h3>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <!-- Tombol Cetak Kartu Tes Seleksi -->
+                        <a href="{{ route('admin.preview-kartu-tes-pdf', ['pendaftar_id' => $pendaftar->id]) }}" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-white hover:bg-blue-50 text-blue-700 border-2 border-blue-300 rounded-lg font-semibold text-sm transition-all shadow-sm hover:shadow-md group">
+                            <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
+                            </svg>
+                            <span>Kartu Tes</span>
+                        </a>
+
+                        <!-- Tombol Cetak Invoice Tes Psikologi -->
+                        <a href="{{ route('admin.preview-invoice-psikologi', ['pendaftar_id' => $pendaftar->id]) }}" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-white hover:bg-purple-50 text-purple-700 border-2 border-purple-300 rounded-lg font-semibold text-sm transition-all shadow-sm hover:shadow-md group">
+                            <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span>Invoice Psikologi</span>
+                        </a>
+
+                        <!-- Tombol Cetak Invoice Daftar Ulang Madrasah -->
+                        <a href="{{ route('admin.preview-invoice-madrasah', ['pendaftar_id' => $pendaftar->id]) }}" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-white hover:bg-green-50 text-green-700 border-2 border-green-300 rounded-lg font-semibold text-sm transition-all shadow-sm hover:shadow-md group">
+                            <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span>Invoice Madrasah</span>
+                        </a>
+
+                        <!-- Tombol Cetak Invoice Daftar Ulang Seragam -->
+                        <a href="{{ route('admin.preview-invoice-seragam', ['pendaftar_id' => $pendaftar->id]) }}" target="_blank" class="flex items-center justify-center gap-2 px-4 py-3 bg-white hover:bg-orange-50 text-orange-700 border-2 border-orange-300 rounded-lg font-semibold text-sm transition-all shadow-sm hover:shadow-md group">
+                            <svg class="w-5 h-5 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <span>Invoice Seragam</span>
+                        </a>
+                    </div>
+                </div>
             </div>
 
             <!-- Tab Navigation -->

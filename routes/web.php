@@ -270,6 +270,11 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/pengumuman', \App\Livewire\Admin\Pengumuman::class)->name('admin.pengumuman');
     Route::get('/pendaftar', \App\Livewire\Admin\Pendaftar::class)->name('admin.pendaftar');
     Route::get('/pendaftar/{id}', \App\Livewire\Admin\DetailPendaftar::class)->name('admin.pendaftar.detail');
+    Route::get('/preview-kartu-tes/{pendaftar_id}', \App\Livewire\Admin\PreviewKartuTes::class)->name('admin.preview-kartu-tes');
+    Route::get('/preview-kartu-tes-pdf/{pendaftar_id}', [\App\Http\Controllers\Admin\PreviewInvoiceController::class, 'previewKartuTes'])->name('admin.preview-kartu-tes-pdf');
+    Route::get('/preview-invoice-psikologi/{pendaftar_id}', [\App\Http\Controllers\Admin\PreviewInvoiceController::class, 'previewInvoicePsikologi'])->name('admin.preview-invoice-psikologi');
+    Route::get('/preview-invoice-madrasah/{pendaftar_id}', [\App\Http\Controllers\Admin\PreviewInvoiceController::class, 'previewInvoiceMadrasah'])->name('admin.preview-invoice-madrasah');
+    Route::get('/preview-invoice-seragam/{pendaftar_id}', [\App\Http\Controllers\Admin\PreviewInvoiceController::class, 'previewInvoiceSeragam'])->name('admin.preview-invoice-seragam');
     Route::get('/panitia', \App\Livewire\Admin\Panitia::class)->name('admin.panitia');
     Route::get('/jalur', \App\Livewire\Admin\Jalur::class)->name('admin.jalur');
     Route::get('/laporan', \App\Livewire\Admin\Laporan::class)->name('admin.laporan');
@@ -306,6 +311,7 @@ Route::prefix('pendaftar')->middleware(['auth', 'role:pendaftar'])->group(functi
     Route::get('/status', \App\Livewire\Pendaftar\Status::class)->name('pendaftar.status');
     Route::get('/daftarulang', \App\Livewire\Pendaftar\DaftarUlang::class)->name('pendaftar.daftarulang');
     Route::get('/kartu-tes-seleksi', \App\Livewire\Pendaftar\KartuTesSeleksi::class)->name('pendaftar.kartu-tes-seleksi');
+    Route::get('/download-kartu-tes', [\App\Http\Controllers\Pendaftar\KartuTesController::class, 'downloadKartuTes'])->name('pendaftar.download-kartu-tes');
     Route::get('/tes-psikologi', \App\Livewire\Pendaftar\TesPsikologi::class)->name('pendaftar.tes-psikologi');
     Route::get('/tes-psikologi/preview-invoice', [\App\Livewire\Pendaftar\TesPsikologi::class, 'previewInvoice'])->name('pendaftar.tes-psikologi.preview-invoice');
     Route::get('/notifikasi', \App\Livewire\Admin\Notifikasi::class)->name('pendaftar.notifikasi');

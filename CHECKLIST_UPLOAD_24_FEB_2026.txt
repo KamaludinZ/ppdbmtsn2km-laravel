@@ -1,0 +1,177 @@
+================================================================================
+CHECKLIST UPLOAD PRODUCTION - 24 FEBRUARI 2026
+================================================================================
+
+FILE YANG HARUS DI-UPLOAD: 3 file
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[ ] 1. AdminLogin.php
+    Lokal:      C:\ppdbmtsn2km-laravel\app\Livewire\Auth\AdminLogin.php
+    Production: /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/app/Livewire/Auth/
+
+    Perbaikan: Fix login panitia (panitia_pendaftaran, panitia_seragam,
+               panitia_tes_psikologi)
+
+[ ] 2. DaftarUlang.php
+    Lokal:      C:\ppdbmtsn2km-laravel\app\Livewire\PanitiaSeragam\DaftarUlang.php
+    Production: /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/app/Livewire/PanitiaSeragam/
+
+    Perbaikan: Tambah trait WithSorting, methods catatan internal
+
+[ ] 3. daftar-ulang.blade.php
+    Lokal:      C:\ppdbmtsn2km-laravel\resources\views\livewire\panitia-seragam\daftar-ulang.blade.php
+    Production: /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/resources/views/livewire/panitia-seragam/
+
+    Perbaikan: Modal backdrop blur, kolom baru (Ukuran Baju, Celana/Rok,
+               Nama Pengirim), sortable headers
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CARA UPLOAD:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+OPSI A: Upload via Batch Script (TERMUDAH)
+────────────────────────────────────────────
+[ ] Double-click file: upload_perbaikan_24_feb_2026.bat
+[ ] Tunggu sampai selesai
+[ ] Verifikasi output: "UPLOAD COMPLETE!"
+
+OPSI B: Upload Manual via SCP
+────────────────────────────────────────────
+[ ] Buka Command Prompt
+[ ] Jalankan 3 command SCP:
+
+    scp "C:\ppdbmtsn2km-laravel\app\Livewire\Auth\AdminLogin.php" mtsnkot4@103.30.244.77:/home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/app/Livewire/Auth/
+
+    scp "C:\ppdbmtsn2km-laravel\app\Livewire\PanitiaSeragam\DaftarUlang.php" mtsnkot4@103.30.244.77:/home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/app/Livewire/PanitiaSeragam/
+
+    scp "C:\ppdbmtsn2km-laravel\resources\views\livewire\panitia-seragam\daftar-ulang.blade.php" mtsnkot4@103.30.244.77:/home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id/resources/views/livewire/panitia-seragam/
+
+[ ] Clear cache:
+
+    ssh mtsnkot4@103.30.244.77 "cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id && php artisan view:clear && php artisan cache:clear && php artisan config:clear"
+
+OPSI C: Upload via FileZilla/WinSCP
+────────────────────────────────────────────
+Host:     103.30.244.77
+User:     mtsnkot4
+Protocol: SFTP
+Port:     22
+
+[ ] Upload 3 file ke lokasi masing-masing
+[ ] SSH ke server, clear cache:
+    cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id
+    php artisan view:clear
+    php artisan cache:clear
+    php artisan config:clear
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+TESTING DI PRODUCTION:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Test 1: Login Panitia
+────────────────────────────────────────────
+[ ] Login panitia@test.com (password: panitia123)
+    → Harus berhasil masuk ke dashboard panitia pendaftaran
+
+[ ] Login panitia-seragam@test.com (password: seragam123)
+    → Harus berhasil masuk ke dashboard panitia seragam
+
+[ ] Login panitia-psikologi@test.com (password: psikologi123)
+    → Harus berhasil masuk ke dashboard panitia psikologi
+
+Test 2: Halaman Panitia Seragam
+────────────────────────────────────────────
+URL: https://pmbm.mtsn2kotamalang.sch.id/panitia-seragam/daftar-ulang?activeTab=seragam
+
+[ ] Kolom "Ukuran Baju Harian" tampil (badge hijau)
+[ ] Kolom "Celana/Rok Harian" tampil (badge teal)
+[ ] Kolom "Nama Pengirim" tampil
+[ ] Kolom "Catatan Internal" ada (setelah Aksi Opsi)
+
+Test 3: Modal Popup
+────────────────────────────────────────────
+[ ] Klik tombol "Edit Catatan" (biru)
+    → Modal muncul DI DEPAN latar abu-abu BLUR
+    → Background blur terlihat jelas
+    → Header: icon kuning, judul "Edit Catatan DU Seragam"
+
+[ ] Klik tombol "Edit" di Catatan Internal (merah)
+    → Modal muncul DI DEPAN latar abu-abu BLUR
+    → Background blur terlihat jelas
+    → Header: icon merah, warning "Catatan Internal - Tidak Ditampilkan ke Pendaftar"
+
+[ ] Klik background blur → modal harus tertutup
+[ ] Klik tombol "Batal" → modal harus tertutup
+
+Test 4: Sortable Headers
+────────────────────────────────────────────
+[ ] Klik header "Nomor Pendaftaran" → tabel sort ascending
+[ ] Klik lagi → tabel sort descending
+[ ] Klik header "Nama Lengkap" → tabel sort by nama
+[ ] Klik header "Jenis Kelamin" → tabel sort by gender
+
+Test 5: Aksi Opsi (Toggle Individual)
+────────────────────────────────────────────
+[ ] Klik toggle "Dropdown Opsi Lainnya" (biru)
+    → Toggle nyala (biru)
+    → Text: "Aktif untuk orang ini"
+
+[ ] Klik toggle "Konfirmasi Opsi Lainnya" (hijau)
+    → Toggle nyala (hijau)
+    → Text: "Aktif untuk orang ini"
+
+[ ] Refresh halaman → toggle harus tetap ON
+
+Test 6: Bandingkan dengan Admin
+────────────────────────────────────────────
+URL Admin: https://pmbm.mtsn2kotamalang.sch.id/admin/daftar-ulang?activeTab=seragam
+
+[ ] Login sebagai admin
+[ ] Buka halaman admin/daftar-ulang?activeTab=seragam
+[ ] Bandingkan urutan kolom dengan panitia-seragam
+    → HARUS SAMA PERSIS
+[ ] Bandingkan style badge
+    → HARUS SAMA PERSIS
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+CATATAN PENTING:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+✓ TIDAK ADA MIGRATION BARU
+✓ TIDAK ADA PERUBAHAN DATABASE
+✓ TIDAK ADA BREAKING CHANGES
+✓ BACKWARD COMPATIBLE
+
+Jika user masih lihat tampilan lama setelah upload:
+→ Hard refresh browser (Ctrl + Shift + R)
+→ Clear browser cache
+→ Gunakan incognito mode
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+DOKUMENTASI LENGKAP:
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1. RANGKUMAN_PERBAIKAN_24_FEB_2026_UPLOAD_PRODUCTION.md
+   → Rangkuman lengkap semua perbaikan
+
+2. FIX_LOGIN_PANITIA_AKTIF_ISSUE_24_FEB_2026.md
+   → Detail perbaikan login panitia
+
+3. FIX_MODAL_BACKDROP_BLUR_PANITIA_SERAGAM_24_FEB_2026.md
+   → Detail perbaikan modal backdrop blur
+
+4. FIX_PANITIA_SERAGAM_SAMA_DENGAN_ADMIN_24_FEB_2026.md
+   → Detail penambahan kolom baru
+
+5. PERBAIKAN_PANITIA_SERAGAM_DAFTAR_ULANG_24_FEB_2026.md
+   → Detail sortable headers dan catatan internal
+
+================================================================================
+UPLOAD DATE: 24 Februari 2026
+TOTAL FILES: 3 file
+STATUS: ✅ READY FOR PRODUCTION
+================================================================================

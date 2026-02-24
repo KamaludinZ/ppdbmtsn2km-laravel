@@ -316,8 +316,19 @@
                     @php
                         // Nominal Seragam Awal (yang dipilih di "Pilih Paket Seragam")
                         $nominalSeragamAwal = $seragam->nominal_seragam_awal ?? [];
-                        $keterangan = $nominalSeragamAwal['name'] ?? 'Biaya Seragam & Atribut';
-                        $jumlahAwal = $nominalSeragamAwal['amount'] ?? 0;
+
+                        // Deteksi apakah multi-select (array) atau single (object)
+                        $isMultiSelect = is_array($nominalSeragamAwal) && isset($nominalSeragamAwal[0]);
+
+                        // Hitung total nominal awal
+                        if ($isMultiSelect) {
+                            $jumlahAwal = 0;
+                            foreach ($nominalSeragamAwal as $item) {
+                                $jumlahAwal += $item['amount'] ?? 0;
+                            }
+                        } else {
+                            $jumlahAwal = $nominalSeragamAwal['amount'] ?? 0;
+                        }
 
                         // Nominal Seragam Konfirmasi (yang dipilih di "Konfirmasi Nominal yang Dibayarkan")
                         $nominalSeragamKonfirmasi = $seragam->nominal_seragam ?? [];
@@ -334,11 +345,38 @@
                             $statusPembayaran = 'KEKURANGAN: Rp ' . number_format(abs($selisih), 0, ',', '.');
                         }
                     @endphp
-                    <tr>
-                        <td>{{ $keterangan }}</td>
-                        <td class="text-right">Rp {{ number_format($jumlahAwal, 0, ',', '.') }}</td>
-                        <td class="text-right">Rp {{ number_format($jumlahKonfirmasi, 0, ',', '.') }}</td>
-                    </tr>
+
+                    @if($isMultiSelect)
+                        {{-- MULTI SELECT MODE: Tampilkan semua item dengan baris terpisah --}}
+                        @foreach($nominalSeragamAwal as $idx => $item)
+                            <tr>
+                                <td>{{ ($idx + 1) }}. {{ $item['name'] ?? 'Biaya Seragam & Atribut' }}</td>
+                                <td class="text-right">Rp {{ number_format($item['amount'] ?? 0, 0, ',', '.') }}</td>
+                                <td class="text-right">
+                                    @if($idx == 0)
+                                        {{-- Tampilkan total konfirmasi di baris pertama --}}
+                                        <strong>Rp {{ number_format($jumlahKonfirmasi, 0, ',', '.') }}</strong>
+                                    @else
+                                        -
+                                    @endif
+                                </td>
+                            </tr>
+                        @endforeach
+                        {{-- Total Row --}}
+                        <tr style="background-color: #e5e7eb; font-weight: bold;">
+                            <td>TOTAL</td>
+                            <td class="text-right">Rp {{ number_format($jumlahAwal, 0, ',', '.') }}</td>
+                            <td class="text-right">Rp {{ number_format($jumlahKonfirmasi, 0, ',', '.') }}</td>
+                        </tr>
+                    @else
+                        {{-- SINGLE SELECT MODE: Tampilan seperti sebelumnya --}}
+                        <tr>
+                            <td>{{ $nominalSeragamAwal['name'] ?? 'Biaya Seragam & Atribut' }}</td>
+                            <td class="text-right">Rp {{ number_format($jumlahAwal, 0, ',', '.') }}</td>
+                            <td class="text-right">Rp {{ number_format($jumlahKonfirmasi, 0, ',', '.') }}</td>
+                        </tr>
+                    @endif
+
                     <tr class="bg-gray">
                         <td style="font-weight: bold;">Status Pembayaran</td>
                         <td colspan="2" class="text-right" style="font-weight: bold;">{{ $statusPembayaran }}</td>

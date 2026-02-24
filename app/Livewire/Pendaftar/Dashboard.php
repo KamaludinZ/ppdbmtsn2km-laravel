@@ -307,6 +307,7 @@ class Dashboard extends Component
 
         // Check if verification is approved
         $isVerified = in_array($status, ['data_disetujui', 'lulus', 'tidak_lulus', 'cadangan']);
+        $isPostTest = in_array($status, ['lulus', 'tidak_lulus', 'cadangan']);
         $needsFix = in_array($status, ['lengkapi_data', 'perbaiki_data']);
 
         // FORMULIR STEP

@@ -131,9 +131,15 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Pendaftaran</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pendaftar</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Kelamin</th>
+                        <x-sortable-header field="nomor_pendaftaran" :sort-field="$sortField" :sort-direction="$sortDirection" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Nomor Pendaftaran
+                        </x-sortable-header>
+                        <x-sortable-header field="nama_lengkap" :sort-field="$sortField" :sort-direction="$sortDirection" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Pendaftar
+                        </x-sortable-header>
+                        <x-sortable-header field="jenis_kelamin" :sort-field="$sortField" :sort-direction="$sortDirection" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Jenis Kelamin
+                        </x-sortable-header>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jalur</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             @if($activeTab === 'seragam')
@@ -146,8 +152,11 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paket Seragam</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal Biaya</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal yang Dibayar</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ukuran Baju Harian</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Celana/Rok Harian</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Opsi Pembayaran</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bank/Metode</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pengirim</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bukti Pembayaran</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Waktu Pembayaran</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
@@ -163,6 +172,7 @@
                         @if($activeTab === 'seragam')
                             <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi Opsi</th>
                         @endif
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan Internal</th>
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ubah Status</th>
                         <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi Pesan</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Riwayat Pesan</th>
@@ -266,11 +276,38 @@
                                 <!-- Nominal Biaya (Awal) -->
                                 <td class="px-6 py-4">
                                     @if($item->seragam && $item->seragam->nominal_seragam_awal)
-                                        @php $nominalSeragamAwal = $item->seragam->nominal_seragam_awal; @endphp
-                                        <div class="text-xs text-gray-900">
-                                            <div class="font-medium text-gray-700 mb-1">{{ $nominalSeragamAwal['name'] ?? '-' }}</div>
-                                            <div class="font-bold text-blue-700">Rp {{ number_format($nominalSeragamAwal['amount'] ?? 0, 0, ',', '.') }}</div>
-                                        </div>
+                                        @php
+                                            $nominalSeragamAwal = $item->seragam->nominal_seragam_awal;
+                                            // Deteksi apakah multi-select (array of options) atau single option
+                                            $isMultiSelectSeragam = is_array($nominalSeragamAwal) && isset($nominalSeragamAwal[0]) && is_array($nominalSeragamAwal[0]);
+                                        @endphp
+
+                                        @if($isMultiSelectSeragam)
+                                            {{-- Multi-select: tampilkan dengan badge --}}
+                                            <div class="text-xs text-gray-900">
+                                                <div class="font-medium text-purple-700 mb-1">
+                                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-purple-100 text-purple-800">
+                                                        📦 Multi Select ({{ count($nominalSeragamAwal) }} opsi)
+                                                    </span>
+                                                </div>
+                                                <div class="space-y-1 mt-1">
+                                                    @foreach($nominalSeragamAwal as $idx => $opt)
+                                                        <div class="text-xs text-gray-600">
+                                                            {{ $idx + 1 }}. {{ $opt['name'] ?? '-' }} - Rp {{ number_format($opt['amount'] ?? 0, 0, ',', '.') }}
+                                                        </div>
+                                                    @endforeach
+                                                    <div class="pt-1 border-t border-purple-200 font-bold text-purple-700">
+                                                        Total: Rp {{ number_format(array_sum(array_column($nominalSeragamAwal, 'amount')), 0, ',', '.') }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @else
+                                            {{-- Single option: tampilkan seperti biasa --}}
+                                            <div class="text-xs text-gray-900">
+                                                <div class="font-medium text-gray-700 mb-1">{{ $nominalSeragamAwal['name'] ?? '-' }}</div>
+                                                <div class="font-bold text-blue-700">Rp {{ number_format($nominalSeragamAwal['amount'] ?? 0, 0, ',', '.') }}</div>
+                                            </div>
+                                        @endif
                                     @else
                                         <span class="text-xs text-gray-500">Belum pilih</span>
                                     @endif
@@ -285,6 +322,26 @@
                                         </div>
                                     @else
                                         <span class="text-xs text-gray-500">Belum konfirmasi</span>
+                                    @endif
+                                </td>
+                                <!-- Ukuran Baju Seragam Harian -->
+                                <td class="px-6 py-4">
+                                    @if($item->seragam && $item->seragam->ukuran_baju_harian)
+                                        <span class="px-2 py-1 inline-flex text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                                            {{ $item->seragam->ukuran_baju_harian }}
+                                        </span>
+                                    @else
+                                        <span class="text-xs text-gray-500">-</span>
+                                    @endif
+                                </td>
+                                <!-- Celana/Rok Seragam Harian -->
+                                <td class="px-6 py-4">
+                                    @if($item->seragam && $item->seragam->ukuran_celana_rok_harian)
+                                        <span class="px-2 py-1 inline-flex text-xs font-semibold rounded-full bg-teal-100 text-teal-800">
+                                            {{ $item->seragam->ukuran_celana_rok_harian }}
+                                        </span>
+                                    @else
+                                        <span class="text-xs text-gray-500">-</span>
                                     @endif
                                 </td>
                                 <!-- Opsi Pembayaran -->
@@ -302,6 +359,16 @@
                                     @if($item->seragam && $item->seragam->bank_seragam)
                                         <div class="text-xs text-gray-900">
                                             <span class="font-medium">{{ $item->seragam->bank_seragam }}</span>
+                                        </div>
+                                    @else
+                                        <span class="text-xs text-gray-500">-</span>
+                                    @endif
+                                </td>
+                                <!-- Nama Pengirim -->
+                                <td class="px-6 py-4">
+                                    @if($item->seragam && $item->seragam->nama_pengirim)
+                                        <div class="text-xs text-gray-900">
+                                            <span class="font-medium">{{ $item->seragam->nama_pengirim }}</span>
                                         </div>
                                     @else
                                         <span class="text-xs text-gray-500">-</span>
@@ -347,9 +414,31 @@
                                         <button
                                             wire:click="openCatatanModal('seragam', {{ $item->id }}, '{{ addslashes($item->seragam->catatan_seragam ?? '') }}')"
                                             class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors"
-                                            title="Edit Catatan">
+                                            title="Edit Catatan untuk Pendaftar">
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                            Edit
+                                        </button>
+                                    </div>
+                                </td>
+                                <!-- Catatan Internal (NOT visible to pendaftar) -->
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        @if($item->seragam && $item->seragam->catatan_internal_seragam)
+                                            <div class="text-xs text-gray-700 bg-red-50 p-2 rounded border border-red-200 max-w-xs">
+                                                <div class="font-semibold text-red-700 mb-1">🔒 Internal:</div>
+                                                <p class="whitespace-pre-wrap">{{ $item->seragam->catatan_internal_seragam }}</p>
+                                            </div>
+                                        @else
+                                            <span class="text-xs text-gray-400 italic">Belum ada catatan internal</span>
+                                        @endif
+                                        <button
+                                            wire:click="openCatatanInternalModal('seragam', {{ $item->id }}, '{{ addslashes($item->seragam->catatan_internal_seragam ?? '') }}')"
+                                            class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-50 border border-red-300 rounded hover:bg-red-100 transition-colors"
+                                            title="Edit Catatan Internal (Tidak ditampilkan ke pendaftar)">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                             </svg>
                                             Edit
                                         </button>
@@ -434,9 +523,31 @@
                                         <button
                                             wire:click="openCatatanModal('ukuran', {{ $item->id }}, '{{ addslashes($item->seragam->catatan_ukuran ?? '') }}')"
                                             class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors"
-                                            title="Edit Catatan">
+                                            title="Edit Catatan untuk Pendaftar">
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                            </svg>
+                                            Edit
+                                        </button>
+                                    </div>
+                                </td>
+                                <!-- Catatan Internal (NOT visible to pendaftar) -->
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center gap-2">
+                                        @if($item->seragam && $item->seragam->catatan_internal_ukuran)
+                                            <div class="text-xs text-gray-700 bg-red-50 p-2 rounded border border-red-200 max-w-xs">
+                                                <div class="font-semibold text-red-700 mb-1">🔒 Internal:</div>
+                                                <p class="whitespace-pre-wrap">{{ $item->seragam->catatan_internal_ukuran }}</p>
+                                            </div>
+                                        @else
+                                            <span class="text-xs text-gray-400 italic">Belum ada catatan internal</span>
+                                        @endif
+                                        <button
+                                            wire:click="openCatatanInternalModal('ukuran', {{ $item->id }}, '{{ addslashes($item->seragam->catatan_internal_ukuran ?? '') }}')"
+                                            class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-50 border border-red-300 rounded hover:bg-red-100 transition-colors"
+                                            title="Edit Catatan Internal (Tidak ditampilkan ke pendaftar)">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
                                             </svg>
                                             Edit
                                         </button>
@@ -657,62 +768,114 @@
     @include('livewire.admin.partials.send-message-modal')
 
     {{-- Catatan Modal --}}
-    <div x-data="{ show: @entangle('showCatatanModal').live }"
-         x-show="show"
-         x-cloak
-         class="fixed inset-0 z-50 overflow-y-auto"
-         aria-labelledby="modal-title"
-         role="dialog"
-         aria-modal="true">
-        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            <div x-show="show"
-                 x-transition:enter="ease-out duration-300"
-                 x-transition:enter-start="opacity-0"
-                 x-transition:enter-end="opacity-100"
-                 x-transition:leave="ease-in duration-200"
-                 x-transition:leave-start="opacity-100"
-                 x-transition:leave-end="opacity-0"
-                 class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"
-                 @click="show = false"
-                 aria-hidden="true"></div>
+    @if($showCatatanModal)
+    <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-0 overflow-y-auto">
+        <!-- Background overlay with blur -->
+        <div class="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity z-[9998]" wire:click="closeCatatanModal"></div>
 
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-
-            <div x-show="show"
-                 x-transition:enter="ease-out duration-300"
-                 x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                 x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
-                 x-transition:leave="ease-in duration-200"
-                 x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
-                 x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
-                 class="inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
-                <div>
-                    <div class="mt-3 text-center sm:mt-5">
-                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
-                            Edit Catatan {{ ucfirst($catatanType) }}
+        <!-- Modal panel -->
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full z-[10000]">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-yellow-100 rounded-full sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900">
+                            Edit Catatan {{ $catatanType === 'seragam' ? 'DU Seragam' : 'Ukuran Seragam' }}
                         </h3>
                         <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Catatan</label>
                             <textarea
                                 wire:model="catatanText"
                                 rows="5"
-                                class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 rounded-md"
-                                placeholder="Masukkan catatan..."></textarea>
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-sm"
+                                placeholder="Tulis catatan untuk pendaftar..."></textarea>
+                            <p class="mt-1 text-xs text-gray-500">Catatan ini bisa dilihat oleh pendaftar</p>
                         </div>
                     </div>
                 </div>
-                <div class="mt-5 sm:mt-6 sm:grid sm:grid-cols-2 sm:gap-3 sm:grid-flow-row-dense">
-                    <button type="button"
-                            wire:click="saveCatatan"
-                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:col-start-2 sm:text-sm">
-                        Simpan
-                    </button>
-                    <button type="button"
-                            wire:click="closeCatatanModal"
-                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:col-start-1 sm:text-sm">
-                        Batal
-                    </button>
-                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                    type="button"
+                    wire:click="saveCatatan"
+                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Simpan Catatan
+                </button>
+                <button
+                    type="button"
+                    wire:click="closeCatatanModal"
+                    class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Batal
+                </button>
             </div>
         </div>
     </div>
+    @endif
+
+    {{-- Catatan Internal Modal --}}
+    @if($showCatatanInternalModal)
+    <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-0 overflow-y-auto">
+        <!-- Background overlay with blur -->
+        <div class="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity z-[9998]" wire:click="closeCatatanInternalModal"></div>
+
+        <!-- Modal panel -->
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full z-[10000]">
+            <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                <div class="sm:flex sm:items-start">
+                    <div class="flex items-center justify-center flex-shrink-0 w-12 h-12 mx-auto bg-red-100 rounded-full sm:mx-0 sm:h-10 sm:w-10">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </div>
+                    <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left flex-1">
+                        <h3 class="text-lg font-medium leading-6 text-gray-900">
+                            Edit Catatan Internal {{ $catatanInternalType === 'seragam' ? 'DU Seragam' : 'Ukuran Seragam' }}
+                        </h3>
+                        <div class="mt-2 p-3 bg-red-50 border border-red-200 rounded-lg">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-red-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                </svg>
+                                <p class="text-sm text-red-800 font-semibold">Catatan Internal - Tidak Ditampilkan ke Pendaftar</p>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Catatan Internal</label>
+                            <textarea
+                                wire:model="catatanInternalText"
+                                rows="5"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-red-500 focus:ring-red-500 text-sm"
+                                placeholder="Tulis catatan internal (hanya untuk admin/panitia)..."></textarea>
+                            <p class="mt-1 text-xs text-red-600 font-medium">⚠️ Catatan ini TIDAK akan terlihat oleh pendaftar</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                <button
+                    type="button"
+                    wire:click="saveCatatanInternal"
+                    class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                    </svg>
+                    Simpan Catatan Internal
+                </button>
+                <button
+                    type="button"
+                    wire:click="closeCatatanInternalModal"
+                    class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-red-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+    @endif
 </div>

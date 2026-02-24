@@ -103,6 +103,10 @@ class DaftarUlang extends Component
     public $ukuran_celana_rok_harian;
     public $ukuran_kopyah;
 
+    // Alert Perbedaan Ukuran Settings
+    public $ukuranAlertPerbedaanEnabled = true;
+    public $ukuranAlertPerhitunganMode = 'terbesar';
+
     public function mount()
     {
         $user = Auth::user();
@@ -196,6 +200,10 @@ class DaftarUlang extends Component
         $this->ukuranBajuHarianEnableOpsiLainnya = Setting::get('daftar_ulang_ukuran_baju_harian_enable_opsi_lainnya', false);
         $this->ukuranCelanaRokHarianEnableOpsiLainnya = Setting::get('daftar_ulang_ukuran_celana_rok_harian_enable_opsi_lainnya', false);
         $this->ukuranKopyahEnableOpsiLainnya = Setting::get('daftar_ulang_ukuran_kopyah_enable_opsi_lainnya', false);
+
+        // Load Alert Perbedaan Ukuran Settings
+        $this->ukuranAlertPerbedaanEnabled = Setting::get('ukuran_alert_perbedaan_enabled', true);
+        $this->ukuranAlertPerhitunganMode = Setting::get('ukuran_alert_perhitungan_mode', 'terbesar');
 
         // Load payment nominals enable opsi lainnya settings
         $this->madrasahPaymentNominalsEnableOpsiLainnya = Setting::get('daftar_ulang_madrasah_payment_nominals_enable_opsi_lainnya', false);
@@ -431,40 +439,106 @@ class DaftarUlang extends Component
         }
     }
 
+    /**
+     * Reset opsiSeragam dan konfirmasiNominalSeragam ketika paketSeragam berubah
+     * Method ini otomatis dipanggil oleh Livewire ketika property paketSeragam updated
+     */
+    public function updatedPaketSeragam($value)
+    {
+        // Only reset if value is not null (prevent reset on initial load)
+        if ($value !== null) {
+            // Reset pilihan opsi ketika paket berubah
+            $this->opsiSeragam = null;
+            $this->konfirmasiNominalSeragam = null;
+            $this->konfirmasiNominalSeragamOpsiLainnya = null;
+        }
+    }
+
     public function saveMadrasah()
     {
+        \Log::info('saveMadrasah() called', [
+            'paketMadrasah' => $this->paketMadrasah,
+            'opsiMadrasah' => $this->opsiMadrasah,
+            'paketMadrasahCustomName' => $this->paketMadrasahCustomName ?? null,
+            'paketMadrasahCustomAmount' => $this->paketMadrasahCustomAmount ?? null,
+            'konfirmasiNominalBiaya' => $this->konfirmasiNominalBiaya,
+            'opsiPembayaran' => $this->opsiPembayaran,
+            'bankPilihan' => $this->bankPilihan,
+            'namaPengirim' => $this->namaPengirim,
+            'buktiPembayaran' => $this->buktiPembayaran ? 'YES' : 'NO',
+        ]);
+
         // Check if payment is still open
         $this->checkPaymentStatus();
 
         if (!$this->isMadrasahPaymentOpen && $this->buktiPembayaran) {
+            \Log::info('saveMadrasah() stopped: Payment period closed');
             session()->flash('error', 'Waktu pembayaran telah berakhir. Upload bukti pembayaran tidak dapat dilakukan.');
             return;
         }
 
         // Check if Surat Pernyataan uploaded before allowing Bukti Pembayaran
         if ($this->buktiPembayaran && (!$this->daftarUlang || !$this->daftarUlang->surat_pernyataan_path)) {
+            \Log::info('saveMadrasah() stopped: Surat pernyataan not uploaded');
             session()->flash('error', 'Silakan upload Surat Pernyataan terlebih dahulu sebelum upload Bukti Pembayaran.');
             return;
         }
 
-        $this->validate([
-            'nominalBiaya' => 'required|string',
-            'konfirmasiNominalBiaya' => 'required|string',
-            'opsiPembayaran' => 'required|string',
-            'bankPilihan' => 'required|string',
-            'buktiPembayaran' => 'required|mimes:pdf,jpg,jpeg,png|max:2048',
-            'namaPengirim' => 'required|string|max:255',
-        ], [
-            'nominalBiaya.required' => 'Silakan pilih nominal biaya terlebih dahulu.',
-            'konfirmasiNominalBiaya.required' => 'Silakan pilih nominal yang akan dibayarkan.',
-            'opsiPembayaran.required' => 'Silakan pilih opsi pembayaran.',
-            'bankPilihan.required' => 'Silakan pilih bank.',
-            'buktiPembayaran.required' => 'Bukti pembayaran harus diupload.',
-            'buktiPembayaran.mimes' => 'Bukti pembayaran harus berupa file PDF atau Gambar (JPG, JPEG, PNG).',
-            'buktiPembayaran.max' => 'Ukuran file bukti pembayaran maksimal 2MB.',
-            'namaPengirim.required' => 'Nama pengirim harus diisi.',
-            'namaPengirim.max' => 'Nama pengirim maksimal 255 karakter.',
-        ]);
+        \Log::info('saveMadrasah() validating...');
+
+        // Check if this is paket_lainnya (manual input)
+        $isPaketLainnya = ($this->paketMadrasah === 'paket_lainnya');
+
+        if ($isPaketLainnya) {
+            // Validation for Paket Lainnya (manual input)
+            $this->validate([
+                'paketMadrasah' => 'required|string',
+                'paketMadrasahCustomName' => 'required|string|max:255',
+                'paketMadrasahCustomAmount' => 'required|numeric|min:0',
+                'konfirmasiNominalBiaya' => 'required|string',
+                'opsiPembayaran' => 'required|string',
+                'bankPilihan' => 'required|string',
+                'buktiPembayaran' => 'required|mimes:pdf,jpg,jpeg,png|max:2048',
+                'namaPengirim' => 'required|string|max:255',
+            ], [
+                'paketMadrasah.required' => 'Silakan pilih paket terlebih dahulu.',
+                'paketMadrasahCustomName.required' => 'Nama paket custom harus diisi.',
+                'paketMadrasahCustomName.max' => 'Nama paket maksimal 255 karakter.',
+                'paketMadrasahCustomAmount.required' => 'Nominal biaya harus diisi.',
+                'paketMadrasahCustomAmount.numeric' => 'Nominal biaya harus berupa angka.',
+                'paketMadrasahCustomAmount.min' => 'Nominal biaya tidak boleh negatif.',
+                'konfirmasiNominalBiaya.required' => 'Silakan pilih nominal yang akan dibayarkan.',
+                'opsiPembayaran.required' => 'Silakan pilih opsi pembayaran.',
+                'bankPilihan.required' => 'Silakan pilih bank.',
+                'buktiPembayaran.required' => 'Bukti pembayaran harus diupload.',
+                'buktiPembayaran.mimes' => 'Bukti pembayaran harus berupa file PDF atau Gambar (JPG, JPEG, PNG).',
+                'buktiPembayaran.max' => 'Ukuran file bukti pembayaran maksimal 2MB.',
+                'namaPengirim.required' => 'Nama pengirim harus diisi.',
+                'namaPengirim.max' => 'Nama pengirim maksimal 255 karakter.',
+            ]);
+        } else {
+            // Validation for Normal Package (dropdown selection)
+            $this->validate([
+                'paketMadrasah' => 'required|string',
+                'opsiMadrasah' => 'required',
+                'konfirmasiNominalBiaya' => 'required|string',
+                'opsiPembayaran' => 'required|string',
+                'bankPilihan' => 'required|string',
+                'buktiPembayaran' => 'required|mimes:pdf,jpg,jpeg,png|max:2048',
+                'namaPengirim' => 'required|string|max:255',
+            ], [
+                'paketMadrasah.required' => 'Silakan pilih paket terlebih dahulu.',
+                'opsiMadrasah.required' => 'Silakan pilih opsi dari paket.',
+                'konfirmasiNominalBiaya.required' => 'Silakan pilih nominal yang akan dibayarkan.',
+                'opsiPembayaran.required' => 'Silakan pilih opsi pembayaran.',
+                'bankPilihan.required' => 'Silakan pilih bank.',
+                'buktiPembayaran.required' => 'Bukti pembayaran harus diupload.',
+                'buktiPembayaran.mimes' => 'Bukti pembayaran harus berupa file PDF atau Gambar (JPG, JPEG, PNG).',
+                'buktiPembayaran.max' => 'Ukuran file bukti pembayaran maksimal 2MB.',
+                'namaPengirim.required' => 'Nama pengirim harus diisi.',
+                'namaPengirim.max' => 'Nama pengirim maksimal 255 karakter.',
+            ]);
+        }
 
         if (!$this->daftarUlang) {
             $this->daftarUlang = DaftarUlangModel::create([
@@ -473,28 +547,33 @@ class DaftarUlang extends Component
             ]);
         }
 
-        // Decode nominal yang dipilih atau gunakan custom nominal jika opsi lainnya
-        if ($this->nominalBiaya === 'opsi_lainnya') {
-            if (!$this->madrasahOpsiLainnyaNominal) {
-                session()->flash('error', 'Silakan masukkan nominal untuk Opsi Lainnya.');
-                return;
-            }
-            $nominalData = [
-                'name' => 'Opsi Lainnya',
-                'amount' => $this->madrasahOpsiLainnyaNominal
+        // Parse selected option from package
+        if ($isPaketLainnya) {
+            // Paket Lainnya: Build from custom fields
+            $selectedOption = [
+                'name' => $this->paketMadrasahCustomName,
+                'amount' => $this->paketMadrasahCustomAmount
             ];
         } else {
-            $nominalData = json_decode($this->nominalBiaya, true);
+            // Normal package: Parse from opsiMadrasah
+            // Handle both string (radio mode) and array (checkbox mode, future support)
+            if (is_array($this->opsiMadrasah)) {
+                // Checkbox mode: already array
+                $selectedOption = $this->opsiMadrasah;
+            } else {
+                // Radio mode: decode JSON string
+                $selectedOption = json_decode($this->opsiMadrasah, true);
+            }
         }
 
-        // Handle konfirmasi nominal - decode atau gunakan custom nominal
+        // Handle konfirmasi nominal - either auto from confirmation or manual "Opsi Lainnya"
         if ($this->konfirmasiNominalBiaya === 'opsi_lainnya') {
             if (!$this->konfirmasiNominalBiayaOpsiLainnya) {
                 session()->flash('error', 'Silakan masukkan nominal konfirmasi untuk Opsi Lainnya.');
                 return;
             }
             $konfirmasiNominalData = [
-                'name' => 'Opsi Lainnya',
+                'name' => 'Opsi Lainnya (Manual)',
                 'amount' => $this->konfirmasiNominalBiayaOpsiLainnya
             ];
         } else {
@@ -502,8 +581,8 @@ class DaftarUlang extends Component
         }
 
         $dataToUpdate = [
-            'nominal_biaya_awal' => $nominalData, // Nominal yang dipilih untuk surat pernyataan
-            'nominal_biaya' => $konfirmasiNominalData, // Konfirmasi nominal yang dibayarkan
+            'nominal_biaya_awal' => $selectedOption, // Original selected option from package
+            'nominal_biaya' => $konfirmasiNominalData, // Confirmation nominal (auto or manual)
             'opsi_pembayaran' => $this->opsiPembayaran,
             'metode_pembayaran' => $this->bankPilihan,
             'nama_pengirim' => $this->namaPengirim,
@@ -534,7 +613,11 @@ class DaftarUlang extends Component
         // Surat pernyataan sudah dihandle oleh method saveSuratPernyataan() terpisah
         // Jadi tidak perlu diupload lagi di sini
 
+        \Log::info('saveMadrasah() updating database...', ['dataToUpdate' => $dataToUpdate]);
+
         $this->daftarUlang->update($dataToUpdate);
+
+        \Log::info('saveMadrasah() SUCCESS!');
 
         session()->flash('message', 'Data daftar ulang madrasah berhasil disimpan.');
         $this->buktiPembayaran = null;
@@ -554,41 +637,103 @@ class DaftarUlang extends Component
             return;
         }
 
-        $this->validate([
-            'paketSeragam' => 'required|string',
-            'opsiSeragam' => 'required|string',  // NEW: validate selected option from package
-            'konfirmasiNominalSeragam' => 'required|string',
-            'konfirmasiNominalSeragamOpsiLainnya' => 'required_if:konfirmasiNominalSeragam,opsi_lainnya|nullable|numeric|min:0',
-            'opsiPembayaranSeragam' => 'required|string',
-            'bankSeragam' => 'required|string',
-            'buktiSeragam' => 'required|mimes:pdf,jpg,jpeg,png|max:5120',
-            'namaPengirimSeragam' => 'required|string|max:255',
-        ], [
-            'paketSeragam.required' => 'Silakan pilih paket seragam.',
-            'opsiSeragam.required' => 'Silakan pilih opsi dari paket seragam.',
-            'konfirmasiNominalSeragam.required' => 'Silakan pilih nominal yang akan dibayarkan.',
-            'konfirmasiNominalSeragamOpsiLainnya.required_if' => 'Silakan masukkan nominal untuk Opsi Lainnya.',
-            'konfirmasiNominalSeragamOpsiLainnya.numeric' => 'Nominal harus berupa angka.',
-            'konfirmasiNominalSeragamOpsiLainnya.min' => 'Nominal tidak boleh negatif.',
-            'opsiPembayaranSeragam.required' => 'Silakan pilih opsi pembayaran.',
-            'bankSeragam.required' => 'Silakan pilih bank.',
-            'buktiSeragam.required' => 'Bukti pembayaran seragam harus diupload.',
-            'buktiSeragam.mimes' => 'Bukti pembayaran harus berupa file PDF atau Gambar (JPG, JPEG, PNG).',
-            'buktiSeragam.max' => 'Ukuran file bukti pembayaran maksimal 5MB.',
-            'namaPengirimSeragam.required' => 'Nama pengirim harus diisi.',
-            'namaPengirimSeragam.max' => 'Nama pengirim maksimal 255 karakter.',
-        ]);
+        // Check if this is paket_lainnya (manual input)
+        $isPaketLainnya = ($this->paketSeragam === 'paket_lainnya');
+
+        if (!$isPaketLainnya) {
+            // Custom validation untuk opsiSeragam (bisa string atau array untuk checkbox mode)
+            // Only for normal packages, not for paket_lainnya
+            if (is_array($this->opsiSeragam) && count($this->opsiSeragam) === 0) {
+                $this->addError('opsiSeragam', 'Silakan pilih minimal 1 opsi dari paket seragam.');
+                return;
+            }
+        }
+
+        if ($isPaketLainnya) {
+            // Validation for Paket Lainnya (manual input)
+            $this->validate([
+                'paketSeragam' => 'required|string',
+                'paketSeragamCustomName' => 'required|string|max:255',
+                'paketSeragamCustomAmount' => 'required|numeric|min:0',
+                'konfirmasiNominalSeragam' => 'required|string',
+                'konfirmasiNominalSeragamOpsiLainnya' => 'required_if:konfirmasiNominalSeragam,opsi_lainnya|nullable|numeric|min:0',
+                'opsiPembayaranSeragam' => 'required|string',
+                'bankSeragam' => 'required|string',
+                'buktiSeragam' => 'required|mimes:pdf,jpg,jpeg,png|max:5120',
+                'namaPengirimSeragam' => 'required|string|max:255',
+            ], [
+                'paketSeragam.required' => 'Silakan pilih paket seragam.',
+                'paketSeragamCustomName.required' => 'Nama paket custom harus diisi.',
+                'paketSeragamCustomName.max' => 'Nama paket maksimal 255 karakter.',
+                'paketSeragamCustomAmount.required' => 'Nominal biaya harus diisi.',
+                'paketSeragamCustomAmount.numeric' => 'Nominal biaya harus berupa angka.',
+                'paketSeragamCustomAmount.min' => 'Nominal biaya tidak boleh negatif.',
+                'konfirmasiNominalSeragam.required' => 'Silakan pilih nominal yang akan dibayarkan.',
+                'konfirmasiNominalSeragamOpsiLainnya.required_if' => 'Silakan masukkan nominal untuk Opsi Lainnya.',
+                'konfirmasiNominalSeragamOpsiLainnya.numeric' => 'Nominal harus berupa angka.',
+                'konfirmasiNominalSeragamOpsiLainnya.min' => 'Nominal tidak boleh negatif.',
+                'opsiPembayaranSeragam.required' => 'Silakan pilih opsi pembayaran.',
+                'bankSeragam.required' => 'Silakan pilih bank.',
+                'buktiSeragam.required' => 'Bukti pembayaran seragam harus diupload.',
+                'buktiSeragam.mimes' => 'Bukti pembayaran harus berupa file PDF atau Gambar (JPG, JPEG, PNG).',
+                'buktiSeragam.max' => 'Ukuran file bukti pembayaran maksimal 5MB.',
+                'namaPengirimSeragam.required' => 'Nama pengirim harus diisi.',
+                'namaPengirimSeragam.max' => 'Nama pengirim maksimal 255 karakter.',
+            ]);
+        } else {
+            // Validation for Normal Package (dropdown selection with opsiSeragam)
+            $this->validate([
+                'paketSeragam' => 'required|string',
+                'opsiSeragam' => 'required',  // validate selected option (bisa string atau array untuk checkbox mode)
+                'konfirmasiNominalSeragam' => 'required|string',
+                'konfirmasiNominalSeragamOpsiLainnya' => 'required_if:konfirmasiNominalSeragam,opsi_lainnya|nullable|numeric|min:0',
+                'opsiPembayaranSeragam' => 'required|string',
+                'bankSeragam' => 'required|string',
+                'buktiSeragam' => 'required|mimes:pdf,jpg,jpeg,png|max:5120',
+                'namaPengirimSeragam' => 'required|string|max:255',
+            ], [
+                'paketSeragam.required' => 'Silakan pilih paket seragam.',
+                'opsiSeragam.required' => 'Silakan pilih opsi dari paket seragam.',
+                'konfirmasiNominalSeragam.required' => 'Silakan pilih nominal yang akan dibayarkan.',
+                'konfirmasiNominalSeragamOpsiLainnya.required_if' => 'Silakan masukkan nominal untuk Opsi Lainnya.',
+                'konfirmasiNominalSeragamOpsiLainnya.numeric' => 'Nominal harus berupa angka.',
+                'konfirmasiNominalSeragamOpsiLainnya.min' => 'Nominal tidak boleh negatif.',
+                'opsiPembayaranSeragam.required' => 'Silakan pilih opsi pembayaran.',
+                'bankSeragam.required' => 'Silakan pilih bank.',
+                'buktiSeragam.required' => 'Bukti pembayaran seragam harus diupload.',
+                'buktiSeragam.mimes' => 'Bukti pembayaran harus berupa file PDF atau Gambar (JPG, JPEG, PNG).',
+                'buktiSeragam.max' => 'Ukuran file bukti pembayaran maksimal 5MB.',
+                'namaPengirimSeragam.required' => 'Nama pengirim harus diisi.',
+                'namaPengirimSeragam.max' => 'Nama pengirim maksimal 255 karakter.',
+            ]);
+        }
 
         if (!$this->seragam) {
             $this->seragam = \App\Models\Seragam::create([
                 'pendaftar_id' => $this->pendaftar->id,
-                'status_seragam' => 'menunggu',
-                'status_ukuran' => null,  // Explicitly set to null to prevent auto-fill
+                'status_seragam' => 'menunggu',  // Tab Seragam submitted
+                'status_ukuran' => 'belum_diisi',  // Tab Ukuran not submitted yet
+                'paket_seragam' => '',  // Empty string for no package selected yet
             ]);
         }
 
         // Parse selected option from package
-        $selectedOption = json_decode($this->opsiSeragam, true);
+        if ($isPaketLainnya) {
+            // Paket Lainnya: Build from custom fields
+            $selectedOption = [
+                'name' => $this->paketSeragamCustomName,
+                'amount' => $this->paketSeragamCustomAmount
+            ];
+        } else {
+            // Normal package: Handle both string (radio mode) and array (checkbox mode)
+            if (is_array($this->opsiSeragam)) {
+                // Checkbox mode: already array
+                $selectedOption = $this->opsiSeragam;
+            } else {
+                // Radio mode: decode JSON string
+                $selectedOption = json_decode($this->opsiSeragam, true);
+            }
+        }
 
         // Handle konfirmasi nominal - either auto from option or manual "Opsi Lainnya"
         if ($this->konfirmasiNominalSeragam === 'opsi_lainnya') {
@@ -600,10 +745,19 @@ class DaftarUlang extends Component
             $konfirmasiNominalSeragamData = json_decode($this->konfirmasiNominalSeragam, true);
         }
 
+        // Encode opsiSeragam as JSON untuk disimpan
+        if ($isPaketLainnya) {
+            // For paket_lainnya, encode from selectedOption (built from custom fields)
+            $opsiSeragamToStore = json_encode($selectedOption);
+        } else {
+            // For normal packages, encode from opsiSeragam
+            $opsiSeragamToStore = is_array($this->opsiSeragam) ? json_encode($this->opsiSeragam) : $this->opsiSeragam;
+        }
+
         $dataToUpdate = [
             'paket_seragam' => $this->paketSeragam,  // Package JSON
-            'opsi_seragam' => $this->opsiSeragam,  // NEW: Selected option JSON
-            'nominal_seragam_awal' => $selectedOption,  // Original option (for reference)
+            'opsi_seragam' => $opsiSeragamToStore,  // NEW: Selected option JSON (bisa single atau array)
+            'nominal_seragam_awal' => $selectedOption,  // Original option (for reference, bisa single atau array)
             'nominal_seragam' => $konfirmasiNominalSeragamData,  // Confirmation nominal (auto or manual)
             'opsi_pembayaran_seragam' => $this->opsiPembayaranSeragam,
             'bank_seragam' => $this->bankSeragam,
@@ -643,72 +797,129 @@ class DaftarUlang extends Component
 
     public function saveUkuran()
     {
-        $this->validate([
-            // Detailed uniform sizes (NEW - specific fields only)
-            'ukuran_jas' => 'required|string',
-            'ukuran_baju_olahraga' => 'required|string',
-            'ukuran_celana_olahraga' => 'required|string',
-            'ukuran_baju_harian' => 'required|string',
-            'ukuran_celana_rok_harian' => 'required|string',
-            'ukuran_kopyah' => 'required|string',
-        ], [
-            'ukuran_jas.required' => 'Ukuran jas harus dipilih.',
-            'ukuran_baju_olahraga.required' => 'Ukuran baju olahraga harus dipilih.',
-            'ukuran_celana_olahraga.required' => 'Ukuran celana olahraga harus dipilih.',
-            'ukuran_baju_harian.required' => 'Ukuran baju harian harus dipilih.',
-            'ukuran_celana_rok_harian.required' => 'Ukuran celana/rok harian harus dipilih.',
-            'ukuran_kopyah.required' => 'Ukuran kopyah harus dipilih.',
-        ]);
+        // Check if all fields are required or optional based on admin settings
+        $ukuranFieldsRequired = Setting::get('ukuran_fields_required', false);
+
+        // Build validation rules based on settings
+        if ($ukuranFieldsRequired) {
+            // All fields required (kecuali kopyah untuk perempuan)
+            $rules = [
+                'ukuran_jas' => 'required|string',
+                'ukuran_baju_olahraga' => 'required|string',
+                'ukuran_celana_olahraga' => 'required|string',
+                'ukuran_baju_harian' => 'required|string',
+                'ukuran_celana_rok_harian' => 'required|string',
+            ];
+
+            $messages = [
+                'ukuran_jas.required' => 'Ukuran jas harus dipilih.',
+                'ukuran_baju_olahraga.required' => 'Ukuran baju olahraga harus dipilih.',
+                'ukuran_celana_olahraga.required' => 'Ukuran celana olahraga harus dipilih.',
+                'ukuran_baju_harian.required' => 'Ukuran baju harian harus dipilih.',
+                'ukuran_celana_rok_harian.required' => 'Ukuran celana/rok harian harus dipilih.',
+            ];
+
+            // Ukuran kopyah only required for laki-laki
+            if ($this->pendaftar->jenis_kelamin === 'L') {
+                $rules['ukuran_kopyah'] = 'required|string';
+                $messages['ukuran_kopyah.required'] = 'Ukuran kopyah harus dipilih.';
+            }
+        } else {
+            // All fields optional - pendaftar can fill only what they need
+            $rules = [
+                'ukuran_jas' => 'nullable|string',
+                'ukuran_baju_olahraga' => 'nullable|string',
+                'ukuran_celana_olahraga' => 'nullable|string',
+                'ukuran_baju_harian' => 'nullable|string',
+                'ukuran_celana_rok_harian' => 'nullable|string',
+                'ukuran_kopyah' => 'nullable|string',
+            ];
+
+            $messages = [];
+
+            // Validate at least one field is filled
+            $anyFieldFilled = $this->ukuran_jas ||
+                             $this->ukuran_baju_olahraga ||
+                             $this->ukuran_celana_olahraga ||
+                             $this->ukuran_baju_harian ||
+                             $this->ukuran_celana_rok_harian ||
+                             ($this->pendaftar->jenis_kelamin === 'L' && $this->ukuran_kopyah);
+
+            if (!$anyFieldFilled) {
+                session()->flash('error_ukuran', 'Silakan isi minimal satu ukuran seragam.');
+                return;
+            }
+        }
+
+        $this->validate($rules, $messages);
 
         if (!$this->seragam) {
             $this->seragam = \App\Models\Seragam::create([
                 'pendaftar_id' => $this->pendaftar->id,
-                'status_ukuran' => 'menunggu',
-                'status_seragam' => null,  // Explicitly set to null to prevent auto-fill
+                'status_ukuran' => 'menunggu',  // Tab Ukuran submitted
+                'status_seragam' => 'belum_diisi',  // Tab Seragam not submitted yet
+                'paket_seragam' => '',  // Empty string for no package selected yet
             ]);
         }
 
-        // Handle "opsi lainnya" custom values for each ukuran field
-        $ukuran_jas_value = $this->ukuran_jas;
-        if ($this->ukuran_jas === 'opsi_lainnya') {
-            $ukuran_jas_value = $this->ukuranJasOpsiLainnya ?? '';
-        }
-
-        $ukuran_baju_olahraga_value = $this->ukuran_baju_olahraga;
-        if ($this->ukuran_baju_olahraga === 'opsi_lainnya') {
-            $ukuran_baju_olahraga_value = $this->ukuranBajuOlahragaOpsiLainnya ?? '';
-        }
-
-        $ukuran_celana_olahraga_value = $this->ukuran_celana_olahraga;
-        if ($this->ukuran_celana_olahraga === 'opsi_lainnya') {
-            $ukuran_celana_olahraga_value = $this->ukuranCelanaOlahragaOpsiLainnya ?? '';
-        }
-
-        $ukuran_baju_harian_value = $this->ukuran_baju_harian;
-        if ($this->ukuran_baju_harian === 'opsi_lainnya') {
-            $ukuran_baju_harian_value = $this->ukuranBajuHarianOpsiLainnya ?? '';
-        }
-
-        $ukuran_celana_rok_harian_value = $this->ukuran_celana_rok_harian;
-        if ($this->ukuran_celana_rok_harian === 'opsi_lainnya') {
-            $ukuran_celana_rok_harian_value = $this->ukuranCelanaRokHarianOpsiLainnya ?? '';
-        }
-
-        $ukuran_kopyah_value = $this->ukuran_kopyah;
-        if ($this->ukuran_kopyah === 'opsi_lainnya') {
-            $ukuran_kopyah_value = $this->ukuranKopyahOpsiLainnya ?? '';
-        }
-
+        // Build data to update - only include filled fields
         $dataToUpdate = [
-            // Detailed uniform sizes with custom value handling
-            'ukuran_jas' => $ukuran_jas_value,
-            'ukuran_baju_olahraga' => $ukuran_baju_olahraga_value,
-            'ukuran_celana_olahraga' => $ukuran_celana_olahraga_value,
-            'ukuran_baju_harian' => $ukuran_baju_harian_value,
-            'ukuran_celana_rok_harian' => $ukuran_celana_rok_harian_value,
-            'ukuran_kopyah' => $ukuran_kopyah_value,
             'status_ukuran' => 'menunggu',
         ];
+
+        // Handle "opsi lainnya" custom values for each ukuran field
+        // Only save if field is filled
+        if ($this->ukuran_jas) {
+            $ukuran_jas_value = $this->ukuran_jas;
+            if ($this->ukuran_jas === 'opsi_lainnya') {
+                $ukuran_jas_value = $this->ukuranJasOpsiLainnya ?? null;
+            }
+            $dataToUpdate['ukuran_jas'] = $ukuran_jas_value;
+        }
+
+        if ($this->ukuran_baju_olahraga) {
+            $ukuran_baju_olahraga_value = $this->ukuran_baju_olahraga;
+            if ($this->ukuran_baju_olahraga === 'opsi_lainnya') {
+                $ukuran_baju_olahraga_value = $this->ukuranBajuOlahragaOpsiLainnya ?? null;
+            }
+            $dataToUpdate['ukuran_baju_olahraga'] = $ukuran_baju_olahraga_value;
+        }
+
+        if ($this->ukuran_celana_olahraga) {
+            $ukuran_celana_olahraga_value = $this->ukuran_celana_olahraga;
+            if ($this->ukuran_celana_olahraga === 'opsi_lainnya') {
+                $ukuran_celana_olahraga_value = $this->ukuranCelanaOlahragaOpsiLainnya ?? null;
+            }
+            $dataToUpdate['ukuran_celana_olahraga'] = $ukuran_celana_olahraga_value;
+        }
+
+        if ($this->ukuran_baju_harian) {
+            $ukuran_baju_harian_value = $this->ukuran_baju_harian;
+            if ($this->ukuran_baju_harian === 'opsi_lainnya') {
+                $ukuran_baju_harian_value = $this->ukuranBajuHarianOpsiLainnya ?? null;
+            }
+            $dataToUpdate['ukuran_baju_harian'] = $ukuran_baju_harian_value;
+        }
+
+        if ($this->ukuran_celana_rok_harian) {
+            $ukuran_celana_rok_harian_value = $this->ukuran_celana_rok_harian;
+            if ($this->ukuran_celana_rok_harian === 'opsi_lainnya') {
+                $ukuran_celana_rok_harian_value = $this->ukuranCelanaRokHarianOpsiLainnya ?? null;
+            }
+            $dataToUpdate['ukuran_celana_rok_harian'] = $ukuran_celana_rok_harian_value;
+        }
+
+        // Only save ukuran_kopyah for laki-laki and if filled
+        if ($this->pendaftar->jenis_kelamin === 'L' && $this->ukuran_kopyah) {
+            $ukuran_kopyah_value = $this->ukuran_kopyah;
+            if ($this->ukuran_kopyah === 'opsi_lainnya') {
+                $ukuran_kopyah_value = $this->ukuranKopyahOpsiLainnya ?? null;
+            }
+            $dataToUpdate['ukuran_kopyah'] = $ukuran_kopyah_value;
+        } elseif ($this->pendaftar->jenis_kelamin === 'P') {
+            // For perempuan, explicitly set ukuran_kopyah to null
+            $dataToUpdate['ukuran_kopyah'] = null;
+        }
 
         $this->seragam->update($dataToUpdate);
 
@@ -1057,7 +1268,9 @@ class DaftarUlang extends Component
         if (!$this->seragam) {
             $this->seragam = \App\Models\Seragam::create([
                 'pendaftar_id' => $this->pendaftar->id,
-                'status_seragam' => 'belum',
+                'status_seragam' => 'menunggu',  // Bukti uploaded, waiting for verification
+                'status_ukuran' => 'belum_diisi',  // Tab Ukuran not submitted yet
+                'paket_seragam' => '',  // Empty string for no package selected yet
             ]);
         }
 

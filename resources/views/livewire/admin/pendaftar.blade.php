@@ -185,7 +185,7 @@
                 </div>
             </div>
             <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Kelengkapan EMIS</label>
                     <select wire:model.live="filterEmisCompleteness" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
@@ -214,6 +214,17 @@
                         <option value="perbaiki_data">Perbaiki Data</option>
                         <option value="data_ditolak">Data Ditolak</option>
                         <option value="data_disetujui">Data Disetujui</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Verif Psikologi</label>
+                    <select wire:model.live="filterVerifPsikologi" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                        <option value="">Semua Status</option>
+                        <option value="belum_upload">Belum Upload</option>
+                        <option value="menunggu">Menunggu Verifikasi</option>
+                        <option value="disetujui">Disetujui</option>
+                        <option value="ditolak">Ditolak</option>
+                        <option value="perbaiki">Perlu Perbaikan</option>
                     </select>
                 </div>
                 <div>
@@ -420,6 +431,9 @@
                             @if($showColumns['ubah_password'])
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ubah Password</th>
                             @endif
+                            @if($showColumns['catatan'])
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
+                            @endif
                             @if($showColumns['aksi'])
                                 <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi Pendaftaran</th>
                             @endif
@@ -508,7 +522,25 @@
                                 @if($showColumns['ortu_whatsapp'])
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center space-x-2">
-                                            <span class="text-sm text-gray-900">{{ $item->telepon_ortu ?? '-' }}</span>
+                                            @if($item->telepon_ortu)
+                                                @php
+                                                    $cleanPhone = preg_replace('/[^0-9]/', '', $item->telepon_ortu);
+                                                    if (substr($cleanPhone, 0, 1) === '0') {
+                                                        $cleanPhone = '62' . substr($cleanPhone, 1);
+                                                    } elseif (substr($cleanPhone, 0, 2) !== '62') {
+                                                        $cleanPhone = '62' . $cleanPhone;
+                                                    }
+                                                    $waUrl = 'https://wa.me/' . $cleanPhone;
+                                                @endphp
+                                                <a href="{{ $waUrl }}" target="_blank" class="inline-flex items-center text-sm text-green-600 hover:text-green-800 hover:underline transition">
+                                                    <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                                                        <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"></path>
+                                                    </svg>
+                                                    {{ $item->telepon_ortu }}
+                                                </a>
+                                            @else
+                                                <span class="text-sm text-gray-400">-</span>
+                                            @endif
                                             <button
                                                 wire:click="showEditTeleponOrtuModal({{ $item->id }})"
                                                 class="text-blue-600 hover:text-blue-900 transition"
@@ -927,6 +959,29 @@
                                         >
                                             Ubah
                                         </button>
+                                    </td>
+                                @endif
+                                @if($showColumns['catatan'])
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex items-center space-x-2">
+                                            <div class="max-w-xs">
+                                                @if($item->catatan_verifikasi)
+                                                    <p class="text-sm text-gray-700 truncate" title="{{ $item->catatan_verifikasi }}">
+                                                        {{ Str::limit($item->catatan_verifikasi, 50) }}
+                                                    </p>
+                                                @else
+                                                    <span class="text-sm text-gray-400 italic">Belum ada catatan</span>
+                                                @endif
+                                            </div>
+                                            <button
+                                                wire:click="showEditCatatanModal({{ $item->id }})"
+                                                class="text-blue-600 hover:text-blue-900 transition flex-shrink-0"
+                                                title="Edit Catatan">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
                                     </td>
                                 @endif
                                 @if($showColumns['aksi'])
@@ -1353,6 +1408,70 @@
                         wire:click="closeEditTeleponOrtuModal"
                         class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
                     >
+                        Batal
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Catatan Modal -->
+    <div x-data="{ show: @entangle('isEditCatatanModalOpen') }" x-show="show" x-cloak>
+        <div class="fixed inset-0 z-[9999] flex items-center justify-center p-4 sm:p-0 overflow-y-auto">
+            <div class="fixed inset-0 bg-black/30 backdrop-blur-sm transition-opacity z-[9998]" aria-hidden="true" @click="show = false; $wire.closeEditCatatanModal()"></div>
+            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full z-[10000]" role="dialog" aria-modal="true" aria-labelledby="edit-catatan-modal">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="flex items-center mb-4">
+                        <svg class="w-6 h-6 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                        </svg>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900" id="edit-catatan-modal">
+                            Edit Catatan Verifikasi
+                        </h3>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Catatan untuk Pendaftar
+                                <span class="text-gray-500 font-normal">(Opsional)</span>
+                            </label>
+                            <textarea
+                                wire:model="editCatatan"
+                                rows="5"
+                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                placeholder="Tulis catatan untuk pendaftar, misalnya: apa yang perlu diperbaiki atau dilengkapi..."
+                                maxlength="1000"
+                            ></textarea>
+                            @error('editCatatan') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
+                            <div class="flex justify-between items-center mt-2">
+                                <p class="text-xs text-gray-500">
+                                    💡 Catatan ini akan ditampilkan di dashboard pendaftar untuk memberikan feedback yang jelas.
+                                </p>
+                                <p class="text-xs text-gray-500">
+                                    <span x-data="{ length: @entangle('editCatatan').live }" x-text="(length || '').length"></span>/1000
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button
+                        type="button"
+                        wire:click="updateCatatan"
+                        class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-emerald-600 text-base font-medium text-white hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Simpan Catatan
+                    </button>
+                    <button
+                        type="button"
+                        wire:click="closeEditCatatanModal"
+                        class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
                         Batal
                     </button>
                 </div>

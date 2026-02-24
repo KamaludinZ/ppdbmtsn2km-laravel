@@ -58,6 +58,22 @@ class DaftarUlangUkuranSheet implements FromQuery, WithHeadings, WithMapping, Wi
     {
         $pendaftar = $seragam->pendaftar;
 
+        // Parse paket seragam (same as DaftarUlangSeragamSheet for consistency)
+        $paketName = 'Belum Dipilih';
+        $paketSeragamRaw = $seragam->paket_seragam;
+
+        if ($paketSeragamRaw === 'paket_lainnya') {
+            $paketName = 'Paket Lainnya (Manual)';
+        } elseif (!empty($paketSeragamRaw)) {
+            // Try to decode if it's JSON
+            $paketData = json_decode($paketSeragamRaw, true);
+            if (is_array($paketData) && isset($paketData['name'])) {
+                $paketName = $paketData['name'];
+            } else {
+                $paketName = 'Paket Seragam';
+            }
+        }
+
         return [
             $pendaftar->nomor_pendaftaran ?? '',
             $pendaftar->nisn ?? '',
@@ -65,7 +81,7 @@ class DaftarUlangUkuranSheet implements FromQuery, WithHeadings, WithMapping, Wi
             $pendaftar->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan',
             $seragam->tinggi_badan ? $seragam->tinggi_badan . ' cm' : '-',
             $seragam->berat_badan ? $seragam->berat_badan . ' kg' : '-',
-            $seragam->paket_seragam ?? '-',
+            $paketName, // Nama paket (readable)
             $this->getStatusPersetujuanLabel($pendaftar->status_persetujuan_daftar_ulang),
             $pendaftar->alasan_tidak_setuju ?? '-',
             $seragam->ukuran_jas ?? '-',

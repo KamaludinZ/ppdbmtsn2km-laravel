@@ -627,6 +627,23 @@
                                             </button>
                                         </div>
 
+                                        <!-- Selection Mode (NEW) -->
+                                        <div class="mb-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                                            <label class="block text-xs font-semibold text-purple-900 mb-2">
+                                                Mode Pemilihan Opsi
+                                                <span class="text-purple-600 font-normal ml-1">(Bagaimana pendaftar memilih opsi)</span>
+                                            </label>
+                                            <select wire:model="seragamPackages.{{ $pkgIndex }}.selection_mode"
+                                                    class="w-full md:w-1/2 rounded border-purple-300 text-sm focus:border-purple-500 focus:ring-purple-500">
+                                                <option value="radio">📻 Radio Button - Pilih Satu Opsi</option>
+                                                <option value="checkbox">☑️ Checkbox - Pilih Banyak Opsi (Multi Select)</option>
+                                            </select>
+                                            <p class="text-xs text-purple-700 mt-2">
+                                                <strong>Radio Button:</strong> Pendaftar hanya bisa pilih 1 opsi (default)<br>
+                                                <strong>Checkbox:</strong> Pendaftar bisa pilih beberapa opsi sekaligus, nominal akan dijumlahkan otomatis
+                                            </p>
+                                        </div>
+
                                         <!-- Package Options -->
                                         <div class="bg-green-50 border border-green-300 rounded-lg p-3">
                                             <div class="flex items-center justify-between mb-2">
@@ -856,6 +873,80 @@
                                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                                     </svg>
                                     <span>Gunakan toolbar untuk format (Bold, Italic, Link, List, dll)</span>
+                                </div>
+                            </div>
+
+                            <!-- Pengaturan Wajib/Tidak Wajib Isi Field Ukuran -->
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <div class="flex items-start space-x-2 mb-3">
+                                    <svg class="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <div class="flex-1">
+                                        <label class="block text-sm font-semibold text-blue-900">Validasi Field Ukuran Seragam</label>
+                                        <p class="text-xs text-blue-700 mt-1">Atur apakah semua field ukuran seragam wajib diisi atau bisa diisi sebagian saja</p>
+                                    </div>
+                                </div>
+
+                                <div class="p-3 bg-white rounded-lg border border-blue-300">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" wire:model="ukuranFieldsRequired" class="rounded border-gray-300 text-blue-600">
+                                        <span class="ml-2 text-sm font-medium text-gray-700">Wajib Isi Semua Field Ukuran</span>
+                                    </label>
+                                    <p class="text-xs text-gray-600 mt-2 ml-6">
+                                        <span class="font-semibold">Jika dicentang:</span> Pendaftar wajib mengisi semua field ukuran seragam (Jas, Baju Olahraga, Celana Olahraga, Baju Harian, Celana/Rok Harian, dan Kopyah untuk laki-laki).
+                                    </p>
+                                    <p class="text-xs text-gray-600 mt-1 ml-6">
+                                        <span class="font-semibold">Jika tidak dicentang:</span> Pendaftar dapat mengisi ukuran sesuai kebutuhan (minimal 1 field), field yang tidak diisi akan kosong di database.
+                                    </p>
+                                    <div class="mt-2 ml-6 p-2 bg-yellow-50 border border-yellow-200 rounded">
+                                        <p class="text-xs text-yellow-800">
+                                            <strong>Catatan:</strong> Ukuran kopyah hanya untuk pendaftar laki-laki. Untuk perempuan, field ini tidak ditampilkan dan tidak wajib diisi.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Pengaturan Alert Perbedaan Ukuran Seragam Harian -->
+                            <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                                <div class="flex items-start space-x-2 mb-3">
+                                    <svg class="w-5 h-5 text-orange-600 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    <div class="flex-1">
+                                        <label class="block text-sm font-semibold text-orange-900">Pengaturan Alert Perbedaan Ukuran Seragam Harian</label>
+                                        <p class="text-xs text-orange-700 mt-1">Atur tampilan dan mode perhitungan untuk alert perbedaan ukuran baju dan celana/rok seragam harian</p>
+                                    </div>
+                                </div>
+
+                                <!-- Enable/Disable Alert -->
+                                <div class="mb-4 p-3 bg-white rounded-lg border border-orange-300">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" wire:model="ukuranAlertPerbedaanEnabled" class="rounded border-gray-300 text-orange-600">
+                                        <span class="ml-2 text-sm font-medium text-gray-700">Tampilkan Alert Perbedaan Ukuran</span>
+                                    </label>
+                                    <p class="text-xs text-gray-600 mt-1 ml-6">Jika diaktifkan, akan muncul peringatan saat pendaftar memilih ukuran berbeda untuk baju dan celana/rok seragam harian.</p>
+                                </div>
+
+                                <!-- Mode Perhitungan -->
+                                <div class="p-3 bg-white rounded-lg border border-orange-300">
+                                    <label class="block text-sm font-semibold text-gray-900 mb-2">Mode Perhitungan Saran Pembayaran</label>
+                                    <div class="space-y-2">
+                                        <label class="flex items-start">
+                                            <input type="radio" wire:model="ukuranAlertPerhitunganMode" value="terbesar" class="mt-1 border-gray-300 text-orange-600 focus:ring-orange-500">
+                                            <div class="ml-2">
+                                                <span class="text-sm font-medium text-gray-700">Sesuai Ukuran Terbesar</span>
+                                                <p class="text-xs text-gray-600">Pendaftar membayar sesuai ukuran terbesar antara baju dan celana/rok harian (Default)</p>
+                                            </div>
+                                        </label>
+                                        <label class="flex items-start">
+                                            <input type="radio" wire:model="ukuranAlertPerhitunganMode" value="baju_harian" class="mt-1 border-gray-300 text-orange-600 focus:ring-orange-500">
+                                            <div class="ml-2">
+                                                <span class="text-sm font-medium text-gray-700">Sesuai Ukuran Baju Seragam Harian</span>
+                                                <p class="text-xs text-gray-600">Pendaftar membayar sesuai ukuran baju seragam harian/atasan yang dipilih</p>
+                                            </div>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
 
@@ -1633,10 +1724,38 @@
                                     <!-- Nominal Biaya (Awal untuk Surat Pernyataan) -->
                                     <td class="px-6 py-4">
                                         @if($item->seragam && $item->seragam->nominal_seragam_awal)
-                                            @php $nominalSeragamAwal = $item->seragam->nominal_seragam_awal; @endphp
+                                            @php
+                                                $nominalSeragamAwal = $item->seragam->nominal_seragam_awal;
+                                                // Deteksi multi-select (array) atau single (object)
+                                                $isMultiSelectSeragam = is_array($nominalSeragamAwal) && isset($nominalSeragamAwal[0]);
+                                            @endphp
                                             <div class="text-xs text-gray-900">
-                                                <div class="font-medium text-gray-700 mb-1">{{ $nominalSeragamAwal['name'] ?? '-' }}</div>
-                                                <div class="font-bold text-blue-700">Rp {{ number_format($nominalSeragamAwal['amount'] ?? 0, 0, ',', '.') }}</div>
+                                                @if($isMultiSelectSeragam)
+                                                    {{-- MULTI SELECT MODE --}}
+                                                    @php
+                                                        $totalSeragam = 0;
+                                                        foreach ($nominalSeragamAwal as $opt) {
+                                                            $totalSeragam += $opt['amount'] ?? 0;
+                                                        }
+                                                    @endphp
+                                                    <div class="font-medium text-purple-700 mb-1">
+                                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-purple-100 text-purple-800">
+                                                            📦 Multi Select ({{ count($nominalSeragamAwal) }} opsi)
+                                                        </span>
+                                                    </div>
+                                                    <div class="space-y-1 mt-1">
+                                                        @foreach($nominalSeragamAwal as $idx => $opt)
+                                                            <div class="text-xs text-gray-600">
+                                                                {{ $idx + 1 }}. {{ $opt['name'] ?? '-' }} - <span class="text-blue-600 font-medium">Rp {{ number_format($opt['amount'] ?? 0, 0, ',', '.') }}</span>
+                                                            </div>
+                                                        @endforeach
+                                                    </div>
+                                                    <div class="font-bold text-blue-700 mt-2 pt-1 border-t border-gray-200">Total: Rp {{ number_format($totalSeragam, 0, ',', '.') }}</div>
+                                                @else
+                                                    {{-- SINGLE SELECT MODE --}}
+                                                    <div class="font-medium text-gray-700 mb-1">{{ $nominalSeragamAwal['name'] ?? '-' }}</div>
+                                                    <div class="font-bold text-blue-700">Rp {{ number_format($nominalSeragamAwal['amount'] ?? 0, 0, ',', '.') }}</div>
+                                                @endif
                                             </div>
                                         @else
                                             <span class="text-xs text-gray-500">Belum pilih</span>

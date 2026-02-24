@@ -574,6 +574,44 @@
 
                     @else
                     {{-- Form untuk mengisi data (status belum menunggu/disetujui) --}}
+
+                    {{-- Link Grup Daftar Ulang - Muncul saat sudah setuju daftar ulang --}}
+                    @php
+                        $linkGrupDaftarUlangEnabled = \App\Models\Setting::get('link_grup_daftar_ulang_enabled', false);
+                        $linkGrupDaftarUlangUrl = \App\Models\Setting::get('link_grup_daftar_ulang_url', '');
+                    @endphp
+
+                    @if($linkGrupDaftarUlangEnabled && !empty($linkGrupDaftarUlangUrl))
+                        <div class="bg-gradient-to-r from-emerald-500 to-emerald-600 rounded-lg shadow-lg p-6 mb-6">
+                            <div class="flex flex-col items-center justify-center text-center">
+                                <div class="mb-3">
+                                    <svg class="w-12 h-12 text-white mx-auto" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
+                                        <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"></path>
+                                    </svg>
+                                </div>
+                                <h4 class="text-xl font-bold text-white mb-2">Segera Bergabung ke Grup Daftar Ulang!</h4>
+                                <p class="text-sm text-emerald-50 mb-4 max-w-lg leading-relaxed">
+                                    Bergabunglah ke grup WhatsApp khusus untuk calon siswa yang melakukan daftar ulang.
+                                    Dapatkan informasi terbaru dan koordinasi langsung dengan panitia.
+                                </p>
+                                <a href="{{ $linkGrupDaftarUlangUrl }}"
+                                   target="_blank"
+                                   rel="noopener noreferrer"
+                                   class="inline-flex items-center bg-white text-emerald-600 px-8 py-3 rounded-lg font-bold text-lg hover:bg-emerald-50 transition transform hover:scale-105 shadow-xl">
+                                    <svg class="w-6 h-6 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
+                                        <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"></path>
+                                    </svg>
+                                    Bergabung ke Grup WhatsApp
+                                </a>
+                                <p class="text-xs text-emerald-100 mt-3 italic">
+                                    * Silakan bergabung sebelum melanjutkan proses daftar ulang
+                                </p>
+                            </div>
+                        </div>
+                    @endif
+
                     @if($showPernyataan)
                     <!-- Surat Pernyataan -->
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
@@ -854,7 +892,17 @@
                             <!-- 3. Konfirmasi Nominal yang Dibayarkan -->
                             @if($opsiMadrasah || ($paketMadrasah === 'paket_lainnya' && $paketMadrasahCustomAmount))
                                 @php
-                                    $selectedOption = json_decode($opsiMadrasah, true);
+                                    // Check if this is paket_lainnya (manual input)
+                                    if ($paketMadrasah === 'paket_lainnya') {
+                                        // Build selectedOption from custom fields
+                                        $selectedOption = [
+                                            'name' => $paketMadrasahCustomName ?? 'Paket Custom',
+                                            'amount' => $paketMadrasahCustomAmount ?? 0
+                                        ];
+                                    } else {
+                                        // Normal package: decode from opsiMadrasah
+                                        $selectedOption = json_decode($opsiMadrasah, true);
+                                    }
                                     // Use computed property for Global OR Individual logic
                                     $madrasahEnableOpsiLainnyaPayment = $this->shouldShowMadrasahOpsiLainnyaKonfirmasi;
                                 @endphp
@@ -1380,6 +1428,8 @@
                         // Check if there's a difference between baju harian and celana harian
                         $hasSizeDifference = false;
                         $largerSize = '';
+                        $recommendedSize = '';  // Size sesuai mode perhitungan
+
                         if ($actualUkuranBajuHarian && $actualUkuranCelanaHarian && $actualUkuranBajuHarian != $actualUkuranCelanaHarian) {
                             $hasSizeDifference = true;
 
@@ -1394,11 +1444,18 @@
                                 // If not standard sizes, just mention both
                                 $largerSize = 'ukuran terbesar antara ' . $actualUkuranBajuHarian . ' dan ' . $actualUkuranCelanaHarian;
                             }
+
+                            // Set recommendedSize based on mode
+                            if ($ukuranAlertPerhitunganMode === 'baju_harian') {
+                                $recommendedSize = $actualUkuranBajuHarian;
+                            } else {
+                                $recommendedSize = $largerSize;
+                            }
                         }
                     @endphp
 
-                    {{-- Warning Perbedaan Ukuran - Shows ONLY if there's a size difference --}}
-                    @if($hasSizeDifference)
+                    {{-- Warning Perbedaan Ukuran - Shows ONLY if enabled AND there's a size difference --}}
+                    @if($ukuranAlertPerbedaanEnabled && $hasSizeDifference)
                     <div class="bg-orange-50 border-l-4 border-orange-500 rounded-lg p-5 shadow-md mb-6">
                         <div class="flex items-start">
                             <div class="flex-shrink-0">
@@ -1418,14 +1475,26 @@
                                     <div class="bg-orange-100 border border-orange-300 rounded-md p-3 mt-3">
                                         <p class="font-semibold text-orange-900 mb-2">📌 Informasi Penting untuk Pembayaran:</p>
                                         <p class="leading-relaxed">
-                                            Saat melakukan pembayaran daftar ulang seragam, <span class="font-bold underline">Anda diharuskan memilih dan membayar sesuai dengan ukuran terbesar</span> dari pilihan ukuran seragam harian Anda.
+                                            Saat melakukan pembayaran daftar ulang seragam, <span class="font-bold underline">Anda diharuskan memilih dan membayar sesuai dengan
+                                            @if($ukuranAlertPerhitunganMode === 'baju_harian')
+                                                ukuran baju seragam harian/atasan
+                                            @else
+                                                ukuran terbesar
+                                            @endif
+                                            </span> yang telah Anda pilih.
                                         </p>
                                         <p class="mt-2 font-bold text-orange-900">
-                                            💰 Ukuran untuk pembayaran: <span class="text-lg">{{ $largerSize }}</span>
+                                            💰 Ukuran untuk pembayaran: <span class="text-lg">{{ $recommendedSize }}</span>
                                         </p>
                                     </div>
                                     <p class="text-xs mt-2 italic">
-                                        Pastikan Anda memilih paket seragam dan nominal pembayaran yang sesuai dengan ukuran terbesar tersebut pada saat mengisi form pembayaran di bawah ini.
+                                        Pastikan Anda memilih paket seragam dan nominal pembayaran yang sesuai dengan ukuran
+                                        @if($ukuranAlertPerhitunganMode === 'baju_harian')
+                                            baju seragam harian/atasan
+                                        @else
+                                            terbesar
+                                        @endif
+                                        tersebut pada saat mengisi form pembayaran di bawah ini.
                                     </p>
                                 </div>
                             </div>
@@ -1546,12 +1615,42 @@
                                 @if($opsiSeragamData)
                                 <div class="p-3 bg-gray-50 rounded-lg">
                                     <p class="text-gray-600 mb-1">Opsi Paket:</p>
-                                    <p class="font-semibold text-gray-900">
-                                        {{ $opsiSeragamData['name'] ?? '-' }}
-                                        @if(isset($opsiSeragamData['amount']))
-                                            <span class="text-xs text-gray-500">(Rp {{ number_format($opsiSeragamData['amount'], 0, ',', '.') }})</span>
-                                        @endif
-                                    </p>
+                                    @php
+                                        // Deteksi apakah multi-select (array of options) atau single option
+                                        $isMultiSelectSeragam = is_array($opsiSeragamData) && isset($opsiSeragamData[0]) && is_array($opsiSeragamData[0]);
+                                    @endphp
+
+                                    @if($isMultiSelectSeragam)
+                                        {{-- Multi-select: tampilkan semua opsi yang dipilih --}}
+                                        <div class="space-y-2">
+                                            @foreach($opsiSeragamData as $index => $opsi)
+                                                <div class="flex justify-between items-center {{ $index > 0 ? 'pt-2 border-t border-gray-200' : '' }}">
+                                                    <span class="font-semibold text-gray-900">
+                                                        {{ $index + 1 }}. {{ $opsi['name'] ?? '-' }}
+                                                    </span>
+                                                    @if(isset($opsi['amount']))
+                                                        <span class="text-sm text-purple-700 font-medium">
+                                                            Rp {{ number_format($opsi['amount'], 0, ',', '.') }}
+                                                        </span>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                            <div class="pt-2 border-t-2 border-purple-200 flex justify-between items-center">
+                                                <span class="font-bold text-gray-900">Total:</span>
+                                                <span class="font-bold text-purple-700">
+                                                    Rp {{ number_format(array_sum(array_column($opsiSeragamData, 'amount')), 0, ',', '.') }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    @else
+                                        {{-- Single option: tampilkan seperti biasa --}}
+                                        <p class="font-semibold text-gray-900">
+                                            {{ $opsiSeragamData['name'] ?? '-' }}
+                                            @if(isset($opsiSeragamData['amount']))
+                                                <span class="text-xs text-gray-500">(Rp {{ number_format($opsiSeragamData['amount'], 0, ',', '.') }})</span>
+                                            @endif
+                                        </p>
+                                    @endif
                                 </div>
                                 @endif
 
@@ -1679,27 +1778,93 @@
                                 @php
                                     $selectedPackage = json_decode($paketSeragam, true);
                                     $packageOptions = $selectedPackage['options'] ?? [];
+                                    $selectionMode = $selectedPackage['selection_mode'] ?? 'radio'; // Default to radio for backward compatibility
                                 @endphp
 
                                 @if(count($packageOptions) > 0)
                                     <div class="mb-4 ml-4 p-4 bg-white border-l-4 border-blue-500 rounded-lg">
                                         <label class="block text-sm font-medium text-gray-700 mb-2">
                                             Pilih Opsi dari {{ $selectedPackage['name'] ?? 'Paket' }} <span class="text-red-500">*</span>
+                                            @if($selectionMode === 'checkbox')
+                                                <span class="text-xs font-normal text-purple-600 ml-2">(Bisa pilih lebih dari 1 opsi)</span>
+                                            @endif
                                         </label>
+
+                                        <!-- Info Box for Checkbox Mode -->
+                                        @if($selectionMode === 'checkbox')
+                                            <div class="mb-3 p-3 bg-purple-50 border border-purple-200 rounded-lg flex items-start">
+                                                <svg class="w-5 h-5 text-purple-600 mt-0.5 mr-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                                </svg>
+                                                <div class="text-xs text-purple-800">
+                                                    <strong>Mode Multi Select:</strong> Anda dapat memilih beberapa opsi sekaligus. Nominal akan dijumlahkan otomatis pada konfirmasi pembayaran.
+                                                </div>
+                                            </div>
+                                        @endif
+
                                         <div class="space-y-2">
-                                            @foreach($packageOptions as $option)
-                                                <label class="flex items-center p-3 border rounded-lg {{ $isSeragamApproved ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-blue-50' }} transition-colors {{ $opsiSeragam == json_encode($option) ? 'border-blue-500 bg-blue-50' : 'border-gray-300' }}">
-                                                    <input type="radio"
-                                                           wire:model.live="opsiSeragam"
-                                                           value="{{ json_encode($option) }}"
-                                                           class="text-blue-600 focus:ring-blue-500"
-                                                           {{ $isSeragamApproved ? 'disabled' : '' }}>
-                                                    <div class="ml-3 flex-1 flex justify-between items-center">
-                                                        <span class="font-medium text-gray-900">{{ $option['name'] ?? '-' }}</span>
-                                                        <span class="font-bold text-blue-700">Rp {{ number_format($option['amount'] ?? 0, 0, ',', '.') }}</span>
-                                                    </div>
-                                                </label>
-                                            @endforeach
+                                            @if($selectionMode === 'radio')
+                                                {{-- RADIO MODE: Single Select --}}
+                                                @foreach($packageOptions as $option)
+                                                    <label class="flex items-center p-3 border rounded-lg {{ $isSeragamApproved ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-blue-50' }} transition-colors {{ $opsiSeragam == json_encode($option) ? 'border-blue-500 bg-blue-50' : 'border-gray-300' }}">
+                                                        <input type="radio"
+                                                               wire:model.live="opsiSeragam"
+                                                               value="{{ json_encode($option) }}"
+                                                               class="text-blue-600 focus:ring-blue-500"
+                                                               {{ $isSeragamApproved ? 'disabled' : '' }}>
+                                                        <div class="ml-3 flex-1 flex justify-between items-center">
+                                                            <span class="font-medium text-gray-900">{{ $option['name'] ?? '-' }}</span>
+                                                            <span class="font-bold text-blue-700">Rp {{ number_format($option['amount'] ?? 0, 0, ',', '.') }}</span>
+                                                        </div>
+                                                    </label>
+                                                @endforeach
+                                            @else
+                                                {{-- CHECKBOX MODE: Multi Select with Alpine.js --}}
+                                                <div x-data="{
+                                                    selectedOptions: @js($opsiSeragam && is_array($opsiSeragam) ? $opsiSeragam : []),
+                                                    packageOptions: @js($packageOptions),
+                                                    toggleOption(optionIndex) {
+                                                        // Get option from packageOptions array
+                                                        const option = this.packageOptions[optionIndex];
+                                                        if (!option) return;
+
+                                                        // Find by ID
+                                                        const index = this.selectedOptions.findIndex(item => item.id === option.id);
+                                                        if (index > -1) {
+                                                            // Remove if already selected
+                                                            this.selectedOptions.splice(index, 1);
+                                                        } else {
+                                                            // Add if not selected
+                                                            this.selectedOptions.push(option);
+                                                        }
+                                                        // Sync to Livewire immediately (Alpine handles reactivity)
+                                                        @this.set('opsiSeragam', this.selectedOptions);
+                                                    },
+                                                    isSelected(optionId) {
+                                                        return this.selectedOptions.some(item => item.id === optionId);
+                                                    }
+                                                }"
+                                                     wire:key="checkbox-{{ json_encode($paketSeragam) }}"
+                                                >
+                                                    @foreach($packageOptions as $optionIndex => $option)
+                                                        <label class="flex items-center p-3 border rounded-lg transition-colors {{ $isSeragamApproved ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-purple-50' }}"
+                                                               :class="{
+                                                                   'border-purple-500 bg-purple-50': isSelected('{{ $option['id'] ?? $optionIndex }}'),
+                                                                   'border-gray-300': !isSelected('{{ $option['id'] ?? $optionIndex }}')
+                                                               }">
+                                                            <input type="checkbox"
+                                                                   :checked="isSelected('{{ $option['id'] ?? $optionIndex }}')"
+                                                                   @change="toggleOption({{ $optionIndex }})"
+                                                                   class="text-purple-600 focus:ring-purple-500 rounded"
+                                                                   {{ $isSeragamApproved ? 'disabled' : '' }}>
+                                                            <div class="ml-3 flex-1 flex justify-between items-center">
+                                                                <span class="font-medium text-gray-900">{{ $option['name'] ?? '-' }}</span>
+                                                                <span class="font-bold text-purple-700">Rp {{ number_format($option['amount'] ?? 0, 0, ',', '.') }}</span>
+                                                            </div>
+                                                        </label>
+                                                    @endforeach
+                                                </div>
+                                            @endif
                                         </div>
                                         @error('opsiSeragam')
                                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -1713,9 +1878,46 @@
                             @endif
 
                             <!-- 3. Konfirmasi Nominal yang Dibayarkan -->
-                            @if($opsiSeragam)
+                            @if($opsiSeragam || ($paketSeragam === 'paket_lainnya' && $paketSeragamCustomAmount))
                                 @php
-                                    $selectedOption = json_decode($opsiSeragam, true);
+                                    // Check if this is paket_lainnya (manual input)
+                                    if ($paketSeragam === 'paket_lainnya') {
+                                        // Build selectedOption from custom fields
+                                        $selectedOption = [
+                                            'name' => $paketSeragamCustomName ?? 'Paket Custom',
+                                            'amount' => $paketSeragamCustomAmount ?? 0
+                                        ];
+                                        $isMultiSelect = false;
+                                        $totalAmount = $selectedOption['amount'];
+                                        $selectedNames = [$selectedOption['name']];
+                                    } else {
+                                        // Normal package: Deteksi apakah opsiSeragam adalah array (checkbox mode) atau single object (radio mode)
+                                        // Jika checkbox mode, Livewire wire:model sudah mengirim sebagai array PHP
+                                        // Jika radio mode, Livewire wire:model mengirim sebagai JSON string
+                                        if (is_array($opsiSeragam)) {
+                                            // Sudah array dari checkbox mode
+                                            $selectedOption = $opsiSeragam;
+                                        } else {
+                                            // Masih string JSON dari radio mode
+                                            $selectedOption = json_decode($opsiSeragam, true);
+                                        }
+
+                                        $isMultiSelect = is_array($selectedOption) && isset($selectedOption[0]);
+
+                                        // Hitung total amount jika multi-select
+                                        if ($isMultiSelect) {
+                                            $totalAmount = 0;
+                                            $selectedNames = [];
+                                            foreach ($selectedOption as $opt) {
+                                                $totalAmount += $opt['amount'] ?? 0;
+                                                $selectedNames[] = $opt['name'] ?? '';
+                                            }
+                                        } else {
+                                            $totalAmount = $selectedOption['amount'] ?? 0;
+                                            $selectedNames = [$selectedOption['name'] ?? ''];
+                                        }
+                                    }
+
                                     // Use computed property for Global OR Individual logic
                                     $seragamEnableOpsiLainnya = $this->shouldShowSeragamOpsiLainnyaKonfirmasi;
                                 @endphp
@@ -1724,22 +1926,50 @@
                                     <label class="block text-sm font-medium text-gray-700 mb-2">
                                         Konfirmasi Nominal yang Dibayarkan <span class="text-red-500">*</span>
                                     </label>
-                                    <p class="text-xs text-gray-600 mb-2">Pilih nominal yang akan dibayarkan (default: sesuai opsi yang dipilih)</p>
+                                    <p class="text-xs text-gray-600 mb-2">
+                                        @if($isMultiSelect)
+                                            Total nominal dari semua opsi yang dipilih
+                                        @else
+                                            Pilih nominal yang akan dibayarkan (default: sesuai opsi yang dipilih)
+                                        @endif
+                                    </p>
 
                                     <div class="space-y-2">
                                         <!-- Option: Bayar Penuh (Auto from selected option) -->
-                                        <label class="flex items-center p-3 border rounded-lg {{ $isSeragamApproved ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-green-50' }} transition-colors {{ $konfirmasiNominalSeragam == json_encode($selectedOption) ? 'border-green-500 bg-green-50' : 'border-gray-300' }}">
+                                        @php
+                                            // Untuk konfirmasi nominal, struktur berbeda untuk multi-select
+                                            if ($isMultiSelect) {
+                                                $konfirmasiValue = [
+                                                    'name' => 'Bayar Penuh - Multi Select (' . count($selectedOption) . ' item)',
+                                                    'amount' => $totalAmount,
+                                                    'items' => $selectedOption
+                                                ];
+                                            } else {
+                                                $konfirmasiValue = $selectedOption;
+                                            }
+                                            $konfirmasiValueJson = json_encode($konfirmasiValue);
+                                        @endphp
+                                        <label class="flex items-center p-3 border rounded-lg {{ $isSeragamApproved ? 'cursor-not-allowed opacity-60' : 'cursor-pointer hover:bg-green-50' }} transition-colors border-gray-300">
                                             <input type="radio"
                                                    wire:model.live="konfirmasiNominalSeragam"
-                                                   value="{{ json_encode($selectedOption) }}"
+                                                   value="{{ $konfirmasiValueJson }}"
                                                    class="text-green-600 focus:ring-green-500"
                                                    {{ $isSeragamApproved ? 'disabled' : '' }}>
                                             <div class="ml-3 flex-1 flex justify-between items-center">
                                                 <div>
                                                     <span class="font-medium text-gray-900">Bayar Penuh</span>
-                                                    <p class="text-xs text-gray-600 mt-1">{{ $selectedOption['name'] ?? '' }}</p>
+                                                    @if($isMultiSelect)
+                                                        <div class="text-xs text-gray-600 mt-1">
+                                                            <strong>Rincian {{ count($selectedOption) }} opsi:</strong>
+                                                            @foreach($selectedOption as $idx => $opt)
+                                                                <div class="ml-2">• {{ $opt['name'] ?? '' }} - Rp {{ number_format($opt['amount'] ?? 0, 0, ',', '.') }}</div>
+                                                            @endforeach
+                                                        </div>
+                                                    @else
+                                                        <p class="text-xs text-gray-600 mt-1">{{ $selectedOption['name'] ?? '' }}</p>
+                                                    @endif
                                                 </div>
-                                                <span class="font-bold text-green-700">Rp {{ number_format($selectedOption['amount'] ?? 0, 0, ',', '.') }}</span>
+                                                <span class="font-bold text-green-700">Rp {{ number_format($totalAmount, 0, ',', '.') }}</span>
                                             </div>
                                         </label>
 
@@ -2498,6 +2728,8 @@
                         // Check if there's a difference between baju harian and celana harian
                         $hasSizeDifference = false;
                         $largerSize = '';
+                        $recommendedSize = '';  // Size sesuai mode perhitungan
+
                         if ($actualUkuranBajuHarian && $actualUkuranCelanaHarian && $actualUkuranBajuHarian != $actualUkuranCelanaHarian) {
                             $hasSizeDifference = true;
 
@@ -2511,6 +2743,13 @@
                             } else {
                                 // If not standard sizes, just mention both
                                 $largerSize = 'ukuran terbesar antara ' . $actualUkuranBajuHarian . ' dan ' . $actualUkuranCelanaHarian;
+                            }
+
+                            // Set recommendedSize based on mode
+                            if ($ukuranAlertPerhitunganMode === 'baju_harian') {
+                                $recommendedSize = $actualUkuranBajuHarian;
+                            } else {
+                                $recommendedSize = $largerSize;
                             }
                         }
                     @endphp
@@ -2614,7 +2853,7 @@
                     @endif
 
                     {{-- Warning Perbedaan Ukuran - OUTSIDE form conditional so it shows even when form is hidden --}}
-                    @if($hasSizeDifference)
+                    @if($ukuranAlertPerbedaanEnabled && $hasSizeDifference)
                     <div class="bg-orange-50 border-l-4 border-orange-500 rounded-lg p-5 shadow-md mt-6">
                         <div class="flex items-start">
                             <div class="flex-shrink-0">
@@ -2634,14 +2873,26 @@
                                     <div class="bg-orange-100 border border-orange-300 rounded-md p-3 mt-3">
                                         <p class="font-semibold text-orange-900 mb-2">📌 Informasi Penting untuk Pembayaran:</p>
                                         <p class="leading-relaxed">
-                                            Saat melakukan pembayaran daftar ulang seragam, <span class="font-bold underline">Anda diharuskan memilih dan membayar sesuai dengan ukuran terbesar</span> dari pilihan ukuran seragam harian Anda.
+                                            Saat melakukan pembayaran daftar ulang seragam, <span class="font-bold underline">Anda diharuskan memilih dan membayar sesuai dengan
+                                            @if($ukuranAlertPerhitunganMode === 'baju_harian')
+                                                ukuran baju seragam harian/atasan
+                                            @else
+                                                ukuran terbesar
+                                            @endif
+                                            </span> yang telah Anda pilih.
                                         </p>
                                         <p class="mt-2 font-bold text-orange-900">
-                                            💰 Ukuran untuk pembayaran: <span class="text-lg">{{ $largerSize }}</span>
+                                            💰 Ukuran untuk pembayaran: <span class="text-lg">{{ $recommendedSize }}</span>
                                         </p>
                                     </div>
                                     <p class="text-xs mt-2 italic">
-                                        Pastikan Anda memilih paket seragam dan nominal pembayaran yang sesuai dengan ukuran terbesar tersebut pada saat mengisi form pembayaran di tab "Daftar Ulang Seragam".
+                                        Pastikan Anda memilih paket seragam dan nominal pembayaran yang sesuai dengan ukuran
+                                        @if($ukuranAlertPerhitunganMode === 'baju_harian')
+                                            baju seragam harian/atasan
+                                        @else
+                                            terbesar
+                                        @endif
+                                        tersebut pada saat mengisi form pembayaran di tab "Daftar Ulang Seragam".
                                     </p>
                                 </div>
                             </div>

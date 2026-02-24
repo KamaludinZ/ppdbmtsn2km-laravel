@@ -41,7 +41,7 @@ class TesPsikologiExport implements FromQuery, WithHeadings, WithMapping, WithSt
         $query = TesPsikologiPendaftar::with([
             'pendaftar.jalurPendaftaran',
             'pendaftar.user',
-            'pendaftar.surveyAnswers.question',
+            'pendaftar.surveyAnswers.question.options',
             'opsi',
             'bank',
             'verifiedBy'
@@ -144,14 +144,8 @@ class TesPsikologiExport implements FromQuery, WithHeadings, WithMapping, WithSt
                 $answer = $surveyAnswers->firstWhere('survey_question_id', $question->id);
 
                 if ($answer) {
-                    // Format jawaban
-                    $jawaban = $answer->jawaban;
-                    if (is_array($jawaban)) {
-                        // Untuk checkbox dengan multiple values
-                        $baseData[] = implode(', ', $jawaban);
-                    } else {
-                        $baseData[] = $jawaban;
-                    }
+                    // Gunakan getJawabanFormatted() agar ID opsi diubah ke teks label
+                    $baseData[] = $answer->getJawabanFormatted();
                 } else {
                     $baseData[] = '-';
                 }

@@ -67,11 +67,30 @@ class AdminLogin extends Component
             return;
         }
 
-        if (Auth::attempt(['email' => $this->email, 'password' => $this->password, 'aktif' => true], $this->remember)) {
+        // Attempt login without aktif condition first
+        if (Auth::attempt(['email' => $this->email, 'password' => $this->password], $this->remember)) {
+            $user = Auth::user();
+
+            // Check if user is active
+            if (!$user->aktif) {
+                Auth::logout();
+                $this->addError('email', 'Akun Anda tidak aktif. Silakan hubungi administrator.');
+                $this->captcha = '';
+                $this->generateCaptcha();
+                return;
+            }
+
+            // Check if user has admin or panitia role
+            if (!$user->isAdmin() && !$user->isPanitia()) {
+                Auth::logout();
+                $this->addError('email', 'Akses ditolak. Halaman ini khusus untuk Admin dan Panitia.');
+                $this->captcha = '';
+                $this->generateCaptcha();
+                return;
+            }
+
             session()->regenerate();
             session()->forget('admin_login_captcha');
-
-            $user = Auth::user();
 
             // Redirect based on role
             if ($user->isAdmin()) {
@@ -86,14 +105,15 @@ class AdminLogin extends Component
                 return redirect()->intended('/panitia-seragam/dashboard');
             }
 
-            // If not admin or panitia, logout and show error
+            // Fallback - should not reach here
             Auth::logout();
             $this->addError('email', 'Akses ditolak. Halaman ini khusus untuk Admin dan Panitia.');
+            $this->captcha = '';
             $this->generateCaptcha();
             return;
         }
 
-        $this->addError('email', 'Email atau password salah, atau akun tidak aktif.');
+        $this->addError('email', 'Email atau password salah.');
         $this->captcha = '';
         $this->generateCaptcha();
     }

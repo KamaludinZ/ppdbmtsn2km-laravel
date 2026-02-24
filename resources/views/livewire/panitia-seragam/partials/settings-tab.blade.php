@@ -99,6 +99,22 @@
                                     </button>
                                 </div>
 
+                                <!-- Mode Pemilihan Opsi (Radio vs Checkbox) -->
+                                <div class="mb-3 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+                                    <label class="block text-xs font-semibold text-purple-900 mb-2">
+                                        Mode Pemilihan Opsi
+                                    </label>
+                                    <select wire:model="seragamPackages.{{ $pkgIndex }}.selection_mode"
+                                            class="w-full rounded border-purple-300 text-sm focus:border-purple-500 focus:ring focus:ring-purple-200">
+                                        <option value="radio">📻 Radio Button - Pilih Satu Opsi</option>
+                                        <option value="checkbox">☑️ Checkbox - Pilih Banyak Opsi (Multi Select)</option>
+                                    </select>
+                                    <p class="text-xs text-purple-700 mt-2">
+                                        • <strong>Radio Button:</strong> Pendaftar hanya bisa memilih 1 opsi<br>
+                                        • <strong>Checkbox:</strong> Pendaftar bisa memilih beberapa opsi sekaligus (multi-select)
+                                    </p>
+                                </div>
+
                                 <!-- Package Options -->
                                 <div class="bg-green-50 border border-green-300 rounded-lg p-3">
                                     <div class="flex items-center justify-between mb-2">

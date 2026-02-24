@@ -1,29 +1,35 @@
 <div>
     @if(in_array($pendaftar->status_pendaftaran, ['data_disetujui', 'lulus', 'diterima', 'tidak_lulus', 'ditolak', 'cadangan']))
-        <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-6">
-                    <h2 class="text-xl font-bold text-gray-800">Kartu Tanda Peserta Tes Seleksi</h2>
-                    <div class="flex items-center gap-3 print:hidden">
-                        <button onclick="window.print()" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
-                            </svg>
-                            Cetak Kartu
-                        </button>
-                        @if($linkGrupEnabled && $linkGrupUrl)
-                            <a href="{{ $linkGrupUrl }}" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center">
-                                <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                    <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
-                                    <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"></path>
+        @if(isset($isPreviewMode) && $isPreviewMode)
+            <!-- Mode Preview Admin: Langsung tampilkan kartu saja tanpa wrapper -->
+            <!-- Card Design - A4 Portrait Format for print -->
+        @else
+            <!-- Mode Pendaftar Normal: Tampilkan dengan wrapper dan header -->
+            <div class="bg-white rounded-lg shadow-lg overflow-hidden mb-6">
+                <div class="p-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold text-gray-800">Kartu Tanda Peserta Tes Seleksi</h2>
+                        <div class="flex items-center gap-3 print:hidden">
+                            <a href="{{ route('pendaftar.download-kartu-tes') }}" target="_blank" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 flex items-center transition-colors">
+                                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                                 </svg>
-                                Bergabung ke Grup
+                                Cetak Kartu
                             </a>
-                        @endif
+                            @if($linkGrupEnabled && $linkGrupUrl)
+                                <a href="{{ $linkGrupUrl }}" target="_blank" rel="noopener noreferrer" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded flex items-center">
+                                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                                        <path d="M2 5a2 2 0 012-2h7a2 2 0 012 2v4a2 2 0 01-2 2H9l-3 3v-3H4a2 2 0 01-2-2V5z"></path>
+                                        <path d="M15 7v2a4 4 0 01-4 4H9.828l-1.766 1.767c.28.149.599.233.938.233h2l3 3v-3h2a2 2 0 002-2V9a2 2 0 00-2-2h-1z"></path>
+                                    </svg>
+                                    Bergabung ke Grup
+                                </a>
+                            @endif
+                        </div>
                     </div>
-                </div>
 
-                <!-- Card Design - A4 Portrait Format for print -->
+                    <!-- Card Design - A4 Portrait Format for print -->
+        @endif
                 <div class="mx-auto border-2 border-gray-300 bg-white shadow-lg print:shadow-none print:border-black" style="width: 210mm; min-height: 297mm; padding: 12mm 20mm;">
                     <!-- Kop Header (dari Settings) -->
                     <div class="flex items-start gap-6 pb-3 border-b-4 border-black mb-4">
@@ -241,8 +247,10 @@
                     </div>
                     @endif
                 </div>
+        @if(!(isset($isPreviewMode) && $isPreviewMode))
             </div>
         </div>
+        @endif
 
         <!-- Print styles -->
         <style>

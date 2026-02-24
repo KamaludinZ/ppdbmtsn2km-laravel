@@ -55,7 +55,16 @@
       "Bash(cmd /c \"C:\\ppdbmtsn2km-laravel\\upload_fix_pembatasan_waktu_jam_menit.bat\")",
       "Bash(cmd /c \"dir upload_*.bat /b\")",
       "Bash(cmd /c \"dir *8_FEB_2026*.* /b\")",
-      "Bash(cmd /c \"C:\\ppdbmtsn2km-laravel\\check_production_stats.bat\")"
+      "Bash(cmd /c \"C:\\ppdbmtsn2km-laravel\\check_production_stats.bat\")",
+      "Bash(cmd /c \"C:\\ppdbmtsn2km-laravel\\upload_fix_export_laporan_pendaftar_12_feb_2026.bat\")",
+      "Bash(cmd /c \"C:\\ppdbmtsn2km-laravel\\upload_fix_export_wilayah_table_name_final_12_feb_2026.bat\")",
+      "Bash(cmd /c \"C:\\ppdbmtsn2km-laravel\\upload_fix_error_500_remove_belum_upload_12_feb_2026.bat\")",
+      "Bash(cmd /c \"C:\\ppdbmtsn2km-laravel\\upload_revert_changes_12_feb_2026.bat\")",
+      "Bash(cmd /c \"C:\\ppdbmtsn2km-laravel\\UPLOAD_FINAL_ALL_6_ERRORS_12_FEB_2026.bat\")",
+      "Bash(nul)",
+      "Bash(cmd /c \"C:\\ppdbmtsn2km-laravel\\upload_cek_pendaftaran_24_feb_2026.bat\")",
+      "Bash(upload_cek_pendaftaran_24_feb_2026.bat)",
+      "Bash(.upload_cek_pendaftaran_24_feb_2026.bat)"
     ],
     "deny": [],
     "ask": []

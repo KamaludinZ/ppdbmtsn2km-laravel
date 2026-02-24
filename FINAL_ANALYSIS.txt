@@ -1,0 +1,191 @@
+FINAL ANALYSIS: TES PSIKOLOGI EXPORT SURVEY ANSWERS
+====================================================
+
+PROBLEM
+=======
+Export shows survey answers as raw IDs (10) instead of labels (Pendek).
+
+ROOT CAUSE
+==========
+1. Missing relationship: Line 44 does NOT load .options
+2. No conversion: Lines 146-154 use raw jawaban without helper
+
+SOLUTION EXISTS
+===============
+SurveyAnswer model has getJawabanFormatted() (lines 81-165).
+Already used successfully by Admin and Panitia panels.
+
+FILES AFFECTED
+==============
+1. app/Exports/TesPsikologiExport.php (NEEDS FIX)
+   - Line 44: Add .options relationship
+   - Lines 146-154: Use getJawabanFormatted() method
+
+2. app/Models/SurveyAnswer.php (SOLUTION)
+   - Lines 81-165: getJawabanFormatted() helper
+
+3. app/Livewire/Admin/TesPsikologi.php (REFERENCE)
+   - Lines 1360-1484: Working implementation
+
+4. app/Livewire/Panitia/TesPsikologi.php (REFERENCE)
+   - Lines 847-941: Working implementation
+
+SURVEY DATA STORAGE
+===================
+Database: survey_answers.jawaban (TEXT/JSONB)
+
+By Type:
+- text: String "John"
+- textarea: String "Long text"
+- radio: ID (10) or VALUE ("pendek")
+- select: ID (12) or VALUE ("sedang")
+- checkbox: Array [10, 12, 15]
+
+SURVEY OPTIONS STRUCTURE
+=======================
+Table: survey_question_options
+Columns: id, survey_question_id, label, value, urutan
+
+Example:
+Question 5: "Tinggi badan?"
+- Option 10: label="Pendek", value="pendek"
+- Option 11: label="Sedang", value="sedang"
+- Option 12: label="Tinggi", value="tinggi"
+
+HOW IT WORKS NOW (BROKEN)
+==========================
+1. Export loads: 'pendaftar.surveyAnswers.question'
+2. For each answer: $jawaban = $answer->jawaban
+3. Shows: "10" (raw ID with no conversion)
+
+HOW IT SHOULD WORK (FIXED)
+===========================
+1. Export loads: 'pendaftar.surveyAnswers.question.options'
+2. For each answer: $answer->getJawabanFormatted()
+3. Helper converts: 10 -> matches option 10 -> "Pendek"
+4. Shows: "Pendek" (human readable label)
+
+HELPER METHOD LOGIC
+===================
+getJawabanFormatted() process:
+
+Input: jawaban = 10 (or "pendek" for old data)
+
+Step 1: Check question type
+- If text/textarea: return as-is
+- If radio/select/checkbox: convert to label
+
+Step 2: Try 4 matching methods
+- Method 1: Match by OPTION ID (10 -> find option.id = 10)
+- Method 2: Match by OPTION VALUE ("pendek" -> find option.value = "pendek")
+- Method 3: Case-insensitive VALUE match
+- Method 4: Case-insensitive LABEL match
+
+Step 3: Return result
+- If match found: return option->label ("Pendek")
+- If not found: return raw value with warning ("10 ⚠️")
+
+WHAT'S WORKING
+==============
+Admin Panel: Shows labels correctly
+Panitia Panel: Shows labels correctly
+Both use proper option lookup + conversion
+
+WHAT'S BROKEN
+=============
+Export: Shows raw IDs
+Reason: Missing relationship + no conversion
+
+FIX SUMMARY
+===========
+File: app/Exports/TesPsikologiExport.php
+
+Change 1 (Line 44):
+FROM: 'pendaftar.surveyAnswers.question',
+TO:   'pendaftar.surveyAnswers.question.options',
+
+Change 2 (Lines 146-154):
+Replace 6 lines with 1 line:
+$baseData[] = $answer->getJawabanFormatted();
+
+IMPACT
+======
+Before: "10, 12, 15"
+After:  "Pendek, Sedang, Tinggi"
+
+Risk: VERY LOW
+- No database changes
+- No breaking changes
+- Only improves display
+- Uses proven code
+
+Time: 5-10 minutes to implement
+
+BACKWARD COMPATIBILITY
+======================
+Works with:
+- New data (Feb 2026+): Stores option ID
+- Old data (before Feb 2026): Stores option VALUE
+- Both formats supported by 4 matching methods
+
+DATA FLOW EXAMPLE
+=================
+1. Pendaftar answers: picks "Pendek" (option 10)
+2. Database stores: jawaban = 10
+3. Admin panel: Shows "Pendek" (converts 10 to label)
+4. Panitia panel: Shows "Pendek" (converts 10 to label)
+5. Export (broken): Shows "10" (no conversion)
+6. Export (fixed): Shows "Pendek" (with conversion)
+
+CHECKBOX EXAMPLE
+================
+Question: "Pick 3 fruits"
+Options: 10="Apple", 11="Orange", 12="Mango"
+Answer: [10, 12]
+
+Export (broken): "10, 12"
+Export (fixed):  "Apple, Mango"
+
+TEXT ANSWER EXAMPLE
+===================
+Question: "Your name?"
+Answer: "John Doe"
+
+Export (broken): "John Doe" (correct, no conversion needed)
+Export (fixed):  "John Doe" (still correct, helper returns as-is)
+
+TESTING PLAN
+============
+1. Test radio answers: verify shows label not ID
+2. Test select answers: verify shows label not ID
+3. Test checkbox: verify shows multiple labels
+4. Test text: verify still shows text
+5. Test old data: verify VALUE matching works
+6. Test deleted option: verify warning shown
+
+VERIFICATION
+============
+- Admin Jawaban-Survey tab: already shows labels
+- Panitia Jawaban-Survey tab: already shows labels
+- Model: getJawabanFormatted() implemented
+- Implementation: Ready to use
+
+CONFIDENCE LEVEL
+================
+Confidence: VERY HIGH (100%)
+
+Why:
+- Problem clearly identified
+- Solution code exists
+- Tested in other modules
+- Low complexity change
+- No database modification
+- Backward compatible
+
+RECOMMENDATION
+==============
+Implement immediately.
+
+This is high-value fix with minimal risk.
+Solution is proven and ready to deploy.
+

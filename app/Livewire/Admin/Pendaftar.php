@@ -19,6 +19,7 @@ class Pendaftar extends Component
     public $filterJalur = '';
     public $filterStatus = '';
     public $filterEmisCompleteness = ''; // Filter berdasarkan persentase kelengkapan EMIS
+    public $filterVerifPsikologi = ''; // Filter berdasarkan status verifikasi psikologi
     public $perPage = 10;
 
     // Properties for change password modal
@@ -38,6 +39,10 @@ class Pendaftar extends Component
     // Properties for edit telepon ortu modal
     public $isEditTeleponOrtuModalOpen = false;
     public $editTeleponOrtu = '';
+
+    // Properties for edit catatan modal
+    public $isEditCatatanModalOpen = false;
+    public $editCatatan = '';
 
     // Array to store status for each pendaftar
     public $statusSelections = [];
@@ -83,6 +88,7 @@ class Pendaftar extends Component
         'diperbarui_oleh' => false,
         'tanggal' => true,
         'emis_completeness' => true,
+        'catatan' => true,
         'aksi' => true,
     ];
 
@@ -91,6 +97,7 @@ class Pendaftar extends Component
         'filterJalur' => ['except' => ''],
         'filterStatus' => ['except' => ''],
         'filterEmisCompleteness' => ['except' => ''],
+        'filterVerifPsikologi' => ['except' => ''],
         'sortField' => ['except' => 'created_at'],
         'sortDirection' => ['except' => 'desc'],
     ];
@@ -168,6 +175,17 @@ class Pendaftar extends Component
                     $q->whereIn('status_pendaftaran', ['data_disetujui', 'lulus', 'diterima', 'tidak_lulus', 'cadangan', 'ditolak']);
                 } else {
                     $q->where('status_pendaftaran', $this->filterStatus);
+                }
+            })
+            ->when($this->filterVerifPsikologi, function ($q) {
+                if ($this->filterVerifPsikologi === 'belum_upload') {
+                    // Pendaftar yang belum upload tes psikologi sama sekali
+                    $q->whereDoesntHave('tesPsikologiPendaftar');
+                } else {
+                    // Pendaftar yang sudah upload dan punya status tertentu
+                    $q->whereHas('tesPsikologiPendaftar', function ($query) {
+                        $query->where('status_verifikasi', $this->filterVerifPsikologi);
+                    });
                 }
             });
 
@@ -352,6 +370,45 @@ class Pendaftar extends Component
 
             session()->flash('message', 'Nomor WhatsApp Orang Tua berhasil diperbarui.');
             $this->closeEditTeleponOrtuModal();
+        } else {
+            session()->flash('error', 'Pendaftar tidak ditemukan.');
+        }
+    }
+
+    public function showEditCatatanModal($id)
+    {
+        $pendaftar = PendaftarModel::find($id);
+        if ($pendaftar) {
+            $this->selectedPendaftarId = $id;
+            $this->editCatatan = $pendaftar->catatan_verifikasi ?? '';
+            $this->isEditCatatanModalOpen = true;
+        }
+    }
+
+    public function closeEditCatatanModal()
+    {
+        $this->isEditCatatanModalOpen = false;
+        $this->selectedPendaftarId = null;
+        $this->editCatatan = '';
+    }
+
+    public function updateCatatan()
+    {
+        $this->validate([
+            'editCatatan' => 'nullable|string|max:1000',
+        ], [
+            'editCatatan.max' => 'Catatan maksimal 1000 karakter.',
+        ]);
+
+        $pendaftar = PendaftarModel::find($this->selectedPendaftarId);
+        if ($pendaftar) {
+            $pendaftar->update([
+                'catatan_verifikasi' => $this->editCatatan,
+                'diperbarui_oleh' => Auth::id()
+            ]);
+
+            session()->flash('message', 'Catatan berhasil diperbarui.');
+            $this->closeEditCatatanModal();
         } else {
             session()->flash('error', 'Pendaftar tidak ditemukan.');
         }

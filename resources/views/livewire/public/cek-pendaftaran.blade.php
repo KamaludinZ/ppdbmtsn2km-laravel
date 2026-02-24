@@ -111,26 +111,170 @@
                         <h3 class="text-xl font-bold text-gray-900 mb-6">Data Pendaftaran Ditemukan</h3>
 
                         <div class="space-y-6">
-                            <!-- Status Badge - Lebih Mencolok -->
                             @php
-                                $statusBadge = [
-                                    'draft' => ['bg' => 'bg-gray-500', 'text' => 'text-white', 'label' => 'Draft - Belum Submit', 'icon' => 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z'],
-                                    'menunggu' => ['bg' => 'bg-yellow-500', 'text' => 'text-white', 'label' => 'Menunggu Verifikasi', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z'],
-                                    'verifikasi' => ['bg' => 'bg-blue-500', 'text' => 'text-white', 'label' => 'Sedang Diverifikasi', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4'],
-                                    'diterima' => ['bg' => 'bg-green-500', 'text' => 'text-white', 'label' => 'DITERIMA', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z'],
-                                    'ditolak' => ['bg' => 'bg-red-500', 'text' => 'text-white', 'label' => 'DITOLAK', 'icon' => 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z'],
-                                ];
-                                $status = $statusBadge[$result->status_pendaftaran] ?? ['bg' => 'bg-gray-500', 'text' => 'text-white', 'label' => ucfirst($result->status_pendaftaran), 'icon' => 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'];
+                                // Helper function untuk mendapatkan status badge config
+                                function getStatusBadge($status, $type) {
+                                    $badges = [
+                                        'pendaftaran' => [
+                                            'draft' => ['bg' => 'bg-gray-100', 'text' => 'text-gray-800', 'icon' => 'M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z', 'label' => 'Draft'],
+                                            'menunggu' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-800', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Menunggu Verifikasi'],
+                                            'verifikasi' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-800', 'icon' => 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4', 'label' => 'Sedang Diverifikasi'],
+                                            'diterima' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Diterima'],
+                                            'data_disetujui' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Data Disetujui'],
+                                            'ditolak' => ['bg' => 'bg-red-100', 'text' => 'text-red-800', 'icon' => 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Ditolak'],
+                                            'data_ditolak' => ['bg' => 'bg-red-100', 'text' => 'text-red-800', 'icon' => 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Data Ditolak'],
+                                        ],
+                                        'psikologi' => [
+                                            'belum_upload' => ['bg' => 'bg-gray-100', 'text' => 'text-gray-800', 'icon' => 'M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12', 'label' => 'Belum Upload'],
+                                            'menunggu' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-800', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Menunggu Verifikasi'],
+                                            'disetujui' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Disetujui'],
+                                            'ditolak' => ['bg' => 'bg-red-100', 'text' => 'text-red-800', 'icon' => 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Ditolak'],
+                                            'perbaiki' => ['bg' => 'bg-orange-100', 'text' => 'text-orange-800', 'icon' => 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z', 'label' => 'Perlu Perbaikan'],
+                                        ],
+                                        'kelulusan' => [
+                                            'lulus' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'LULUS'],
+                                            'diterima' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'LULUS'],
+                                            'cadangan' => ['bg' => 'bg-blue-100', 'text' => 'text-blue-800', 'icon' => 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Cadangan'],
+                                            'tidak_lulus' => ['bg' => 'bg-red-100', 'text' => 'text-red-800', 'icon' => 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Tidak Lulus'],
+                                            'belum_diumumkan' => ['bg' => 'bg-gray-100', 'text' => 'text-gray-800', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Belum Diumumkan'],
+                                        ],
+                                        'daftar_ulang' => [
+                                            'menunggu' => ['bg' => 'bg-yellow-100', 'text' => 'text-yellow-800', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Menunggu'],
+                                            'disetujui' => ['bg' => 'bg-green-100', 'text' => 'text-green-800', 'icon' => 'M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Disetujui'],
+                                            'ditolak' => ['bg' => 'bg-red-100', 'text' => 'text-red-800', 'icon' => 'M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Ditolak'],
+                                            'perbaiki' => ['bg' => 'bg-orange-100', 'text' => 'text-orange-800', 'icon' => 'M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z', 'label' => 'Perlu Perbaikan'],
+                                            'belum' => ['bg' => 'bg-gray-100', 'text' => 'text-gray-800', 'icon' => 'M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => 'Belum Daftar Ulang'],
+                                        ],
+                                    ];
+
+                                    return $badges[$type][$status] ?? ['bg' => 'bg-gray-100', 'text' => 'text-gray-800', 'icon' => 'M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z', 'label' => ucfirst($status)];
+                                }
+
+                                // Determine kelulusan status
+                                $isLulus = in_array($result->status_pendaftaran, ['lulus', 'diterima']);
+                                $isCadangan = $result->status_pendaftaran === 'cadangan';
+                                $isTidakLulus = in_array($result->status_pendaftaran, ['tidak_lulus', 'ditolak', 'data_ditolak']);
+
+                                if ($isLulus || $isCadangan || $isTidakLulus) {
+                                    $statusKelulusan = $result->status_pendaftaran;
+                                } else {
+                                    $statusKelulusan = 'belum_diumumkan';
+                                }
+
+                                // Map status pendaftaran untuk display verifikasi
+                                // Jika status lulus/diterima, tampilkan sebagai "Data Disetujui" di verifikasi pendaftaran
+                                $statusPendaftaranDisplay = $result->status_pendaftaran;
+                                if (in_array($result->status_pendaftaran, ['lulus', 'diterima'])) {
+                                    $statusPendaftaranDisplay = 'data_disetujui';
+                                }
                             @endphp
-                            <div class="bg-gradient-to-r {{ $status['bg'] }} rounded-xl shadow-lg p-6 text-center">
-                                <div class="flex items-center justify-center mb-3">
-                                    <svg class="w-12 h-12 {{ $status['text'] }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $status['icon'] }}"></path>
-                                    </svg>
+
+                            <!-- Status Cards Grid -->
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <!-- 1. Status Verifikasi Pendaftaran -->
+                                @php $badge = getStatusBadge($statusPendaftaranDisplay, 'pendaftaran'); @endphp
+                                <div class="{{ $badge['bg'] }} border border-gray-300 rounded-lg p-4">
+                                    <div class="flex items-start">
+                                        <svg class="w-6 h-6 {{ $badge['text'] }} mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $badge['icon'] }}"></path>
+                                        </svg>
+                                        <div class="flex-1">
+                                            <h4 class="text-xs font-medium text-gray-600 mb-1">Verifikasi Pendaftaran</h4>
+                                            <p class="text-sm font-bold {{ $badge['text'] }}">{{ $badge['label'] }}</p>
+                                        </div>
+                                    </div>
                                 </div>
-                                <h3 class="text-2xl font-bold {{ $status['text'] }} mb-1">{{ $status['label'] }}</h3>
-                                <p class="text-sm {{ $status['text'] }} opacity-90">Status Pendaftaran Anda</p>
+
+                                <!-- 2. Status Verifikasi Biaya Tes Psikologi -->
+                                @php
+                                    $statusPsikologi = $result->tesPsikologiPendaftar->status_verifikasi ?? 'belum_upload';
+                                    $badgePsikologi = getStatusBadge($statusPsikologi, 'psikologi');
+                                @endphp
+                                <div class="{{ $badgePsikologi['bg'] }} border border-gray-300 rounded-lg p-4">
+                                    <div class="flex items-start">
+                                        <svg class="w-6 h-6 {{ $badgePsikologi['text'] }} mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $badgePsikologi['icon'] }}"></path>
+                                        </svg>
+                                        <div class="flex-1">
+                                            <h4 class="text-xs font-medium text-gray-600 mb-1">Verif. Biaya Tes Psikologi</h4>
+                                            <p class="text-sm font-bold {{ $badgePsikologi['text'] }}">{{ $badgePsikologi['label'] }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 3. Status Kelulusan -->
+                                @php $badgeKelulusan = getStatusBadge($statusKelulusan, 'kelulusan'); @endphp
+                                <div class="{{ $badgeKelulusan['bg'] }} border border-gray-300 rounded-lg p-4">
+                                    <div class="flex items-start">
+                                        <svg class="w-6 h-6 {{ $badgeKelulusan['text'] }} mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $badgeKelulusan['icon'] }}"></path>
+                                        </svg>
+                                        <div class="flex-1">
+                                            <h4 class="text-xs font-medium text-gray-600 mb-1">Status Kelulusan</h4>
+                                            <p class="text-sm font-bold {{ $badgeKelulusan['text'] }}">{{ $badgeKelulusan['label'] }}</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+
+                            <!-- Conditional: Daftar Ulang Status (Only if LULUS) -->
+                            @if($isLulus)
+                                <div class="mt-4">
+                                    <h3 class="text-lg font-bold text-gray-900 mb-3">Status Daftar Ulang</h3>
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <!-- 4. Status Daftar Ulang Madrasah -->
+                                        @php
+                                            $statusMadrasah = $result->daftarUlang->status ?? 'belum';
+                                            $badgeMadrasah = getStatusBadge($statusMadrasah, 'daftar_ulang');
+                                        @endphp
+                                        <div class="{{ $badgeMadrasah['bg'] }} border border-gray-300 rounded-lg p-4">
+                                            <div class="flex items-start">
+                                                <svg class="w-6 h-6 {{ $badgeMadrasah['text'] }} mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $badgeMadrasah['icon'] }}"></path>
+                                                </svg>
+                                                <div class="flex-1">
+                                                    <h4 class="text-xs font-medium text-gray-600 mb-1">DU Madrasah</h4>
+                                                    <p class="text-sm font-bold {{ $badgeMadrasah['text'] }}">{{ $badgeMadrasah['label'] }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 5. Status Ukuran Seragam -->
+                                        @php
+                                            $statusUkuran = $result->seragam->status_ukuran ?? 'belum';
+                                            $badgeUkuran = getStatusBadge($statusUkuran, 'daftar_ulang');
+                                        @endphp
+                                        <div class="{{ $badgeUkuran['bg'] }} border border-gray-300 rounded-lg p-4">
+                                            <div class="flex items-start">
+                                                <svg class="w-6 h-6 {{ $badgeUkuran['text'] }} mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $badgeUkuran['icon'] }}"></path>
+                                                </svg>
+                                                <div class="flex-1">
+                                                    <h4 class="text-xs font-medium text-gray-600 mb-1">Ukuran Seragam</h4>
+                                                    <p class="text-sm font-bold {{ $badgeUkuran['text'] }}">{{ $badgeUkuran['label'] }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- 6. Status Daftar Ulang Seragam -->
+                                        @php
+                                            $statusSeragam = $result->seragam->status_seragam ?? 'belum';
+                                            $badgeSeragam = getStatusBadge($statusSeragam, 'daftar_ulang');
+                                        @endphp
+                                        <div class="{{ $badgeSeragam['bg'] }} border border-gray-300 rounded-lg p-4">
+                                            <div class="flex items-start">
+                                                <svg class="w-6 h-6 {{ $badgeSeragam['text'] }} mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="{{ $badgeSeragam['icon'] }}"></path>
+                                                </svg>
+                                                <div class="flex-1">
+                                                    <h4 class="text-xs font-medium text-gray-600 mb-1">DU Seragam</h4>
+                                                    <p class="text-sm font-bold {{ $badgeSeragam['text'] }}">{{ $badgeSeragam['label'] }}</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            @endif
 
                             <!-- Informasi Pendaftar -->
                             <div class="bg-gray-50 rounded-lg p-4 space-y-3">

@@ -9,11 +9,12 @@ use Livewire\Attributes\Url;
 use App\Models\Pendaftar;
 use App\Models\Seragam;
 use App\Models\RiwayatPesan;
+use App\Traits\WithSorting;
 use Illuminate\Support\Facades\Auth;
 
 class DaftarUlang extends Component
 {
-    use WithPagination, WithFileUploads;
+    use WithPagination, WithSorting, WithFileUploads;
 
     public $activeTab = 'seragam';
     public $search = '';
@@ -46,6 +47,12 @@ class DaftarUlang extends Component
     public $catatanType = '';
     public $catatanPendaftarId = null;
     public $catatanText = '';
+
+    // Modal catatan internal variables (for panitia only - NOT shown to pendaftar)
+    public $showCatatanInternalModal = false;
+    public $catatanInternalType = '';
+    public $catatanInternalPendaftarId = null;
+    public $catatanInternalText = '';
 
     // ========== SETTINGS PROPERTIES ==========
     // Seragam Settings
@@ -603,6 +610,59 @@ class DaftarUlang extends Component
         } catch (\Exception $e) {
             $this->dispatch('saved', message: 'Gagal menyimpan catatan: ' . $e->getMessage());
             \Log::error('Error saving catatan: ' . $e->getMessage());
+        }
+    }
+
+    // ========== CATATAN INTERNAL METHODS ==========
+    public function openCatatanInternalModal($type, $pendaftarId, $currentCatatan = '')
+    {
+        $this->catatanInternalType = $type;
+        $this->catatanInternalPendaftarId = $pendaftarId;
+        $this->catatanInternalText = $currentCatatan;
+        $this->showCatatanInternalModal = true;
+    }
+
+    public function closeCatatanInternalModal()
+    {
+        $this->showCatatanInternalModal = false;
+        $this->catatanInternalType = '';
+        $this->catatanInternalPendaftarId = null;
+        $this->catatanInternalText = '';
+    }
+
+    public function saveCatatanInternal()
+    {
+        try {
+            if ($this->catatanInternalType === 'seragam') {
+                $seragam = Seragam::firstOrNew(['pendaftar_id' => $this->catatanInternalPendaftarId]);
+                $seragam->catatan_internal_seragam = $this->catatanInternalText;
+                $seragam->save();
+
+                $pendaftar = Pendaftar::find($this->catatanInternalPendaftarId);
+                if ($pendaftar) {
+                    $pendaftar->touch();
+                }
+
+                $this->dispatch('saved', message: 'Catatan Internal DU Seragam berhasil disimpan');
+
+            } elseif ($this->catatanInternalType === 'ukuran') {
+                $seragam = Seragam::firstOrNew(['pendaftar_id' => $this->catatanInternalPendaftarId]);
+                $seragam->catatan_internal_ukuran = $this->catatanInternalText;
+                $seragam->save();
+
+                $pendaftar = Pendaftar::find($this->catatanInternalPendaftarId);
+                if ($pendaftar) {
+                    $pendaftar->touch();
+                }
+
+                $this->dispatch('saved', message: 'Catatan Internal Ukuran Seragam berhasil disimpan');
+            }
+
+            $this->closeCatatanInternalModal();
+
+        } catch (\Exception $e) {
+            $this->dispatch('saved', message: 'Gagal menyimpan catatan internal: ' . $e->getMessage());
+            \Log::error('Error saving catatan internal: ' . $e->getMessage());
         }
     }
 

@@ -1,0 +1,308 @@
+========================================
+QUICK REFERENCE LENGKAP - 21 FEB 2026
+(INCLUDING DATABASE MIGRATIONS + LINK GRUP DAFTAR ULANG!)
+========================================
+
+CRITICAL: ADA 3 MIGRASI DATABASE YANG HARUS DI-RUN!
+===================================================
+
+FILES TO UPLOAD (11 files):
+===========================
+
+PHP FILES - PAKET LAINNYA (5):
+-------------------------------
+1. resources/views/livewire/pendaftar/daftar-ulang.blade.php
+2. app/Livewire/Pendaftar/DaftarUlang.php
+3. app/Exports/DaftarUlangMadrasahSheet.php
+4. app/Exports/DaftarUlangSeragamSheet.php
+5. app/Exports/DaftarUlangUkuranSheet.php
+
+MIGRATION FILES (3): ⚠️ PENTING!
+---------------------------------
+6. database/migrations/2026_02_09_100000_add_individual_opsi_lainnya_to_daftar_ulang_and_seragam.php
+7. database/migrations/2026_02_21_100000_change_paket_seragam_to_text.php
+8. database/migrations/2026_02_21_210000_add_belum_diisi_to_seragam_status_enum.php
+
+PHP FILES - LINK GRUP DAFTAR ULANG (3): ⭐ NEW!
+-----------------------------------------------
+9. app/Livewire/Admin/PengaturanKartu.php
+10. resources/views/livewire/admin/pengaturan-kartu.blade.php
+11. resources/views/livewire/pendaftar/daftar-ulang.blade.php (ALREADY IN #1 - UPDATED)
+
+
+UPLOAD OPTIONS:
+===============
+
+OPTION 1 - Auto Upload (Recommended):
+--------------------------------------
+1. Double-click: upload_ALL_COMPLETE_21_FEB_2026.bat
+2. Press any key to start
+3. Wait for upload (8 files)
+4. Migrations will run automatically
+5. Cache will clear automatically
+6. Done!
+
+
+OPTION 2 - Manual Upload:
+--------------------------
+See: RANGKUMAN_FINAL_LENGKAP_21_FEB_2026.md
+Section: "INSTRUKSI UPLOAD KE PRODUCTION"
+
+
+URUTAN UPLOAD (HARUS DIIKUTI!):
+================================
+
+1. Upload 5 PHP files
+2. Upload 3 migration files
+3. Run migrations: php artisan migrate  ⚠️ WAJIB!
+4. Clear cache
+5. Test
+
+
+MIGRATIONS YANG AKAN DI-RUN:
+=============================
+
+Migration 1: Add opsi_lainnya columns
+--------------------------------------
+- Add 4 columns (2 ke daftar_ulang, 2 ke seragam)
+- Columns: opsi_lainnya_dropdown_individual, opsi_lainnya_konfirmasi_individual
+- Purpose: Track paket lainnya usage
+
+Migration 2: Change paket_seragam to TEXT
+------------------------------------------
+- Change paket_seragam dari VARCHAR(255) → TEXT
+- Purpose: Support long JSON (multi-select checkbox mode)
+- Safe: Tidak akan hilangkan data
+
+Migration 3: Add 'belum_diisi' status
+--------------------------------------
+- Add 'belum_diisi' ke status_ukuran enum
+- Add 'belum_diisi' ke status_seragam enum
+- Purpose: Default status untuk data baru
+- Safe: Expand constraint (tidak restrict)
+
+
+COMMANDS TO RUN (VIA SSH):
+===========================
+
+ssh mtsnkot4@103.30.244.77
+cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id
+
+# Run migrations
+php artisan migrate
+
+# Expected output:
+# Running: 2026_02_09_100000_add_individual_opsi_lainnya...
+# Migrated: ... (XX ms)
+# Running: 2026_02_21_100000_change_paket_seragam_to_text
+# Migrated: ... (XX ms)
+# Running: 2026_02_21_210000_add_belum_diisi_to_seragam_status_enum
+# Migrated: ... (XX ms)
+
+# Clear cache
+php artisan optimize:clear
+php artisan view:clear
+php artisan config:clear
+php artisan cache:clear
+
+# Verify migrations
+php artisan migrate:status | grep "2026_02"
+
+exit
+
+
+VERIFY MIGRATIONS SUCCESS:
+===========================
+
+Via Tinker:
+-----------
+php artisan tinker
+
+# Check opsi_lainnya columns
+>>> \DB::select("SELECT column_name FROM information_schema.columns WHERE table_name = 'daftar_ulang' AND column_name LIKE '%opsi_lainnya%'");
+# Expected: 2 rows
+
+# Check paket_seragam is TEXT
+>>> \DB::select("SELECT column_name, data_type FROM information_schema.columns WHERE table_name = 'seragam' AND column_name = 'paket_seragam'");
+# Expected: data_type = "text"
+
+>>> exit
+
+Via SQL:
+--------
+psql -U mtsnkot4 -d mtsnkot4_ppdb
+
+\d daftar_ulang
+\d seragam
+
+\q
+
+
+QUICK TESTING:
+==============
+
+Test 1: Paket Lainnya - Tab Madrasah
+-------------------------------------
+URL: /pendaftar/daftarulang?activeTab=madrasah
+1. Pilih "Paket Lainnya (Input Manual)"
+2. Isi nama: "Test Custom"
+3. Isi nominal: 1500000
+4. Section konfirmasi harus MUNCUL ✓
+5. Bayar Penuh harus tampilkan nama dan nominal ✓
+6. Simpan harus BERHASIL ✓
+
+Test 2: Paket Lainnya - Tab Seragam
+------------------------------------
+URL: /pendaftar/daftarulang?activeTab=seragam
+(Sama seperti Test 1)
+
+Test 3: Excel Export - Madrasah
+--------------------------------
+URL: /admin/daftarulang (tab: Daftar Ulang Madrasah)
+1. Klik "Export Excel"
+2. Check kolom baru:
+   - "Opsi yang Dipilih" ✓
+   - "Nominal Opsi" ✓
+   - "Konfirmasi Nominal" ✓
+   - "Nominal yang Dibayarkan" ✓
+
+Test 4: Excel Export - Seragam
+-------------------------------
+URL: /admin/daftarulang (tab: Daftar Ulang Seragam)
+1. Klik "Export Excel"
+2. Check "Paket Seragam" → readable (bukan JSON) ✓
+3. Check multi-select → dengan " + " separator ✓
+4. Check paket lainnya → label "Paket Lainnya (Manual)" ✓
+
+Test 5: Excel Export - Ukuran
+------------------------------
+URL: /admin/daftarulang (tab: Ukuran Seragam)
+1. Klik "Export Excel"
+2. Check "Paket Seragam" → readable ✓
+
+Test 6: Database Columns
+-------------------------
+ssh mtsnkot4@103.30.244.77
+cd /home/mtsnkot4/pmbm.mtsn2kotamalang.sch.id
+php artisan tinker
+
+>>> \DB::select("SELECT * FROM information_schema.columns WHERE table_name = 'daftar_ulang' AND column_name LIKE '%opsi_lainnya%'");
+# Harus ada 2 rows
+
+>>> \DB::select("SELECT data_type FROM information_schema.columns WHERE table_name = 'seragam' AND column_name = 'paket_seragam'");
+# Harus return: "text"
+
+Test 7: Link Grup Daftar Ulang ⭐ NEW!
+--------------------------------------
+URL Admin: /admin/pengaturan-kartu?activeTab=link-grup
+1. Scroll ke bagian "Link Grup WhatsApp/Telegram - Khusus Daftar Ulang"
+2. Aktifkan toggle
+3. Isi URL: https://chat.whatsapp.com/TEST123
+4. Simpan
+5. Preview tombol harus muncul ✓
+
+URL Pendaftar: /pendaftar/daftarulang?activeTab=madrasah
+1. User sudah setuju daftar ulang (status_pendaftaran = 'data_disetujui')
+2. Tombol "Segera Bergabung ke Grup Daftar Ulang!" harus muncul DI ATAS Surat Pernyataan ✓
+3. Tombol SUDAH muncul TANPA perlu tunggu approval panitia ✓
+4. Klik tombol → buka di tab baru ✓
+5. Tombol TIDAK muncul di Tab Seragam atau Tab Ukuran ✓
+
+
+WHAT'S FIXED:
+=============
+
+✅ Tab Madrasah - Paket Lainnya
+   - Display section konfirmasi
+   - Save dengan nama custom
+
+✅ Tab Seragam - Paket Lainnya
+   - Display section konfirmasi
+   - Save dengan nama custom
+
+✅ Excel Export - Madrasah
+   - Add kolom "Opsi yang Dipilih" & "Nominal Opsi"
+   - Parse data lengkap
+
+✅ Excel Export - Seragam
+   - Parse JSON paket → readable
+   - Handle multi-select (checkbox mode)
+   - Add kolom baru
+
+✅ Excel Export - Ukuran
+   - Parse paket seragam readable
+
+✅ Database Schema
+   - opsi_lainnya tracking columns (4 new columns)
+   - paket_seragam support long JSON (TEXT type)
+   - 'belum_diisi' status (new enum value)
+
+✅ Link Grup WhatsApp Daftar Ulang ⭐ NEW!
+   - Admin settings di /admin/pengaturan-kartu?activeTab=link-grup
+   - Toggle enable/disable link grup daftar ulang
+   - Tombol muncul DI ATAS Surat Pernyataan (segera saat setuju daftar ulang)
+   - Timing: SEGERA (TIDAK perlu tunggu approval panitia)
+   - Berbeda dengan link grup kelulusan (existing)
+
+
+TROUBLESHOOTING:
+================
+
+Error: "constraint already exists"
+-----------------------------------
+Migration sudah pernah di-run.
+Check: php artisan migrate:status | grep "2026_02"
+If "Ran" → skip, migration already applied
+
+Error: "column already exists"
+-------------------------------
+Column sudah ada di database.
+Check: \d daftar_ulang (via psql)
+If exists → skip, migration already applied
+
+Section Konfirmasi Tidak Muncul
+--------------------------------
+1. Check file uploaded: ls -la resources/views/livewire/pendaftar/daftar-ulang.blade.php
+2. Clear cache: php artisan view:clear
+3. Force recompile: rm -rf storage/framework/views/*
+
+Excel Export Kolom Kosong
+--------------------------
+1. Clear cache: php artisan optimize:clear
+2. Check file: ls -la app/Exports/DaftarUlangMadrasahSheet.php
+3. Re-upload jika timestamp tidak hari ini
+
+
+DOCUMENTATION:
+==============
+
+Full Details (WITH MIGRATIONS):
+→ RANGKUMAN_FINAL_LENGKAP_21_FEB_2026.md ⭐ READ THIS!
+
+Previous Docs (Code fixes only):
+→ RANGKUMAN_PERBAIKAN_21_FEB_2026_FINAL.md
+→ FIX_PAKET_LAINNYA_TAB_MADRASAH_21_FEB_2026.md
+→ FIX_PAKET_LAINNYA_TAB_SERAGAM_21_FEB_2026.md
+→ FIX_EXCEL_EXPORT_DAFTAR_ULANG_21_FEB_2026.md
+
+
+SUMMARY:
+========
+
+✅ 7 PHP Files Modified (Paket Lainnya + Link Grup)
+✅ 3 Database Migrations Created
+✅ 2 Major Features Added
+✅ All Features Tested Locally
+✅ Ready for Production
+
+⚠️ CRITICAL: MUST RUN MIGRATIONS!
+
+FEATURES ADDED TODAY:
+1. Paket Lainnya - Tab Madrasah & Seragam
+2. Link Grup WhatsApp Daftar Ulang ⭐
+
+Date: 21 Februari 2026
+Status: READY FOR UPLOAD + MIGRATE
+
+Total Unique Files: 10
+(daftar-ulang.blade.php modified for both features)
