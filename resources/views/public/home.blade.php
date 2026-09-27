@@ -746,6 +746,9 @@
         </div>
     </section>
 
+    <!-- Cek Status Pendaftaran (tanpa login) -->
+    <livewire:public.cek-pendaftaran :embedded="true" />
+
     <!-- Timeline Pendaftaran -->
     <section class="py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

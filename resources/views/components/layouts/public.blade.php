@@ -48,8 +48,8 @@
                     </a>
                 </div>
 
-                <!-- Desktop Navigation (xl+) -->
-                <div class="hidden xl:flex items-center space-x-1 flex-shrink-0">
+                <!-- Desktop Navigation (2xl+) -->
+                <div class="hidden 2xl:flex items-center space-x-1 flex-shrink-0">
                     <a href="/" class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-2.5 py-2 text-sm font-medium rounded-lg transition whitespace-nowrap">
                         Beranda
                     </a>
@@ -124,10 +124,10 @@
 
                 <!-- Right Side -->
                 <div class="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
-                    <!-- Mobile & Tablet: Burger Menu (hidden on xl+) -->
-                    <div class="flex xl:hidden items-center space-x-2">
+                    <!-- Mobile & Tablet: Burger Menu (hidden on 2xl+) -->
+                    <div class="flex 2xl:hidden items-center space-x-2">
                         <!-- Tablet Action Buttons (md to lg) -->
-                        <div class="hidden md:flex xl:hidden items-center space-x-2">
+                        <div class="hidden md:flex 2xl:hidden items-center space-x-2">
                             @guest
                                 @if(\App\Models\Setting::get('registration_phase') === 'dibuka')
                                 <a href="/daftar" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs sm:text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm whitespace-nowrap">
@@ -151,8 +151,8 @@
                         </button>
                     </div>
 
-                    <!-- Desktop: Auth Buttons (xl+) -->
-                    <div class="hidden xl:flex items-center space-x-2">
+                    <!-- Desktop: Auth Buttons (2xl+) -->
+                    <div class="hidden 2xl:flex items-center space-x-2">
                         @auth
                             <!-- User Avatar Dropdown -->
                             <div class="relative" x-data="{ open: false }">
@@ -225,14 +225,14 @@
                         </div>
                     @else
                         <!-- Login Buttons (Guest) - Desktop Only (lg+) -->
-                        <a href="/login" class="hidden xl:inline-flex items-center whitespace-nowrap px-3 py-2 border border-emerald-600 text-sm font-medium rounded-lg text-emerald-600 hover:bg-emerald-50 transition">
+                        <a href="/login" class="hidden 2xl:inline-flex items-center whitespace-nowrap px-3 py-2 border border-emerald-600 text-sm font-medium rounded-lg text-emerald-600 hover:bg-emerald-50 transition">
                             Login Pendaftar
                         </a>
-                        <a href="/login/admin" class="hidden xl:inline-flex items-center whitespace-nowrap px-3 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition shadow-sm">
+                        <a href="/login/admin" class="hidden 2xl:inline-flex items-center whitespace-nowrap px-3 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition shadow-sm">
                             Login Panitia
                         </a>
                         @if(\App\Models\Setting::get('registration_phase') === 'dibuka')
-                        <a href="/daftar" class="hidden xl:inline-flex items-center whitespace-nowrap px-3 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm">
+                        <a href="/daftar" class="hidden 2xl:inline-flex items-center whitespace-nowrap px-3 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm">
                             Daftar Sekarang
                         </a>
                         @endif
@@ -243,7 +243,7 @@
 
         <!-- Mobile Menu Panel -->
         <div id="mobileMenuPanel"
-             class="hidden border-t border-gray-200 bg-white transition-all duration-200 xl:hidden">
+             class="hidden border-t border-gray-200 bg-white transition-all duration-200 2xl:hidden">
             <div class="px-4 pt-2 pb-3 space-y-1">
                 <a href="/" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 transition">
                     Beranda
