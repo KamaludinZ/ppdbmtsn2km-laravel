@@ -295,6 +295,9 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/panitia', \App\Livewire\Admin\Panitia::class)->name('admin.panitia');
     Route::get('/jalur', \App\Livewire\Admin\Jalur::class)->name('admin.jalur');
     Route::get('/laporan', \App\Livewire\Admin\Laporan::class)->name('admin.laporan');
+    Route::get('/laporan/export/{jenis}', \App\Http\Controllers\Admin\LaporanExportController::class)
+        ->whereIn('jenis', ['data-lengkap', 'daftar-ulang', 'daftar-ulang-seragam', 'seragam', 'tes-psikologi'])
+        ->name('admin.laporan.export');
     Route::get('/survey', \App\Livewire\Admin\SurveyManagement::class)->name('admin.survey');
     Route::get('/data-asal-sekolah', \App\Livewire\Admin\DataAsalSekolah::class)->name('admin.data-asal-sekolah');
     Route::get('/video-infografis', \App\Livewire\Admin\VideoInfografis::class)->name('admin.video-infografis');

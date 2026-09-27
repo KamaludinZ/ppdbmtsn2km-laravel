@@ -76,6 +76,23 @@ semua grup route memakai middleware role.
 
 Sisa yang disengaja: ikon mata di kolom password, halaman demo `/test-livewire`, preview kartu A4.
 
+## 6b. Menu Laporan admin (`/admin/laporan`)
+
+Diuji dengan 612 pendaftar (termasuk 101 pendaftar di jalur yang sudah dinonaktifkan).
+
+| Masalah | Penyebab | Perbaikan |
+|---|---|---|
+| Pindah tab ±8 detik | Setiap klik menghitung statistik **semua** tab; tab Data Lengkap memanggil `getEmisCompletenessDetails()` 11× per pendaftar (±33 query per pendaftar) | Hanya tab aktif yang dihitung, query GROUP BY, `withExists` → pindah tab ±0,1–0,3 detik |
+| Tab bar melebar, isi halaman tergeser ke kiri saat membuka tab Tes Psikologi | Tab tidak bisa di-scroll | Tab bar bisa digeser, tab aktif otomatis terlihat |
+| Jalur nonaktif hilang dari tabel per jalur, filter, Excel & PDF | Hanya `JalurPendaftaran::aktif()` | `App\Support\RekapPendaftaran`: jalur nonaktif yang masih punya pendaftar tetap tampil (label "nonaktif"), total per jalur = total pendaftar |
+| Export Daftar Ulang Seragam & Ukuran hanya 184 dari 246 wajib | Berbasis tabel `seragam` | Berbasis semua pendaftar wajib daftar ulang + kolom "Status Rekap" (trait `PendaftarWajibDaftarUlang`) |
+| Export mengabaikan filter (status kelulusan, jalur, status seragam) | Parameter tidak diteruskan | Link unduh `admin.laporan.export/{jenis}` meneruskan semua filter; jumlah baris ditampilkan sebelum unduh |
+| Dropdown "Status Pembayaran" di tab Daftar Ulang Seragam error | Properti `filterStatus` tidak ada | Diganti filter Status Rekap |
+| Error JS `showProgressDU is not defined` dan progress bar palsu 30 detik | Modal progres Alpine | Dihapus, diganti tombol unduh biasa dengan status "Menyiapkan file…" |
+| Kelengkapan data semua 0 tanpa konteks | Kartu hanya angka | Tampil "x / y (z%)" per bagian; bagian yang tidak berlaku tidak dihitung |
+
+Hasil export diverifikasi: jumlah baris dan kolom "Status Rekap" sama persis dengan angka di layar untuk semua kombinasi filter.
+
 ## 7. Langkah deploy ke production
 
 1. `git pull` branch ini (atau merge PR).

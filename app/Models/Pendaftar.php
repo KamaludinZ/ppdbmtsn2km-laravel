@@ -893,9 +893,15 @@ class Pendaftar extends Model
         foreach ($arrayFields as $field => $label) {
             // Cek relasi model jika ada
             if (in_array($field, ['prestasi', 'beasiswa', 'pendidikan_lain'])) {
-                // Gunakan relasi untuk cek data
-                $relationData = $this->$field()->exists();
-                $hasFilled = $relationData;
+                // Pakai hasil withExists()/eager load bila tersedia (hemat 1 query per pendaftar),
+                // kalau tidak baru query ke database
+                if (array_key_exists($field . '_exists', $this->attributes)) {
+                    $hasFilled = (bool) $this->attributes[$field . '_exists'];
+                } elseif ($this->relationLoaded($field)) {
+                    $hasFilled = $this->getRelation($field)->isNotEmpty();
+                } else {
+                    $hasFilled = $this->$field()->exists();
+                }
             } else {
                 // Fallback ke JSON field
                 $arrayData = $this->$field;

@@ -91,7 +91,7 @@ class Laporan extends Component
     {
         // Jika panitia tes psikologi, hanya load data tes psikologi
         if ($this->isPanitiaPsikologi) {
-            $jalurPendaftaran = JalurPendaftaran::aktif()->ordered()->get();
+            $jalurPendaftaran = \App\Support\RekapPendaftaran::pilihanJalur();
             $tesPsikologiStats = $this->getTesPsikologiStats();
 
             return view('livewire.panitia.laporan', [
@@ -112,7 +112,7 @@ class Laporan extends Component
 
         // Jika panitia daftar ulang, hanya load data daftar ulang
         if ($this->isPanitiaDaftarUlang) {
-            $jalurPendaftaran = JalurPendaftaran::aktif()->ordered()->get();
+            $jalurPendaftaran = \App\Support\RekapPendaftaran::pilihanJalur();
             $daftarUlangStats = $this->getDaftarUlangStats();
 
             return view('livewire.panitia.laporan', [
@@ -172,7 +172,7 @@ class Laporan extends Component
             });
         }])->get();
 
-        $jalurPendaftaran = JalurPendaftaran::aktif()->ordered()->get();
+        $jalurPendaftaran = \App\Support\RekapPendaftaran::pilihanJalur();
 
         // Get statistik tes psikologi untuk tab tes_psikologi
         $tesPsikologiStats = $this->getTesPsikologiStats();
@@ -219,7 +219,7 @@ class Laporan extends Component
 
         // Get per jalur statistics
         $jalurStats = [];
-        $jalurs = JalurPendaftaran::aktif()->ordered()->get();
+        $jalurs = \App\Support\RekapPendaftaran::pilihanJalur();
 
         foreach ($jalurs as $jalur) {
             $jalurData = $allData->where('pendaftar.jalur_pendaftaran_id', $jalur->id);

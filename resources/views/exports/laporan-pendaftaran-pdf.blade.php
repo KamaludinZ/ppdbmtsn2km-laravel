@@ -172,7 +172,7 @@
                 @endphp
                 <tr>
                     <td style="text-align: center;">{{ $index + 1 }}</td>
-                    <td>{{ $jalur->nama }}</td>
+                    <td>{{ $jalur->nama }}{{ $jalur->nonaktif ? ' (nonaktif)' : '' }}</td>
                     <td style="text-align: center; font-weight: bold;">{{ number_format($jalur->kuota) }}</td>
                     <td style="text-align: center; font-weight: bold;">{{ number_format($jalur->pendaftar_count) }}</td>
                     <td style="text-align: center; color: #ca8a04;">{{ number_format($jalur->menunggu_count) }}</td>

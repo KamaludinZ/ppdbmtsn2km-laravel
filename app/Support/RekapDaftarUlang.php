@@ -137,6 +137,19 @@ class RekapDaftarUlang
         };
     }
 
+    /** Label status proses mentah (daftar_ulang.status / status_seragam / status_ukuran). */
+    public static function labelStatusProses(?string $status): string
+    {
+        return match ($status) {
+            null, '', 'belum_diisi' => 'Belum Mengisi',
+            'menunggu', 'proses' => 'Menunggu Verifikasi',
+            'perbaiki', 'perlu_perbaikan' => 'Perlu Perbaikan',
+            'ditolak' => 'Ditolak',
+            'disetujui', 'selesai' => 'Disetujui',
+            default => ucwords(str_replace('_', ' ', $status)),
+        };
+    }
+
     public static function label(string $kategori): string
     {
         return self::KATEGORI[$kategori]['label'] ?? ucfirst(str_replace('_', ' ', $kategori));

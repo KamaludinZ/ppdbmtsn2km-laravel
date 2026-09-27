@@ -183,7 +183,8 @@ class PendaftarExport implements FromQuery, WithHeadings, WithMapping, WithStyle
         }
 
         if ($this->statusPendaftaran) {
-            $query->where('status_pendaftaran', $this->statusPendaftaran);
+            // Bisa satu status atau daftar status (mis. lulus = lulus + diterima)
+            $query->whereIn('status_pendaftaran', (array) $this->statusPendaftaran);
         }
 
         if ($this->search) {

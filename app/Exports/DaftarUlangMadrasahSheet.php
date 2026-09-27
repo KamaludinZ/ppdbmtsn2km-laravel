@@ -17,11 +17,13 @@ class DaftarUlangMadrasahSheet implements FromQuery, WithHeadings, WithMapping, 
 {
     protected $status;
     protected $search;
+    protected $jalur;
 
-    public function __construct($status = null, $search = null)
+    public function __construct($status = null, $search = null, $jalur = null)
     {
         $this->status = $status;
         $this->search = $search;
+        $this->jalur = $jalur;
     }
 
     public function query()
@@ -29,7 +31,8 @@ class DaftarUlangMadrasahSheet implements FromQuery, WithHeadings, WithMapping, 
         // Berbasis pendaftar (bukan tabel daftar_ulang) agar SEMUA pendaftar wajib daftar ulang
         // ikut tercantum, termasuk yang belum konfirmasi / belum punya data daftar ulang.
         $query = Pendaftar::with(['jalurPendaftaran', 'user', 'daftarUlang', 'seragam'])
-            ->whereIn('status_pendaftaran', RekapDaftarUlang::STATUS_WAJIB);
+            ->whereIn('status_pendaftaran', RekapDaftarUlang::STATUS_WAJIB)
+            ->when($this->jalur, fn ($q) => $q->where('jalur_pendaftaran_id', $this->jalur));
 
         // $status = kategori rekap (lihat RekapDaftarUlang::KATEGORI)
         RekapDaftarUlang::filterKategori($query, $this->status, 'madrasah');

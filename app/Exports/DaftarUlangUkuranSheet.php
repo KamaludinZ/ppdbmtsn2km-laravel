@@ -2,7 +2,9 @@
 
 namespace App\Exports;
 
+use App\Exports\Concerns\PendaftarWajibDaftarUlang;
 use App\Models\Seragam;
+use App\Support\RekapDaftarUlang;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -14,50 +16,36 @@ use Carbon\Carbon;
 
 class DaftarUlangUkuranSheet implements FromQuery, WithHeadings, WithMapping, WithStyles, ShouldAutoSize, WithTitle
 {
+    use PendaftarWajibDaftarUlang;
+
     protected $status;
     protected $search;
+    protected $jalur;
+    protected $jenisRekap;
+    protected $jenisKelamin;
 
-    public function __construct($status = null, $search = null)
+    /**
+     * @param  string|null  $status  kategori rekap (RekapDaftarUlang::KATEGORI)
+     * @param  string|null  $jenisRekap  madrasah|seragam|ukuran — dasar kategori $status
+     */
+    public function __construct($status = null, $search = null, $jalur = null, $jenisRekap = null, $jenisKelamin = null)
     {
         $this->status = $status;
         $this->search = $search;
+        $this->jalur = $jalur;
+        $this->jenisRekap = $jenisRekap;
+        $this->jenisKelamin = $jenisKelamin;
     }
 
     public function query()
     {
-        $query = Seragam::with(['pendaftar.jalurPendaftaran', 'pendaftar.user', 'pendaftar.daftarUlang']);
-
-        // Only show records with size data
-        $query->where(function($q) {
-            $q->whereNotNull('ukuran_jas')
-              ->orWhereNotNull('ukuran_baju_olahraga')
-              ->orWhereNotNull('ukuran_celana_olahraga')
-              ->orWhereNotNull('ukuran_baju_harian')
-              ->orWhereNotNull('ukuran_celana_rok_harian')
-              ->orWhereNotNull('ukuran_kopyah');
-        });
-
-        // Filter based on daftar ulang status if provided
-        // $status = kategori rekap daftar ulang (lihat App\Support\RekapDaftarUlang)
-        if ($this->status) {
-            $query->whereHas('pendaftar', function ($q) {
-                \App\Support\RekapDaftarUlang::filterKategori($q, $this->status, 'madrasah');
-            });
-        }
-
-        if ($this->search) {
-            $query->whereHas('pendaftar', function($q) {
-                $q->where('nama_lengkap', 'like', '%' . $this->search . '%')
-                  ->orWhere('nomor_pendaftaran', 'like', '%' . $this->search . '%');
-            });
-        }
-
-        return $query->orderBy('created_at', 'desc');
+        return $this->queryPendaftarWajib($this->status, $this->jenisRekap ?? 'ukuran', $this->search, $this->jalur ?? null, $this->jenisKelamin ?? null);
     }
 
-    public function map($seragam): array
+    public function map($pendaftar): array
     {
-        $pendaftar = $seragam->pendaftar;
+        // Pendaftar yang belum mengisi seragam tetap tampil (kolom seragam kosong)
+        $seragam = $pendaftar->seragam ?? new Seragam();
 
         // Parse paket seragam (same as DaftarUlangSeragamSheet for consistency)
         $paketName = 'Belum Dipilih';
@@ -93,6 +81,7 @@ class DaftarUlangUkuranSheet implements FromQuery, WithHeadings, WithMapping, Wi
             $pendaftar->jenis_kelamin === 'L' ? ($seragam->ukuran_kopyah ?? '-') : 'N/A',
             $pendaftar->telepon_ortu ?? $pendaftar->no_hp ?? '',
             $pendaftar->alamat ?? '',
+            RekapDaftarUlang::label(RekapDaftarUlang::kategori($pendaftar, 'ukuran')),
             $this->getStatusLabel($seragam->status_ukuran),
             $seragam->catatan_ukuran ?? '',
             $seragam->created_at ? Carbon::parse($seragam->created_at)->format('d-m-Y H:i') : '',
@@ -119,7 +108,8 @@ class DaftarUlangUkuranSheet implements FromQuery, WithHeadings, WithMapping, Wi
             'Ukuran Kopyah (Laki-laki)',
             'No. Telepon',
             'Alamat',
-            'Status',
+            'Status Rekap',
+            'Status Ukuran',
             'Catatan',
             'Tanggal Input',
         ];
@@ -146,16 +136,7 @@ class DaftarUlangUkuranSheet implements FromQuery, WithHeadings, WithMapping, Wi
 
     private function getStatusLabel($status)
     {
-        $statusLabels = [
-            'menunggu_pembayaran' => 'Menunggu Pembayaran',
-            'menunggu_verifikasi' => 'Menunggu Verifikasi',
-            'pembayaran_diterima' => 'Pembayaran Diterima',
-            'seragam_disiapkan' => 'Seragam Disiapkan',
-            'selesai' => 'Selesai',
-            'dibatalkan' => 'Dibatalkan'
-        ];
-
-        return $statusLabels[$status] ?? ucfirst(str_replace('_', ' ', $status));
+        return RekapDaftarUlang::labelStatusProses($status);
     }
 
     private function getStatusPersetujuanLabel($status)

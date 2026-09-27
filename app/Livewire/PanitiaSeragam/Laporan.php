@@ -86,7 +86,7 @@ class Laporan extends Component
 
     public function render()
     {
-        $jalurPendaftaran = JalurPendaftaran::aktif()->ordered()->get();
+        $jalurPendaftaran = \App\Support\RekapPendaftaran::pilihanJalur();
         $seragamStats = $this->getSeragamStats();
         $ukuranStats = $this->getUkuranStats();
 

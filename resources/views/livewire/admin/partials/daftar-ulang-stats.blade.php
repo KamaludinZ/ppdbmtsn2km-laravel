@@ -2,12 +2,14 @@
     Rekap daftar ulang (dipakai menu Daftar Ulang & Laporan untuk semua role).
     Data dari App\Support\RekapDaftarUlang::statsTab(): setiap pendaftar lulus masuk tepat
     satu kategori, sehingga jumlah rincian selalu sama dengan "Wajib Daftar Ulang".
-    Parameter: $stats, $tab (madrasah|seragam|ukuran), $clickable (bool, klik kategori = filter).
+    Parameter: $stats, $tab (madrasah|seragam|ukuran), $clickable (bool, klik kategori = filter),
+    $filterProperty (nama properti Livewire yang diisi saat kategori diklik, default filterRekap).
 --}}
 @if(!empty($stats))
 @php
     $tab = $tab ?? 'madrasah';
     $clickable = $clickable ?? false;
+    $filterProperty = $filterProperty ?? 'filterRekap';
     $kategoriList = \App\Support\RekapDaftarUlang::KATEGORI;
     $total = (int) ($stats['total_wajib'] ?? $stats['total_lulus'] ?? $stats['lulus'] ?? 0);
     $selesai = (int) ($stats['selesai'] ?? $stats['disetujui'] ?? 0);
@@ -26,7 +28,7 @@
         'red' => ['bar' => 'bg-red-600', 'dot' => 'bg-red-600', 'ring' => 'ring-red-600'],
         'emerald' => ['bar' => 'bg-emerald-600', 'dot' => 'bg-emerald-600', 'ring' => 'ring-emerald-600'],
     ];
-    $aktif = $clickable ? ($this->filterRekap ?? '') : '';
+    $aktif = $clickable ? ($this->{$filterProperty} ?? '') : '';
 @endphp
 
 <section class="mb-6 space-y-4" aria-label="Rekap daftar ulang">
@@ -58,7 +60,7 @@
     <div class="bg-white rounded-xl border border-gray-200 p-4">
         <div class="flex flex-wrap items-baseline justify-between gap-2 mb-3">
             <h4 class="text-sm font-semibold text-gray-900">{{ $judul['rincian'] }}</h4>
-            <p class="text-xs text-gray-500">Jumlah rincian = {{ number_format($total) }} pendaftar{{ $clickable ? ' · klik untuk memfilter tabel' : '' }}</p>
+            <p class="text-xs text-gray-500">Jumlah rincian = {{ number_format($total) }} pendaftar{{ $clickable ? ' · ' . ($clickLabel ?? 'klik untuk memfilter tabel') : '' }}</p>
         </div>
 
         <div class="flex h-3 w-full overflow-hidden rounded-full bg-gray-100" role="img" aria-label="Proporsi status daftar ulang">
@@ -78,7 +80,7 @@
                 @endphp
                 @if($clickable)
                     <button type="button"
-                        wire:click="$set('filterRekap', '{{ $isAktif ? '' : $key }}')"
+                        wire:click="$set('{{ $filterProperty }}', '{{ $isAktif ? '' : $key }}')"
                         aria-pressed="{{ $isAktif ? 'true' : 'false' }}"
                         class="flex items-center justify-between gap-2 rounded-lg border px-3 py-2 text-left transition hover:bg-gray-50 focus:outline-none focus:ring-2 {{ $warna[$info['color']]['ring'] }} {{ $isAktif ? 'border-gray-900 bg-gray-50' : 'border-gray-200' }}">
                 @else
