@@ -263,13 +263,13 @@ Route::post('/logout', function () {
     return redirect('/');
 })->name('logout');
 
-// Demo route untuk Livewire component
-Route::get('/welcome', function () {
-    return view('welcome');
-});
-
-// Test Livewire functionality
-Route::get('/test-livewire', \App\Livewire\TestLivewire::class)->name('test.livewire');
+// Halaman demo/uji hanya tersedia di lingkungan lokal (tidak di production)
+if (app()->environment('local')) {
+    Route::get('/welcome', function () {
+        return view('welcome');
+    });
+    Route::get('/test-livewire', \App\Livewire\TestLivewire::class)->name('test.livewire');
+}
 
 // Dashboard Routes - Admin Only
 Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
@@ -512,9 +512,15 @@ Route::get('/file/view/{model}/{id}/{field}', function ($model, $id, $field) {
         'keahlian' => \App\Models\Keahlian::class,
         'tahfidz' => \App\Models\Tahfidz::class,
     ];
+    // Hanya kolom file yang boleh dibaca (bukan sembarang atribut model)
+    $fieldMap = [
+        'prestasi' => ['file_sertifikat'],
+        'keahlian' => ['file_bukti_sertifikat'],
+        'tahfidz' => ['file_bukti_syahadah', 'file_bukti_tahsin'],
+    ];
 
-    if (!isset($modelMap[$model])) {
-        abort(404, 'Model tidak ditemukan.');
+    if (!isset($modelMap[$model]) || !in_array($field, $fieldMap[$model], true)) {
+        abort(404, 'File tidak ditemukan.');
     }
 
     $modelClass = $modelMap[$model];
@@ -525,7 +531,7 @@ Route::get('/file/view/{model}/{id}/{field}', function ($model, $id, $field) {
         if (optional($user->pendaftar)->id !== $record->pendaftar_id) {
             abort(403, 'Anda tidak memiliki akses ke file ini.');
         }
-    } elseif (!in_array($user->role, ['admin', 'panitia', 'panitia_pendaftaran', 'panitia_seragam', 'panitia_tes_psikologi'])) {
+    } elseif (!$user->isAdmin() && !$user->isPanitia()) {
         abort(403, 'Anda tidak memiliki akses ke file ini.');
     }
 
@@ -550,10 +556,15 @@ Route::get('/file/view/{model}/{id}/{field}', function ($model, $id, $field) {
     $file = Storage::disk($disk)->get($filePath);
     $mimeType = Storage::disk($disk)->mimeType($filePath);
 
+    // Hanya PDF/gambar biasa yang ditampilkan inline; tipe lain (HTML, SVG, dll) diunduh
+    // agar tidak bisa menjalankan skrip di domain aplikasi.
+    $inline = in_array($mimeType, ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/webp'], true);
+
     // Return file for viewing in browser with no-cache headers
     return response($file, 200)
-        ->header('Content-Type', $mimeType)
-        ->header('Content-Disposition', 'inline; filename="' . basename($filePath) . '"')
+        ->header('Content-Type', $inline ? $mimeType : 'application/octet-stream')
+        ->header('Content-Disposition', ($inline ? 'inline' : 'attachment') . '; filename="' . basename($filePath) . '"')
+        ->header('X-Content-Type-Options', 'nosniff')
         ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
         ->header('Pragma', 'no-cache')
         ->header('Expires', '0');

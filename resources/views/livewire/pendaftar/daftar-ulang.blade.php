@@ -354,7 +354,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <div class="flex-1 text-sm text-indigo-900 prose prose-sm prose-indigo max-w-none">
-                                    {!! $this->madrasahInfo !!}
+                                    {!! \App\Support\HtmlSanitizer::clean($this->madrasahInfo) !!}
                                 </div>
                             </div>
                         </div>
@@ -1418,7 +1418,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <div class="flex-1 text-sm text-cyan-900 prose prose-sm prose-cyan max-w-none">
-                                    {!! $this->seragamInfo !!}
+                                    {!! \App\Support\HtmlSanitizer::clean($this->seragamInfo) !!}
                                 </div>
                             </div>
                         </div>
@@ -2403,7 +2403,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <div class="flex-1 text-sm text-purple-900 prose prose-sm prose-purple max-w-none">
-                                    {!! $this->ukuranInfo !!}
+                                    {!! \App\Support\HtmlSanitizer::clean($this->ukuranInfo) !!}
                                 </div>
                             </div>
                         </div>

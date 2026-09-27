@@ -89,7 +89,7 @@
                                 >
                                     <h2 class="text-3xl font-bold text-gray-900 mb-6">{{ $konten->judul }}</h2>
                                     <div class="prose prose-lg max-w-none text-gray-700">
-                                        {!! $konten->isi !!}
+                                        {!! \App\Support\HtmlSanitizer::clean($konten->isi) !!}
                                     </div>
                                 </div>
                             @endforeach
@@ -149,7 +149,7 @@
                                             class="px-6 py-4 bg-white border-t border-gray-200"
                                         >
                                             <div class="prose prose-lg max-w-none text-gray-700">
-                                                {!! $faq->jawaban !!}
+                                                {!! \App\Support\HtmlSanitizer::clean($faq->jawaban) !!}
                                             </div>
                                         </div>
                                     </div>

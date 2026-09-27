@@ -19,6 +19,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Cek role juga dijalankan ulang pada setiap aksi Livewire (/livewire/update),
+        // bukan hanya saat halaman pertama kali dibuka
+        \Livewire\Livewire::addPersistentMiddleware([\App\Http\Middleware\CheckRole::class]);
+
         // Load email configuration from database
         try {
             if (\Illuminate\Support\Facades\Schema::hasTable('settings')) {

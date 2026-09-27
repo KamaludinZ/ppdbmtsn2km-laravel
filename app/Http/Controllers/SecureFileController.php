@@ -106,7 +106,7 @@ class SecureFileController extends Controller
 
         // Check if file exists
         if (!Storage::disk('private')->exists($filePath)) {
-            abort(404, 'File tidak ditemukan di: ' . $filePath);
+            abort(404, 'File tidak ditemukan.');
         }
 
         // Get file and mime type

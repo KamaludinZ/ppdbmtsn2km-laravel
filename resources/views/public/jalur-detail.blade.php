@@ -158,7 +158,7 @@
 
                             <!-- Konten HTML atau Deskripsi Lengkap -->
                             @if($jalur->konten_html)
-                                {!! $jalur->konten_html !!}
+                                {!! \App\Support\HtmlSanitizer::clean($jalur->konten_html) !!}
                             @elseif($jalur->deskripsi_lengkap)
                                 <p>{{ $jalur->deskripsi_lengkap }}</p>
                             @endif
