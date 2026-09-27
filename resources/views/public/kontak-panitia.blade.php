@@ -170,7 +170,7 @@
                                 <div class="space-y-2">
                                     <div>
                                         <p class="text-gray-600 text-sm">Email PTSP:</p>
-                                        <a href="mailto:{{ \App\Models\Setting::get('app_email_ptsp', 'info@mtsn2kotamalang.sch.id') }}" class="text-lg font-semibold text-purple-600 hover:text-purple-700">{{ \App\Models\Setting::get('app_email_ptsp', 'info@mtsn2kotamalang.sch.id') }}</a>
+                                        <a href="mailto:{{ \App\Models\Setting::get('app_email_ptsp', 'info@mtsn2kotamalang.sch.id') }}" class="text-lg font-semibold text-purple-600 hover:text-purple-700 break-all">{{ \App\Models\Setting::get('app_email_ptsp', 'info@mtsn2kotamalang.sch.id') }}</a>
                                     </div>
                                 </div>
                             </div>

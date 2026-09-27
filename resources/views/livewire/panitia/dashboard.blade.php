@@ -3,8 +3,8 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <!-- Total Pendaftar -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Total Pendaftar</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['total_pendaftar']) }}</p>
                     <p class="text-sm {{ $stats['total_pendaftar_increase'] >= 0 ? 'text-green-600' : 'text-red-600' }} mt-2">
@@ -21,8 +21,8 @@
 
         <!-- Menunggu Verifikasi -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Menunggu Verifikasi</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['menunggu_verifikasi']) }}</p>
                     <p class="text-sm text-yellow-600 mt-2">{{ $stats['menunggu_verifikasi'] > 0 ? 'Perlu ditindaklanjuti' : 'Semua terverifikasi' }}</p>
@@ -37,8 +37,8 @@
 
         <!-- Lengkapi Data -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Lengkapi Data</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['lengkapi_data']) }}</p>
                     <p class="text-sm text-orange-600 mt-2">{{ $stats['lengkapi_data_percentage'] }}% dari total</p>
@@ -53,8 +53,8 @@
 
         <!-- Perbaiki Data -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Perbaiki Data</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['perbaiki_data']) }}</p>
                     <p class="text-sm text-red-600 mt-2">{{ $stats['perbaiki_data_percentage'] }}% dari total</p>
@@ -69,8 +69,8 @@
 
         <!-- Data Disetujui -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Data Disetujui</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['data_disetujui']) }}</p>
                     <p class="text-sm text-green-600 mt-2">{{ $stats['data_disetujui_percentage'] }}% dari total</p>
@@ -87,8 +87,8 @@
         @if($isPanitiaDaftarUlang)
         <!-- Setuju Daftar Ulang (Panitia Daftar Ulang) -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Setuju Daftar Ulang</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['total_setuju_daftar_ulang'] ?? 0) }}</p>
                     <p class="text-sm text-green-600 mt-2">Dari siswa yang lulus</p>
@@ -103,8 +103,8 @@
         @else
         <!-- Pendaftar Hari Ini (Role Lain) -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Pendaftar Hari Ini</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['pendaftar_hari_ini']) }}</p>
                     <p class="text-sm text-gray-600 mt-2">{{ \Carbon\Carbon::now('Asia/Jakarta')->locale('id')->isoFormat('dddd, D MMMM Y') }}</p>

@@ -107,7 +107,7 @@
         <!-- Tab Navigation - HANYA untuk Panitia Tes Psikologi -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
             <div class="border-b border-gray-200">
-                <nav class="flex -mb-px">
+                <nav class="flex -mb-px overflow-x-auto whitespace-nowrap">
                     <a href="?mainTab=data" wire:navigate
                        class="py-4 px-8 text-center border-b-2 font-medium text-sm transition focus:outline-none {{ $mainTab === 'data' ? 'border-blue-500 text-blue-600 bg-blue-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                         <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

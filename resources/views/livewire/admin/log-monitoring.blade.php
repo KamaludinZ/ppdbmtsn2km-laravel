@@ -23,7 +23,7 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
-                            <div class="bg-primary bg-opacity-10 rounded-circle p-3">
+                            <div class="bg-primary rounded-circle p-3">
                                 <i class="fas fa-file-alt text-primary fa-lg"></i>
                             </div>
                         </div>
@@ -41,7 +41,7 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
-                            <div class="bg-success bg-opacity-10 rounded-circle p-3">
+                            <div class="bg-success rounded-circle p-3">
                                 <i class="fas fa-database text-success fa-lg"></i>
                             </div>
                         </div>
@@ -59,7 +59,7 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
-                            <div class="bg-info bg-opacity-10 rounded-circle p-3">
+                            <div class="bg-info rounded-circle p-3">
                                 <i class="fas fa-hdd text-info fa-lg"></i>
                             </div>
                         </div>
@@ -77,7 +77,7 @@
                 <div class="card-body">
                     <div class="d-flex align-items-center">
                         <div class="flex-shrink-0">
-                            <div class="bg-{{ $logStats['disk_used_percentage'] > 90 ? 'danger' : 'warning' }} bg-opacity-10 rounded-circle p-3">
+                            <div class="bg-{{ $logStats['disk_used_percentage'] > 90 ? 'danger' : 'warning' }} rounded-circle p-3">
                                 <i class="fas fa-chart-pie text-{{ $logStats['disk_used_percentage'] > 90 ? 'danger' : 'warning' }} fa-lg"></i>
                             </div>
                         </div>

@@ -28,9 +28,10 @@ class DaftarUlangSeragamSheet implements FromQuery, WithHeadings, WithMapping, W
         $query = Seragam::with(['pendaftar.jalurPendaftaran', 'pendaftar.user', 'pendaftar.daftarUlang']);
 
         // Filter based on daftar ulang status if provided
+        // $status = kategori rekap daftar ulang (lihat App\Support\RekapDaftarUlang)
         if ($this->status) {
-            $query->whereHas('pendaftar.daftarUlang', function($q) {
-                $q->where('status_daftar_ulang', $this->status);
+            $query->whereHas('pendaftar', function ($q) {
+                \App\Support\RekapDaftarUlang::filterKategori($q, $this->status, 'madrasah');
             });
         }
 
@@ -78,14 +79,14 @@ class DaftarUlangSeragamSheet implements FromQuery, WithHeadings, WithMapping, W
                 $totalAmount = 0;
                 foreach ($nominalSeragamAwal as $opsi) {
                     $names[] = $opsi['name'] ?? '';
-                    $totalAmount += $opsi['amount'] ?? 0;
+                    $totalAmount += \App\Support\Nominal::toNumber($opsi['amount'] ?? 0);
                 }
                 $opsiName = implode(' + ', array_filter($names));
                 $opsiAmount = $totalAmount;
             } else {
                 // Single select or paket_lainnya
                 $opsiName = $nominalSeragamAwal['name'] ?? '';
-                $opsiAmount = $nominalSeragamAwal['amount'] ?? 0;
+                $opsiAmount = \App\Support\Nominal::toNumber($nominalSeragamAwal['amount'] ?? 0);
             }
         }
 
@@ -99,11 +100,11 @@ class DaftarUlangSeragamSheet implements FromQuery, WithHeadings, WithMapping, W
             if (isset($nominalSeragam['items']) && is_array($nominalSeragam['items'])) {
                 // Multi-select konfirmasi
                 $nominalSeragamName = $nominalSeragam['name'] ?? '';
-                $nominalSeragamAmount = $nominalSeragam['amount'] ?? 0;
+                $nominalSeragamAmount = \App\Support\Nominal::toNumber($nominalSeragam['amount'] ?? 0);
             } else {
                 // Single konfirmasi
                 $nominalSeragamName = $nominalSeragam['name'] ?? '';
-                $nominalSeragamAmount = $nominalSeragam['amount'] ?? 0;
+                $nominalSeragamAmount = \App\Support\Nominal::toNumber($nominalSeragam['amount'] ?? 0);
             }
         }
 

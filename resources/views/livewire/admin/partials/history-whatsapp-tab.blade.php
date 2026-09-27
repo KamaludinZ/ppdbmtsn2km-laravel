@@ -4,8 +4,8 @@
     <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
         <!-- Total Pesan -->
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-blue-800">Total Pesan</p>
                     <p class="text-2xl font-bold text-blue-900">{{ $queueStats['total'] ?? 0 }}</p>
                 </div>
@@ -19,8 +19,8 @@
 
         <!-- Total Antrian -->
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-yellow-800">Antrian</p>
                     <p class="text-2xl font-bold text-yellow-900">{{ $queueStats['queued'] ?? 0 }}</p>
                 </div>
@@ -34,8 +34,8 @@
 
         <!-- Terkirim -->
         <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-green-800">Terkirim</p>
                     <p class="text-2xl font-bold text-green-900">{{ $queueStats['sent'] ?? 0 }}</p>
                 </div>
@@ -49,8 +49,8 @@
 
         <!-- Gagal -->
         <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-red-800">Gagal</p>
                     <p class="text-2xl font-bold text-red-900">{{ $queueStats['failed'] ?? 0 }}</p>
                 </div>
@@ -64,8 +64,8 @@
 
         <!-- Hari Ini -->
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-blue-800">Hari Ini</p>
                     <p class="text-2xl font-bold text-blue-900">{{ $queueStats['today'] ?? 0 }}</p>
                 </div>
@@ -387,7 +387,7 @@
     </div>
 
     <!-- Modal untuk melihat pesan lengkap -->
-    <div id="messageModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div id="messageModal" class="fixed inset-0 bg-gray-600/50 overflow-y-auto h-full w-full hidden z-50">
         <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
             <!-- Modal Header -->
             <div class="flex items-center justify-between pb-3 border-b">

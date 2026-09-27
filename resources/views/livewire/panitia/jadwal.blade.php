@@ -38,7 +38,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Filter Jalur Pendaftaran</label>
-                        <select wire:model.live="filterJalur" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                        <select wire:model.live="filterJalur" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 ">
                             <option value="">Semua Jalur</option>
                             @foreach($jalurPendaftaran as $jalur)
                                 <option value="{{ $jalur->kode }}">{{ $jalur->nama }}</option>
@@ -47,7 +47,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Filter Status</label>
-                        <select wire:model.live="filterStatus" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                        <select wire:model.live="filterStatus" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 ">
                             <option value="">Semua Status</option>
                             <option value="1">Aktif</option>
                             <option value="0">Non-Aktif</option>
@@ -55,7 +55,7 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tampilkan per halaman</label>
-                        <select wire:model.live="perPage" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                        <select wire:model.live="perPage" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 ">
                             <option value="10">10</option>
                             <option value="25">25</option>
                             <option value="50">50</option>
@@ -243,7 +243,7 @@
                                         <input
                                             type="text"
                                             wire:model="judul_kegiatan"
-                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                             placeholder="Contoh: Pendaftaran Gelombang 1"
                                         >
                                         @error('judul_kegiatan') <span class="text-red-500 text-xs mt-1 flex items-center">
@@ -257,7 +257,7 @@
                                         <textarea
                                             wire:model="deskripsi"
                                             rows="3"
-                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 resize-y"
+                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 resize-y"
                                             placeholder="Tambahkan detail kegiatan jika diperlukan..."
                                         ></textarea>
                                         <p class="text-xs text-gray-500 mt-1">Opsional - Detail tambahan tentang kegiatan</p>
@@ -268,7 +268,7 @@
                                         <input
                                             type="text"
                                             wire:model="tempat"
-                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                             placeholder="Contoh: Online / Aula MTsN 2 Kota Malang"
                                         >
                                         <p class="text-xs text-gray-500 mt-1">Lokasi pelaksanaan kegiatan</p>
@@ -292,7 +292,7 @@
                                         <input
                                             type="date"
                                             wire:model="tanggal_mulai"
-                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                         >
                                         @error('tanggal_mulai') <span class="text-red-500 text-xs mt-1 flex items-center">
                                             <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
@@ -307,7 +307,7 @@
                                         <input
                                             type="date"
                                             wire:model="tanggal_selesai"
-                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                         >
                                         @error('tanggal_selesai') <span class="text-red-500 text-xs mt-1 flex items-center">
                                             <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>
@@ -320,7 +320,7 @@
                                         <input
                                             type="time"
                                             wire:model="waktu_mulai"
-                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                         >
                                         <p class="text-xs text-gray-500 mt-1">Opsional</p>
                                     </div>
@@ -330,7 +330,7 @@
                                         <input
                                             type="time"
                                             wire:model="waktu_selesai"
-                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                         >
                                         <p class="text-xs text-gray-500 mt-1">Opsional</p>
                                     </div>
@@ -351,7 +351,7 @@
                                         <div class="relative">
                                             <select
                                                 wire:model="jalur_kode"
-                                                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 appearance-none pr-10"
+                                                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 appearance-none pr-10"
                                             >
                                                 <option value="">Semua Jalur</option>
                                                 @foreach($jalurPendaftaran as $jalur)
@@ -373,7 +373,7 @@
                                             type="number"
                                             wire:model="urutan"
                                             min="0"
-                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                             placeholder="0"
                                         >
                                         <p class="text-xs text-gray-500 mt-1">Angka kecil = tampil lebih awal</p>
@@ -386,7 +386,7 @@
                                                 type="checkbox"
                                                 wire:model="aktif"
                                                 id="aktif"
-                                                class="rounded border-gray-300 text-emerald-600 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                                class="rounded border-gray-300 text-emerald-600 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-200/50 "
                                             >
                                             <label for="aktif" class="ml-3 flex items-center cursor-pointer">
                                                 <span class="text-sm font-medium text-gray-700">Aktifkan & Tampilkan Jadwal</span>

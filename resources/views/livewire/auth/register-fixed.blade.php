@@ -1059,7 +1059,7 @@
 
     <!-- Confirmation Modal -->
     @if($showConfirmationModal)
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity z-50"
+        <div class="fixed inset-0 bg-gray-500/75 transition-opacity z-50"
              wire:click="cancelSubmit"></div>
 
         <div class="fixed inset-0 z-50 overflow-y-auto">

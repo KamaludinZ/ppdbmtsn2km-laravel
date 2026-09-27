@@ -45,7 +45,7 @@
                         <input :id="trixId" type="hidden" name="madrasahInfo" value="{{ $madrasahInfo ?? '' }}">
                         <trix-editor
                             :input="trixId"
-                            class="trix-content rounded-lg border border-indigo-300 shadow-sm focus-within:border-indigo-500 focus-within:ring focus-within:ring-indigo-200 focus-within:ring-opacity-50"
+                            class="trix-content rounded-lg border border-indigo-300 shadow-sm focus-within:border-indigo-500 focus-within:ring focus-within:ring-indigo-200/50 "
                             placeholder="Tulis informasi, pengumuman, atau petunjuk untuk pendaftar terkait daftar ulang madrasah..."
                         ></trix-editor>
                     </div>

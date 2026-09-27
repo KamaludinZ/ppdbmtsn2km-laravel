@@ -48,7 +48,7 @@
         {{-- Content for Madrasah Tab --}}
         @if($activeTab !== 'settings')
         <!-- Stats Overview -->
-        @include('livewire.admin.partials.daftar-ulang-stats', ['tab' => 'madrasah'])
+        @include('livewire.admin.partials.daftar-ulang-stats', ['tab' => 'madrasah', 'clickable' => true])
 
         <!-- Filter -->
         <div class="bg-white rounded-lg shadow overflow-hidden">
@@ -65,7 +65,16 @@
                     </div>
 
                     <div>
-                        <select wire:model.live="filterJalur" class="rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                        <select wire:model.live="filterRekap" aria-label="Filter status rekap daftar ulang" class="w-full sm:w-auto rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                            <option value="">Semua Status Rekap</option>
+                            @foreach(\App\Support\RekapDaftarUlang::KATEGORI as $kategoriKey => $kategoriInfo)
+                                <option value="{{ $kategoriKey }}">{{ $kategoriInfo['label'] }}</option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div>
+                        <select wire:model.live="filterJalur" class="w-full sm:w-auto rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                             <option value="">Semua Jalur</option>
                             @foreach($jalurPendaftaran as $jalur)
                                 <option value="{{ $jalur->id }}">{{ $jalur->nama }}</option>
@@ -299,7 +308,7 @@
                                         @php $nominalBiayaAwal = $item->daftarUlang->nominal_biaya_awal; @endphp
                                         <div class="text-xs text-gray-900">
                                             <div class="font-medium text-gray-700 mb-1">{{ $nominalBiayaAwal['name'] ?? '-' }}</div>
-                                            <div class="font-bold text-blue-700">Rp {{ number_format($nominalBiayaAwal['amount'] ?? 0, 0, ',', '.') }}</div>
+                                            <div class="font-bold text-blue-700">Rp {{ number_format(\App\Support\Nominal::toNumber($nominalBiayaAwal['amount'] ?? 0), 0, ',', '.') }}</div>
                                         </div>
                                     @else
                                         <span class="text-xs text-gray-500">Belum pilih</span>
@@ -312,7 +321,7 @@
                                         @php $nominalBiaya = $item->daftarUlang->nominal_biaya; @endphp
                                         <div class="text-xs text-gray-900">
                                             <div class="font-medium text-gray-700 mb-1">{{ $nominalBiaya['name'] ?? '-' }}</div>
-                                            <div class="font-bold text-emerald-700">Rp {{ number_format($nominalBiaya['amount'] ?? 0, 0, ',', '.') }}</div>
+                                            <div class="font-bold text-emerald-700">Rp {{ number_format(\App\Support\Nominal::toNumber($nominalBiaya['amount'] ?? 0), 0, ',', '.') }}</div>
                                         </div>
                                     @else
                                         <span class="text-xs text-gray-500">Belum konfirmasi</span>
@@ -509,7 +518,7 @@
                                              x-transition:leave="transition ease-in duration-75"
                                              x-transition:leave-start="transform opacity-100 scale-100"
                                              x-transition:leave-end="transform opacity-0 scale-95"
-                                             class="absolute right-0 z-[100] mt-2 w-48 origin-top-right rounded-md bg-white shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none" x-cloak>
+                                             class="absolute right-0 z-[100] mt-2 w-48 origin-top-right rounded-md bg-white shadow-xl ring-1 ring-black/5 focus:outline-none" x-cloak>
                                             <div class="py-1">
                                                 <button wire:click="changeStatusMadrasah({{ $item->id }}, 'menunggu')"
                                                         @click="open = false"
@@ -633,7 +642,7 @@
             <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="message-modal-title" role="dialog" aria-modal="true">
                 <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
                     <!-- Background overlay -->
-                    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="closeMessageModal"></div>
+                    <div class="fixed inset-0 bg-gray-500/75 transition-opacity" aria-hidden="true" wire:click="closeMessageModal"></div>
 
                     <!-- Center modal -->
                     <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
@@ -719,7 +728,7 @@
              style="display: none;">
             <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
                 <!-- Background overlay -->
-                <div class="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75" @click="showCatatan = false"></div>
+                <div class="fixed inset-0 transition-opacity bg-gray-500/75 " @click="showCatatan = false"></div>
 
                 <!-- Modal panel -->
                 <div class="inline-block overflow-hidden text-left align-bottom transition-all transform bg-white rounded-lg shadow-xl sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">

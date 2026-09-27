@@ -187,7 +187,7 @@ class BackupRestore extends Component
             return;
         }
 
-        $path = storage_path("app/backups/{$this->backupToDelete}");
+        $path = storage_path("app/backups/" . basename((string) $this->backupToDelete));
 
         // Security: Ensure the resolved path is still within backups directory
         $backupDir = realpath(storage_path('app/backups'));
@@ -298,7 +298,7 @@ class BackupRestore extends Component
                 return;
             }
 
-            $backupPath = storage_path("app/backups/{$this->selectedBackup}");
+            $backupPath = storage_path("app/backups/" . basename((string) $this->selectedBackup));
 
             // Security: Ensure the resolved path is still within backups directory
             $backupDir = realpath(storage_path('app/backups'));

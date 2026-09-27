@@ -3,8 +3,8 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <!-- Siswa Diterima -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Siswa Diterima</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">892</p>
                     <p class="text-sm text-green-600 mt-2">Total yang diterima</p>
@@ -19,8 +19,8 @@
 
         <!-- Sudah Daftar Ulang -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Sudah Daftar Ulang</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">657</p>
                     <p class="text-sm text-blue-600 mt-2">73.7% dari total</p>
@@ -35,8 +35,8 @@
 
         <!-- Belum Daftar Ulang -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Belum Daftar Ulang</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">235</p>
                     <p class="text-sm text-yellow-600 mt-2">Batas: 15 Jun 2025</p>
@@ -51,8 +51,8 @@
 
         <!-- Pembayaran Lunas -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Pembayaran Lunas</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">623</p>
                     <p class="text-sm text-emerald-600 mt-2">94.8% lunas</p>

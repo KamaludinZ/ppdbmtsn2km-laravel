@@ -76,6 +76,7 @@
                     </div>
                 </div>
             </div>
+            <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -133,6 +134,7 @@
                     @endforelse
                 </tbody>
             </table>
+            </div>
             <div class="px-6 py-4 border-t">
                 {{ $users->links() }}
             </div>
@@ -162,7 +164,7 @@
                                 <input
                                     type="text"
                                     wire:model="name"
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                     placeholder="Masukkan nama lengkap..."
                                 >
                                 @error('name') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
@@ -172,7 +174,7 @@
                                 <input
                                     type="email"
                                     wire:model="email"
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                     placeholder="email@example.com"
                                 >
                                 @error('email') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
@@ -182,7 +184,7 @@
                                 <input
                                     type="password"
                                     wire:model="password"
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                     placeholder="{{ $isEdit ? 'Kosongkan jika tidak ingin mengubah password' : 'Masukkan password...' }}"
                                 >
                                 @error('password') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
@@ -195,7 +197,7 @@
                                 <select
                                     wire:model.live="role"
                                     name="role"
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                 >
                                     <option value="">Pilih Role</option>
                                     <option value="admin">Admin</option>

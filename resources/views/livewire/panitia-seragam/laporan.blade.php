@@ -1,7 +1,7 @@
 <div>
     <!-- Clean URL (remove activeTab parameter) -->
-    <div x-data x-init="
-        // Clean URL on component init
+    <div x-data x-init="(() => {
+        // Clean URL on component init (dibungkus IIFE: x-init butuh ekspresi, bukan statement)
         if (window.location.search.includes('activeTab=')) {
             const cleanUrl = window.location.origin + window.location.pathname;
             window.history.replaceState({}, document.title, cleanUrl);
@@ -15,7 +15,7 @@
                 }
             });
         });
-    " style="display: none;"></div>
+    })()" style="display: none;"></div>
 
     <!-- Tabs -->
     <div class="mb-6">
@@ -92,7 +92,7 @@
                         <div x-show="showProgressDUS" x-transition class="fixed inset-0 z-50 overflow-y-auto" style="display: none;"
                              x-init="$watch('showProgressDUS', value => { if (value) { let startTime = Date.now(); let interval = setInterval(() => { elapsedDUS = Math.floor((Date.now() - startTime) / 1000); if (progressDUS < 20) { stageDUS = 'Mempersiapkan data...'; progressDUS += 2; } else if (progressDUS < 40) { stageDUS = 'Mengambil data daftar ulang seragam...'; progressDUS += 1.5; } else if (progressDUS < 60) { stageDUS = 'Memproses data pembayaran...'; progressDUS += 1; } else if (progressDUS < 80) { stageDUS = 'Menyusun struktur Excel...'; progressDUS += 1; } else if (progressDUS < 95) { stageDUS = 'Generating file Excel...'; progressDUS += 0.5; } else { stageDUS = 'Menyelesaikan export...'; if (progressDUS < 99) progressDUS += 0.2; } if (progressDUS >= 100) { setTimeout(() => { showProgressDUS = false; progressDUS = 0; elapsedDUS = 0; clearInterval(interval); }, 1500); } }, 200); setTimeout(() => { showProgressDUS = false; progressDUS = 0; elapsedDUS = 0; clearInterval(interval); }, 30000); } });">
                             <div class="flex items-center justify-center min-h-screen px-4">
-                                <div class="fixed inset-0 z-40 bg-gray-500 bg-opacity-75" @click="showProgressDUS = false"></div>
+                                <div class="fixed inset-0 z-40 bg-gray-500/75 " @click="showProgressDUS = false"></div>
                                 <div class="relative z-50 inline-block bg-white rounded-lg px-6 py-6 shadow-xl max-w-lg w-full">
                                     <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-orange-100 mb-4">
                                         <svg class="h-8 w-8 text-orange-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -206,7 +206,7 @@
                         <div x-show="showProgressSR" x-transition class="fixed inset-0 z-50 overflow-y-auto" style="display: none;"
                              x-init="$watch('showProgressSR', value => { if (value) { let startTime = Date.now(); let interval = setInterval(() => { elapsedSR = Math.floor((Date.now() - startTime) / 1000); if (progressSR < 20) { stageSR = 'Mempersiapkan data...'; progressSR += 2; } else if (progressSR < 40) { stageSR = 'Mengambil data seragam...'; progressSR += 1.5; } else if (progressSR < 60) { stageSR = 'Memproses ukuran seragam...'; progressSR += 1; } else if (progressSR < 80) { stageSR = 'Menyusun struktur Excel...'; progressSR += 1; } else if (progressSR < 95) { stageSR = 'Generating file Excel...'; progressSR += 0.5; } else { stageSR = 'Menyelesaikan export...'; if (progressSR < 99) progressSR += 0.2; } if (progressSR >= 100) { setTimeout(() => { showProgressSR = false; progressSR = 0; elapsedSR = 0; clearInterval(interval); }, 1500); } }, 200); setTimeout(() => { showProgressSR = false; progressSR = 0; elapsedSR = 0; clearInterval(interval); }, 30000); } });">
                             <div class="flex items-center justify-center min-h-screen px-4">
-                                <div class="fixed inset-0 z-40 bg-gray-500 bg-opacity-75" @click="showProgressSR = false"></div>
+                                <div class="fixed inset-0 z-40 bg-gray-500/75 " @click="showProgressSR = false"></div>
                                 <div class="relative z-50 inline-block bg-white rounded-lg px-6 py-6 shadow-xl max-w-lg w-full">
                                     <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-indigo-100 mb-4">
                                         <svg class="h-8 w-8 text-indigo-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">

@@ -34,7 +34,7 @@
                     <p class="{{ $colors['text'] }} text-sm opacity-90">{{ $registrationPhaseDescription }}</p>
                 </div>
                 @if($registrationPhase === 'belum_dibuka' && $startDate)
-                <div class="flex-shrink-0 bg-white bg-opacity-50 rounded-lg p-3 border {{ $colors['border'] }}" x-data="countdown('{{ $startDate->format('Y-m-d H:i:s') }}')" x-init="init()">
+                <div class="flex-shrink-0 bg-white/50 rounded-lg p-3 border {{ $colors['border'] }}" x-data="countdown('{{ $startDate->format('Y-m-d H:i:s') }}')" x-init="init()">
                     <p class="text-xs font-bold {{ $colors['text'] }} uppercase tracking-wider mb-1 text-center">Pendaftaran Dibuka Dalam:</p>
                     <div class="flex gap-2 justify-center">
                         <div class="text-center">

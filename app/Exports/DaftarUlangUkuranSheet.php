@@ -38,9 +38,10 @@ class DaftarUlangUkuranSheet implements FromQuery, WithHeadings, WithMapping, Wi
         });
 
         // Filter based on daftar ulang status if provided
+        // $status = kategori rekap daftar ulang (lihat App\Support\RekapDaftarUlang)
         if ($this->status) {
-            $query->whereHas('pendaftar.daftarUlang', function($q) {
-                $q->where('status_daftar_ulang', $this->status);
+            $query->whereHas('pendaftar', function ($q) {
+                \App\Support\RekapDaftarUlang::filterKategori($q, $this->status, 'madrasah');
             });
         }
 

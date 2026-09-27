@@ -58,7 +58,7 @@
                                 </div>
                             </div>
                         @else
-                            <div class="w-28 h-28 rounded-2xl bg-gradient-to-br from-emerald-800 to-emerald-900 bg-opacity-50 backdrop-blur-sm border-4 border-white shadow-xl flex items-center justify-center">
+                            <div class="w-28 h-28 rounded-2xl bg-gradient-to-br from-emerald-800 to-emerald-900 backdrop-blur-sm border-4 border-white shadow-xl flex items-center justify-center">
                                 <svg class="w-14 h-14 text-white" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
                                 </svg>
@@ -75,14 +75,14 @@
                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"></path>
                                 </svg>
-                                No. Pendaftaran: <span class="font-bold text-white bg-black bg-opacity-30 px-2 py-0.5 rounded">{{ $pendaftar->nomor_pendaftaran }}</span>
+                                No. Pendaftaran: <span class="font-bold text-white bg-black/30 px-2 py-0.5 rounded">{{ $pendaftar->nomor_pendaftaran }}</span>
                             </p>
                         </div>
 
                         <!-- Info Grid -->
                         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
                             <!-- NISN -->
-                            <div class="bg-white bg-opacity-90 backdrop-blur-sm rounded-lg p-3 border-2 border-white shadow-lg">
+                            <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 border-2 border-white shadow-lg">
                                 <div class="flex items-start gap-2">
                                     <svg class="w-5 h-5 text-emerald-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path>
@@ -95,7 +95,7 @@
                             </div>
 
                             <!-- Jalur -->
-                            <div class="bg-white bg-opacity-90 backdrop-blur-sm rounded-lg p-3 border-2 border-white shadow-lg">
+                            <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 border-2 border-white shadow-lg">
                                 <div class="flex items-start gap-2">
                                     <svg class="w-5 h-5 text-emerald-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
@@ -108,7 +108,7 @@
                             </div>
 
                             <!-- Asal Sekolah -->
-                            <div class="bg-white bg-opacity-90 backdrop-blur-sm rounded-lg p-3 border-2 border-white shadow-lg sm:col-span-2">
+                            <div class="bg-white/90 backdrop-blur-sm rounded-lg p-3 border-2 border-white shadow-lg sm:col-span-2">
                                 <div class="flex items-start gap-2">
                                     <svg class="w-5 h-5 text-emerald-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
@@ -151,7 +151,7 @@
                                 $gradient = $colorStyles[$badge['color']] ?? $colorStyles['gray'];
                                 $icon = $iconMap[$badge['type']] ?? $iconMap['Status Pendaftaran'];
                             @endphp
-                            <div class="relative overflow-hidden bg-gradient-to-r {{ $gradient }} rounded-xl shadow-lg border-2 border-white border-opacity-30 hover:scale-[1.02] transition-transform duration-200">
+                            <div class="relative overflow-hidden bg-gradient-to-r {{ $gradient }} rounded-xl shadow-lg border-2 border-white/30 hover:scale-[1.02] transition-transform duration-200">
                                 <div class="absolute top-0 right-0 opacity-10">
                                     <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 24 24">
                                         <path d="{{ $icon }}"></path>
@@ -179,7 +179,7 @@
                             </div>
                         @endforeach
                     @else
-                        <div class="bg-white bg-opacity-20 backdrop-blur-sm rounded-lg p-4 border-2 border-white border-opacity-30">
+                        <div class="bg-white/20 backdrop-blur-sm rounded-lg p-4 border-2 border-white/30 ">
                             <span class="text-white font-medium">Tidak Ada Status</span>
                         </div>
                     @endif
@@ -200,7 +200,7 @@
                         <h2 class="text-2xl font-bold">✅ Data Terverifikasi - Siap Ujian!</h2>
                     </div>
                     <p class="text-lg mb-4">Selamat! Data Anda telah diverifikasi dan disetujui oleh panitia.</p>
-                    <div class="bg-blue-700 bg-opacity-90 rounded-lg p-4 mb-4">
+                    <div class="bg-blue-700/90 rounded-lg p-4 mb-4">
                         <h3 class="font-bold mb-3 text-lg text-white">📋 Langkah Selanjutnya:</h3>
                         <ol class="space-y-2 ml-1">
                             <li class="flex items-start text-white">
@@ -262,7 +262,7 @@
                             <h2 class="text-2xl font-bold">🎉 SELAMAT! Anda LULUS Seleksi</h2>
                         </div>
                         <p class="text-lg mb-4">Langkah selanjutnya adalah melakukan <strong>DAFTAR ULANG</strong> untuk mengamankan kursi Anda.</p>
-                        <div class="bg-orange-800 bg-opacity-90 rounded-lg p-4 mb-4">
+                        <div class="bg-orange-800/90 rounded-lg p-4 mb-4">
                             <h3 class="font-bold mb-3 text-lg text-white">📋 Langkah Selanjutnya:</h3>
                             <ol class="space-y-2 ml-1">
                                 <li class="flex items-start text-white">
@@ -345,7 +345,7 @@
                             <p class="text-blue-100 text-lg mb-4">
                                 Kami menghargai keputusan Anda untuk tidak melanjutkan daftar ulang. Terima kasih telah meluangkan waktu untuk mengikuti proses seleksi hingga tahap ini.
                             </p>
-                            <div class="bg-blue-800 bg-opacity-50 rounded-lg p-4 mb-4">
+                            <div class="bg-blue-800/50 rounded-lg p-4 mb-4">
                                 <p class="text-sm text-blue-100">
                                     <strong>Waktu Pilihan:</strong> {{ $pendaftar->tanggal_pilihan_daftar_ulang?->format('d M Y, H:i') }} WIB
                                 </p>
@@ -774,7 +774,7 @@
 
                             <!-- Catatan Verifikasi -->
                             @if($catatan && in_array($currentStatus, ['tidak_sesuai', 'perlu_perbaikan']))
-                                <div class="mt-2 pt-2 border-t border-current border-opacity-20">
+                                <div class="mt-2 pt-2 border-t border-current/20 ">
                                     <div class="flex items-start">
                                         <svg class="w-4 h-4 {{ $statusInfo['icon_color'] }} mr-1.5 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>

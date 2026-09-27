@@ -3,8 +3,8 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <!-- Total Pendaftar -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Total Pendaftar</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">1,247</p>
                     <p class="text-sm text-green-600 mt-2">+15% dari tahun lalu</p>
@@ -19,8 +19,8 @@
 
         <!-- Menunggu Verifikasi -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Menunggu Verifikasi</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">43</p>
                     <p class="text-sm text-yellow-600 mt-2">Perlu ditindaklanjuti</p>
@@ -35,8 +35,8 @@
 
         <!-- Diterima -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Diterima</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">892</p>
                     <p class="text-sm text-green-600 mt-2">71.5% dari total</p>
@@ -51,8 +51,8 @@
 
         <!-- Panitia Aktif -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Panitia Aktif</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">12</p>
                     <p class="text-sm text-gray-600 mt-2">2 Admin, 10 Panitia</p>

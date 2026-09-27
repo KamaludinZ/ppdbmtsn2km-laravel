@@ -3,8 +3,8 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
         <!-- Menunggu Verifikasi -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Menunggu Verifikasi</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">43</p>
                     <p class="text-sm text-yellow-600 mt-2">Perlu segera diverifikasi</p>
@@ -19,8 +19,8 @@
 
         <!-- Terverifikasi -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Terverifikasi</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">892</p>
                     <p class="text-sm text-green-600 mt-2">+45 hari ini</p>
@@ -35,8 +35,8 @@
 
         <!-- Ditolak -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Ditolak</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">12</p>
                     <p class="text-sm text-red-600 mt-2">Dokumen tidak lengkap</p>
@@ -51,8 +51,8 @@
 
         <!-- Total Diverifikasi Hari Ini -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Hari Ini</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">45</p>
                     <p class="text-sm text-blue-600 mt-2">Berkas terverifikasi</p>

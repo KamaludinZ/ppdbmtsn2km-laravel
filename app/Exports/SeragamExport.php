@@ -68,7 +68,7 @@ class SeragamExport implements FromQuery, WithHeadings, WithMapping, WithStyles,
 
         if (is_array($nominalSeragam)) {
             $nominalSeragamName = $nominalSeragam['name'] ?? '';
-            $nominalSeragamAmount = $nominalSeragam['amount'] ?? 0;
+            $nominalSeragamAmount = \App\Support\Nominal::toNumber($nominalSeragam['amount'] ?? 0);
         }
 
         return [

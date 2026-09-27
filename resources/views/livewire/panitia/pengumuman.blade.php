@@ -33,6 +33,7 @@
                     <span wire:loading wire:target="create">Memproses...</span>
                 </button>
             </div>
+            <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -90,6 +91,7 @@
                     @endforelse
                 </tbody>
             </table>
+            </div>
             <div class="px-6 py-4 border-t border-gray-200">
                 {{ $data->links() }}
             </div>
@@ -148,7 +150,7 @@
                                         <input
                                             type="text"
                                             wire:model="judul"
-                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                             placeholder="Contoh: Pengumuman Hasil Seleksi {{ $appAcronym }} 2025"
                                         >
                                         @error('judul') <span class="text-red-500 text-xs mt-1 flex items-center">
@@ -183,7 +185,7 @@
                                             <input :id="trixId" type="hidden" name="konten" value="{{ $konten }}">
                                             <trix-editor
                                                 :input="trixId"
-                                                class="trix-content rounded-lg border border-gray-300 shadow-sm focus-within:border-emerald-500 focus-within:ring focus-within:ring-emerald-200 focus-within:ring-opacity-50"
+                                                class="trix-content rounded-lg border border-gray-300 shadow-sm focus-within:border-emerald-500 focus-within:ring focus-within:ring-emerald-200/50 "
                                                 placeholder="Tulis detail pengumuman di sini dengan format yang lebih kaya..."
                                             ></trix-editor>
                                         </div>
@@ -213,7 +215,7 @@
                                         <div class="relative">
                                             <select
                                                 wire:model="kategori"
-                                                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 appearance-none pr-10"
+                                                class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 appearance-none pr-10"
                                             >
                                                 <option value="umum">📢 Umum</option>
                                                 <option value="jadwal">📅 Jadwal</option>
@@ -236,7 +238,7 @@
                                         <input
                                             type="date"
                                             wire:model="tanggal_publikasi"
-                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                         >
                                         <p class="text-xs text-gray-500 mt-1">Tanggal pengumuman akan ditampilkan</p>
                                     </div>
@@ -249,7 +251,7 @@
                                             type="number"
                                             wire:model="urutan"
                                             min="0"
-                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                            class="block w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                             placeholder="0"
                                         >
                                         <p class="text-xs text-gray-500 mt-1">Angka kecil = tampil lebih awal</p>
@@ -264,7 +266,7 @@
                                                 type="checkbox"
                                                 wire:model="aktif"
                                                 id="aktif"
-                                                class="rounded border-gray-300 text-emerald-600 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                                class="rounded border-gray-300 text-emerald-600 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-200/50 "
                                             >
                                             <label for="aktif" class="ml-3 flex items-center cursor-pointer">
                                                 <span class="text-sm font-medium text-gray-700">Aktifkan Pengumuman</span>

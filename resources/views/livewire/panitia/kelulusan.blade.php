@@ -1,6 +1,6 @@
 <div>
     <!-- Global Loading Overlay -->
-    <div wire:loading.delay.longest class="fixed inset-0 bg-gray-900 bg-opacity-50 z-[9999] flex items-center justify-center">
+    <div wire:loading.delay.longest class="fixed inset-0 bg-gray-900/50 z-[9999] flex items-center justify-center">
         <div class="bg-white rounded-lg p-6 shadow-xl flex items-center space-x-3">
             <svg class="animate-spin h-8 w-8 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -56,7 +56,7 @@
                     <div class="flex-1">
                         <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari nama, NISN, atau no. pendaftaran..." class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                     </div>
-                    <div class="flex gap-4">
+                    <div class="flex flex-col sm:flex-row gap-4">
                         <select wire:model.live="filterJalur" class="rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                             <option value="">Semua Jalur</option>
                             @foreach($jalurPendaftaran as $jalur)
@@ -76,15 +76,15 @@
         </div>
 
         <!-- Stats Overview - Status Kelulusan -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-4">
             <!-- Total Pendaftar -->
             <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium opacity-90">Total Pendaftar</p>
                         <p class="text-3xl font-bold mt-2">{{ number_format($stats['total'] ?? 0) }}</p>
                     </div>
-                    <div class="bg-black bg-opacity-10 rounded-full p-3">
+                    <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                         </svg>
@@ -94,12 +94,12 @@
 
             <!-- Data Disetujui -->
             <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium opacity-90">Data Disetujui</p>
                         <p class="text-3xl font-bold mt-2">{{ number_format($stats['data_disetujui'] ?? 0) }}</p>
                     </div>
-                    <div class="bg-black bg-opacity-10 rounded-full p-3">
+                    <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -109,12 +109,12 @@
 
             <!-- Lulus -->
             <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium opacity-90">Lulus</p>
                         <p class="text-3xl font-bold mt-2">{{ number_format($stats['lulus'] ?? 0) }}</p>
                     </div>
-                    <div class="bg-black bg-opacity-10 rounded-full p-3">
+                    <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -124,12 +124,12 @@
 
             <!-- Cadangan -->
             <div class="bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium opacity-90">Cadangan</p>
                         <p class="text-3xl font-bold mt-2">{{ number_format($stats['cadangan'] ?? 0) }}</p>
                     </div>
-                    <div class="bg-black bg-opacity-10 rounded-full p-3">
+                    <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                         </svg>
@@ -139,12 +139,12 @@
 
             <!-- Tidak Lulus -->
             <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium opacity-90">Tidak Lulus</p>
                         <p class="text-3xl font-bold mt-2">{{ number_format($stats['tidak_lulus'] ?? 0) }}</p>
                     </div>
-                    <div class="bg-black bg-opacity-10 rounded-full p-3">
+                    <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -162,6 +162,7 @@
                     <h3 class="text-lg font-bold text-white uppercase tracking-wider">Daftar Pendaftar & Status Kelulusan</h3>
                 </div>
             </div>
+            <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -224,6 +225,7 @@
                     @endforelse
                 </tbody>
             </table>
+            </div>
             <div class="px-6 py-4 border-t border-gray-200">
                 {{ $pendaftar->links() }}
             </div>

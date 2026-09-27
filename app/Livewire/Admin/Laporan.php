@@ -356,128 +356,18 @@ class Laporan extends Component
 
     private function getDaftarUlangStats()
     {
-        // Get all pendaftar lulus
-        $allPendaftar = Pendaftar::with(['daftarUlang'])
-            ->whereIn('status_pendaftaran', ['data_disetujui', 'lulus', 'diterima'])
-            ->when($this->filterJalur, function ($q) {
-                $q->where('jalur_pendaftaran_id', $this->filterJalur);
-            })
-            ->get();
-
-        $stats = [
-            // Total pendaftar lulus
-            'total_lulus' => $allPendaftar->count(),
-
-            // Status persetujuan daftar ulang (dari pendaftar.status_persetujuan_daftar_ulang)
-            'setuju' => $allPendaftar->filter(function($p) {
-                return $p->status_persetujuan_daftar_ulang === 'setuju';
-            })->count(),
-            'tidak_setuju' => $allPendaftar->filter(function($p) {
-                return $p->status_persetujuan_daftar_ulang === 'tidak_setuju';
-            })->count(),
-
-            // Status proses daftar ulang (dari daftar_ulang.status)
-            'menunggu' => $allPendaftar->filter(function($p) {
-                return !$p->daftarUlang || $p->daftarUlang->status === 'menunggu' || !$p->daftarUlang->status;
-            })->count(),
-            'disetujui' => $allPendaftar->filter(function($p) {
-                return $p->daftarUlang && $p->daftarUlang->status === 'disetujui';
-            })->count(),
-            'ditolak' => $allPendaftar->filter(function($p) {
-                return $p->daftarUlang && $p->daftarUlang->status === 'ditolak';
-            })->count(),
-            'perlu_perbaikan' => $allPendaftar->filter(function($p) {
-                return $p->daftarUlang && $p->daftarUlang->status === 'perlu_perbaikan';
-            })->count(),
-
-            // Status upload surat pernyataan
-            'upload_surat' => $allPendaftar->filter(function($p) {
-                return $p->daftarUlang && $p->daftarUlang->surat_pernyataan_path;
-            })->count(),
-        ];
-
-        return $stats;
+        // Rekap konsisten (jumlah semua kategori = total wajib daftar ulang)
+        return \App\Support\RekapDaftarUlang::statsTab('madrasah', ['jalur' => $this->filterJalur]);
     }
 
     private function getSeragamStats()
     {
-        // Get all pendaftar lulus
-        $allPendaftar = Pendaftar::with(['seragam'])
-            ->whereIn('status_pendaftaran', ['data_disetujui', 'lulus', 'diterima'])
-            ->when($this->filterJalur, function ($q) {
-                $q->where('jalur_pendaftaran_id', $this->filterJalur);
-            })
-            ->when($this->filterJenisKelamin, function ($q) {
-                $q->where('jenis_kelamin', $this->filterJenisKelamin);
-            })
-            ->get();
-
-        $stats = [
-            // Total pendaftar lulus
-            'total_lulus' => $allPendaftar->count(),
-
-            // Status seragam (dari seragam.status_seragam)
-            'menunggu' => $allPendaftar->filter(function($p) {
-                return !$p->seragam || $p->seragam->status_seragam === 'menunggu' || !$p->seragam->status_seragam;
-            })->count(),
-            'disetujui' => $allPendaftar->filter(function($p) {
-                return $p->seragam && $p->seragam->status_seragam === 'disetujui';
-            })->count(),
-            'ditolak' => $allPendaftar->filter(function($p) {
-                return $p->seragam && $p->seragam->status_seragam === 'ditolak';
-            })->count(),
-            'perlu_perbaikan' => $allPendaftar->filter(function($p) {
-                return $p->seragam && $p->seragam->status_seragam === 'perlu_perbaikan';
-            })->count(),
-
-            // Status ukuran (dari seragam.status_ukuran)
-            'ukuran_menunggu' => $allPendaftar->filter(function($p) {
-                return !$p->seragam || $p->seragam->status_ukuran === 'menunggu' || !$p->seragam->status_ukuran;
-            })->count(),
-            'ukuran_disetujui' => $allPendaftar->filter(function($p) {
-                return $p->seragam && $p->seragam->status_ukuran === 'disetujui';
-            })->count(),
-            'ukuran_ditolak' => $allPendaftar->filter(function($p) {
-                return $p->seragam && $p->seragam->status_ukuran === 'ditolak';
-            })->count(),
-        ];
-
-        return $stats;
+        return \App\Support\RekapDaftarUlang::statsTab('seragam', ['jalur' => $this->filterJalur, 'jenis_kelamin' => $this->filterJenisKelamin]);
     }
 
     private function getUkuranStats()
     {
-        // Get all pendaftar lulus
-        $allPendaftar = Pendaftar::with(['seragam'])
-            ->whereIn('status_pendaftaran', ['data_disetujui', 'lulus', 'diterima'])
-            ->when($this->filterJalur, function ($q) {
-                $q->where('jalur_pendaftaran_id', $this->filterJalur);
-            })
-            ->when($this->filterJenisKelamin, function ($q) {
-                $q->where('jenis_kelamin', $this->filterJenisKelamin);
-            })
-            ->get();
-
-        $stats = [
-            // Total pendaftar lulus
-            'total_lulus' => $allPendaftar->count(),
-
-            // Status ukuran (dari seragam.status_ukuran)
-            'menunggu' => $allPendaftar->filter(function($p) {
-                return !$p->seragam || $p->seragam->status_ukuran === 'menunggu' || !$p->seragam->status_ukuran;
-            })->count(),
-            'disetujui' => $allPendaftar->filter(function($p) {
-                return $p->seragam && $p->seragam->status_ukuran === 'disetujui';
-            })->count(),
-            'ditolak' => $allPendaftar->filter(function($p) {
-                return $p->seragam && $p->seragam->status_ukuran === 'ditolak';
-            })->count(),
-            'perlu_perbaikan' => $allPendaftar->filter(function($p) {
-                return $p->seragam && $p->seragam->status_ukuran === 'perlu_perbaikan';
-            })->count(),
-        ];
-
-        return $stats;
+        return \App\Support\RekapDaftarUlang::statsTab('ukuran', ['jalur' => $this->filterJalur, 'jenis_kelamin' => $this->filterJenisKelamin]);
     }
 
     private function getTesPsikologiStats()
@@ -569,7 +459,7 @@ class Laporan extends Component
 
         return Excel::download(
             new DaftarUlangExport(
-                null,
+                $this->filterStatusDU ?: null, // kategori rekap (RekapDaftarUlang::KATEGORI)
                 null
             ),
             $fileName

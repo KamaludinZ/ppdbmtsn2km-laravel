@@ -317,7 +317,7 @@
                                 <textarea
                                     wire:model="persyaratan"
                                     rows="3"
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200/50 "
                                     placeholder="Masukkan persyaratan..."
                                 ></textarea>
                                 @error('persyaratan') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
@@ -328,7 +328,7 @@
                                     <input
                                         type="number"
                                         wire:model="urutan_syarat"
-                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200/50 "
                                         min="0"
                                     >
                                 </div>

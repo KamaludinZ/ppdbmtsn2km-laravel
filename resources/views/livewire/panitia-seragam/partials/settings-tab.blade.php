@@ -47,7 +47,7 @@
                         <input :id="trixId" type="hidden" name="seragamInfo" value="{{ $seragamInfo ?? '' }}">
                         <trix-editor
                             :input="trixId"
-                            class="trix-content rounded-lg border border-cyan-300 shadow-sm focus-within:border-cyan-500 focus-within:ring focus-within:ring-cyan-200 focus-within:ring-opacity-50"
+                            class="trix-content rounded-lg border border-cyan-300 shadow-sm focus-within:border-cyan-500 focus-within:ring focus-within:ring-cyan-200/50 "
                             placeholder="Tulis informasi, pengumuman, atau petunjuk untuk pendaftar terkait pembelian seragam..."
                         ></trix-editor>
                     </div>
@@ -326,7 +326,7 @@
                         <input :id="trixId" type="hidden" name="ukuranInfo" value="{{ $ukuranInfo ?? '' }}">
                         <trix-editor
                             :input="trixId"
-                            class="trix-content rounded-lg border border-purple-300 shadow-sm focus-within:border-purple-500 focus-within:ring focus-within:ring-purple-200 focus-within:ring-opacity-50"
+                            class="trix-content rounded-lg border border-purple-300 shadow-sm focus-within:border-purple-500 focus-within:ring focus-within:ring-purple-200/50 "
                             placeholder="Tulis informasi, pengumuman, atau petunjuk untuk pendaftar terkait pemilihan ukuran seragam..."
                         ></trix-editor>
                     </div>

@@ -199,7 +199,7 @@ class DatabaseSeeder extends Seeder
                     DaftarUlang::updateOrCreate(
                         ['pendaftar_id' => $pendaftar->id],
                         [
-                            'status' => 'selesai',
+                            'status' => 'disetujui',
                             'pembayaran_lunas' => true,
                             'seragam_diukur' => true,
                             'berkas_lengkap' => true,
@@ -228,15 +228,10 @@ class DatabaseSeeder extends Seeder
                     Seragam::updateOrCreate(
                         ['pendaftar_id' => $pendaftar->id],
                         [
-                            'tinggi_badan' => 150,
-                            'berat_badan' => 45,
-                            'ukuran_baju' => 'M',
-                            'ukuran_celana' => 'M',
-                            'lingkar_dada' => 80,
-                            'lingkar_pinggang' => 70,
-                            'panjang_lengan' => 50,
-                            'ukuran_sepatu' => '38',
-                            'ukuran_topi' => 'M',
+                            'ukuran_jas' => 'M',
+                            'ukuran_baju_harian' => 'M',
+                            'ukuran_celana_rok_harian' => 'M',
+                            'ukuran_kopyah' => '6',
                             'sudah_diukur' => true,
                             'sudah_dipesan' => true,
                             'sudah_diterima' => false,

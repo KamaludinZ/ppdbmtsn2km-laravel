@@ -54,7 +54,7 @@
                                     @forelse($loginAttempts as $attempt)
                                         <li>
                                             <div class="px-4 py-4 sm:px-6">
-                                                <div class="flex items-center justify-between">
+                                                <div class="flex flex-wrap items-center justify-between gap-2">
                                                     <div class="text-sm font-medium text-emerald-600 truncate">{{ $attempt['ip'] }}</div>
                                                     <div class="ml-2 flex-shrink-0 flex">
                                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
@@ -103,7 +103,7 @@
                                     @forelse($securityLogs as $log)
                                         <li>
                                             <div class="px-4 py-4 sm:px-6">
-                                                <div class="flex items-center justify-between">
+                                                <div class="flex flex-wrap items-center justify-between gap-2">
                                                     <div class="text-sm font-medium text-emerald-600 truncate">{{ $log['action'] }}</div>
                                                     <div class="text-sm text-gray-500">{{ $log['user'] }}</div>
                                                 </div>
@@ -153,7 +153,7 @@
                                     @forelse($suspiciousActivities as $index => $activity)
                                         <li class="hover:bg-gray-50">
                                             <div class="px-4 py-4 sm:px-6">
-                                                <div class="flex items-center justify-between">
+                                                <div class="flex flex-wrap items-center justify-between gap-2">
                                                     <div class="flex items-center space-x-3">
                                                         <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
                                                             {{ $activity['severity'] === 'critical' ? 'bg-red-600 text-white' :
@@ -224,7 +224,7 @@
                                     @forelse($blockedIps as $blocked)
                                         <li class="hover:bg-gray-50">
                                             <div class="px-4 py-4 sm:px-6">
-                                                <div class="flex items-center justify-between">
+                                                <div class="flex flex-wrap items-center justify-between gap-2">
                                                     <div class="flex items-center space-x-3">
                                                         <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                                                             BLOCKED

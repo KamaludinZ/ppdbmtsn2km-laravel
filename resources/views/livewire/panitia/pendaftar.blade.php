@@ -1,6 +1,6 @@
 <div>
     <!-- Global Loading Overlay -->
-    <div wire:loading.delay.longest class="fixed inset-0 bg-gray-900 bg-opacity-50 z-[9999] flex items-center justify-center">
+    <div wire:loading.delay.longest class="fixed inset-0 bg-gray-900/50 z-[9999] flex items-center justify-center">
         <div class="bg-white rounded-lg p-6 shadow-xl flex items-center space-x-3">
             <svg class="animate-spin h-8 w-8 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -55,15 +55,15 @@
         @endif
 
         <!-- Stats Overview - Status Pendaftaran -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
             <!-- Total Pendaftar -->
             <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium opacity-90">Total Pendaftar</p>
                         <p class="text-3xl font-bold mt-2">{{ number_format($stats['total']) }}</p>
                     </div>
-                    <div class="bg-black bg-opacity-10 rounded-full p-3">
+                    <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                         </svg>
@@ -73,12 +73,12 @@
 
             <!-- Menunggu Verifikasi -->
             <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium opacity-90">Menunggu Verifikasi</p>
                         <p class="text-3xl font-bold mt-2">{{ number_format($stats['menunggu_verifikasi'] ?? 0) }}</p>
                     </div>
-                    <div class="bg-black bg-opacity-10 rounded-full p-3">
+                    <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -88,12 +88,12 @@
 
             <!-- Lengkapi Data -->
             <div class="bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium opacity-90">Lengkapi Data</p>
                         <p class="text-3xl font-bold mt-2">{{ number_format($stats['lengkapi_data'] ?? 0) }}</p>
                     </div>
-                    <div class="bg-black bg-opacity-10 rounded-full p-3">
+                    <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
@@ -103,12 +103,12 @@
 
             <!-- Perbaiki Data -->
             <div class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium opacity-90">Perbaiki Data</p>
                         <p class="text-3xl font-bold mt-2">{{ number_format($stats['perbaiki_data'] ?? 0) }}</p>
                     </div>
-                    <div class="bg-black bg-opacity-10 rounded-full p-3">
+                    <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                         </svg>
@@ -118,12 +118,12 @@
 
             <!-- Data Ditolak -->
             <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium opacity-90">Data Ditolak</p>
                         <p class="text-3xl font-bold mt-2">{{ number_format($stats['data_ditolak'] ?? 0) }}</p>
                     </div>
-                    <div class="bg-black bg-opacity-10 rounded-full p-3">
+                    <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -133,12 +133,12 @@
 
             <!-- Data Disetujui -->
             <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium opacity-90">Data Disetujui</p>
                         <p class="text-3xl font-bold mt-2">{{ number_format($stats['data_disetujui'] ?? 0) }}</p>
                     </div>
-                    <div class="bg-black bg-opacity-10 rounded-full p-3">
+                    <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -149,7 +149,7 @@
 
         <!-- Filters -->
         <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200 bg-blue-600 flex items-center justify-between">
+            <div class="px-4 sm:px-6 py-4 border-b border-gray-200 bg-blue-600 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div class="flex items-center">
                     <svg class="w-6 h-6 text-white mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
@@ -157,7 +157,7 @@
                     <h3 class="text-lg font-bold text-white uppercase tracking-wider">Filter Data</h3>
                 </div>
                 <!-- Search Field -->
-                <div class="flex gap-2 flex-1 max-w-xl ml-6">
+                <div class="flex gap-2 w-full md:flex-1 md:max-w-xl md:ml-6">
                     <input
                         type="text"
                         wire:model="searchInput"
@@ -168,7 +168,7 @@
                         autocapitalize="off"
                         spellcheck="false"
                         name="search_pendaftar_{{ uniqid() }}"
-                        class="flex-1 rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                        class="flex-1 min-w-0 rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 ">
                     <button wire:click="applySearch" class="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 transition flex items-center gap-1 whitespace-nowrap">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -188,7 +188,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Kelengkapan EMIS</label>
-                    <select wire:model.live="filterEmisCompleteness" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                    <select wire:model.live="filterEmisCompleteness" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 ">
                         <option value="">Semua Persentase</option>
                         <option value="0-25">0% - 25% (Sangat Kurang)</option>
                         <option value="26-50">26% - 50% (Kurang)</option>
@@ -198,7 +198,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Jalur Pendaftaran</label>
-                    <select wire:model.live="filterJalur" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                    <select wire:model.live="filterJalur" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 ">
                         <option value="">Semua Jalur</option>
                         @foreach($jalurPendaftaran as $jalur)
                             <option value="{{ $jalur->id }}">{{ $jalur->nama }}</option>
@@ -207,7 +207,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                    <select wire:model.live="filterStatus" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                    <select wire:model.live="filterStatus" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 ">
                         <option value="">Semua Status</option>
                         <option value="menunggu_verifikasi">Menunggu Verifikasi</option>
                         <option value="lengkapi_data">Lengkapi Data</option>
@@ -218,7 +218,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Per Halaman</label>
-                    <select wire:model.live="perPage" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                    <select wire:model.live="perPage" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 ">
                         <option value="10">10</option>
                         <option value="25">25</option>
                         <option value="50">50</option>
@@ -718,9 +718,9 @@
                                                         <span wire:loading wire:target="batalkanPersetujuanDaftarUlang({{ $item->id }})">...</span>
                                                     </button>
                                                 </div>
-                                                @if($item->tanggal_setuju_daftar_ulang)
+                                                @if($item->tanggal_pilihan_daftar_ulang)
                                                     <div class="text-xs text-gray-500 mt-1">
-                                                        {{ $item->tanggal_setuju_daftar_ulang->format('d/m/Y H:i') }}
+                                                        {{ $item->tanggal_pilihan_daftar_ulang->format('d/m/Y H:i') }}
                                                     </div>
                                                 @endif
                                             @else
@@ -1044,7 +1044,7 @@
                                     <input
                                         :type="showPassword ? 'text' : 'password'"
                                         wire:model="new_password"
-                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 pr-10"
+                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 pr-10"
                                         placeholder="Masukkan password baru"
                                     >
                                     <button
@@ -1069,7 +1069,7 @@
                                     <input
                                         :type="showConfirmPassword ? 'text' : 'password'"
                                         wire:model="new_password_confirmation"
-                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 pr-10"
+                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 pr-10"
                                         placeholder="Konfirmasi password baru"
                                     >
                                     <button
@@ -1128,7 +1128,7 @@
                                 <input
                                     type="text"
                                     wire:model="editTeleponOrtu"
-                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                     placeholder="Contoh: 081234567890 atau +6281234567890"
                                     maxlength="15"
                                 >

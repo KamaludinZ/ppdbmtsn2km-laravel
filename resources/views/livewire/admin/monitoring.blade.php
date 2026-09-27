@@ -252,7 +252,7 @@
 
                 <!-- Log Monitoring Section -->
                 <div class="bg-gray-50 shadow overflow-hidden sm:rounded-lg mt-8">
-                    <div class="px-4 py-5 bg-white sm:px-6 flex justify-between items-center">
+                    <div class="px-4 py-5 bg-white sm:px-6 flex flex-wrap justify-between items-center gap-3">
                         <div>
                             <h3 class="text-lg leading-6 font-medium text-gray-900">📊 Log Monitoring</h3>
                             <p class="mt-1 text-sm text-gray-500">Statistik dan monitoring log aplikasi</p>

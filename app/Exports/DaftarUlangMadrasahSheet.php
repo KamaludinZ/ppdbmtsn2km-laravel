@@ -2,7 +2,8 @@
 
 namespace App\Exports;
 
-use App\Models\DaftarUlang;
+use App\Models\Pendaftar;
+use App\Support\RekapDaftarUlang;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -25,49 +26,51 @@ class DaftarUlangMadrasahSheet implements FromQuery, WithHeadings, WithMapping, 
 
     public function query()
     {
-        $query = DaftarUlang::with(['pendaftar.jalurPendaftaran', 'pendaftar.user']);
+        // Berbasis pendaftar (bukan tabel daftar_ulang) agar SEMUA pendaftar wajib daftar ulang
+        // ikut tercantum, termasuk yang belum konfirmasi / belum punya data daftar ulang.
+        $query = Pendaftar::with(['jalurPendaftaran', 'user', 'daftarUlang', 'seragam'])
+            ->whereIn('status_pendaftaran', RekapDaftarUlang::STATUS_WAJIB);
 
-        if ($this->status) {
-            $query->where('status_daftar_ulang', $this->status);
-        }
+        // $status = kategori rekap (lihat RekapDaftarUlang::KATEGORI)
+        RekapDaftarUlang::filterKategori($query, $this->status, 'madrasah');
 
         if ($this->search) {
-            $query->whereHas('pendaftar', function($q) {
-                $q->where('nama_lengkap', 'like', '%' . $this->search . '%')
-                  ->orWhere('nomor_pendaftaran', 'like', '%' . $this->search . '%');
+            $query->where(function ($q) {
+                $q->where('nama_lengkap', 'ilike', '%' . $this->search . '%')
+                  ->orWhere('nomor_pendaftaran', 'ilike', '%' . $this->search . '%');
             });
         }
 
-        return $query->orderBy('created_at', 'desc');
+        return $query->orderBy('nama_lengkap');
     }
 
-    public function map($daftarUlang): array
+    public function map($pendaftar): array
     {
-        $pendaftar = $daftarUlang->pendaftar;
+        $daftarUlang = $pendaftar->daftarUlang; // bisa null (belum konfirmasi / belum mengisi)
 
         // Get nominal biaya awal (opsi yang dipilih dari paket)
-        $nominalBiayaAwal = $daftarUlang->nominal_biaya_awal;
+        $nominalBiayaAwal = $daftarUlang?->nominal_biaya_awal;
         $opsiName = '';
         $opsiAmount = 0;
 
         if (is_array($nominalBiayaAwal)) {
             $opsiName = $nominalBiayaAwal['name'] ?? '';
-            $opsiAmount = $nominalBiayaAwal['amount'] ?? 0;
+            $opsiAmount = \App\Support\Nominal::toNumber($nominalBiayaAwal['amount'] ?? 0);
         }
 
         // Get nominal biaya (konfirmasi nominal yang dibayarkan)
-        $nominalBiaya = $daftarUlang->nominal_biaya;
+        $nominalBiaya = $daftarUlang?->nominal_biaya;
         $nominalBiayaName = '';
         $nominalBiayaAmount = 0;
 
         if (is_array($nominalBiaya)) {
             $nominalBiayaName = $nominalBiaya['name'] ?? '';
-            $nominalBiayaAmount = $nominalBiaya['amount'] ?? 0;
+            $nominalBiayaAmount = \App\Support\Nominal::toNumber($nominalBiaya['amount'] ?? 0);
         }
 
         // Parse paket madrasah (could be NULL, 'paket_lainnya', or JSON)
         $paketName = 'Belum Dipilih';
-        if (!empty($daftarUlang->paket_madrasah)) {
+        if (!empty($daftarUlang?->paket_madrasah)) {
             // Note: paket_madrasah is not stored in database by default
             // If it exists, it would be from paketMadrasah field in Livewire
             // For paket_lainnya, the name is in nominal_biaya_awal
@@ -89,17 +92,18 @@ class DaftarUlangMadrasahSheet implements FromQuery, WithHeadings, WithMapping, 
             $pendaftar->alasan_tidak_setuju ?? '-',
             $pendaftar->asal_sekolah ?? '',
             $pendaftar->nsm_sekolah_asal ?? $pendaftar->npsn_sekolah_asal ?? '',
-            $this->getStatusLabel($daftarUlang->status_daftar_ulang),
+            RekapDaftarUlang::label(RekapDaftarUlang::kategori($pendaftar, 'madrasah')),
+            $this->getStatusLabel($daftarUlang?->status),
             $opsiName, // Opsi yang dipilih dari paket (atau nama paket custom)
             'Rp ' . number_format($opsiAmount, 0, ',', '.'), // Nominal opsi yang dipilih
             $nominalBiayaName, // Konfirmasi nominal (bisa sama atau "Opsi Lainnya")
             'Rp ' . number_format($nominalBiayaAmount, 0, ',', '.'), // Nominal yang dikonfirmasi
-            $daftarUlang->opsi_pembayaran ?? '',
-            $daftarUlang->metode_pembayaran ?? '',
-            $daftarUlang->nama_pengirim ?? '-',
-            $daftarUlang->bukti_pembayaran_madrasah ? 'Sudah Upload' : 'Belum Upload',
-            $daftarUlang->catatan ?? '',
-            $daftarUlang->created_at ? Carbon::parse($daftarUlang->created_at)->format('d-m-Y H:i') : '',
+            $daftarUlang?->opsi_pembayaran ?? '',
+            $daftarUlang?->metode_pembayaran ?? '',
+            $daftarUlang?->nama_pengirim ?? '-',
+            $daftarUlang?->bukti_pembayaran_madrasah ? 'Sudah Upload' : 'Belum Upload',
+            $daftarUlang?->catatan ?? '',
+            $daftarUlang?->created_at ? Carbon::parse($daftarUlang->created_at)->format('d-m-Y H:i') : '',
         ];
     }
 
@@ -120,7 +124,8 @@ class DaftarUlangMadrasahSheet implements FromQuery, WithHeadings, WithMapping, 
             'Alasan Tidak Melanjutkan',
             'Asal Sekolah',
             'NSM/NPSN Sekolah',
-            'Status Daftar Ulang',
+            'Status Rekap',
+            'Status Verifikasi Daftar Ulang',
             'Opsi yang Dipilih', // NEW: Nama opsi dari paket atau nama paket custom
             'Nominal Opsi', // NEW: Nominal dari opsi yang dipilih
             'Konfirmasi Nominal', // RENAMED: Konfirmasi pembayaran (bisa sama atau Opsi Lainnya)
@@ -156,13 +161,17 @@ class DaftarUlangMadrasahSheet implements FromQuery, WithHeadings, WithMapping, 
     private function getStatusLabel($status)
     {
         $statusLabels = [
-            'belum' => 'Belum Daftar Ulang',
+            'belum_diisi' => 'Belum Diisi',
+            'menunggu' => 'Menunggu Verifikasi',
             'proses' => 'Proses Verifikasi',
+            'perbaiki' => 'Perlu Perbaikan',
+            'perlu_perbaikan' => 'Perlu Perbaikan',
+            'ditolak' => 'Ditolak',
+            'disetujui' => 'Disetujui',
             'selesai' => 'Selesai',
-            'batal' => 'Dibatalkan'
         ];
 
-        return $statusLabels[$status] ?? ucfirst($status);
+        return $status ? ($statusLabels[$status] ?? ucfirst($status)) : 'Belum Ada Data';
     }
 
     private function getStatusPersetujuanLabel($status)

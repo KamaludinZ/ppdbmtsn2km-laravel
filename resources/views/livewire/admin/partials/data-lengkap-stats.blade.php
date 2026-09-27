@@ -70,7 +70,7 @@
 <!-- Row 2: Data Completeness Stats -->
 <div>
     <h3 class="text-sm font-semibold text-gray-700 mb-3">Kelengkapan Data</h3>
-    <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-6 gap-3">
+    <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3">
         <!-- Data Siswa Card -->
         <div class="bg-white rounded-xl shadow-sm p-4 border border-gray-100">
             <div class="text-center">

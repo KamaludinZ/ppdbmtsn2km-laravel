@@ -3,7 +3,10 @@
 namespace App\Livewire\Auth;
 
 use App\Models\Setting;
+use App\Support\Captcha;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Support\Str;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
@@ -16,7 +19,8 @@ class Login extends Component
     public string $password = '';
     public bool $remember = false;
     public string $captcha = '';
-    public string $captchaCode = '';
+    // Hanya penanda versi gambar captcha; kodenya tidak pernah dikirim ke browser
+    public string $captchaVersion = '';
 
     public function mount()
     {
@@ -34,8 +38,8 @@ class Login extends Component
 
     public function generateCaptcha()
     {
-        $this->captchaCode = (string) rand(100000, 999999);
-        session(['login_captcha' => $this->captchaCode]);
+        // Kode baru dibuat saat gambar dimuat (route captcha.image)
+        $this->captchaVersion = Str::random(8);
     }
 
     public function refreshCaptcha()
@@ -77,8 +81,19 @@ class Login extends Component
 
         $this->validate();
 
-        // Verify captcha
-        if ($this->captcha !== session('login_captcha')) {
+        // Batasi percobaan login (cegah brute-force): 5x per menit per email+IP
+        $throttleKey = 'login:' . Str::lower($this->email) . '|' . request()->ip();
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            $this->addError('email', "Terlalu banyak percobaan login. Coba lagi dalam {$seconds} detik.");
+            $this->captcha = '';
+            $this->generateCaptcha();
+            return;
+        }
+        RateLimiter::hit($throttleKey, 60);
+
+        // Verify captcha (sekali pakai)
+        if (!Captcha::verify('login_captcha', $this->captcha)) {
             $this->addError('captcha', 'Kode keamanan tidak sesuai');
             $this->captcha = '';
             $this->generateCaptcha();
@@ -86,8 +101,8 @@ class Login extends Component
         }
 
         if (Auth::attempt(['email' => $this->email, 'password' => $this->password, 'aktif' => true], $this->remember)) {
+            RateLimiter::clear($throttleKey);
             session()->regenerate();
-            session()->forget('login_captcha');
 
             $user = Auth::user();
 

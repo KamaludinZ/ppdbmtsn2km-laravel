@@ -4,8 +4,8 @@
     <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
         <!-- Total -->
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-blue-800">Total Pesan</p>
                     <p class="text-2xl font-bold text-blue-900">{{ $emailStats['total'] ?? 0 }}</p>
                 </div>
@@ -19,8 +19,8 @@
 
         <!-- Pending -->
         <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-yellow-800">Pending</p>
                     <p class="text-2xl font-bold text-yellow-900">{{ $emailStats['pending'] ?? 0 }}</p>
                 </div>
@@ -34,8 +34,8 @@
 
         <!-- Terkirim -->
         <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-green-800">Terkirim</p>
                     <p class="text-2xl font-bold text-green-900">{{ $emailStats['sent'] ?? 0 }}</p>
                 </div>
@@ -49,8 +49,8 @@
 
         <!-- Gagal -->
         <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-red-800">Gagal</p>
                     <p class="text-2xl font-bold text-red-900">{{ $emailStats['failed'] ?? 0 }}</p>
                 </div>
@@ -64,8 +64,8 @@
 
         <!-- Hari Ini -->
         <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-purple-800">Hari Ini</p>
                     <p class="text-2xl font-bold text-purple-900">{{ $emailStats['today'] ?? 0 }}</p>
                 </div>

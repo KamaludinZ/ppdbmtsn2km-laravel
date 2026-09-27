@@ -9,18 +9,14 @@ use Illuminate\Validation\Rule;
 
 class TimelinePendaftaranController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-        $this->authorizeResource(TimelinePendaftaran::class, 'timeline');
-    }
+    // Akses dibatasi di routes/web.php (middleware auth + role:admin).
 
     /**
      * Display a listing of the resource.
      */
     public function index()
     {
-        $timelines = TimelinePendaftaran::with('pendaftar')->orderBy('urutan')->get();
+        $timelines = TimelinePendaftaran::orderBy('urutan')->get();
         $jalurOptions = [
             'prestasi' => 'Prestasi',
             'reguler' => 'Reguler',

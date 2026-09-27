@@ -1,7 +1,7 @@
 <div>
     {{-- URL Cleaner --}}
-    <div x-data x-init="
-        // Clean URL on component init
+    <div x-data x-init="(() => {
+        // Clean URL on component init (dibungkus IIFE: x-init butuh ekspresi, bukan statement)
         if (window.location.search.includes('activeTab=')) {
             const cleanUrl = window.location.origin + window.location.pathname;
             window.history.replaceState({}, document.title, cleanUrl);
@@ -15,7 +15,7 @@
                 }
             });
         });
-    " style="display: none;"></div>
+    })()" style="display: none;"></div>
 
     {{-- Header --}}
     <div class="mb-6">
@@ -59,15 +59,26 @@
     {{-- Content for Seragam and Ukuran Tabs --}}
     @if($activeTab !== 'settings')
         {{-- Stats Overview --}}
-        @include('livewire.admin.partials.daftar-ulang-stats', ['stats' => $stats, 'tab' => $activeTab])
+        @include('livewire.admin.partials.daftar-ulang-stats', ['stats' => $stats, 'tab' => $activeTab, 'clickable' => true])
 
         {{-- Filters --}}
     <div class="bg-white rounded-lg shadow mb-6 p-6">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
             {{-- Search --}}
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Cari</label>
                 <input type="text" wire:model.live="search" placeholder="Nama, NISN, No. Pendaftaran..." class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+            </div>
+
+            {{-- Filter Status Rekap --}}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Status Rekap</label>
+                <select wire:model.live="filterRekap" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    <option value="">Semua</option>
+                    @foreach(\App\Support\RekapDaftarUlang::KATEGORI as $kategoriKey => $kategoriInfo)
+                        <option value="{{ $kategoriKey }}">{{ $kategoriInfo['label'] }}</option>
+                    @endforeach
+                </select>
             </div>
 
             {{-- Filter Jalur --}}
@@ -450,11 +461,11 @@
                                                 <div class="space-y-1 mt-1">
                                                     @foreach($nominalSeragamAwal as $idx => $opt)
                                                         <div class="text-xs text-gray-600">
-                                                            {{ $idx + 1 }}. {{ $opt['name'] ?? '-' }} - Rp {{ number_format($opt['amount'] ?? 0, 0, ',', '.') }}
+                                                            {{ $idx + 1 }}. {{ $opt['name'] ?? '-' }} - Rp {{ number_format(\App\Support\Nominal::toNumber($opt['amount'] ?? 0), 0, ',', '.') }}
                                                         </div>
                                                     @endforeach
                                                     <div class="pt-1 border-t border-purple-200 font-bold text-purple-700">
-                                                        Total: Rp {{ number_format(array_sum(array_column($nominalSeragamAwal, 'amount')), 0, ',', '.') }}
+                                                        Total: Rp {{ number_format(\App\Support\Nominal::sum($nominalSeragamAwal), 0, ',', '.') }}
                                                     </div>
                                                 </div>
                                             </div>
@@ -462,7 +473,7 @@
                                             {{-- Single option: tampilkan seperti biasa --}}
                                             <div class="text-xs text-gray-900">
                                                 <div class="font-medium text-gray-700 mb-1">{{ $nominalSeragamAwal['name'] ?? '-' }}</div>
-                                                <div class="font-bold text-blue-700">Rp {{ number_format($nominalSeragamAwal['amount'] ?? 0, 0, ',', '.') }}</div>
+                                                <div class="font-bold text-blue-700">Rp {{ number_format(\App\Support\Nominal::toNumber($nominalSeragamAwal['amount'] ?? 0), 0, ',', '.') }}</div>
                                             </div>
                                         @endif
                                     @else
@@ -475,7 +486,7 @@
                                         @php $nominalSeragam = $item->seragam->nominal_seragam; @endphp
                                         <div class="text-xs text-gray-900">
                                             <div class="font-medium text-gray-700 mb-1">{{ $nominalSeragam['name'] ?? '-' }}</div>
-                                            <div class="font-bold text-emerald-700">Rp {{ number_format($nominalSeragam['amount'] ?? 0, 0, ',', '.') }}</div>
+                                            <div class="font-bold text-emerald-700">Rp {{ number_format(\App\Support\Nominal::toNumber($nominalSeragam['amount'] ?? 0), 0, ',', '.') }}</div>
                                         </div>
                                     @else
                                         <span class="text-xs text-gray-500">Belum konfirmasi</span>

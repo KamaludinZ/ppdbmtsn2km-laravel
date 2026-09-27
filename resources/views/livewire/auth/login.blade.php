@@ -25,7 +25,7 @@
 
                         <!-- Info Cards -->
                         <div class="space-y-4 mb-8">
-                            <div class="bg-emerald-700 bg-opacity-40 rounded-xl p-4 border border-emerald-400 border-opacity-30">
+                            <div class="bg-emerald-700/40 rounded-xl p-4 border border-emerald-400/30 ">
                                 <div class="flex items-start">
                                     <svg class="w-6 h-6 text-white mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -38,7 +38,7 @@
                             </div>
 
                             @if(!$loginEnabled)
-                            <div class="bg-yellow-600 bg-opacity-30 rounded-xl p-4 border border-yellow-400 border-opacity-40">
+                            <div class="bg-yellow-600/30 rounded-xl p-4 border border-yellow-400/40 ">
                                 <div class="flex items-start">
                                     <svg class="w-6 h-6 text-yellow-200 mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
@@ -55,7 +55,7 @@
 
                     <!-- Bottom Info -->
                     <div class="relative z-10 mt-auto">
-                        <div class="bg-emerald-700 bg-opacity-40 rounded-xl p-5 border border-emerald-400 border-opacity-30">
+                        <div class="bg-emerald-700/40 rounded-xl p-5 border border-emerald-400/30 ">
                             <div class="flex items-start mb-3">
                                 <svg class="w-6 h-6 text-white mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path>
@@ -166,16 +166,14 @@
                                 Kode Keamanan
                             </label>
                             <div class="flex gap-3 items-center mb-3">
-                                <div class="flex-1 bg-gradient-to-r from-emerald-50 to-emerald-100 rounded-lg p-3 border-2 border-emerald-300">
-                                    <p class="text-2xl font-bold text-center text-emerald-800 tracking-wider select-none" style="font-family: 'Courier New', monospace; letter-spacing: 8px;">
-                                        {{ $captchaCode }}
-                                    </p>
+                                <div class="flex-1 bg-white rounded-lg border-2 border-emerald-300 overflow-hidden">
+                                    <img src="{{ \App\Support\Captcha::url('login_captcha', $captchaVersion) }}" alt="Kode keamanan: 6 angka pada gambar" width="200" height="60" class="block w-full h-14 object-contain select-none" draggable="false">
                                 </div>
                                 <button
                                     type="button"
                                     wire:click="refreshCaptcha"
                                     class="p-3 bg-emerald-100 hover:bg-emerald-200 rounded-lg transition @if(!$loginEnabled) bg-gray-100 cursor-not-allowed hover:bg-gray-100 @endif"
-                                    title="Refresh Captcha"
+                                    title="Ganti gambar kode" aria-label="Ganti gambar kode keamanan"
                                     @if(!$loginEnabled) disabled @endif
                                 >
                                     <svg class="w-5 h-5 text-emerald-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -189,7 +187,9 @@
                                 wire:model="captcha"
                                 maxlength="6"
                                 class="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 @error('captcha') border-red-500 @enderror @if(!$loginEnabled) bg-gray-100 text-gray-500 cursor-not-allowed @endif"
-                                placeholder="Masukkan kode di atas"
+                                placeholder="Masukkan 6 angka pada gambar"
+                                inputmode="numeric"
+                                autocomplete="off"
                                 @if(!$loginEnabled) disabled @endif
                             >
                             @error('captcha')

@@ -78,15 +78,15 @@
         </div>
 
         <!-- Stats Overview - Status Pendaftaran (Same as Pendaftar page) -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
             <!-- Total Pendaftar -->
             <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium opacity-90">Total Pendaftar</p>
                         <p class="text-3xl font-bold mt-2">{{ number_format($stats['total']) }}</p>
                     </div>
-                    <div class="bg-black bg-opacity-10 rounded-full p-3">
+                    <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                         </svg>
@@ -96,12 +96,12 @@
 
             <!-- Menunggu Verifikasi -->
             <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium opacity-90">Menunggu Verifikasi</p>
                         <p class="text-3xl font-bold mt-2">{{ number_format($stats['menunggu_verifikasi'] ?? 0) }}</p>
                     </div>
-                    <div class="bg-black bg-opacity-10 rounded-full p-3">
+                    <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -111,12 +111,12 @@
 
             <!-- Lengkapi Data -->
             <div class="bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium opacity-90">Lengkapi Data</p>
                         <p class="text-3xl font-bold mt-2">{{ number_format($stats['lengkapi_data'] ?? 0) }}</p>
                     </div>
-                    <div class="bg-black bg-opacity-10 rounded-full p-3">
+                    <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                         </svg>
@@ -126,12 +126,12 @@
 
             <!-- Perbaiki Data -->
             <div class="bg-gradient-to-br from-amber-500 to-amber-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium opacity-90">Perbaiki Data</p>
                         <p class="text-3xl font-bold mt-2">{{ number_format($stats['perbaiki_data'] ?? 0) }}</p>
                     </div>
-                    <div class="bg-black bg-opacity-10 rounded-full p-3">
+                    <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                         </svg>
@@ -141,12 +141,12 @@
 
             <!-- Data Ditolak -->
             <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium opacity-90">Data Ditolak</p>
                         <p class="text-3xl font-bold mt-2">{{ number_format($stats['data_ditolak'] ?? 0) }}</p>
                     </div>
-                    <div class="bg-black bg-opacity-10 rounded-full p-3">
+                    <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -156,12 +156,12 @@
 
             <!-- Data Disetujui -->
             <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-                <div class="flex items-center justify-between">
-                    <div>
+                <div class="flex items-center justify-between gap-3">
+                    <div class="min-w-0">
                         <p class="text-sm font-medium opacity-90">Data Disetujui</p>
                         <p class="text-3xl font-bold mt-2">{{ number_format($stats['data_disetujui'] ?? 0) }}</p>
                     </div>
-                    <div class="bg-black bg-opacity-10 rounded-full p-3">
+                    <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                         <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
@@ -563,7 +563,7 @@
                              ">
                             <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
                                 <!-- Background overlay -->
-                                <div class="fixed inset-0 z-40 transition-opacity bg-gray-500 bg-opacity-75" @click="showProgress = false"></div>
+                                <div class="fixed inset-0 z-40 transition-opacity bg-gray-500/75 " @click="showProgress = false"></div>
 
                                 <!-- Modal panel -->
                                 <div class="relative z-50 inline-block align-bottom bg-white rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
@@ -871,7 +871,7 @@
             </div>
             <div class="p-6">
                 <p class="text-gray-600 mb-4">
-                    Laporan ini menampilkan data siswa yang telah melakukan daftar ulang madrasah, termasuk status pembayaran dan kelengkapan berkas.
+                    Laporan ini menampilkan <strong>semua pendaftar lulus</strong> beserta status daftar ulangnya — termasuk yang belum konfirmasi atau tidak melanjutkan — sehingga jumlahnya selalu sama dengan total wajib daftar ulang.
                 </p>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -885,13 +885,12 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Status Daftar Ulang</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status Rekap Daftar Ulang</label>
                         <select wire:model.live="filterStatusDU" class="w-full rounded-lg border-gray-300 shadow-sm">
-                            <option value="">Semua Status</option>
-                            <option value="menunggu">Menunggu</option>
-                            <option value="disetujui">Disetujui</option>
-                            <option value="ditolak">Ditolak</option>
-                            <option value="perlu_perbaikan">Perlu Perbaikan</option>
+                            <option value="">Semua Status Rekap</option>
+                            @foreach(\App\Support\RekapDaftarUlang::KATEGORI as $kategoriKey => $kategoriInfo)
+                                <option value="{{ $kategoriKey }}">{{ $kategoriInfo['label'] }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="flex items-end" x-data="{ showProgressDU: false, progressDU: 0, elapsedDU: 0, stageDU: '', totalRecordsDU: 0 }">
@@ -913,7 +912,7 @@
                         <div x-show="showProgressDU" x-transition class="fixed inset-0 z-50 overflow-y-auto" style="display: none;"
                              x-init="$watch('showProgressDU', value => { if (value) { let startTime = Date.now(); let interval = setInterval(() => { elapsedDU = Math.floor((Date.now() - startTime) / 1000); if (progressDU < 20) { stageDU = 'Mempersiapkan data...'; progressDU += 2; } else if (progressDU < 40) { stageDU = 'Mengambil data daftar ulang...'; progressDU += 1.5; } else if (progressDU < 60) { stageDU = 'Memproses data pembayaran...'; progressDU += 1; } else if (progressDU < 80) { stageDU = 'Menyusun struktur Excel...'; progressDU += 1; } else if (progressDU < 95) { stageDU = 'Generating file Excel...'; progressDU += 0.5; } else { stageDU = 'Menyelesaikan export...'; if (progressDU < 99) progressDU += 0.2; } if (progressDU >= 100) { setTimeout(() => { showProgressDU = false; progressDU = 0; elapsedDU = 0; clearInterval(interval); }, 1500); } }, 200); setTimeout(() => { showProgressDU = false; progressDU = 0; elapsedDU = 0; clearInterval(interval); }, 30000); } });">
                             <div class="flex items-center justify-center min-h-screen px-4">
-                                <div class="fixed inset-0 z-40 bg-gray-500 bg-opacity-75" @click="showProgressDU = false"></div>
+                                <div class="fixed inset-0 z-40 bg-gray-500/75 " @click="showProgressDU = false"></div>
                                 <div class="relative z-50 inline-block bg-white rounded-lg px-6 py-6 shadow-xl max-w-lg w-full">
                                     <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-emerald-100 mb-4">
                                         <svg class="h-8 w-8 text-emerald-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1020,7 +1019,7 @@
                         <div x-show="showProgressDUS" x-transition class="fixed inset-0 z-50 overflow-y-auto" style="display: none;"
                              x-init="$watch('showProgressDUS', value => { if (value) { let startTime = Date.now(); let interval = setInterval(() => { elapsedDUS = Math.floor((Date.now() - startTime) / 1000); if (progressDUS < 20) { stageDUS = 'Mempersiapkan data...'; progressDUS += 2; } else if (progressDUS < 40) { stageDUS = 'Mengambil data daftar ulang seragam...'; progressDUS += 1.5; } else if (progressDUS < 60) { stageDUS = 'Memproses data pembayaran...'; progressDUS += 1; } else if (progressDUS < 80) { stageDUS = 'Menyusun struktur Excel...'; progressDUS += 1; } else if (progressDUS < 95) { stageDUS = 'Generating file Excel...'; progressDUS += 0.5; } else { stageDUS = 'Menyelesaikan export...'; if (progressDUS < 99) progressDUS += 0.2; } if (progressDUS >= 100) { setTimeout(() => { showProgressDUS = false; progressDUS = 0; elapsedDUS = 0; clearInterval(interval); }, 1500); } }, 200); setTimeout(() => { showProgressDUS = false; progressDUS = 0; elapsedDUS = 0; clearInterval(interval); }, 30000); } });">
                             <div class="flex items-center justify-center min-h-screen px-4">
-                                <div class="fixed inset-0 z-40 bg-gray-500 bg-opacity-75" @click="showProgressDUS = false"></div>
+                                <div class="fixed inset-0 z-40 bg-gray-500/75 " @click="showProgressDUS = false"></div>
                                 <div class="relative z-50 inline-block bg-white rounded-lg px-6 py-6 shadow-xl max-w-lg w-full">
                                     <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-orange-100 mb-4">
                                         <svg class="h-8 w-8 text-orange-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1134,7 +1133,7 @@
                         <div x-show="showProgressSR" x-transition class="fixed inset-0 z-50 overflow-y-auto" style="display: none;"
                              x-init="$watch('showProgressSR', value => { if (value) { let startTime = Date.now(); let interval = setInterval(() => { elapsedSR = Math.floor((Date.now() - startTime) / 1000); if (progressSR < 20) { stageSR = 'Mempersiapkan data...'; progressSR += 2; } else if (progressSR < 40) { stageSR = 'Mengambil data seragam...'; progressSR += 1.5; } else if (progressSR < 60) { stageSR = 'Memproses ukuran seragam...'; progressSR += 1; } else if (progressSR < 80) { stageSR = 'Menyusun struktur Excel...'; progressSR += 1; } else if (progressSR < 95) { stageSR = 'Generating file Excel...'; progressSR += 0.5; } else { stageSR = 'Menyelesaikan export...'; if (progressSR < 99) progressSR += 0.2; } if (progressSR >= 100) { setTimeout(() => { showProgressSR = false; progressSR = 0; elapsedSR = 0; clearInterval(interval); }, 1500); } }, 200); setTimeout(() => { showProgressSR = false; progressSR = 0; elapsedSR = 0; clearInterval(interval); }, 30000); } });">
                             <div class="flex items-center justify-center min-h-screen px-4">
-                                <div class="fixed inset-0 z-40 bg-gray-500 bg-opacity-75" @click="showProgressSR = false"></div>
+                                <div class="fixed inset-0 z-40 bg-gray-500/75 " @click="showProgressSR = false"></div>
                                 <div class="relative z-50 inline-block bg-white rounded-lg px-6 py-6 shadow-xl max-w-lg w-full">
                                     <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-indigo-100 mb-4">
                                         <svg class="h-8 w-8 text-indigo-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1235,7 +1234,7 @@
         </div>
 
         <!-- Statistics Cards for Tes Psikologi -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
             <!-- Total -->
             <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
                 <div class="flex items-center justify-between">

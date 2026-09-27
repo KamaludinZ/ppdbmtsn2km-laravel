@@ -373,7 +373,7 @@
     
     <!-- Detail Modal -->
     @if($showDetailModal && $selectedApplicant)
-        <div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" x-data="{ open: true }">
+        <div class="fixed inset-0 bg-gray-600/50 overflow-y-auto h-full w-full z-50" x-data="{ open: true }">
             <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
                 <div class="mt-3">
                     <div class="flex items-center justify-between pb-3 border-b">

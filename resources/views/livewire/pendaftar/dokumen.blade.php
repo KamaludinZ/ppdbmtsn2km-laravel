@@ -273,7 +273,7 @@
                                                     class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100">
 
                                             <!-- Loading overlay during upload -->
-                                            <div wire:loading.delay wire:target="file_{{ $key }}" class="absolute inset-0 bg-white bg-opacity-90 flex items-center justify-center rounded z-10">
+                                            <div wire:loading.delay wire:target="file_{{ $key }}" class="absolute inset-0 bg-white/90 flex items-center justify-center rounded z-10">
                                                 <div class="flex flex-col items-center text-emerald-600 text-sm font-medium">
                                                     <svg class="animate-spin h-6 w-6 mb-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                                                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

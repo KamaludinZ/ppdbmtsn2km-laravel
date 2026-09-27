@@ -22,6 +22,7 @@ class DaftarUlang extends Component
     public $filterStatusUkuran = '';
     public $filterJenisKelamin = '';
     public $filterJalur = '';
+    public $filterRekap = ''; // kategori rekap (seragam/ukuran)
 
     // Query string bindings for URL
     protected $queryString = [
@@ -163,91 +164,12 @@ class DaftarUlang extends Component
 
     private function getSeragamStats()
     {
-        // Calculate stats based on active tab (same pattern as Admin)
-        // Get ALL pendaftar for total count (no status filter for stats)
-        $allPendaftar = Pendaftar::with(['seragam'])->get();
-
-        // Get only lulus pendaftar for lulus count
-        $lulusPendaftar = $allPendaftar->filter(function($p) {
-            return in_array($p->status_pendaftaran, ['lulus', 'diterima']);
-        });
-
-        $stats = [
-            // Total ALL pendaftar
-            'total_pendaftar' => $allPendaftar->count(),
-
-            // Total pendaftar lulus (from kelulusan menu)
-            'lulus' => $lulusPendaftar->count(),
-
-            // Backward compatibility
-            'total_lulus' => $lulusPendaftar->count(),
-
-            // Status seragam (dari seragam.status_seragam)
-            'menunggu' => $allPendaftar->filter(function($p) {
-                return !$p->seragam || $p->seragam->status_seragam === 'menunggu' || !$p->seragam->status_seragam;
-            })->count(),
-            'disetujui' => $allPendaftar->filter(function($p) {
-                return $p->seragam && $p->seragam->status_seragam === 'disetujui';
-            })->count(),
-            'ditolak' => $allPendaftar->filter(function($p) {
-                return $p->seragam && $p->seragam->status_seragam === 'ditolak';
-            })->count(),
-            'perlu_perbaikan' => $allPendaftar->filter(function($p) {
-                return $p->seragam && $p->seragam->status_seragam === 'perlu_perbaikan';
-            })->count(),
-
-            // Status ukuran (dari seragam.status_ukuran)
-            'ukuran_menunggu' => $allPendaftar->filter(function($p) {
-                return !$p->seragam || $p->seragam->status_ukuran === 'menunggu' || !$p->seragam->status_ukuran;
-            })->count(),
-            'ukuran_disetujui' => $allPendaftar->filter(function($p) {
-                return $p->seragam && $p->seragam->status_ukuran === 'disetujui';
-            })->count(),
-            'ukuran_ditolak' => $allPendaftar->filter(function($p) {
-                return $p->seragam && $p->seragam->status_ukuran === 'ditolak';
-            })->count(),
-        ];
-
-        return $stats;
+        return \App\Support\RekapDaftarUlang::statsTab('seragam', ['jalur' => $this->filterJalur, 'jenis_kelamin' => $this->filterJenisKelamin]);
     }
 
     private function getUkuranStats()
     {
-        // Calculate stats based on active tab (same pattern as Admin)
-        // Get ALL pendaftar for total count (no status filter for stats)
-        $allPendaftar = Pendaftar::with(['seragam'])->get();
-
-        // Get only lulus pendaftar for lulus count
-        $lulusPendaftar = $allPendaftar->filter(function($p) {
-            return in_array($p->status_pendaftaran, ['lulus', 'diterima']);
-        });
-
-        $stats = [
-            // Total ALL pendaftar
-            'total_pendaftar' => $allPendaftar->count(),
-
-            // Total pendaftar lulus (from kelulusan menu)
-            'lulus' => $lulusPendaftar->count(),
-
-            // Backward compatibility
-            'total_lulus' => $lulusPendaftar->count(),
-
-            // Status ukuran (dari seragam.status_ukuran)
-            'menunggu' => $allPendaftar->filter(function($p) {
-                return !$p->seragam || $p->seragam->status_ukuran === 'menunggu' || !$p->seragam->status_ukuran;
-            })->count(),
-            'disetujui' => $allPendaftar->filter(function($p) {
-                return $p->seragam && $p->seragam->status_ukuran === 'disetujui';
-            })->count(),
-            'ditolak' => $allPendaftar->filter(function($p) {
-                return $p->seragam && $p->seragam->status_ukuran === 'ditolak';
-            })->count(),
-            'perlu_perbaikan' => $allPendaftar->filter(function($p) {
-                return $p->seragam && $p->seragam->status_ukuran === 'perlu_perbaikan';
-            })->count(),
-        ];
-
-        return $stats;
+        return \App\Support\RekapDaftarUlang::statsTab('ukuran', ['jalur' => $this->filterJalur, 'jenis_kelamin' => $this->filterJenisKelamin]);
     }
 
     public function updatingSearch()
@@ -265,10 +187,15 @@ class DaftarUlang extends Component
         $this->resetPage();
     }
 
+    public function updatedFilterRekap()
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
         $query = Pendaftar::with(['jalurPendaftaran', 'seragam'])
-            ->whereIn('status_pendaftaran', ['data_disetujui', 'lulus', 'diterima']);
+            ->whereIn('status_pendaftaran', \App\Support\RekapDaftarUlang::STATUS_WAJIB);
 
         // Search filter
         if ($this->search) {
@@ -288,6 +215,9 @@ class DaftarUlang extends Component
         if ($this->filterJalur) {
             $query->where('jalur_pendaftaran_id', $this->filterJalur);
         }
+
+        // Filter kategori rekap (belum konfirmasi, tidak melanjutkan, selesai, dst.)
+        \App\Support\RekapDaftarUlang::filterKategori($query, $this->filterRekap, $this->activeTab === 'ukuran' ? 'ukuran' : 'seragam');
 
         // Status DU Seragam filter - lihat kolom status_seragam
         if ($this->filterStatusSeragam) {
