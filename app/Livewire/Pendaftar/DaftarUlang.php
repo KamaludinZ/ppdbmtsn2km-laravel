@@ -378,6 +378,12 @@ class DaftarUlang extends Component
 
     public function saveSuratPernyataan()
     {
+        \Log::info('saveSuratPernyataan() called', [
+            'pendaftar_id' => auth()->user()->pendaftar->id ?? null,
+            'suratPernyataan' => $this->suratPernyataan ? 'YES' : 'NO',
+            'daftarUlang_exists' => $this->daftarUlang ? 'YES' : 'NO',
+        ]);
+
         // Validate surat pernyataan upload
         $this->validate([
             'suratPernyataan' => 'required|mimes:pdf|max:2048',
@@ -388,20 +394,25 @@ class DaftarUlang extends Component
         ]);
 
         try {
+            $pendaftarId = auth()->user()->pendaftar->id;
+            
             // Get or create DaftarUlang record
             if (!$this->daftarUlang) {
-                $this->daftarUlang = DaftarUlang::firstOrCreate(
-                    ['pendaftar_id' => auth()->user()->pendaftar->id],
-                    ['status' => 'proses']
+                \Log::info('Creating new DaftarUlang record', ['pendaftar_id' => $pendaftarId]);
+                $this->daftarUlang = DaftarUlangModel::firstOrCreate(
+                    ['pendaftar_id' => $pendaftarId],
+                    ['status' => 'belum_diisi']
                 );
+                \Log::info('DaftarUlang record created/found', ['id' => $this->daftarUlang->id]);
             }
 
             // Delete old file if exists
             if ($this->daftarUlang->surat_pernyataan_path) {
+                \Log::info('Deleting old file', ['path' => $this->daftarUlang->surat_pernyataan_path]);
                 Storage::disk('private')->delete($this->daftarUlang->surat_pernyataan_path);
             }
 
-            // Generate nama file sistematis: surat_pernyataan-{nomor_pendaftaran}-{nama_pendaftar}-{timestamp}.{ext}
+            // Generate nama file sistematis
             $extension = FileNamingService::getFileExtension($this->suratPernyataan);
             $customFileName = FileNamingService::generateFileName(
                 'surat_pernyataan',
@@ -410,17 +421,28 @@ class DaftarUlang extends Component
                 $this->pendaftar->nama_lengkap
             );
 
-            // Upload new file ke private storage dengan nama file sistematis
+            \Log::info('Uploading file', [
+                'filename' => $customFileName,
+                'path' => 'dokumen/' . $this->pendaftar->id,
+            ]);
+
+            // Upload new file ke private storage
             $path = $this->suratPernyataan->storeAs(
                 'dokumen/' . $this->pendaftar->id,
                 $customFileName,
                 'private'
             );
 
+            \Log::info('File uploaded successfully', ['path' => $path]);
+
             // Update database
             $this->daftarUlang->update([
                 'surat_pernyataan_path' => $path
+                // Status tetap 'belum_diisi', belum berubah ke 'menunggu'
+                // Status akan berubah ke 'menunggu' saat user klik "Simpan Data" di form bukti pembayaran
             ]);
+
+            \Log::info('Database updated successfully');
 
             // Reset temporary file
             $this->suratPernyataan = null;
@@ -435,6 +457,10 @@ class DaftarUlang extends Component
             return $this->redirect('/pendaftar/daftarulang?activeTab=madrasah', navigate: true);
 
         } catch (\Exception $e) {
+            \Log::error('saveSuratPernyataan() FAILED', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
             session()->flash('error', 'Gagal menyimpan surat pernyataan: ' . $e->getMessage());
         }
     }
@@ -1136,7 +1162,7 @@ class DaftarUlang extends Component
         if (!$this->daftarUlang) {
             $this->daftarUlang = DaftarUlangModel::create([
                 'pendaftar_id' => $this->pendaftar->id,
-                'status' => 'belum',
+                'status' => 'belum_diisi',
             ]);
         }
 

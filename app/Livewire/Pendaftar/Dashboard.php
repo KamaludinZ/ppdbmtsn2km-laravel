@@ -537,9 +537,9 @@ class Dashboard extends Component
 
         // UPLOAD DAFTAR ULANG STEP
         $this->progress['upload_daftar_ulang'] = [
-            'status' => ($daftarUlang && $daftarUlang->status !== 'belum') ? 'completed' : (($this->pendaftar->setuju_daftar_ulang) ? 'current' : 'pending'),
-            'label' => ($daftarUlang && $daftarUlang->status !== 'belum') ? 'Selesai' : (($this->pendaftar->setuju_daftar_ulang) ? 'Upload' : 'Terkunci'),
-            'color' => ($daftarUlang && $daftarUlang->status !== 'belum') ? 'emerald' : (($this->pendaftar->setuju_daftar_ulang) ? 'yellow' : 'gray')
+            'status' => ($daftarUlang && in_array($daftarUlang->status, ['menunggu', 'disetujui', 'ditolak', 'perbaiki'])) ? 'completed' : (($this->pendaftar->setuju_daftar_ulang) ? 'current' : 'pending'),
+            'label' => ($daftarUlang && in_array($daftarUlang->status, ['menunggu', 'disetujui', 'ditolak', 'perbaiki'])) ? 'Selesai' : (($this->pendaftar->setuju_daftar_ulang) ? 'Upload' : 'Terkunci'),
+            'color' => ($daftarUlang && in_array($daftarUlang->status, ['menunggu', 'disetujui', 'ditolak', 'perbaiki'])) ? 'emerald' : (($this->pendaftar->setuju_daftar_ulang) ? 'yellow' : 'gray')
         ];
 
         // VERIFIKASI AKHIR STEP
@@ -641,6 +641,7 @@ class Dashboard extends Component
 
         // Badge 3: STATUS DAFTAR ULANG
         $statusDaftarUlangMap = [
+            'belum_diisi' => ['label' => 'Belum Daftar Ulang', 'color' => 'gray'],
             'belum' => ['label' => 'Belum Daftar Ulang', 'color' => 'gray'],
             'proses' => ['label' => 'Sedang Proses', 'color' => 'yellow'],
             'menunggu' => ['label' => 'Menunggu Verifikasi', 'color' => 'yellow'],
@@ -651,8 +652,8 @@ class Dashboard extends Component
             'batal' => ['label' => 'Dibatalkan', 'color' => 'gray'],
         ];
 
-        $daftarUlangStatus = $daftarUlang ? $daftarUlang->status : 'belum';
-        // Default to 'belum' if status not in map (defensive programming)
+        $daftarUlangStatus = $daftarUlang ? $daftarUlang->status : 'belum_diisi';
+        // Default to 'belum' if status not in map (defensive programming for backward compatibility)
         if (!isset($statusDaftarUlangMap[$daftarUlangStatus])) {
             $daftarUlangStatus = 'belum';
         }
@@ -695,7 +696,7 @@ class Dashboard extends Component
             // Create record daftar ulang
             \App\Models\DaftarUlang::create([
                 'pendaftar_id' => $this->pendaftar->id,
-                'status' => 'belum',
+                'status' => 'belum_diisi',
                 'batas_daftar_ulang' => now()->addMonths(2),
             ]);
 

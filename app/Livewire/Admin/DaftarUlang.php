@@ -25,6 +25,8 @@ class DaftarUlang extends Component
     public $filterStatus = '';
     public $filterJenisKelamin = '';
     public $filterJalur = '';
+    public $filterStatusSeragam = '';
+    public $filterStatusUkuran = '';
 
     // For verification
     public $verificationStatus = '';
@@ -55,6 +57,55 @@ class DaftarUlang extends Component
     public $catatanInternalType = '';
     public $catatanInternalPendaftarId = null;
     public $catatanInternalText = '';
+
+    // For edit modal - store current record for computed property access
+    public $currentEditDaftarUlang = null;
+    public $currentEditSeragam = null;
+
+    // Edit mode toggles
+    public $madrasahEditMode = false;
+    public $seragamEditMode = false;
+    public $ukuranEditMode = false;
+
+    // Edit modal properties for Madrasah
+    public $showEditSuratPernyataanModal = false;
+    public $showEditStatusMadrasahModal = false;
+    public $editPendaftarId = null;
+    public $editSuratPernyataanFile = null;
+    public $editMadrasahPaket = null;
+    public $editMadrasahPaketCustomName = null;
+    public $editMadrasahPaketCustomAmount = null;
+    public $editMadrasahOpsiPembayaran = null;
+    public $editMadrasahNominalKonfirmasi = null;
+    public $editMadrasahNominalKonfirmasiFinal = null;
+    public $editMadrasahNominalKonfirmasiOpsiLainnya = null;
+    public $editMadrasahMetodePembayaran = null;
+    public $editMadrasahNamaPengirim = null;
+    public $editMadrasahBuktiPembayaran = null;
+    public $editMadrasahWaktuPembayaran = null;
+
+    // Edit modal properties for Seragam
+    public $showEditStatusSeragamModal = false;
+    public $editSeragamPaket = null;
+    public $editSeragamPaketCustomName = null;
+    public $editSeragamPaketCustomAmount = null;
+    public $editSeragamOpsiPembayaran = null;
+    public $editSeragamNominalKonfirmasi = null;
+    public $editSeragamNominalKonfirmasiFinal = null;
+    public $editSeragamNominalKonfirmasiOpsiLainnya = null;
+    public $editSeragamMetodePembayaran = null;
+    public $editSeragamNamaPengirim = null;
+    public $editSeragamBuktiPembayaran = null;
+    public $editSeragamWaktuPembayaran = null;
+
+    // Edit modal properties for Ukuran
+    public $showEditStatusUkuranModal = false;
+    public $editUkuranJas = null;
+    public $editUkuranBajuOlahraga = null;
+    public $editUkuranCelanaOlahraga = null;
+    public $editUkuranBajuHarian = null;
+    public $editUkuranCelanaRokHarian = null;
+    public $editUkuranKopyah = null;
 
     // Settings variables
     public $madrasahContent = '';
@@ -297,6 +348,38 @@ class DaftarUlang extends Component
         // Filter jenis kelamin (untuk tab seragam dan ukuran)
         if ($this->filterJenisKelamin && in_array($this->activeTab, ['seragam', 'ukuran'])) {
             $query->where('jenis_kelamin', $this->filterJenisKelamin);
+        }
+
+        // Filter Status DU Seragam - berlaku untuk semua tab seragam/ukuran
+        if ($this->filterStatusSeragam) {
+            if ($this->filterStatusSeragam === 'belum_diisi') {
+                // Filter yang tidak punya record seragam ATAU status_seragam kosong/null
+                $query->whereDoesntHave('seragam', function($q) {
+                    $q->whereNotNull('status_seragam')
+                      ->where('status_seragam', '!=', '')
+                      ->where('status_seragam', '!=', 'belum_diisi');
+                });
+            } else {
+                $query->whereHas('seragam', function($q) {
+                    $q->where('status_seragam', $this->filterStatusSeragam);
+                });
+            }
+        }
+
+        // Filter Status Ukuran - berlaku untuk semua tab seragam/ukuran
+        if ($this->filterStatusUkuran) {
+            if ($this->filterStatusUkuran === 'belum_diisi') {
+                // Filter yang tidak punya record seragam ATAU status_ukuran kosong/null
+                $query->whereDoesntHave('seragam', function($q) {
+                    $q->whereNotNull('status_ukuran')
+                      ->where('status_ukuran', '!=', '')
+                      ->where('status_ukuran', '!=', 'belum_diisi');
+                });
+            } else {
+                $query->whereHas('seragam', function($q) {
+                    $q->where('status_ukuran', $this->filterStatusUkuran);
+                });
+            }
         }
 
         // Filter jalur
@@ -1038,6 +1121,94 @@ class DaftarUlang extends Component
         $this->dispatch('saved', message: "Status Ukuran berhasil diubah menjadi {$statusLabel}.");
     }
 
+    public function resetStatusMadrasah($pendaftarId)
+    {
+        $daftarUlang = DaftarUlangModel::where('pendaftar_id', $pendaftarId)->first();
+        
+        if ($daftarUlang) {
+            // Reset status dan semua data terkait
+            $daftarUlang->update([
+                'status' => 'belum_diisi',
+                'surat_pernyataan_path' => null,
+                'nominal_biaya_awal' => null,
+                'nominal_biaya' => null,
+                'opsi_pembayaran' => null,
+                'metode_pembayaran' => null,
+                'nama_pengirim' => null,
+                'bukti_pembayaran_madrasah' => null,
+                'waktu_pembayaran_madrasah' => null,
+                'catatan' => null,
+                'catatan_internal' => null,
+                'opsi_lainnya_dropdown_individual' => false,
+                'opsi_lainnya_konfirmasi_individual' => false,
+            ]);
+            $this->dispatch('saved', message: 'Status DU Madrasah berhasil direset ke Belum Diisi dan semua data terkait telah dikosongkan.');
+        } else {
+            $this->dispatch('saved', message: 'Data daftar ulang tidak ditemukan.');
+        }
+    }
+
+    public function resetStatusSeragam($pendaftarId)
+    {
+        $seragam = Seragam::where('pendaftar_id', $pendaftarId)->first();
+        
+        if ($seragam) {
+            // Reset status dan semua data terkait
+            $seragam->update([
+                'status_seragam' => 'belum_diisi',
+                'paket_seragam' => '', // Empty string instead of null
+                'paket_seragam_custom_name' => null,
+                'paket_seragam_custom_amount' => null,
+                'opsi_seragam' => '', // Empty string instead of null
+                'nominal_seragam_awal' => null,
+                'nominal_seragam' => null,
+                'opsi_pembayaran_seragam' => null,
+                'bank_seragam' => null,
+                'nama_pengirim' => null,
+                'bukti_pembayaran' => null,
+                'waktu_pembayaran_seragam' => null,
+                'ukuran_baju_harian' => null,
+                'ukuran_celana_rok_harian' => null,
+                'catatan_seragam' => null,
+                'catatan_internal_seragam' => null,
+                'opsi_lainnya_dropdown_individual' => false,
+                'opsi_lainnya_konfirmasi_individual' => false,
+            ]);
+            $this->dispatch('saved', message: 'Status DU Seragam berhasil direset ke Belum Diisi dan semua data terkait telah dikosongkan.');
+        } else {
+            $this->dispatch('saved', message: 'Data seragam tidak ditemukan.');
+        }
+    }
+
+    public function resetStatusUkuran($pendaftarId)
+    {
+        $seragam = Seragam::where('pendaftar_id', $pendaftarId)->first();
+        
+        if ($seragam) {
+            // Reset status dan semua data ukuran terkait
+            $seragam->update([
+                'status_ukuran' => 'belum_diisi',
+                'ukuran_jas' => null,
+                'ukuran_baju_olahraga' => null,
+                'ukuran_celana_olahraga' => null,
+                'ukuran_baju_harian' => null,
+                'ukuran_celana_rok_harian' => null,
+                'ukuran_kopyah' => null,
+                'sudah_diukur' => false,
+                'sudah_dipesan' => false,
+                'sudah_diterima' => false,
+                'tanggal_ukur' => null,
+                'tanggal_pesan' => null,
+                'tanggal_terima' => null,
+                'catatan_ukuran' => null,
+                'catatan_internal_ukuran' => null,
+            ]);
+            $this->dispatch('saved', message: 'Status Ukuran berhasil direset ke Belum Diisi dan semua data ukuran telah dikosongkan.');
+        } else {
+            $this->dispatch('saved', message: 'Data ukuran tidak ditemukan.');
+        }
+    }
+
     // ========== INDIVIDUAL OPSI LAINNYA TOGGLE METHODS ==========
 
     /**
@@ -1295,10 +1466,24 @@ class DaftarUlang extends Component
     /**
      * Open catatan modal
      */
-    public function openCatatanModal($type, $pendaftarId, $currentCatatan = '')
+    public function openCatatanModal($type, $pendaftarId)
     {
         $this->catatanType = $type;
         $this->catatanPendaftarId = $pendaftarId;
+        
+        // Fetch current catatan from database based on type
+        $currentCatatan = '';
+        if ($type === 'madrasah') {
+            $daftarUlang = DaftarUlangModel::where('pendaftar_id', $pendaftarId)->first();
+            $currentCatatan = $daftarUlang?->catatan ?? '';
+        } elseif ($type === 'seragam') {
+            $seragam = Seragam::where('pendaftar_id', $pendaftarId)->first();
+            $currentCatatan = $seragam?->catatan_seragam ?? '';
+        } elseif ($type === 'ukuran') {
+            $seragam = Seragam::where('pendaftar_id', $pendaftarId)->first();
+            $currentCatatan = $seragam?->catatan_ukuran ?? '';
+        }
+        
         $this->catatanText = $currentCatatan;
         $this->showCatatanModal = true;
     }
@@ -1326,7 +1511,7 @@ class DaftarUlang extends Component
 
                 // Only set default status if it's a new record
                 if (!$daftarUlang->exists) {
-                    $daftarUlang->status = 'belum';
+                    $daftarUlang->status = 'belum_diisi';
                 }
 
                 // Update catatan
@@ -1386,10 +1571,24 @@ class DaftarUlang extends Component
     /**
      * Open catatan internal modal (for admin/panitia only - NOT shown to pendaftar)
      */
-    public function openCatatanInternalModal($type, $pendaftarId, $currentCatatan = '')
+    public function openCatatanInternalModal($type, $pendaftarId)
     {
         $this->catatanInternalType = $type;
         $this->catatanInternalPendaftarId = $pendaftarId;
+        
+        // Fetch current catatan_internal from database based on type
+        $currentCatatan = '';
+        if ($type === 'madrasah') {
+            $daftarUlang = DaftarUlangModel::where('pendaftar_id', $pendaftarId)->first();
+            $currentCatatan = $daftarUlang?->catatan_internal ?? '';
+        } elseif ($type === 'seragam') {
+            $seragam = Seragam::where('pendaftar_id', $pendaftarId)->first();
+            $currentCatatan = $seragam?->catatan_internal_seragam ?? '';
+        } elseif ($type === 'ukuran') {
+            $seragam = Seragam::where('pendaftar_id', $pendaftarId)->first();
+            $currentCatatan = $seragam?->catatan_internal_ukuran ?? '';
+        }
+        
         $this->catatanInternalText = $currentCatatan;
         $this->showCatatanInternalModal = true;
     }
@@ -1418,7 +1617,7 @@ class DaftarUlang extends Component
 
                 // Only set default status if it's a new record
                 if (!$daftarUlang->exists) {
-                    $daftarUlang->status = 'belum';
+                    $daftarUlang->status = 'belum_diisi';
                 }
 
                 // Update catatan_internal
@@ -1472,6 +1671,703 @@ class DaftarUlang extends Component
         } catch (\Exception $e) {
             $this->dispatch('saved', message: 'Gagal menyimpan catatan internal: ' . $e->getMessage());
             \Log::error('Error saving catatan internal: ' . $e->getMessage());
+        }
+    }
+
+    // ========== COMPUTED PROPERTIES FOR OPSI LAINNYA ==========
+    
+    /**
+     * Check if "Opsi Lainnya" dropdown should be shown for Madrasah edit
+     * Logic: Global Setting OR Individual Dropdown Setting
+     */
+    public function getShouldShowMadrasahOpsiLainnyaDropdownProperty()
+    {
+        $globalSetting = \App\Models\Setting::get('daftar_ulang_madrasah_packages_enable_opsi_lainnya', false);
+        $individualSetting = false;
+
+        try {
+            if ($this->currentEditDaftarUlang) {
+                $individualSetting = $this->currentEditDaftarUlang->opsi_lainnya_dropdown_individual ?? false;
+            }
+        } catch (\Exception $e) {
+            // Silently fail
+        }
+
+        return $globalSetting || $individualSetting;
+    }
+
+    /**
+     * Check if "Opsi Lainnya" konfirmasi should be shown for Madrasah edit
+     * Logic: Global Setting OR Individual Konfirmasi Setting
+     */
+    public function getShouldShowMadrasahOpsiLainnyaKonfirmasiProperty()
+    {
+        $globalSetting = \App\Models\Setting::get('daftar_ulang_madrasah_enable_opsi_lainnya', false);
+        $individualSetting = false;
+
+        try {
+            if ($this->currentEditDaftarUlang) {
+                $individualSetting = $this->currentEditDaftarUlang->opsi_lainnya_konfirmasi_individual ?? false;
+            }
+        } catch (\Exception $e) {
+            // Silently fail
+        }
+
+        return $globalSetting || $individualSetting;
+    }
+
+    /**
+     * Check if "Opsi Lainnya" dropdown should be shown for Seragam edit
+     * Logic: Global Setting OR Individual Dropdown Setting
+     */
+    public function getShouldShowSeragamOpsiLainnyaDropdownProperty()
+    {
+        $globalSetting = \App\Models\Setting::get('daftar_ulang_seragam_packages_enable_opsi_lainnya', false);
+        $individualSetting = false;
+
+        try {
+            if ($this->currentEditSeragam) {
+                $individualSetting = $this->currentEditSeragam->opsi_lainnya_dropdown_individual ?? false;
+            }
+        } catch (\Exception $e) {
+            // Silently fail
+        }
+
+        return $globalSetting || $individualSetting;
+    }
+
+    /**
+     * Check if "Opsi Lainnya" konfirmasi should be shown for Seragam edit
+     * Logic: Global Setting OR Individual Konfirmasi Setting
+     */
+    public function getShouldShowSeragamOpsiLainnyaKonfirmasiProperty()
+    {
+        $globalSetting = \App\Models\Setting::get('daftar_ulang_seragam_enable_opsi_lainnya', false);
+        $individualSetting = false;
+
+        try {
+            if ($this->currentEditSeragam) {
+                $individualSetting = $this->currentEditSeragam->opsi_lainnya_konfirmasi_individual ?? false;
+            }
+        } catch (\Exception $e) {
+            // Silently fail
+        }
+
+        return $globalSetting || $individualSetting;
+    }
+
+    // ========== EDIT MODE METHODS ==========
+
+    /**
+     * Toggle edit mode for Madrasah tab
+     */
+    public function toggleMadrasahEditMode()
+    {
+        $this->madrasahEditMode = !$this->madrasahEditMode;
+    }
+
+    /**
+     * Toggle edit mode for Seragam tab
+     */
+    public function toggleSeragamEditMode()
+    {
+        $this->seragamEditMode = !$this->seragamEditMode;
+    }
+
+    /**
+     * Toggle edit mode for Ukuran tab
+     */
+    public function toggleUkuranEditMode()
+    {
+        $this->ukuranEditMode = !$this->ukuranEditMode;
+    }
+
+    /**
+     * Open edit surat pernyataan modal for Madrasah
+     */
+    public function openEditSuratPernyataanModal($pendaftarId)
+    {
+        $this->editPendaftarId = $pendaftarId;
+        $this->editSuratPernyataanFile = null;
+        $this->showEditSuratPernyataanModal = true;
+    }
+
+    /**
+     * Close edit surat pernyataan modal
+     */
+    public function closeEditSuratPernyataanModal()
+    {
+        $this->showEditSuratPernyataanModal = false;
+        $this->editPendaftarId = null;
+        $this->editSuratPernyataanFile = null;
+    }
+
+    /**
+     * Save edit surat pernyataan
+     */
+    public function saveEditSuratPernyataan()
+    {
+        try {
+            if (!$this->editPendaftarId) {
+                $this->dispatch('saved', message: 'Error: Pendaftar ID tidak ditemukan');
+                return;
+            }
+
+            $pendaftar = Pendaftar::find($this->editPendaftarId);
+            if (!$pendaftar) {
+                $this->dispatch('saved', message: 'Error: Pendaftar tidak ditemukan');
+                return;
+            }
+
+            $daftarUlang = DaftarUlangModel::firstOrNew(['pendaftar_id' => $this->editPendaftarId]);
+            
+            // Handle file upload
+            if ($this->editSuratPernyataanFile) {
+                // Delete old file if exists
+                if ($daftarUlang->surat_pernyataan_path) {
+                    \Storage::disk('private')->delete($daftarUlang->surat_pernyataan_path);
+                }
+
+                // Generate nama file sistematis seperti pendaftar
+                $extension = $this->editSuratPernyataanFile->getClientOriginalExtension();
+                $customFileName = 'surat_pernyataan-' . $pendaftar->nomor_pendaftaran . '-' . \Str::slug($pendaftar->nama_lengkap) . '-' . now()->timestamp . '.' . $extension;
+
+                // Upload ke private storage seperti pendaftar
+                $path = $this->editSuratPernyataanFile->storeAs(
+                    'dokumen/' . $pendaftar->id,
+                    $customFileName,
+                    'private'
+                );
+                
+                $daftarUlang->surat_pernyataan_path = $path;
+            }
+
+            // Set default status if new
+            if (!$daftarUlang->exists) {
+                $daftarUlang->status = 'menunggu';
+            }
+
+            $daftarUlang->save();
+
+            // Touch parent to trigger Livewire refresh
+            $pendaftar->touch();
+
+            $this->closeEditSuratPernyataanModal();
+            $this->dispatch('saved', message: 'Surat pernyataan berhasil diupdate');
+
+        } catch (\Exception $e) {
+            $this->dispatch('saved', message: 'Gagal menyimpan surat pernyataan: ' . $e->getMessage());
+            \Log::error('Error saving surat pernyataan: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Open edit status Madrasah modal (Step 1 & 2 like pendaftar form)
+     */
+    public function openEditStatusMadrasahModal($pendaftarId)
+    {
+        $this->editPendaftarId = $pendaftarId;
+
+        // Load existing data
+        $pendaftar = Pendaftar::find($pendaftarId);
+        if ($pendaftar && $pendaftar->daftarUlang) {
+            $du = $pendaftar->daftarUlang;
+            
+            // Store the daftarUlang instance for computed property access
+            $this->currentEditDaftarUlang = $du;
+
+            // Load nominal_biaya_awal (opsi yang dipilih)
+            $nominalBiayaAwal = $du->nominal_biaya_awal ?? null;
+            
+            \Log::info('Debug Madrasah Edit Load', [
+                'pendaftar_id' => $pendaftarId,
+                'nominal_biaya_awal' => $nominalBiayaAwal,
+                'type' => gettype($nominalBiayaAwal),
+            ]);
+            
+            if ($nominalBiayaAwal) {
+                // Check if multi-select (array) or single select (object)
+                if (is_array($nominalBiayaAwal) && isset($nominalBiayaAwal[0])) {
+                    // Multi-select mode - set as array
+                    $this->editMadrasahNominalKonfirmasi = $nominalBiayaAwal;
+                    
+                    // Try to find which package the first option belongs to
+                    $firstOptionId = $nominalBiayaAwal[0]['id'] ?? null;
+                    \Log::info('Multi-select mode', ['first_option_id' => $firstOptionId]);
+                    
+                    if ($firstOptionId) {
+                        $madrasahPackages = \App\Models\Setting::get('daftar_ulang_madrasah_packages', []);
+                        foreach ($madrasahPackages as $package) {
+                            if (isset($package['options'])) {
+                                foreach ($package['options'] as $option) {
+                                    if (($option['id'] ?? '') === $firstOptionId) {
+                                        // Found matching package - store as array for Livewire
+                                        $this->editMadrasahPaket = $package;
+                                        \Log::info('Found package', ['package' => $package['name']]);
+                                        break 2;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    // Single select mode - set as object
+                    $this->editMadrasahNominalKonfirmasi = $nominalBiayaAwal;
+                    
+                    // Try to find which package this option belongs to
+                    $optionId = $nominalBiayaAwal['id'] ?? null;
+                    \Log::info('Single-select mode', ['option_id' => $optionId]);
+                    
+                    if ($optionId) {
+                        $madrasahPackages = \App\Models\Setting::get('daftar_ulang_madrasah_packages', []);
+                        foreach ($madrasahPackages as $package) {
+                            if (isset($package['options'])) {
+                                foreach ($package['options'] as $option) {
+                                    if (($option['id'] ?? '') === $optionId) {
+                                        // Found matching package - store as array for Livewire
+                                        $this->editMadrasahPaket = $package;
+                                        \Log::info('Found package', ['package' => $package['name']]);
+                                        break 2;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Load nominal_biaya (konfirmasi nominal yang dibayar)
+            $nominalBiaya = $du->nominal_biaya ?? null;
+            if ($nominalBiaya) {
+                // Check if this is "Bayar Tidak Penuh" (opsi lainnya)
+                if (isset($nominalBiaya['name']) && ($nominalBiaya['name'] === 'Bayar Tidak Penuh' || $nominalBiaya['name'] === 'Opsi Lainnya (Manual)')) {
+                    $this->editMadrasahNominalKonfirmasiFinal = 'opsi_lainnya';
+                    $this->editMadrasahNominalKonfirmasiOpsiLainnya = $nominalBiaya['amount'] ?? 0;
+                } else {
+                    // Bayar Penuh
+                    $this->editMadrasahNominalKonfirmasiFinal = $nominalBiaya; // Store as array, not JSON string
+                }
+            }
+
+            $this->editMadrasahOpsiPembayaran = $du->opsi_pembayaran ?? null;
+            $this->editMadrasahMetodePembayaran = $du->metode_pembayaran ?? null;
+            $this->editMadrasahNamaPengirim = $du->nama_pengirim ?? null;
+            $this->editMadrasahWaktuPembayaran = $du->waktu_pembayaran_madrasah ? $du->waktu_pembayaran_madrasah->format('Y-m-d\TH:i') : null;
+        }
+
+        $this->editMadrasahBuktiPembayaran = null;
+        $this->showEditStatusMadrasahModal = true;
+    }
+
+    /**
+     * Close edit status Madrasah modal
+     */
+    public function closeEditStatusMadrasahModal()
+    {
+        $this->showEditStatusMadrasahModal = false;
+        $this->editPendaftarId = null;
+        $this->editMadrasahPaket = null;
+        $this->editMadrasahOpsiPembayaran = null;
+        $this->editMadrasahNominalKonfirmasi = null;
+        $this->editMadrasahMetodePembayaran = null;
+        $this->editMadrasahNamaPengirim = null;
+        $this->editMadrasahBuktiPembayaran = null;
+        $this->editMadrasahWaktuPembayaran = null;
+    }
+
+    /**
+     * Save edit status Madrasah
+     */
+    public function saveEditStatusMadrasah()
+    {
+        try {
+            if (!$this->editPendaftarId) {
+                $this->dispatch('saved', message: 'Error: Pendaftar ID tidak ditemukan');
+                return;
+            }
+
+            $pendaftar = Pendaftar::find($this->editPendaftarId);
+            if (!$pendaftar) {
+                $this->dispatch('saved', message: 'Error: Pendaftar tidak ditemukan');
+                return;
+            }
+
+            $daftarUlang = DaftarUlangModel::firstOrNew(['pendaftar_id' => $this->editPendaftarId]);
+            
+            // Handle nominal_biaya_awal (dari opsi yang dipilih, bukan paket)
+            $nominalBiayaAwal = null;
+            
+            // Cek apakah memilih opsi dari paket atau paket custom
+            if (is_string($this->editMadrasahPaket) && $this->editMadrasahPaket === 'paket_lainnya') {
+                // Paket custom - tidak ada opsi, langsung gunakan custom amount
+                if ($this->editMadrasahPaketCustomName && $this->editMadrasahPaketCustomAmount) {
+                    $nominalBiayaAwal = [
+                        'name' => $this->editMadrasahPaketCustomName,
+                        'amount' => (int) $this->editMadrasahPaketCustomAmount
+                    ];
+                }
+            } else {
+                // Paket dari dropdown - ambil opsi yang dipilih di editMadrasahNominalKonfirmasi
+                if ($this->editMadrasahNominalKonfirmasi) {
+                    // Check if multi-select (checkbox mode) - simpan sebagai array
+                    if (is_array($this->editMadrasahNominalKonfirmasi) && isset($this->editMadrasahNominalKonfirmasi[0])) {
+                        // Multi-select - simpan sebagai array untuk nominal_biaya_awal
+                        $nominalBiayaAwal = $this->editMadrasahNominalKonfirmasi;
+                    } else {
+                        // Single select (radio mode) - simpan sebagai object
+                        $nominalBiayaAwal = is_array($this->editMadrasahNominalKonfirmasi) 
+                            ? $this->editMadrasahNominalKonfirmasi 
+                            : json_decode($this->editMadrasahNominalKonfirmasi, true);
+                    }
+                }
+            }
+            
+            // Handle nominal_biaya (yang dibayar - dari konfirmasi final)
+            $nominalBiaya = null;
+            if (is_string($this->editMadrasahNominalKonfirmasiFinal) && $this->editMadrasahNominalKonfirmasiFinal === 'opsi_lainnya') {
+                // Opsi lainnya - manual input (Bayar Tidak Penuh)
+                if ($this->editMadrasahNominalKonfirmasiOpsiLainnya) {
+                    $nominalBiaya = [
+                        'name' => 'Bayar Tidak Penuh',
+                        'amount' => (int) $this->editMadrasahNominalKonfirmasiOpsiLainnya
+                    ];
+                }
+            } else {
+                // Bayar penuh dari final konfirmasi
+                $nominalBiaya = is_array($this->editMadrasahNominalKonfirmasiFinal) 
+                    ? $this->editMadrasahNominalKonfirmasiFinal 
+                    : json_decode($this->editMadrasahNominalKonfirmasiFinal, true);
+            }
+            
+            // Update data
+            $daftarUlang->nominal_biaya = $nominalBiaya;
+            $daftarUlang->nominal_biaya_awal = $nominalBiayaAwal;
+            $daftarUlang->opsi_pembayaran = $this->editMadrasahOpsiPembayaran;
+            $daftarUlang->metode_pembayaran = $this->editMadrasahMetodePembayaran;
+            $daftarUlang->nama_pengirim = $this->editMadrasahNamaPengirim;
+            
+            // Debug logging
+            \Log::info('Save Madrasah Edit', [
+                'pendaftar_id' => $this->editPendaftarId,
+                'nominal_biaya_awal' => $nominalBiayaAwal,
+                'nominal_biaya' => $nominalBiaya,
+                'editMadrasahPaket' => $this->editMadrasahPaket,
+                'editMadrasahNominalKonfirmasi' => $this->editMadrasahNominalKonfirmasi,
+                'editMadrasahNominalKonfirmasiFinal' => $this->editMadrasahNominalKonfirmasiFinal,
+            ]);
+            
+            if ($this->editMadrasahWaktuPembayaran) {
+                $daftarUlang->waktu_pembayaran_madrasah = $this->editMadrasahWaktuPembayaran;
+            }
+
+            // Handle file upload
+            if ($this->editMadrasahBuktiPembayaran) {
+                // Delete old file if exists
+                if ($daftarUlang->bukti_pembayaran_madrasah) {
+                    \Storage::disk('private')->delete($daftarUlang->bukti_pembayaran_madrasah);
+                }
+
+                // Generate nama file sistematis
+                $extension = $this->editMadrasahBuktiPembayaran->getClientOriginalExtension();
+                $customFileName = 'bukti_pembayaran_madrasah-' . $pendaftar->nomor_pendaftaran . '-' . \Str::slug($pendaftar->nama_lengkap) . '-' . now()->timestamp . '.' . $extension;
+
+                // Upload ke private storage
+                $path = $this->editMadrasahBuktiPembayaran->storeAs(
+                    'dokumen/' . $pendaftar->id,
+                    $customFileName,
+                    'private'
+                );
+                $daftarUlang->bukti_pembayaran_madrasah = $path;
+            }
+
+            // Set status
+            if (!$daftarUlang->exists) {
+                $daftarUlang->status = 'menunggu';
+            } elseif ($daftarUlang->status === 'belum_diisi') {
+                $daftarUlang->status = 'menunggu';
+            }
+
+            $daftarUlang->save();
+
+            // Touch parent to trigger Livewire refresh
+            $pendaftar->touch();
+
+            $this->closeEditStatusMadrasahModal();
+            $this->dispatch('saved', message: 'Data daftar ulang madrasah berhasil diupdate');
+
+        } catch (\Exception $e) {
+            $this->dispatch('saved', message: 'Gagal menyimpan data: ' . $e->getMessage());
+            \Log::error('Error saving edit status madrasah: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Open edit status Seragam modal (Step 1 & 2 like pendaftar form)
+     */
+    public function openEditStatusSeragamModal($pendaftarId)
+    {
+        $this->editPendaftarId = $pendaftarId;
+
+        // Load existing data
+        $pendaftar = Pendaftar::find($pendaftarId);
+        if ($pendaftar && $pendaftar->seragam) {
+            $seragam = $pendaftar->seragam;
+            
+            // Store the seragam instance for computed property access
+            $this->currentEditSeragam = $seragam;
+            
+            // Load paket_seragam (dropdown paket)
+            $this->editSeragamPaket = $seragam->paket_seragam ?? null;
+            
+            // Load opsi_seragam (opsi yang dipilih dari paket)
+            $opsiSeragam = $seragam->opsi_seragam ?? null;
+            if ($opsiSeragam) {
+                $this->editSeragamNominalKonfirmasi = is_string($opsiSeragam) 
+                    ? json_decode($opsiSeragam, true) 
+                    : $opsiSeragam;
+            }
+            
+            // Load nominal_seragam (konfirmasi nominal yang dibayar)
+            $nominalBiaya = $seragam->nominal_seragam ?? null;
+            if ($nominalBiaya) {
+                // Check if this is "Bayar Tidak Penuh" (opsi lainnya)
+                if (isset($nominalBiaya['name']) && ($nominalBiaya['name'] === 'Bayar Tidak Penuh' || $nominalBiaya['name'] === 'Opsi Lainnya (Manual)')) {
+                    $this->editSeragamNominalKonfirmasiFinal = 'opsi_lainnya';
+                    $this->editSeragamNominalKonfirmasiOpsiLainnya = $nominalBiaya['amount'] ?? 0;
+                } else {
+                    // Bayar Penuh
+                    $this->editSeragamNominalKonfirmasiFinal = json_encode($nominalBiaya);
+                }
+            }
+            
+            $this->editSeragamOpsiPembayaran = $seragam->opsi_pembayaran_seragam ?? null;
+            $this->editSeragamMetodePembayaran = $seragam->bank_seragam ?? null;
+            $this->editSeragamNamaPengirim = $seragam->nama_pengirim_seragam ?? null;
+            $this->editSeragamWaktuPembayaran = $seragam->waktu_pembayaran_seragam ? $seragam->waktu_pembayaran_seragam->format('Y-m-d\TH:i') : null;
+        }
+
+        $this->editSeragamBuktiPembayaran = null;
+        $this->showEditStatusSeragamModal = true;
+    }
+
+    /**
+     * Close edit status Seragam modal
+     */
+    public function closeEditStatusSeragamModal()
+    {
+        $this->showEditStatusSeragamModal = false;
+        $this->editPendaftarId = null;
+        $this->editSeragamPaket = null;
+        $this->editSeragamOpsiPembayaran = null;
+        $this->editSeragamNominalKonfirmasi = null;
+        $this->editSeragamMetodePembayaran = null;
+        $this->editSeragamNamaPengirim = null;
+        $this->editSeragamBuktiPembayaran = null;
+        $this->editSeragamWaktuPembayaran = null;
+    }
+
+    /**
+     * Save edit status Seragam
+     */
+    public function saveEditStatusSeragam()
+    {
+        try {
+            if (!$this->editPendaftarId) {
+                $this->dispatch('saved', message: 'Error: Pendaftar ID tidak ditemukan');
+                return;
+            }
+
+            $pendaftar = Pendaftar::find($this->editPendaftarId);
+            if (!$pendaftar) {
+                $this->dispatch('saved', message: 'Error: Pendaftar tidak ditemukan');
+                return;
+            }
+
+            $seragam = Seragam::firstOrNew(['pendaftar_id' => $this->editPendaftarId]);
+            
+            // Handle nominal_biaya (dari opsi yang dipilih, bukan paket)
+            $nominalBiayaPaket = null;
+            
+            // Cek apakah memilih opsi dari paket atau paket custom
+            if (is_string($this->editSeragamPaket) && $this->editSeragamPaket === 'paket_lainnya') {
+                // Paket custom - tidak ada opsi, langsung gunakan custom amount
+                if ($this->editSeragamPaketCustomName && $this->editSeragamPaketCustomAmount) {
+                    $nominalBiayaPaket = [
+                        'name' => $this->editSeragamPaketCustomName,
+                        'amount' => (int) $this->editSeragamPaketCustomAmount
+                    ];
+                }
+            } else {
+                // Paket dari dropdown - ambil opsi yang dipilih di editSeragamNominalKonfirmasi
+                if ($this->editSeragamNominalKonfirmasi) {
+                    // Check if multi-select (checkbox mode) - simpan sebagai array
+                    if (is_array($this->editSeragamNominalKonfirmasi) && isset($this->editSeragamNominalKonfirmasi[0])) {
+                        // Multi-select - simpan sebagai array untuk nominal_seragam_awal
+                        $nominalBiayaPaket = $this->editSeragamNominalKonfirmasi;
+                    } else {
+                        // Single select (radio mode) - simpan sebagai object
+                        $nominalBiayaPaket = is_array($this->editSeragamNominalKonfirmasi) 
+                            ? $this->editSeragamNominalKonfirmasi 
+                            : json_decode($this->editSeragamNominalKonfirmasi, true);
+                    }
+                }
+            }
+            
+            // Handle nominal_biaya (yang dibayar - dari konfirmasi final)
+            $nominalBiaya = null;
+            if (is_string($this->editSeragamNominalKonfirmasiFinal) && $this->editSeragamNominalKonfirmasiFinal === 'opsi_lainnya') {
+                // Opsi lainnya - manual input (Bayar Tidak Penuh)
+                if ($this->editSeragamNominalKonfirmasiOpsiLainnya) {
+                    $nominalBiaya = [
+                        'name' => 'Bayar Tidak Penuh',
+                        'amount' => (int) $this->editSeragamNominalKonfirmasiOpsiLainnya
+                    ];
+                }
+            } else {
+                // Bayar penuh dari final konfirmasi
+                $nominalBiaya = is_array($this->editSeragamNominalKonfirmasiFinal) 
+                    ? $this->editSeragamNominalKonfirmasiFinal 
+                    : json_decode($this->editSeragamNominalKonfirmasiFinal, true);
+            }
+            
+            // Update data
+            $seragam->paket_seragam = $this->editSeragamPaket;  // Package JSON
+            $seragam->opsi_seragam = is_array($this->editSeragamNominalKonfirmasi) 
+                ? json_encode($this->editSeragamNominalKonfirmasi) 
+                : $this->editSeragamNominalKonfirmasi;  // Selected option JSON
+            $seragam->nominal_seragam_awal = $nominalBiayaPaket;  // Original option
+            $seragam->nominal_seragam = $nominalBiaya;  // Confirmation nominal
+            $seragam->opsi_pembayaran_seragam = $this->editSeragamOpsiPembayaran;
+            $seragam->bank_seragam = $this->editSeragamMetodePembayaran;
+            $seragam->nama_pengirim_seragam = $this->editSeragamNamaPengirim;
+            
+            if ($this->editSeragamWaktuPembayaran) {
+                $seragam->waktu_pembayaran_seragam = $this->editSeragamWaktuPembayaran;
+            }
+
+            // Handle file upload
+            if ($this->editSeragamBuktiPembayaran) {
+                // Delete old file if exists
+                if ($seragam->bukti_pembayaran) {
+                    \Storage::disk('private')->delete($seragam->bukti_pembayaran);
+                }
+
+                // Generate nama file sistematis
+                $extension = $this->editSeragamBuktiPembayaran->getClientOriginalExtension();
+                $customFileName = 'bukti_pembayaran_seragam-' . $pendaftar->nomor_pendaftaran . '-' . \Str::slug($pendaftar->nama_lengkap) . '-' . now()->timestamp . '.' . $extension;
+
+                // Upload ke private storage
+                $path = $this->editSeragamBuktiPembayaran->storeAs(
+                    'dokumen/' . $pendaftar->id,
+                    $customFileName,
+                    'private'
+                );
+                $seragam->bukti_pembayaran = $path;
+            }
+
+            // Set status
+            if (!$seragam->exists) {
+                $seragam->status_seragam = 'menunggu';
+            } elseif ($seragam->status_seragam === 'belum_diisi') {
+                $seragam->status_seragam = 'menunggu';
+            }
+
+            $seragam->save();
+
+            // Touch parent to trigger Livewire refresh
+            $pendaftar->touch();
+
+            $this->closeEditStatusSeragamModal();
+            $this->dispatch('saved', message: 'Data daftar ulang seragam berhasil diupdate');
+
+        } catch (\Exception $e) {
+            $this->dispatch('saved', message: 'Gagal menyimpan data: ' . $e->getMessage());
+            \Log::error('Error saving edit status seragam: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Open edit status Ukuran modal
+     */
+    public function openEditStatusUkuranModal($pendaftarId)
+    {
+        $this->editPendaftarId = $pendaftarId;
+        
+        // Load existing data
+        $pendaftar = Pendaftar::find($pendaftarId);
+        if ($pendaftar && $pendaftar->seragam) {
+            $seragam = $pendaftar->seragam;
+            $this->editUkuranJas = $seragam->ukuran_jas ?? null;
+            $this->editUkuranBajuOlahraga = $seragam->ukuran_baju_olahraga ?? null;
+            $this->editUkuranCelanaOlahraga = $seragam->ukuran_celana_olahraga ?? null;
+            $this->editUkuranBajuHarian = $seragam->ukuran_baju_harian ?? null;
+            $this->editUkuranCelanaRokHarian = $seragam->ukuran_celana_rok_harian ?? null;
+            $this->editUkuranKopyah = $seragam->ukuran_kopyah ?? null;
+        }
+        
+        $this->showEditStatusUkuranModal = true;
+    }
+
+    /**
+     * Close edit status Ukuran modal
+     */
+    public function closeEditStatusUkuranModal()
+    {
+        $this->showEditStatusUkuranModal = false;
+        $this->editPendaftarId = null;
+        $this->editUkuranJas = null;
+        $this->editUkuranBajuOlahraga = null;
+        $this->editUkuranCelanaOlahraga = null;
+        $this->editUkuranBajuHarian = null;
+        $this->editUkuranCelanaRokHarian = null;
+        $this->editUkuranKopyah = null;
+    }
+
+    /**
+     * Save edit status Ukuran
+     */
+    public function saveEditStatusUkuran()
+    {
+        try {
+            if (!$this->editPendaftarId) {
+                $this->dispatch('saved', message: 'Error: Pendaftar ID tidak ditemukan');
+                return;
+            }
+
+            $pendaftar = Pendaftar::find($this->editPendaftarId);
+            if (!$pendaftar) {
+                $this->dispatch('saved', message: 'Error: Pendaftar tidak ditemukan');
+                return;
+            }
+
+            $seragam = Seragam::firstOrNew(['pendaftar_id' => $this->editPendaftarId]);
+            
+            // Update ukuran data
+            $seragam->ukuran_jas = $this->editUkuranJas;
+            $seragam->ukuran_baju_olahraga = $this->editUkuranBajuOlahraga;
+            $seragam->ukuran_celana_olahraga = $this->editUkuranCelanaOlahraga;
+            $seragam->ukuran_baju_harian = $this->editUkuranBajuHarian;
+            $seragam->ukuran_celana_rok_harian = $this->editUkuranCelanaRokHarian;
+            $seragam->ukuran_kopyah = $this->editUkuranKopyah;
+
+            // Set status
+            if (!$seragam->exists) {
+                $seragam->status_ukuran = 'menunggu';
+            } elseif ($seragam->status_ukuran === 'belum_diisi') {
+                $seragam->status_ukuran = 'menunggu';
+            }
+
+            $seragam->save();
+
+            // Touch parent to trigger Livewire refresh
+            $pendaftar->touch();
+
+            $this->closeEditStatusUkuranModal();
+            $this->dispatch('saved', message: 'Data ukuran seragam berhasil diupdate');
+
+        } catch (\Exception $e) {
+            $this->dispatch('saved', message: 'Gagal menyimpan data: ' . $e->getMessage());
+            \Log::error('Error saving edit status ukuran: ' . $e->getMessage());
         }
     }
 }

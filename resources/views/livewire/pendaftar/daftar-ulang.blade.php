@@ -67,13 +67,16 @@
                             </div>
                             @php
                                 // Determine status based on bukti pembayaran and actual status
-                                if ($daftarUlang->status === 'disetujui' || $daftarUlang->status === 'selesai') {
+                                if ($daftarUlang && ($daftarUlang->status === 'disetujui' || $daftarUlang->status === 'selesai')) {
                                     $statusMadrasah = 'disetujui';
-                                } elseif ($daftarUlang->status === 'ditolak') {
+                                } elseif ($daftarUlang && $daftarUlang->status === 'ditolak') {
                                     $statusMadrasah = 'ditolak';
-                                } elseif ($daftarUlang->status === 'perbaiki') {
+                                } elseif ($daftarUlang && $daftarUlang->status === 'perbaiki') {
                                     $statusMadrasah = 'perbaiki';
-                                } elseif ($daftarUlang->bukti_pembayaran_madrasah) {
+                                } elseif ($daftarUlang && ($daftarUlang->status === 'belum_diisi' || !$daftarUlang->status)) {
+                                    // Status belum_diisi atau kosong = belum upload
+                                    $statusMadrasah = 'belum_upload';
+                                } elseif ($daftarUlang && $daftarUlang->bukti_pembayaran_madrasah) {
                                     // If bukti uploaded but status not set or 'menunggu'
                                     $statusMadrasah = 'menunggu';
                                 } else {
@@ -112,6 +115,9 @@
                                     $statusUkuran = 'ditolak';
                                 } elseif ($seragam && $seragam->status_ukuran === 'perbaiki') {
                                     $statusUkuran = 'perbaiki';
+                                } elseif ($seragam && $seragam->status_ukuran === 'belum_diisi') {
+                                    // Status belum_diisi = belum isi
+                                    $statusUkuran = 'belum_isi';
                                 } elseif ($seragam && (
                                     $seragam->ukuran_jas ||
                                     $seragam->ukuran_baju_olahraga ||
@@ -158,6 +164,9 @@
                                     $statusSeragam = 'ditolak';
                                 } elseif ($seragam && $seragam->status_seragam === 'perbaiki') {
                                     $statusSeragam = 'perbaiki';
+                                } elseif ($seragam && $seragam->status_seragam === 'belum_diisi') {
+                                    // Status belum_diisi = belum upload
+                                    $statusSeragam = 'belum_upload';
                                 } elseif ($seragam && $seragam->bukti_pembayaran) {
                                     // If bukti uploaded but status not set or 'menunggu'
                                     $statusSeragam = 'menunggu';
@@ -415,7 +424,7 @@
 
                     <!-- Status Display untuk Menunggu dan Disetujui -->
                     <div class="space-y-4">
-                        @if($daftarUlang->status === 'menunggu')
+                        @if($daftarUlang && $daftarUlang->status === 'menunggu')
                         <!-- Status Menunggu -->
                         <div class="bg-yellow-50 border-2 border-yellow-400 rounded-lg p-6">
                             <div class="flex items-start">
@@ -441,7 +450,7 @@
                                 </div>
                             </div>
                         </div>
-                        @elseif($daftarUlang->status === 'disetujui')
+                        @elseif($daftarUlang && $daftarUlang->status === 'disetujui')
                         <!-- Status Disetujui -->
                         <div class="bg-green-50 border-2 border-green-400 rounded-lg p-6">
                             <div class="flex items-start">
@@ -497,7 +506,7 @@
                             @endif
 
                             <!-- Tombol Download Invoice -->
-                            @if($daftarUlang->status === 'disetujui')
+                            @if($daftarUlang && $daftarUlang->status === 'disetujui')
                             <button wire:click="previewInvoiceMadrasah"
                                     class="flex items-center justify-center px-6 py-4 bg-purple-600 hover:bg-purple-700 text-white font-semibold rounded-lg shadow-md transition duration-200 transform hover:scale-105">
                                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -517,25 +526,25 @@
                                 Data yang Telah Dikirim
                             </h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                                @if($daftarUlang->nominal_biaya)
+                                @if($daftarUlang->nominal_biaya_awal)
                                 <div class="p-3 bg-gray-50 rounded-lg">
                                     <p class="text-gray-600 mb-1">Nominal Biaya (Surat Pernyataan):</p>
                                     <p class="font-semibold text-gray-900">
-                                        Rp {{ number_format($daftarUlang->nominal_biaya['amount'] ?? 0, 0, ',', '.') }}
-                                        @if(isset($daftarUlang->nominal_biaya['name']))
-                                            <span class="text-xs text-gray-500">({{ $daftarUlang->nominal_biaya['name'] }})</span>
+                                        Rp {{ number_format($daftarUlang->nominal_biaya_awal['amount'] ?? 0, 0, ',', '.') }}
+                                        @if(isset($daftarUlang->nominal_biaya_awal['name']))
+                                            <span class="text-xs text-gray-500">({{ $daftarUlang->nominal_biaya_awal['name'] }})</span>
                                         @endif
                                     </p>
                                 </div>
                                 @endif
 
-                                @if($daftarUlang->nominal_biaya_awal)
+                                @if($daftarUlang->nominal_biaya)
                                 <div class="p-3 bg-gray-50 rounded-lg">
                                     <p class="text-gray-600 mb-1">Nominal Dibayarkan:</p>
                                     <p class="font-semibold text-gray-900">
-                                        Rp {{ number_format($daftarUlang->nominal_biaya_awal['amount'] ?? 0, 0, ',', '.') }}
-                                        @if(isset($daftarUlang->nominal_biaya_awal['name']))
-                                            <span class="text-xs text-gray-500">({{ $daftarUlang->nominal_biaya_awal['name'] }})</span>
+                                        Rp {{ number_format($daftarUlang->nominal_biaya['amount'] ?? 0, 0, ',', '.') }}
+                                        @if(isset($daftarUlang->nominal_biaya['name']))
+                                            <span class="text-xs text-gray-500">({{ $daftarUlang->nominal_biaya['name'] }})</span>
                                         @endif
                                     </p>
                                 </div>
@@ -1057,7 +1066,7 @@
                                         </svg>
                                         <span class="text-sm font-semibold text-green-800">Bukti pembayaran telah diupload</span>
                                     </div>
-                                    @if($daftarUlang->status == 'disetujui' || $daftarUlang->status == 'selesai')
+                                    @if($daftarUlang && ($daftarUlang->status == 'disetujui' || $daftarUlang->status == 'selesai'))
                                     <div class="flex gap-2">
                                         <a href="{{ route('pendaftar.daftarulang.view-file', ['type' => 'madrasah', 'file' => basename($daftarUlang->bukti_pembayaran_madrasah)]) }}" target="_blank"
                                            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition text-center flex items-center justify-center">

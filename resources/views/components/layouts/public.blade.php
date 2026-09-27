@@ -19,33 +19,36 @@
 
     <!-- Assets Loading -->
     <x-asset-loader />
+    
+    <!-- Custom Styles Stack -->
+    @stack('styles')
 </head>
 <body class="antialiased bg-gray-50">
     <!-- Navigation -->
     <nav class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm">
-        <div class="w-full px-6 lg:px-12">
-            <div class="flex justify-between items-center h-20">
+        <div class="w-full px-4 sm:px-6 lg:px-12">
+            <div class="flex justify-between items-center h-16 sm:h-20">
                 <!-- Logo -->
                 <div class="flex-shrink-0 flex items-center">
-                    <a href="/" class="flex items-center space-x-3">
+                    <a href="/" class="flex items-center space-x-2 sm:space-x-3">
                         @php $logo = \App\Models\Setting::get('app_logo'); @endphp
                         @if($logo && !empty($logo))
-                            <img src="{{ $logo }}" alt="Logo" class="w-12 h-12 object-contain">
+                            <img src="{{ $logo }}" alt="Logo" class="w-10 h-10 sm:w-12 sm:h-12 object-contain">
                         @else
-                            <div class="w-12 h-12 bg-emerald-600 rounded-lg flex items-center justify-center">
-                                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                                 </svg>
                             </div>
                         @endif
                         <div>
-                            <h1 class="text-lg font-bold text-gray-900">{{ \App\Models\Setting::get('app_name', 'MTsN 2 Kota Malang') }}</h1>
-                            <p class="text-xs text-gray-600">{{ $appAcronym }} Online {{ \App\Models\Setting::get('tahun_pelajaran', date('Y')) }}</p>
+                            <h1 class="text-base sm:text-lg font-bold text-gray-900">{{ \App\Models\Setting::get('app_name', 'MTsN 2 Kota Malang') }}</h1>
+                            <p class="text-xs text-gray-600 hidden sm:block">{{ $appAcronym }} Online {{ \App\Models\Setting::get('tahun_pelajaran', date('Y')) }}</p>
                         </div>
                     </a>
                 </div>
 
-                <!-- Desktop Navigation -->
+                <!-- Desktop Navigation (lg+) -->
                 <div class="hidden lg:flex items-center space-x-1">
                     <a href="/" class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-3 py-2 text-sm font-medium rounded-lg transition">
                         Beranda
@@ -120,19 +123,48 @@
                 </div>
 
                 <!-- Right Side -->
-                <div class="flex items-center space-x-3">
-                    @auth
-                        <!-- User Avatar Dropdown -->
-                        <div class="relative" x-data="{ open: false }">
-                            <button @click="open = !open" @click.away="open = false" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition">
-                                <div class="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
-                                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                                </div>
-                                <span class="hidden lg:block text-sm font-medium text-gray-700">{{ auth()->user()->name }}</span>
-                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
-                                </svg>
-                            </button>
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <!-- Mobile & Tablet: Burger Menu (hidden on lg+) -->
+                    <div class="flex lg:hidden items-center space-x-2">
+                        <!-- Tablet Action Buttons (md to lg) -->
+                        <div class="hidden md:flex lg:hidden items-center space-x-2">
+                            @guest
+                                @if(\App\Models\Setting::get('registration_phase') === 'dibuka')
+                                <a href="/daftar" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs sm:text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm whitespace-nowrap">
+                                    Daftar
+                                </a>
+                                @endif
+                                <a href="/login" class="inline-flex items-center px-3 py-1.5 border border-emerald-600 text-xs sm:text-sm font-medium rounded-lg text-emerald-600 hover:bg-emerald-50 transition whitespace-nowrap">
+                                    Login
+                                </a>
+                            @endguest
+                        </div>
+                        
+                        <!-- Burger Button -->
+                        <button type="button" id="mobileMenuBtn" onclick="toggleMobileMenu()" class="inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition">
+                            <svg id="menuIconOpen" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+                            </svg>
+                            <svg id="menuIconClose" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Desktop: Auth Buttons (lg+) -->
+                    <div class="hidden lg:flex items-center space-x-2">
+                        @auth
+                            <!-- User Avatar Dropdown -->
+                            <div class="relative" x-data="{ open: false }">
+                                <button @click="open = !open" @click.away="open = false" class="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-100 transition">
+                                    <div class="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center text-white font-semibold text-sm">
+                                        {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
+                                    </div>
+                                    <span class="text-sm font-medium text-gray-700">{{ auth()->user()->name }}</span>
+                                    <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                                    </svg>
+                                </button>
 
                             <!-- Dropdown Menu -->
                             <div x-show="open" x-transition class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg py-1 border border-gray-200 z-50">
@@ -192,7 +224,7 @@
                             </div>
                         </div>
                     @else
-                        <!-- Login Buttons (Guest) -->
+                        <!-- Login Buttons (Guest) - Desktop Only (lg+) -->
                         <a href="/login" class="hidden lg:inline-flex items-center px-4 py-2 border border-emerald-600 text-sm font-medium rounded-lg text-emerald-600 hover:bg-emerald-50 transition">
                             Login Pendaftar
                         </a>
@@ -200,28 +232,18 @@
                             Login Panitia
                         </a>
                         @if(\App\Models\Setting::get('registration_phase') === 'dibuka')
-                        <a href="/daftar" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm">
+                        <a href="/daftar" class="hidden lg:inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm">
                             Daftar Sekarang
                         </a>
                         @endif
                     @endauth
-
-                    <!-- Mobile menu button -->
-                    <button type="button" id="mobileMenuBtn" onclick="toggleMobileMenu()" class="lg:hidden inline-flex items-center justify-center p-2 rounded-md text-gray-700 hover:text-gray-900 hover:bg-gray-100 transition">
-                        <svg id="menuIconOpen" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        </svg>
-                        <svg id="menuIconClose" class="h-6 w-6 hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
                 </div>
             </div>
         </div>
 
         <!-- Mobile Menu Panel -->
         <div id="mobileMenuPanel"
-             class="hidden lg:hidden border-t border-gray-200 bg-white transition-all duration-200">
+             class="hidden border-t border-gray-200 bg-white transition-all duration-200 lg:hidden">
             <div class="px-4 pt-2 pb-3 space-y-1">
                 <a href="/" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 transition">
                     Beranda
@@ -325,12 +347,19 @@
                     </div>
                 @else
                     <!-- Login Buttons (Guest - Mobile) -->
-                    <a href="/login" class="block w-full px-4 py-2 text-center border border-emerald-600 text-sm font-medium rounded-lg text-emerald-600 hover:bg-emerald-50 transition mb-2">
-                        Login Pendaftar
-                    </a>
-                    <a href="/login/admin" class="block w-full px-4 py-2 text-center border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition">
-                        Login Panitia
-                    </a>
+                    <div class="space-y-2">
+                        @if(\App\Models\Setting::get('registration_phase') === 'dibuka')
+                        <a href="/daftar" class="block w-full px-4 py-2 text-center text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 transition">
+                            Daftar Sekarang
+                        </a>
+                        @endif
+                        <a href="/login" class="block w-full px-4 py-2 text-center border-2 border-emerald-600 text-sm font-medium rounded-lg text-emerald-600 hover:bg-emerald-50 transition">
+                            Login Pendaftar
+                        </a>
+                        <a href="/login/admin" class="block w-full px-4 py-2 text-center text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition">
+                            Login Panitia
+                        </a>
+                    </div>
                 @endauth
             </div>
         </div>
@@ -367,33 +396,33 @@
 
     <!-- Footer -->
     <footer class="bg-gray-900 text-white mt-20">
-        <div class="w-full px-6 lg:px-12 py-12">
+        <div class="w-full px-4 sm:px-6 lg:px-12 py-8 sm:py-12">
             @php
                 $kontakPanitia = \App\Models\KontakPanitia::aktif()->ordered()->take(6)->get();
             @endphp
-            <div class="grid grid-cols-1 md:grid-cols-6 gap-8">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6 sm:gap-8">
                 <!-- About -->
-                <div class="col-span-1 md:col-span-2">
-                    <div class="flex items-center space-x-3 mb-4">
+                <div class="col-span-1 sm:col-span-2">
+                    <div class="flex items-center space-x-2 sm:space-x-3 mb-3 sm:mb-4">
                         @php $logo = \App\Models\Setting::get('app_logo'); @endphp
                         @if($logo && !empty($logo))
-                            <img src="{{ $logo }}" alt="Logo" class="w-10 h-10 object-contain">
+                            <img src="{{ $logo }}" alt="Logo" class="w-8 h-8 sm:w-10 sm:h-10 object-contain" style="max-width: 2rem; height: auto;">
                         @else
-                            <div class="w-10 h-10 bg-emerald-600 rounded-lg flex items-center justify-center">
-                                <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <div class="w-8 h-8 sm:w-10 sm:h-10 bg-emerald-600 rounded-lg flex items-center justify-center">
+                                <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                                 </svg>
                             </div>
                         @endif
                         <div>
-                            <h3 class="text-lg font-bold">{{ \App\Models\Setting::get('app_name', 'MTsN 2 Kota Malang') }}</h3>
-                            <p class="text-sm text-gray-400">{{ $appAcronym }} Online {{ \App\Models\Setting::get('tahun_pelajaran', date('Y')) }}</p>
+                            <h3 class="text-sm sm:text-base font-bold">{{ \App\Models\Setting::get('app_name', 'MTsN 2 Kota Malang') }}</h3>
+                            <p class="text-xs text-gray-400">{{ $appAcronym }} Online {{ \App\Models\Setting::get('tahun_pelajaran', date('Y')) }}</p>
                         </div>
                     </div>
-                    <p class="text-gray-400 text-sm mb-4">
+                    <p class="text-gray-400 text-xs sm:text-sm mb-3 sm:mb-4 line-clamp-3">
                         {{ \App\Models\Setting::get('app_footer_description', 'Madrasah Tsanawiyah Negeri 2 Kota Malang adalah lembaga pendidikan Islam yang berkomitmen untuk menghasilkan generasi yang berakhlak mulia dan berprestasi.') }}
                     </p>
-                    <div class="flex space-x-4">
+                    <div class="flex space-x-3 sm:space-x-4">
                         @if($fb = \App\Models\Setting::get('app_social_facebook'))
                             <a href="{{ $fb }}" target="_blank" class="text-gray-400 hover:text-[#1877F2] transition shadow-sm hover:scale-110 transform" title="Facebook">
                                 <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
@@ -490,42 +519,42 @@
                 </div>
 
                 <!-- Kontak PTSP -->
-                <div>
-                    <h4 class="text-sm font-semibold text-white uppercase tracking-wider mb-4">Kontak PTSP</h4>
-                    <ul class="space-y-2 text-sm text-gray-400">
+                <div class="sm:col-span-2 lg:col-span-1">
+                    <h4 class="text-xs sm:text-sm font-semibold text-white uppercase tracking-wider mb-3 sm:mb-4">Kontak PTSP</h4>
+                    <ul class="space-y-2 text-xs sm:text-sm text-gray-400">
                         <li class="flex items-start">
-                            <svg class="w-5 h-5 mr-2 mt-0.5 flex-shrink-0 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 mt-0.5 flex-shrink-0 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                             </svg>
-                            <span>{{ \App\Models\Setting::get('app_address', 'Jl. Raya Sulfat No. 01') }}</span>
+                            <span class="break-words">{{ \App\Models\Setting::get('app_address', 'Jl. Raya Sulfat No. 01') }}</span>
                         </li>
                         <li class="flex items-center">
-                            <svg class="w-5 h-5 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
                             </svg>
-                            <span>{{ \App\Models\Setting::get('app_phone', '(0341) 123456') }}</span>
+                            <span class="break-all">{{ \App\Models\Setting::get('app_phone', '(0341) 123456') }}</span>
                         </li>
                         <li class="flex items-center">
                             <!-- Icon Email -->
-                            <svg class="w-5 h-5 mr-2 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 text-emerald-500 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
                             </svg>
-                            <span>{{ \App\Models\Setting::get('app_email_ptsp', 'info@mtsn2kotamalang.sch.id') }}</span>
+                            <span class="break-all">{{ \App\Models\Setting::get('app_email_ptsp', 'info@mtsn2kotamalang.sch.id') }}</span>
                         </li>
                         <li class="flex items-center">
                             <!-- WhatsApp PTSP -->
-                            <svg class="w-5 h-5 mr-2 text-emerald-500" fill="currentColor" viewBox="0 0 24 24">
+                            <svg class="w-4 h-4 sm:w-5 sm:h-5 mr-2 flex-shrink-0 text-emerald-500" fill="currentColor" viewBox="0 0 24 24">
                                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"/>
                             </svg>
-                            <span>{{ \App\Models\Setting::get('app_whatsapp_ptsp', 'Belum diatur di Admin') }}</span>
+                            <span class="break-all">{{ \App\Models\Setting::get('app_whatsapp_ptsp', 'Belum diatur di Admin') }}</span>
                         </li>
                     </ul>
                 </div>
             </div>
 
-            <div class="border-t border-gray-800 mt-8 pt-8 text-center">
-                <p class="text-sm text-gray-400">
+            <div class="border-t border-gray-800 mt-6 sm:mt-8 pt-6 sm:pt-8 text-center">
+                <p class="text-xs sm:text-sm text-gray-400">
                     {{ \App\Models\Setting::get('app_footer_copyright', '© ' . date('Y') . ' MTsN 2 Kota Malang. All rights reserved.') }}
                 </p>
             </div>
@@ -563,15 +592,28 @@
             const mobileMenuPanel = document.getElementById('mobileMenuPanel');
             const menuIconOpen = document.getElementById('menuIconOpen');
             const menuIconClose = document.getElementById('menuIconClose');
-
+            
+            if (!mobileMenuPanel || !menuIconOpen || !menuIconClose) return;
+            
             if (mobileMenuPanel.classList.contains('hidden')) {
+                // Show menu
                 mobileMenuPanel.classList.remove('hidden');
                 menuIconOpen.classList.add('hidden');
                 menuIconClose.classList.remove('hidden');
+                
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+                
+                // Prevent body scroll
+                document.body.style.overflow = 'hidden';
             } else {
+                // Hide menu
                 mobileMenuPanel.classList.add('hidden');
                 menuIconOpen.classList.remove('hidden');
                 menuIconClose.classList.add('hidden');
+                
+                // Restore body scroll
+                document.body.style.overflow = '';
             }
         }
 

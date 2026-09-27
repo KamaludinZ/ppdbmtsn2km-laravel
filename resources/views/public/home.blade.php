@@ -1,27 +1,239 @@
 <x-layouts.public title="Beranda - {{ $appAcronym }} MTsN 2 Kota Malang">
+    @push('styles')
+    <style>
+        /* Hero Section Animations */
+        @-webkit-keyframes float {
+            0%, 100% { -webkit-transform: translateY(0px) rotate(0deg); transform: translateY(0px) rotate(0deg); }
+            50% { -webkit-transform: translateY(-20px) rotate(5deg); transform: translateY(-20px) rotate(5deg); }
+        }
+        @keyframes float {
+            0%, 100% { -webkit-transform: translateY(0px) rotate(0deg); transform: translateY(0px) rotate(0deg); }
+            50% { -webkit-transform: translateY(-20px) rotate(5deg); transform: translateY(-20px) rotate(5deg); }
+        }
+        
+        @-webkit-keyframes float-delayed {
+            0%, 100% { -webkit-transform: translateY(0px) rotate(0deg); transform: translateY(0px) rotate(0deg); }
+            50% { -webkit-transform: translateY(-15px) rotate(-5deg); transform: translateY(-15px) rotate(-5deg); }
+        }
+        @keyframes float-delayed {
+            0%, 100% { -webkit-transform: translateY(0px) rotate(0deg); transform: translateY(0px) rotate(0deg); }
+            50% { -webkit-transform: translateY(-15px) rotate(-5deg); transform: translateY(-15px) rotate(-5deg); }
+        }
+        
+        @-webkit-keyframes pulse-glow {
+            0%, 100% { opacity: 0.3; -webkit-transform: scale(1); transform: scale(1); }
+            50% { opacity: 0.5; -webkit-transform: scale(1.1); transform: scale(1.1); }
+        }
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.3; -webkit-transform: scale(1); transform: scale(1); }
+            50% { opacity: 0.5; -webkit-transform: scale(1.1); transform: scale(1.1); }
+        }
+        
+        @-webkit-keyframes drift {
+            0% { -webkit-transform: translateX(0px) translateY(0px); transform: translateX(0px) translateY(0px); }
+            25% { -webkit-transform: translateX(10px) translateY(-10px); transform: translateX(10px) translateY(-10px); }
+            50% { -webkit-transform: translateX(0px) translateY(-20px); transform: translateX(0px) translateY(-20px); }
+            75% { -webkit-transform: translateX(-10px) translateY(-10px); transform: translateX(-10px) translateY(-10px); }
+            100% { -webkit-transform: translateX(0px) translateY(0px); transform: translateX(0px) translateY(0px); }
+        }
+        @keyframes drift {
+            0% { -webkit-transform: translateX(0px) translateY(0px); transform: translateX(0px) translateY(0px); }
+            25% { -webkit-transform: translateX(10px) translateY(-10px); transform: translateX(10px) translateY(-10px); }
+            50% { -webkit-transform: translateX(0px) translateY(-20px); transform: translateX(0px) translateY(-20px); }
+            75% { -webkit-transform: translateX(-10px) translateY(-10px); transform: translateX(-10px) translateY(-10px); }
+            100% { -webkit-transform: translateX(0px) translateY(0px); transform: translateX(0px) translateY(0px); }
+        }
+        
+        @-webkit-keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @keyframes gradient-shift {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        @-webkit-keyframes wave {
+            0% { -webkit-transform: translateX(0); transform: translateX(0); }
+            50% { -webkit-transform: translateX(-25%); transform: translateX(-25%); }
+            100% { -webkit-transform: translateX(0); transform: translateX(0); }
+        }
+        @keyframes wave {
+            0% { -webkit-transform: translateX(0); transform: translateX(0); }
+            50% { -webkit-transform: translateX(-25%); transform: translateX(-25%); }
+            100% { -webkit-transform: translateX(0); transform: translateX(0); }
+        }
+        
+        @-webkit-keyframes swell {
+            0%, 100% { -webkit-transform: scale(1); transform: scale(1); }
+            50% { -webkit-transform: scale(1.1); transform: scale(1.1); }
+        }
+        @keyframes swell {
+            0%, 100% { -webkit-transform: scale(1); transform: scale(1); }
+            50% { -webkit-transform: scale(1.1); transform: scale(1.1); }
+        }
+        
+        @-webkit-keyframes fadeInUp {
+            from { opacity: 0; -webkit-transform: translateY(30px); transform: translateY(30px); }
+            to { opacity: 1; -webkit-transform: translateY(0); transform: translateY(0); }
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; -webkit-transform: translateY(30px); transform: translateY(30px); }
+            to { opacity: 1; -webkit-transform: translateY(0); transform: translateY(0); }
+        }
+        
+        .hero-shape-1 { -webkit-animation: float 6s ease-in-out infinite; animation: float 6s ease-in-out infinite; left: 10%; top: 20%; }
+        .hero-shape-2 { -webkit-animation: float-delayed 8s ease-in-out infinite; animation: float-delayed 8s ease-in-out infinite; left: 70%; top: 15%; }
+        .hero-shape-3 { -webkit-animation: float 7s ease-in-out infinite; animation: float 7s ease-in-out infinite; left: 80%; top: 60%; }
+        .hero-shape-4 { -webkit-animation: pulse-glow 4s ease-in-out infinite; animation: pulse-glow 4s ease-in-out infinite; left: 20%; top: 70%; }
+        .hero-shape-5 { -webkit-animation: drift 10s ease-in-out infinite; animation: drift 10s ease-in-out infinite; left: 60%; top: 30%; }
+        .hero-shape-6 { -webkit-animation: float-delayed 9s ease-in-out infinite; animation: float-delayed 9s ease-in-out infinite; left: 40%; top: 10%; }
+        .hero-shape-7 { -webkit-animation: float 8s ease-in-out infinite; animation: float 8s ease-in-out infinite; left: 25%; top: 35%; }
+        .hero-shape-8 { -webkit-animation: drift 12s ease-in-out infinite; animation: drift 12s ease-in-out infinite; left: 85%; top: 45%; }
+        .hero-shape-9 { -webkit-animation: float-delayed 10s ease-in-out infinite; animation: float-delayed 10s ease-in-out infinite; left: 15%; top: 55%; }
+        .hero-shape-10 { -webkit-animation: pulse-glow 5s ease-in-out infinite; animation: pulse-glow 5s ease-in-out infinite; left: 50%; top: 25%; }
+        .hero-shape-11 { -webkit-animation: float 9s ease-in-out infinite; animation: float 9s ease-in-out infinite; left: 75%; top: 80%; }
+        
+        .hero-dot-1 { -webkit-animation: pulse-glow 3s ease-in-out infinite; animation: pulse-glow 3s ease-in-out infinite; left: 15%; top: 40%; }
+        .hero-dot-2 { -webkit-animation: pulse-glow 4s ease-in-out infinite 0.5s; animation: pulse-glow 4s ease-in-out infinite 0.5s; left: 85%; top: 35%; }
+        .hero-dot-3 { -webkit-animation: pulse-glow 5s ease-in-out infinite 1s; animation: pulse-glow 5s ease-in-out infinite 1s; left: 30%; top: 80%; }
+        .hero-dot-4 { -webkit-animation: pulse-glow 3.5s ease-in-out infinite 1.5s; animation: pulse-glow 3.5s ease-in-out infinite 1.5s; left: 55%; top: 50%; }
+        .hero-dot-5 { -webkit-animation: pulse-glow 4.5s ease-in-out infinite 2s; animation: pulse-glow 4.5s ease-in-out infinite 2s; left: 75%; top: 75%; }
+        
+        .bg-gradient-animate {
+            background: linear-gradient(-45deg, rgba(16, 185, 129, 0.3), rgba(6, 182, 212, 0.3), rgba(34, 197, 94, 0.3), rgba(16, 185, 129, 0.3));
+            background-size: 400% 400%;
+            -webkit-animation: gradient-shift 15s ease infinite;
+            animation: gradient-shift 15s ease infinite;
+        }
+        
+        /* Wave Animation */
+        .wave-container {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            overflow: hidden;
+            line-height: 0;
+            z-index: 1;
+            pointer-events: none;
+        }
+        
+        .wave {
+            position: relative;
+            display: block;
+            width: calc(300% + 1.3px);
+            height: 100px;
+            -webkit-animation: wave 15s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+            animation: wave 15s cubic-bezier(0.36, 0.45, 0.63, 0.53) infinite;
+            -webkit-transform: translate3d(0, 0, 0);
+            transform: translate3d(0, 0, 0);
+        }
+        
+        /* Smooth entrance animation */
+        .hero-content {
+            -webkit-animation: fadeInUp 0.8s ease-out;
+            animation: fadeInUp 0.8s ease-out;
+        }
+        
+        .hero-content-delay-1 { -webkit-animation: fadeInUp 0.8s ease-out 0.2s both; animation: fadeInUp 0.8s ease-out 0.2s both; }
+        .hero-content-delay-2 { -webkit-animation: fadeInUp 0.8s ease-out 0.4s both; animation: fadeInUp 0.8s ease-out 0.4s both; }
+        .hero-content-delay-3 { -webkit-animation: fadeInUp 0.8s ease-out 0.6s both; animation: fadeInUp 0.8s ease-out 0.6s both; }
+        
+        /* Fallback untuk Tailwind blur classes */
+        .blur-lg { filter: blur(16px); -webkit-filter: blur(16px); }
+        .blur-xl { filter: blur(24px); -webkit-filter: blur(24px); }
+        .blur-2xl { filter: blur(40px); -webkit-filter: blur(40px); }
+    </style>
+    @endpush
+
     <x-registration-phase-banner />
 
     <!-- Hero Section -->
-    <section class="relative bg-gradient-to-br from-emerald-600 to-emerald-800 text-white overflow-hidden">
-        <div class="absolute inset-0 bg-black opacity-10"></div>
-        <div class="absolute inset-0" style="background-image: url('data:image/svg+xml,%3Csvg width=\'60\' height=\'60\' viewBox=\'0 0 60 60\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cg fill=\'none\' fill-rule=\'evenodd\'%3E%3Cg fill=\'%23ffffff\' fill-opacity=\'0.05\'%3E%3Cpath d=\'M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z\'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E');"></div>
+    <section class="relative bg-gradient-to-br from-emerald-600 via-emerald-700 to-emerald-900 text-white overflow-hidden">
+        <!-- Animated Background Pattern -->
+        <div class="absolute inset-0 opacity-20">
+            <div class="absolute inset-0" style="background-image: radial-gradient(circle at 20% 50%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 80% 80%, rgba(255,255,255,0.1) 0%, transparent 50%), radial-gradient(circle at 40% 20%, rgba(255,255,255,0.08) 0%, transparent 50%);"></div>
+        </div>
+        
+        <!-- Floating Shapes Animation -->
+        <div class="absolute inset-0 overflow-hidden pointer-events-none">
+            <!-- Circles -->
+            <div class="hero-shape hero-shape-1 absolute w-20 h-20 rounded-full" style="background-color: rgba(255, 255, 255, 0.1); filter: blur(24px); -webkit-filter: blur(24px);"></div>
+            <div class="hero-shape hero-shape-2 absolute w-16 h-16 rounded-full" style="background-color: rgba(52, 211, 153, 0.4); filter: blur(16px); -webkit-filter: blur(16px);"></div>
+            <div class="hero-shape hero-shape-3 absolute w-24 h-24 rounded-full" style="background-color: rgba(253, 224, 71, 0.4); filter: blur(24px); -webkit-filter: blur(24px);"></div>
+            <!-- Stars -->
+            <div class="hero-shape hero-shape-4 absolute w-12 h-12 opacity-10">
+                <svg viewBox="0 0 24 24" fill="currentColor" class="w-full h-full" style="color: rgb(255, 255, 255);">
+                    <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z"/>
+                </svg>
+            </div>
+            <div class="hero-shape hero-shape-7 absolute w-10 h-10 opacity-10">
+                <svg viewBox="0 0 24 24" fill="currentColor" class="w-full h-full" style="color: rgb(167, 243, 208);">
+                    <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z"/>
+                </svg>
+            </div>
+            <div class="hero-shape hero-shape-10 absolute w-14 h-14 opacity-10">
+                <svg viewBox="0 0 24 24" fill="currentColor" class="w-full h-full" style="color: rgb(254, 240, 138);">
+                    <path d="M12 0L14.59 9.41L24 12L14.59 14.59L12 24L9.41 14.59L0 12L9.41 9.41L12 0Z"/>
+                </svg>
+            </div>
+            <!-- Book Icons -->
+            <div class="hero-shape hero-shape-5 absolute w-10 h-10 opacity-10">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-full h-full" style="color: rgb(255, 255, 255);">
+                    <path d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
+                </svg>
+            </div>
+            <div class="hero-shape hero-shape-8 absolute w-12 h-12 opacity-10">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-full h-full" style="color: rgb(167, 243, 208);">
+                    <path d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25"/>
+                </svg>
+            </div>
+            <!-- Graduation Cap Icons -->
+            <div class="hero-shape hero-shape-6 absolute w-14 h-14 opacity-10">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-full h-full" style="color: rgb(255, 255, 255);">
+                    <path d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5"/>
+                </svg>
+            </div>
+            <div class="hero-shape hero-shape-9 absolute w-12 h-12 opacity-10">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-full h-full" style="color: rgb(254, 240, 138);">
+                    <path d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5"/>
+                </svg>
+            </div>
+            <div class="hero-shape hero-shape-11 absolute w-10 h-10 opacity-10">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" class="w-full h-full" style="color: rgb(209, 250, 229);">
+                    <path d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5"/>
+                </svg>
+            </div>
+            <!-- Small Dots -->
+            <div class="hero-dot hero-dot-1 absolute w-2 h-2 rounded-full" style="background-color: rgba(255, 255, 255, 0.3);"></div>
+            <div class="hero-dot hero-dot-2 absolute w-1.5 h-1.5 rounded-full" style="background-color: rgba(167, 243, 208, 0.4);"></div>
+            <div class="hero-dot hero-dot-3 absolute w-2 h-2 rounded-full" style="background-color: rgba(254, 240, 138, 0.3);"></div>
+            <div class="hero-dot hero-dot-4 absolute w-1 h-1 rounded-full" style="background-color: rgba(255, 255, 255, 0.25);"></div>
+            <div class="hero-dot hero-dot-5 absolute w-2 h-2 rounded-full" style="background-color: rgba(209, 250, 229, 0.35);"></div>
+        </div>
 
-        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">
+        <!-- Gradient Animation Overlay -->
+        <div class="absolute inset-0 bg-gradient-animate opacity-30"></div>
+
+        <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24" style="z-index: 10;">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                 <div class="lg:col-span-7">
-                    <div class="inline-block bg-emerald-500 bg-opacity-50 rounded-full px-4 py-2 mb-6">
+                    <div class="inline-block bg-emerald-500 bg-opacity-50 rounded-full px-4 py-2 mb-6 hero-content">
                         <p class="text-sm font-semibold">Tahun Pelajaran {{ \App\Models\Setting::get('tahun_pelajaran', '2025/2026') }}</p>
                     </div>
-                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight">
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight hero-content-delay-1">
                         {{ $appFullName }}
                     </h1>
-                    <p class="text-xl md:text-2xl mb-4 text-emerald-100">
+                    <p class="text-xl md:text-2xl mb-4 text-emerald-100 hero-content-delay-1">
                         MTsN 2 Kota Malang
                     </p>
-                    <p class="text-base md:text-lg mb-8 text-emerald-50 leading-relaxed">
+                    <p class="text-base md:text-lg mb-8 text-emerald-50 leading-relaxed hero-content-delay-2">
                         Bergabunglah dengan kami untuk mendapatkan pendidikan Islam yang berkualitas dan berprestasi
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex flex-col sm:flex-row gap-4 hero-content-delay-3">
                         @if($registrationPhase === 'dibuka')
                         <a href="/daftar" class="inline-flex items-center justify-center px-6 sm:px-8 py-3 sm:py-4 border border-transparent text-base sm:text-lg font-medium rounded-lg text-emerald-600 bg-white hover:bg-gray-50 hover:scale-105 transition-all duration-200 shadow-lg">
                             Daftar Sekarang
@@ -51,7 +263,7 @@
                     </div>
                 </div>
                 <div class="lg:col-span-5">
-                    <div class="bg-white rounded-2xl p-6 md:p-8 shadow-2xl border-2 border-emerald-200">
+                    <div class="bg-white rounded-2xl p-6 md:p-8 shadow-2xl border-2 border-emerald-200 hero-content-delay-3">
                         <div class="flex items-center mb-6">
                             <div class="w-16 h-16 bg-emerald-600 rounded-xl flex items-center justify-center mr-4">
                                 <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -215,6 +427,13 @@
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Wave Divider -->
+        <div class="wave-container">
+            <svg class="wave" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 100" preserveAspectRatio="none">
+                <path fill="#ffffff" fill-opacity="1" d="M0,50L48,55.3C96,61,192,71,288,66.7C384,63,480,43,576,37.3C672,32,768,40,864,45.3C960,51,1056,53,1152,48C1248,43,1344,32,1392,26.7L1440,21L1440,100L1392,100C1344,100,1248,100,1152,100C1056,100,960,100,864,100C768,100,672,100,576,100C480,100,384,100,288,100C192,100,96,100,48,100L0,100Z"></path>
+            </svg>
         </div>
     </section>
 

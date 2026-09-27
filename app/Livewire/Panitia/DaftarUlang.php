@@ -736,10 +736,18 @@ class DaftarUlang extends Component
     /**
      * Open catatan modal
      */
-    public function openCatatanModal($type, $pendaftarId, $currentCatatan = '')
+    public function openCatatanModal($type, $pendaftarId)
     {
         $this->catatanType = $type;
         $this->catatanPendaftarId = $pendaftarId;
+        
+        // Fetch current catatan from database based on type
+        $currentCatatan = '';
+        if ($type === 'madrasah') {
+            $daftarUlang = DaftarUlangModel::where('pendaftar_id', $pendaftarId)->first();
+            $currentCatatan = $daftarUlang?->catatan ?? '';
+        }
+        
         $this->catatanText = $currentCatatan;
         $this->showCatatanModal = true;
     }
@@ -775,10 +783,18 @@ class DaftarUlang extends Component
     /**
      * Open catatan internal modal (for admin/panitia only - NOT shown to pendaftar)
      */
-    public function openCatatanInternalModal($type, $pendaftarId, $currentCatatan = '')
+    public function openCatatanInternalModal($type, $pendaftarId)
     {
         $this->catatanInternalType = $type;
         $this->catatanInternalPendaftarId = $pendaftarId;
+        
+        // Fetch current catatan_internal from database based on type
+        $currentCatatan = '';
+        if ($type === 'madrasah') {
+            $daftarUlang = DaftarUlangModel::where('pendaftar_id', $pendaftarId)->first();
+            $currentCatatan = $daftarUlang?->catatan_internal ?? '';
+        }
+        
         $this->catatanInternalText = $currentCatatan;
         $this->showCatatanInternalModal = true;
     }
@@ -812,7 +828,7 @@ class DaftarUlang extends Component
 
                 // Only set default status if it's a new record
                 if (!$daftarUlang->exists) {
-                    $daftarUlang->status = 'belum';
+                    $daftarUlang->status = 'belum_diisi';
                 }
 
                 // Update catatan_internal

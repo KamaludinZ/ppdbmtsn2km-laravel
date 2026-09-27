@@ -79,7 +79,7 @@
                             <option value="menunggu">Menunggu</option>
                             <option value="disetujui">Disetujui</option>
                             <option value="ditolak">Ditolak</option>
-                            <option value="perlu_perbaikan">Perlu Perbaikan</option>
+                            <option value="perbaiki">Perbaiki</option>
                         </select>
                     </div>
                 </div>
@@ -123,12 +123,12 @@
                             <x-sortable-header field="nama_lengkap" :sort-field="$sortField" :sort-direction="$sortDirection" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Pendaftar
                             </x-sortable-header>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ortu WhatsApp</th>
                             <x-sortable-header field="jenis_kelamin" :sort-field="$sortField" :sort-direction="$sortDirection" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Jenis Kelamin
                             </x-sortable-header>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jalur</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Persetujuan</th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi Persetujuan</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alasan</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status DU Madrasah</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Surat Pernyataan</th>
@@ -158,6 +158,31 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-medium text-gray-900">{{ $item->nama_lengkap }}</div>
                                     <div class="text-sm text-gray-500">NISN: {{ $item->nisn }}</div>
+                                </td>
+
+                                <!-- Ortu WhatsApp -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center space-x-2">
+                                        @if($item->telepon_ortu)
+                                            @php
+                                                $cleanPhone = preg_replace('/[^0-9]/', '', $item->telepon_ortu);
+                                                if (substr($cleanPhone, 0, 1) === '0') {
+                                                    $cleanPhone = '62' . substr($cleanPhone, 1);
+                                                } elseif (substr($cleanPhone, 0, 2) !== '62') {
+                                                    $cleanPhone = '62' . $cleanPhone;
+                                                }
+                                                $waUrl = 'https://wa.me/' . $cleanPhone;
+                                            @endphp
+                                            <a href="{{ $waUrl }}" target="_blank" class="inline-flex items-center text-sm text-green-600 hover:text-green-800 hover:underline transition">
+                                                <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"></path>
+                                                </svg>
+                                                {{ $item->telepon_ortu }}
+                                            </a>
+                                        @else
+                                            <span class="text-sm text-gray-400">-</span>
+                                        @endif
+                                    </div>
                                 </td>
 
                                 <!-- Jenis Kelamin -->
@@ -209,60 +234,6 @@
                                     </div>
                                 </td>
 
-                                <!-- Aksi Persetujuan -->
-                                <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <div x-data="{ open: false }" class="relative inline-block text-left">
-                                        <button @click="open = !open" @click.away="open = false" type="button"
-                                                class="inline-flex items-center justify-center gap-x-1.5 rounded-md bg-white px-2.5 py-1.5 text-xs font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 transition-all duration-200">
-                                            Aksi
-                                            <svg class="-mr-1 h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                                                <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z" clip-rule="evenodd" />
-                                            </svg>
-                                        </button>
-                                        <div x-show="open"
-                                             x-transition:enter="transition ease-out duration-100"
-                                             x-transition:enter-start="transform opacity-0 scale-95"
-                                             x-transition:enter-end="transform opacity-100 scale-100"
-                                             x-transition:leave="transition ease-in duration-75"
-                                             x-transition:leave-start="transform opacity-100 scale-100"
-                                             x-transition:leave-end="transform opacity-0 scale-95"
-                                             class="absolute right-0 z-[100] mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none" x-cloak>
-                                            <div class="py-1">
-                                                <div class="px-4 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Pilih Status</div>
-                                                <button wire:click="changeStatusPersetujuan({{ $item->id }}, 'belum_memilih')"
-                                                        @click="open = false"
-                                                        class="group flex w-full items-center px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 hover:text-emerald-600 transition-colors">
-                                                    <span class="mr-3 flex h-2 w-2 rounded-full bg-gray-400 group-hover:animate-pulse"></span>
-                                                    Belum Memilih
-                                                </button>
-                                                <button wire:click="changeStatusPersetujuan({{ $item->id }}, 'setuju')"
-                                                        @click="open = false"
-                                                        class="group flex w-full items-center px-4 py-2 text-xs text-gray-700 hover:bg-emerald-50 hover:text-emerald-700 transition-colors">
-                                                    <span class="mr-3 flex h-2 w-2 rounded-full bg-green-500 group-hover:ring-2 group-hover:ring-green-300"></span>
-                                                    Setuju Daftar Ulang
-                                                </button>
-                                                <button wire:click="changeStatusPersetujuan({{ $item->id }}, 'tidak_setuju')"
-                                                        @click="open = false"
-                                                        class="group flex w-full items-center px-4 py-2 text-xs text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors">
-                                                    <span class="mr-3 flex h-2 w-2 rounded-full bg-red-500 group-hover:ring-2 group-hover:ring-red-300"></span>
-                                                    Tidak Melanjutkan
-                                                </button>
-                                            </div>
-                                            <div class="py-1">
-                                                <button wire:click="resetPersetujuan({{ $item->id }})"
-                                                        @click="open = false"
-                                                        onclick="return confirm('Apakah Anda yakin ingin reset persetujuan pendaftar ini? Pendaftar harus memilih ulang dari Dashboard mereka.')"
-                                                        class="group flex w-full items-center px-4 py-2 text-xs text-orange-600 hover:bg-orange-50 transition-colors">
-                                                    <svg class="mr-3 h-4 w-4 text-orange-400 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
-                                                    </svg>
-                                                    Reset ke Awal
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </td>
-
                                 <!-- Alasan -->
                                 <td class="px-6 py-4">
                                     @if($item->status_persetujuan_daftar_ulang === 'tidak_setuju' && $item->alasan_tidak_setuju)
@@ -281,16 +252,28 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @php
                                         $statusColors = [
+                                            'belum_diisi' => 'bg-gray-200 text-gray-700',
                                             'proses' => 'bg-blue-100 text-blue-800',
                                             'menunggu' => 'bg-yellow-100 text-yellow-800',
                                             'disetujui' => 'bg-green-100 text-green-800',
                                             'ditolak' => 'bg-red-100 text-red-800',
                                             'perbaiki' => 'bg-orange-100 text-orange-800',
                                         ];
-                                        $statusColor = $statusColors[$item->daftarUlang->status ?? 'menunggu'] ?? 'bg-gray-100 text-gray-800';
+                                        $statusLabels = [
+                                            'belum_diisi' => 'Belum Diisi',
+                                            'proses' => 'Proses',
+                                            'menunggu' => 'Menunggu',
+                                            'disetujui' => 'Disetujui',
+                                            'ditolak' => 'Ditolak',
+                                            'perbaiki' => 'Perbaiki',
+                                        ];
+
+                                        $status = $item->daftarUlang && $item->daftarUlang->status ? $item->daftarUlang->status : 'belum_diisi';
+                                        $statusColor = $statusColors[$status] ?? 'bg-gray-100 text-gray-800';
+                                        $statusLabel = $statusLabels[$status] ?? ucfirst($status);
                                     @endphp
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColor }}">
-                                        {{ ucfirst(str_replace('_', ' ', $item->daftarUlang->status ?? 'menunggu')) }}
+                                        {{ $statusLabel }}
                                     </span>
                                 </td>
 
@@ -401,45 +384,51 @@
                                 <td class="px-6 py-4">
                                     <div class="space-y-3">
                                         <!-- Catatan (visible to pendaftar) -->
-                                        <div class="flex items-center gap-2">
+                                        <div class="flex gap-2">
                                             @if($item->daftarUlang && $item->daftarUlang->catatan)
-                                                <div class="text-xs text-gray-700 bg-yellow-50 p-2 rounded border border-yellow-200 max-w-xs">
+                                                <div class="text-xs text-gray-700 bg-yellow-50 p-2 rounded border border-yellow-200 flex-1 min-w-0 max-w-xs overflow-hidden">
                                                     <div class="font-semibold text-yellow-700 mb-1">📝 Catatan:</div>
-                                                    <p class="whitespace-pre-wrap">{{ $item->daftarUlang->catatan }}</p>
+                                                    <p class="whitespace-pre-wrap break-words" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; max-height: 4.5rem;">{{ $item->daftarUlang->catatan }}</p>
                                                 </div>
                                             @else
                                                 <span class="text-xs text-gray-400 italic">Belum ada catatan</span>
                                             @endif
-                                            <button
-                                                wire:click="openCatatanModal('madrasah', {{ $item->id }}, '{{ addslashes($item->daftarUlang->catatan ?? '') }}')"
-                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors"
-                                                title="Edit Catatan">
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                </svg>
-                                                Edit
-                                            </button>
+                                            <div class="flex-shrink-0 relative z-50">
+                                                <button
+                                                    wire:click="openCatatanModal('madrasah', {{ $item->id }})"
+                                                    class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors"
+                                                    title="Edit Catatan"
+                                                    style="pointer-events: auto; z-index: 100; position: relative;">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                    </svg>
+                                                    Edit
+                                                </button>
+                                            </div>
                                         </div>
 
                                         <!-- Catatan Internal (NOT visible to pendaftar) -->
-                                        <div class="flex items-center gap-2">
+                                        <div class="flex gap-2">
                                             @if($item->daftarUlang && $item->daftarUlang->catatan_internal)
-                                                <div class="text-xs text-gray-700 bg-red-50 p-2 rounded border border-red-200 max-w-xs">
+                                                <div class="text-xs text-gray-700 bg-red-50 p-2 rounded border border-red-200 flex-1 min-w-0 max-w-xs overflow-hidden">
                                                     <div class="font-semibold text-red-700 mb-1">🔒 Internal:</div>
-                                                    <p class="whitespace-pre-wrap">{{ $item->daftarUlang->catatan_internal }}</p>
+                                                    <p class="whitespace-pre-wrap break-words" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; max-height: 4.5rem;">{{ $item->daftarUlang->catatan_internal }}</p>
                                                 </div>
                                             @else
                                                 <span class="text-xs text-gray-400 italic">Belum ada catatan internal</span>
                                             @endif
-                                            <button
-                                                wire:click="openCatatanInternalModal('madrasah', {{ $item->id }}, '{{ addslashes($item->daftarUlang->catatan_internal ?? '') }}')"
-                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-50 border border-red-300 rounded hover:bg-red-100 transition-colors"
-                                                title="Edit Catatan Internal (Tidak ditampilkan ke pendaftar)">
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                                                </svg>
-                                                Internal
-                                            </button>
+                                            <div class="flex-shrink-0 relative z-50">
+                                                <button
+                                                    wire:click="openCatatanInternalModal('madrasah', {{ $item->id }})"
+                                                    class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-50 border border-red-300 rounded hover:bg-red-100 transition-colors"
+                                                    title="Edit Catatan Internal (Tidak ditampilkan ke pendaftar)"
+                                                    style="pointer-events: auto; z-index: 100; position: relative;">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                                    </svg>
+                                                    Internal
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
                                 </td>
@@ -544,7 +533,7 @@
                                                         @click="open = false"
                                                         class="group flex w-full items-center px-4 py-2 text-xs text-gray-700 hover:bg-orange-50 hover:text-orange-700 transition-colors">
                                                     <span class="mr-3 flex h-2 w-2 rounded-full bg-orange-500"></span>
-                                                    Perlu Perbaikan
+                                                    Perbaiki
                                                 </button>
                                             </div>
                                         </div>

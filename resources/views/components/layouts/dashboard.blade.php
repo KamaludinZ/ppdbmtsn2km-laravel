@@ -471,7 +471,7 @@
         <!-- Main Content -->
         <div class="flex-1 flex flex-col min-w-0">
             <!-- Top Bar -->
-            <header class="bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6 py-4">
+            <header class="bg-white border-b border-gray-200 flex items-center justify-between px-4 lg:px-6 py-4 sticky top-0 z-20 shadow-sm">
                 <div class="flex items-center space-x-4">
                     <!-- Mobile Menu Button -->
                     <button type="button" @click="sidebarOpen = true" class="lg:hidden text-gray-700 hover:text-gray-900">

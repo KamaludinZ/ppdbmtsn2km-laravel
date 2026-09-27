@@ -289,15 +289,36 @@ class DaftarUlang extends Component
             $query->where('jalur_pendaftaran_id', $this->filterJalur);
         }
 
-        // Status filter based on active tab
-        if ($this->activeTab === 'seragam' && $this->filterStatusSeragam) {
-            $query->whereHas('seragam', function($q) {
-                $q->where('status_seragam', $this->filterStatusSeragam);
-            });
-        } elseif ($this->activeTab === 'ukuran' && $this->filterStatusUkuran) {
-            $query->whereHas('seragam', function($q) {
-                $q->where('status_ukuran', $this->filterStatusUkuran);
-            });
+        // Status DU Seragam filter - lihat kolom status_seragam
+        if ($this->filterStatusSeragam) {
+            if ($this->filterStatusSeragam === 'belum_diisi') {
+                // Filter yang tidak punya record seragam ATAU status_seragam kosong/null
+                $query->whereDoesntHave('seragam', function($q) {
+                    $q->whereNotNull('status_seragam')
+                      ->where('status_seragam', '!=', '')
+                      ->where('status_seragam', '!=', 'belum_diisi');
+                });
+            } else {
+                $query->whereHas('seragam', function($q) {
+                    $q->where('status_seragam', $this->filterStatusSeragam);
+                });
+            }
+        }
+
+        // Status Ukuran filter - lihat kolom status_ukuran
+        if ($this->filterStatusUkuran) {
+            if ($this->filterStatusUkuran === 'belum_diisi') {
+                // Filter yang tidak punya record seragam ATAU status_ukuran kosong/null
+                $query->whereDoesntHave('seragam', function($q) {
+                    $q->whereNotNull('status_ukuran')
+                      ->where('status_ukuran', '!=', '')
+                      ->where('status_ukuran', '!=', 'belum_diisi');
+                });
+            } else {
+                $query->whereHas('seragam', function($q) {
+                    $q->where('status_ukuran', $this->filterStatusUkuran);
+                });
+            }
         }
 
         $pendaftar = $query->orderBy('updated_at', 'desc')->paginate(20);
@@ -561,10 +582,21 @@ class DaftarUlang extends Component
     }
 
     // ========== CATATAN METHODS ==========
-    public function openCatatanModal($type, $pendaftarId, $currentCatatan = '')
+    public function openCatatanModal($type, $pendaftarId)
     {
         $this->catatanType = $type;
         $this->catatanPendaftarId = $pendaftarId;
+        
+        // Fetch current catatan from database based on type
+        $currentCatatan = '';
+        if ($type === 'seragam') {
+            $seragam = Seragam::where('pendaftar_id', $pendaftarId)->first();
+            $currentCatatan = $seragam?->catatan_seragam ?? '';
+        } elseif ($type === 'ukuran') {
+            $seragam = Seragam::where('pendaftar_id', $pendaftarId)->first();
+            $currentCatatan = $seragam?->catatan_ukuran ?? '';
+        }
+        
         $this->catatanText = $currentCatatan;
         $this->showCatatanModal = true;
     }
@@ -614,10 +646,21 @@ class DaftarUlang extends Component
     }
 
     // ========== CATATAN INTERNAL METHODS ==========
-    public function openCatatanInternalModal($type, $pendaftarId, $currentCatatan = '')
+    public function openCatatanInternalModal($type, $pendaftarId)
     {
         $this->catatanInternalType = $type;
         $this->catatanInternalPendaftarId = $pendaftarId;
+        
+        // Fetch current catatan_internal from database based on type
+        $currentCatatan = '';
+        if ($type === 'seragam') {
+            $seragam = Seragam::where('pendaftar_id', $pendaftarId)->first();
+            $currentCatatan = $seragam?->catatan_internal_seragam ?? '';
+        } elseif ($type === 'ukuran') {
+            $seragam = Seragam::where('pendaftar_id', $pendaftarId)->first();
+            $currentCatatan = $seragam?->catatan_internal_ukuran ?? '';
+        }
+        
         $this->catatanInternalText = $currentCatatan;
         $this->showCatatanInternalModal = true;
     }

@@ -240,9 +240,13 @@
                                 <!-- Normal upload section -->
                                 @php
                                     $isApproved = $pendaftar->status_pendaftaran === 'data_disetujui';
+                                    // Check if this specific document is approved
+                                    $statusKey = $statusKeyMapping[$key] ?? 'status_' . $key;
+                                    $docStatus = $verifikasi->$statusKey ?? '';
+                                    $isDocApproved = $docStatus === 'disetujui';
                                 @endphp
                                 <div class="mt-2">
-                                    @if($isApproved)
+                                    @if($isApproved || $isDocApproved)
                                         <div class="p-3 bg-green-50 border border-green-200 rounded-lg">
                                             <div class="flex items-start">
                                                 <svg class="w-5 h-5 text-green-500 mr-2 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -251,7 +255,7 @@
                                                 <div class="flex-1">
                                                     <p class="text-sm text-green-800 font-medium">Data Sudah Disetujui</p>
                                                     <p class="text-xs text-green-600 mt-1">
-                                                        Upload dokumen tidak dapat dilakukan karena data pendaftaran sudah disetujui.
+                                                        Upload dokumen tidak dapat dilakukan karena {{ $isDocApproved ? 'dokumen ini sudah disetujui' : 'data pendaftaran sudah disetujui' }}.
                                                     </p>
                                                 </div>
                                             </div>

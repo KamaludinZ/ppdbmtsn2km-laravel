@@ -63,7 +63,7 @@
 
         {{-- Filters --}}
     <div class="bg-white rounded-lg shadow mb-6 p-6">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             {{-- Search --}}
             <div>
                 <label class="block text-sm font-medium text-gray-700 mb-2">Cari</label>
@@ -91,26 +91,30 @@
                 </select>
             </div>
 
-            {{-- Filter Status based on active tab --}}
+            {{-- Filter Status DU Seragam --}}
             <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
-                @if($activeTab === 'seragam')
-                    <select wire:model.live="filterStatusSeragam" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
-                        <option value="">Semua Status</option>
-                        <option value="menunggu">Menunggu</option>
-                        <option value="disetujui">Disetujui</option>
-                        <option value="ditolak">Ditolak</option>
-                        <option value="perbaiki">Perlu Perbaikan</option>
-                    </select>
-                @else
-                    <select wire:model.live="filterStatusUkuran" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
-                        <option value="">Semua Status</option>
-                        <option value="menunggu">Menunggu</option>
-                        <option value="disetujui">Disetujui</option>
-                        <option value="ditolak">Ditolak</option>
-                        <option value="perbaiki">Perlu Perbaikan</option>
-                    </select>
-                @endif
+                <label class="block text-sm font-medium text-gray-700 mb-2">Status DU Seragam</label>
+                <select wire:model.live="filterStatusSeragam" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent">
+                    <option value="">Semua Status</option>
+                    <option value="belum_diisi">Belum Diisi</option>
+                    <option value="menunggu">Menunggu</option>
+                    <option value="disetujui">Disetujui</option>
+                    <option value="ditolak">Ditolak</option>
+                    <option value="perbaiki">Perlu Perbaikan</option>
+                </select>
+            </div>
+
+            {{-- Filter Status Ukuran --}}
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">Status Ukuran</label>
+                <select wire:model.live="filterStatusUkuran" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent">
+                    <option value="">Semua Status</option>
+                    <option value="belum_diisi">Belum Diisi</option>
+                    <option value="menunggu">Menunggu</option>
+                    <option value="disetujui">Disetujui</option>
+                    <option value="ditolak">Ditolak</option>
+                    <option value="perbaiki">Perlu Perbaikan</option>
+                </select>
             </div>
         </div>
     </div>
@@ -137,17 +141,20 @@
                         <x-sortable-header field="nama_lengkap" :sort-field="$sortField" :sort-direction="$sortDirection" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Pendaftar
                         </x-sortable-header>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ortu WhatsApp</th>
                         <x-sortable-header field="jenis_kelamin" :sort-field="$sortField" :sort-direction="$sortDirection" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Jenis Kelamin
                         </x-sortable-header>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jalur</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            @if($activeTab === 'seragam')
-                                Status DU Seragam
-                            @else
-                                Status Ukuran
-                            @endif
-                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Persetujuan</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alasan</th>
+                        @if($activeTab === 'seragam')
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status DU Seragam</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Ukuran</th>
+                        @else
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Ukuran</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status DU Seragam</th>
+                        @endif
                         @if($activeTab === 'seragam')
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Paket Seragam</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nominal Biaya</th>
@@ -189,6 +196,29 @@
                                 <div class="text-sm text-gray-500">NISN: {{ $item->nisn }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="flex items-center space-x-2">
+                                    @if($item->telepon_ortu)
+                                        @php
+                                            $cleanPhone = preg_replace('/[^0-9]/', '', $item->telepon_ortu);
+                                            if (substr($cleanPhone, 0, 1) === '0') {
+                                                $cleanPhone = '62' . substr($cleanPhone, 1);
+                                            } elseif (substr($cleanPhone, 0, 2) !== '62') {
+                                                $cleanPhone = '62' . $cleanPhone;
+                                            }
+                                            $waUrl = 'https://wa.me/' . $cleanPhone;
+                                        @endphp
+                                        <a href="{{ $waUrl }}" target="_blank" class="inline-flex items-center text-sm text-green-600 hover:text-green-800 hover:underline transition">
+                                            <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 24 24">
+                                                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413Z"></path>
+                                            </svg>
+                                            {{ $item->telepon_ortu }}
+                                        </a>
+                                    @else
+                                        <span class="text-sm text-gray-400">-</span>
+                                    @endif
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
                                 @if($item->jenis_kelamin)
                                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $item->jenis_kelamin === 'L' ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800' }}">
                                         {{ $item->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan' }}
@@ -206,36 +236,163 @@
                                     <span class="text-sm text-gray-500">-</span>
                                 @endif
                             </td>
+
+                            <!-- Persetujuan -->
                             <td class="px-6 py-4 whitespace-nowrap">
                                 @php
-                                    $statusColors = [
-                                        'proses' => 'bg-blue-100 text-blue-800',
-                                        'menunggu' => 'bg-yellow-100 text-yellow-800',
-                                        'disetujui' => 'bg-green-100 text-green-800',
-                                        'ditolak' => 'bg-red-100 text-red-800',
-                                        'perbaiki' => 'bg-orange-100 text-orange-800',
+                                    $persetujuanColors = [
+                                        'belum_memilih' => 'bg-gray-100 text-gray-800',
+                                        'setuju' => 'bg-green-100 text-green-800',
+                                        'tidak_setuju' => 'bg-red-100 text-red-800',
                                     ];
-                                    $statusLabels = [
-                                        'proses' => 'Proses',
-                                        'menunggu' => 'Menunggu',
-                                        'disetujui' => 'Disetujui',
-                                        'ditolak' => 'Ditolak',
-                                        'perbaiki' => 'Perbaiki',
+                                    $persetujuanLabels = [
+                                        'belum_memilih' => 'Belum Memilih',
+                                        'setuju' => '✓ Setuju',
+                                        'tidak_setuju' => '✗ Tidak Melanjutkan',
                                     ];
-
-                                    if ($activeTab == 'seragam') {
-                                        $status = $item->seragam->status_seragam ?? 'menunggu';
-                                    } else {
-                                        $status = $item->seragam->status_ukuran ?? 'menunggu';
-                                    }
-
-                                    $statusColor = $statusColors[$status] ?? 'bg-gray-100 text-gray-800';
-                                    $statusLabel = $statusLabels[$status] ?? ucfirst($status);
+                                    $statusPersetujuan = $item->status_persetujuan_daftar_ulang ?? 'belum_memilih';
+                                    $persetujuanColor = $persetujuanColors[$statusPersetujuan] ?? 'bg-gray-100 text-gray-800';
+                                    $persetujuanLabel = $persetujuanLabels[$statusPersetujuan] ?? 'Belum Memilih';
                                 @endphp
-                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColor }}">
-                                    {{ $statusLabel }}
-                                </span>
+                                <div class="flex flex-col gap-1">
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $persetujuanColor }}">
+                                        {{ $persetujuanLabel }}
+                                    </span>
+                                    @if($item->tanggal_pilihan_daftar_ulang)
+                                        <span class="text-xs text-gray-500">{{ $item->tanggal_pilihan_daftar_ulang->format('d/m/Y H:i') }}</span>
+                                    @endif
+                                </div>
                             </td>
+
+                            <!-- Alasan -->
+                            <td class="px-6 py-4">
+                                @if($item->status_persetujuan_daftar_ulang === 'tidak_setuju' && $item->alasan_tidak_setuju)
+                                    <div class="max-w-xs">
+                                        <div class="text-xs text-gray-700 bg-gray-50 p-2 rounded border border-gray-200">
+                                            <span class="font-semibold text-red-600">Alasan:</span>
+                                            <p class="mt-1">{{ $item->alasan_tidak_setuju }}</p>
+                                        </div>
+                                    </div>
+                                @else
+                                    <span class="text-xs text-gray-400">-</span>
+                                @endif
+                            </td>
+
+                            @if($activeTab === 'seragam')
+                                <!-- Status DU Seragam column (for seragam tab) -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @php
+                                        $statusColors = [
+                                            'belum_diisi' => 'bg-gray-200 text-gray-700',
+                                            'proses' => 'bg-blue-100 text-blue-800',
+                                            'menunggu' => 'bg-yellow-100 text-yellow-800',
+                                            'disetujui' => 'bg-green-100 text-green-800',
+                                            'ditolak' => 'bg-red-100 text-red-800',
+                                            'perbaiki' => 'bg-orange-100 text-orange-800',
+                                        ];
+                                        $statusLabels = [
+                                            'belum_diisi' => 'Belum Diisi',
+                                            'proses' => 'Proses',
+                                            'menunggu' => 'Menunggu',
+                                            'disetujui' => 'Disetujui',
+                                            'ditolak' => 'Ditolak',
+                                            'perbaiki' => 'Perbaiki',
+                                        ];
+
+                                        $statusSeragam = $item->seragam && $item->seragam->status_seragam ? $item->seragam->status_seragam : 'belum_diisi';
+                                        $statusSeragamColor = $statusColors[$statusSeragam] ?? 'bg-gray-100 text-gray-800';
+                                        $statusSeragamLabel = $statusLabels[$statusSeragam] ?? ucfirst($statusSeragam);
+                                    @endphp
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusSeragamColor }}">
+                                        {{ $statusSeragamLabel }}
+                                    </span>
+                                </td>
+                                <!-- Status Ukuran column (for seragam tab) -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @php
+                                        $statusColors = [
+                                            'belum_diisi' => 'bg-gray-200 text-gray-700',
+                                            'proses' => 'bg-blue-100 text-blue-800',
+                                            'menunggu' => 'bg-yellow-100 text-yellow-800',
+                                            'disetujui' => 'bg-green-100 text-green-800',
+                                            'ditolak' => 'bg-red-100 text-red-800',
+                                            'perbaiki' => 'bg-orange-100 text-orange-800',
+                                        ];
+                                        $statusLabels = [
+                                            'belum_diisi' => 'Belum Diisi',
+                                            'proses' => 'Proses',
+                                            'menunggu' => 'Menunggu',
+                                            'disetujui' => 'Disetujui',
+                                            'ditolak' => 'Ditolak',
+                                            'perbaiki' => 'Perbaiki',
+                                        ];
+
+                                        $statusUkuran = $item->seragam && $item->seragam->status_ukuran ? $item->seragam->status_ukuran : 'belum_diisi';
+                                        $statusUkuranColor = $statusColors[$statusUkuran] ?? 'bg-gray-100 text-gray-800';
+                                        $statusUkuranLabel = $statusLabels[$statusUkuran] ?? ucfirst($statusUkuran);
+                                    @endphp
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusUkuranColor }}">
+                                        {{ $statusUkuranLabel }}
+                                    </span>
+                                </td>
+                            @elseif($activeTab === 'ukuran')
+                                <!-- Status Ukuran column (for ukuran tab) -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @php
+                                        $statusColors = [
+                                            'belum_diisi' => 'bg-gray-200 text-gray-700',
+                                            'proses' => 'bg-blue-100 text-blue-800',
+                                            'menunggu' => 'bg-yellow-100 text-yellow-800',
+                                            'disetujui' => 'bg-green-100 text-green-800',
+                                            'ditolak' => 'bg-red-100 text-red-800',
+                                            'perbaiki' => 'bg-orange-100 text-orange-800',
+                                        ];
+                                        $statusLabels = [
+                                            'belum_diisi' => 'Belum Diisi',
+                                            'proses' => 'Proses',
+                                            'menunggu' => 'Menunggu',
+                                            'disetujui' => 'Disetujui',
+                                            'ditolak' => 'Ditolak',
+                                            'perbaiki' => 'Perbaiki',
+                                        ];
+
+                                        $statusUkuran = $item->seragam && $item->seragam->status_ukuran ? $item->seragam->status_ukuran : 'belum_diisi';
+                                        $statusUkuranColor = $statusColors[$statusUkuran] ?? 'bg-gray-100 text-gray-800';
+                                        $statusUkuranLabel = $statusLabels[$statusUkuran] ?? ucfirst($statusUkuran);
+                                    @endphp
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusUkuranColor }}">
+                                        {{ $statusUkuranLabel }}
+                                    </span>
+                                </td>
+                                <!-- Status DU Seragam column (for ukuran tab) -->
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @php
+                                        $statusColors = [
+                                            'belum_diisi' => 'bg-gray-200 text-gray-700',
+                                            'proses' => 'bg-blue-100 text-blue-800',
+                                            'menunggu' => 'bg-yellow-100 text-yellow-800',
+                                            'disetujui' => 'bg-green-100 text-green-800',
+                                            'ditolak' => 'bg-red-100 text-red-800',
+                                            'perbaiki' => 'bg-orange-100 text-orange-800',
+                                        ];
+                                        $statusLabels = [
+                                            'belum_diisi' => 'Belum Diisi',
+                                            'proses' => 'Proses',
+                                            'menunggu' => 'Menunggu',
+                                            'disetujui' => 'Disetujui',
+                                            'ditolak' => 'Ditolak',
+                                            'perbaiki' => 'Perbaiki',
+                                        ];
+
+                                        $statusSeragam = $item->seragam && $item->seragam->status_seragam ? $item->seragam->status_seragam : 'belum_diisi';
+                                        $statusSeragamColor = $statusColors[$statusSeragam] ?? 'bg-gray-100 text-gray-800';
+                                        $statusSeragamLabel = $statusLabels[$statusSeragam] ?? ucfirst($statusSeragam);
+                                    @endphp
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusSeragamColor }}">
+                                        {{ $statusSeragamLabel }}
+                                    </span>
+                                </td>
+                            @endif
 
                             @if($activeTab === 'seragam')
                                 <!-- Paket Seragam -->
@@ -402,46 +559,52 @@
                                 </td>
                                 <!-- Catatan Seragam -->
                                 <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex gap-2">
                                         @if($item->seragam && $item->seragam->catatan_seragam)
-                                            <div class="text-xs text-gray-700 bg-yellow-50 p-2 rounded border border-yellow-200 max-w-xs">
+                                            <div class="text-xs text-gray-700 bg-yellow-50 p-2 rounded border border-yellow-200 flex-1 min-w-0 max-w-xs overflow-hidden">
                                                 <div class="font-semibold text-yellow-700 mb-1">📝 Catatan:</div>
-                                                <p class="whitespace-pre-wrap">{{ $item->seragam->catatan_seragam }}</p>
+                                                <p class="whitespace-pre-wrap break-words" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; max-height: 4.5rem;">{{ $item->seragam->catatan_seragam }}</p>
                                             </div>
                                         @else
                                             <span class="text-xs text-gray-400 italic">Belum ada catatan</span>
                                         @endif
-                                        <button
-                                            wire:click="openCatatanModal('seragam', {{ $item->id }}, '{{ addslashes($item->seragam->catatan_seragam ?? '') }}')"
-                                            class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors"
-                                            title="Edit Catatan untuk Pendaftar">
-                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                            </svg>
-                                            Edit
-                                        </button>
+                                        <div class="flex-shrink-0 relative z-50">
+                                            <button
+                                                wire:click="openCatatanModal('seragam', {{ $item->id }})"
+                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors"
+                                                title="Edit Catatan untuk Pendaftar"
+                                                style="pointer-events: auto; z-index: 100; position: relative;">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                                Edit
+                                            </button>
+                                        </div>
                                     </div>
                                 </td>
                                 <!-- Catatan Internal (NOT visible to pendaftar) -->
                                 <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex gap-2">
                                         @if($item->seragam && $item->seragam->catatan_internal_seragam)
-                                            <div class="text-xs text-gray-700 bg-red-50 p-2 rounded border border-red-200 max-w-xs">
+                                            <div class="text-xs text-gray-700 bg-red-50 p-2 rounded border border-red-200 flex-1 min-w-0 max-w-xs overflow-hidden">
                                                 <div class="font-semibold text-red-700 mb-1">🔒 Internal:</div>
-                                                <p class="whitespace-pre-wrap">{{ $item->seragam->catatan_internal_seragam }}</p>
+                                                <p class="whitespace-pre-wrap break-words" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; max-height: 4.5rem;">{{ $item->seragam->catatan_internal_seragam }}</p>
                                             </div>
                                         @else
                                             <span class="text-xs text-gray-400 italic">Belum ada catatan internal</span>
                                         @endif
-                                        <button
-                                            wire:click="openCatatanInternalModal('seragam', {{ $item->id }}, '{{ addslashes($item->seragam->catatan_internal_seragam ?? '') }}')"
-                                            class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-50 border border-red-300 rounded hover:bg-red-100 transition-colors"
-                                            title="Edit Catatan Internal (Tidak ditampilkan ke pendaftar)">
-                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                                            </svg>
-                                            Edit
-                                        </button>
+                                        <div class="flex-shrink-0 relative z-50">
+                                            <button
+                                                wire:click="openCatatanInternalModal('seragam', {{ $item->id }})"
+                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-50 border border-red-300 rounded hover:bg-red-100 transition-colors"
+                                                title="Edit Catatan Internal (Tidak ditampilkan ke pendaftar)"
+                                                style="pointer-events: auto; z-index: 100; position: relative;">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                                </svg>
+                                                Edit
+                                            </button>
+                                        </div>
                                     </div>
                                 </td>
                             @else
@@ -511,46 +674,52 @@
                                 </td>
                                 <!-- Catatan Ukuran -->
                                 <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex gap-2">
                                         @if($item->seragam && $item->seragam->catatan_ukuran)
-                                            <div class="text-xs text-gray-700 bg-yellow-50 p-2 rounded border border-yellow-200 max-w-xs">
+                                            <div class="text-xs text-gray-700 bg-yellow-50 p-2 rounded border border-yellow-200 flex-1 min-w-0 max-w-xs overflow-hidden">
                                                 <div class="font-semibold text-yellow-700 mb-1">📝 Catatan:</div>
-                                                <p class="whitespace-pre-wrap">{{ $item->seragam->catatan_ukuran }}</p>
+                                                <p class="whitespace-pre-wrap break-words" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; max-height: 4.5rem;">{{ $item->seragam->catatan_ukuran }}</p>
                                             </div>
                                         @else
                                             <span class="text-xs text-gray-400 italic">Belum ada catatan</span>
                                         @endif
-                                        <button
-                                            wire:click="openCatatanModal('ukuran', {{ $item->id }}, '{{ addslashes($item->seragam->catatan_ukuran ?? '') }}')"
-                                            class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors"
-                                            title="Edit Catatan untuk Pendaftar">
-                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                            </svg>
-                                            Edit
-                                        </button>
+                                        <div class="flex-shrink-0 relative z-50">
+                                            <button
+                                                wire:click="openCatatanModal('ukuran', {{ $item->id }})"
+                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded hover:bg-blue-100 transition-colors"
+                                                title="Edit Catatan untuk Pendaftar"
+                                                style="pointer-events: auto; z-index: 100; position: relative;">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                                Edit
+                                            </button>
+                                        </div>
                                     </div>
                                 </td>
                                 <!-- Catatan Internal (NOT visible to pendaftar) -->
                                 <td class="px-6 py-4">
-                                    <div class="flex items-center gap-2">
+                                    <div class="flex gap-2">
                                         @if($item->seragam && $item->seragam->catatan_internal_ukuran)
-                                            <div class="text-xs text-gray-700 bg-red-50 p-2 rounded border border-red-200 max-w-xs">
+                                            <div class="text-xs text-gray-700 bg-red-50 p-2 rounded border border-red-200 flex-1 min-w-0 max-w-xs overflow-hidden">
                                                 <div class="font-semibold text-red-700 mb-1">🔒 Internal:</div>
-                                                <p class="whitespace-pre-wrap">{{ $item->seragam->catatan_internal_ukuran }}</p>
+                                                <p class="whitespace-pre-wrap break-words" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; max-height: 4.5rem;">{{ $item->seragam->catatan_internal_ukuran }}</p>
                                             </div>
                                         @else
                                             <span class="text-xs text-gray-400 italic">Belum ada catatan internal</span>
                                         @endif
-                                        <button
-                                            wire:click="openCatatanInternalModal('ukuran', {{ $item->id }}, '{{ addslashes($item->seragam->catatan_internal_ukuran ?? '') }}')"
-                                            class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-50 border border-red-300 rounded hover:bg-red-100 transition-colors"
-                                            title="Edit Catatan Internal (Tidak ditampilkan ke pendaftar)">
-                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
-                                            </svg>
-                                            Edit
-                                        </button>
+                                        <div class="flex-shrink-0 relative z-50">
+                                            <button
+                                                wire:click="openCatatanInternalModal('ukuran', {{ $item->id }})"
+                                                class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 bg-red-50 border border-red-300 rounded hover:bg-red-100 transition-colors"
+                                                title="Edit Catatan Internal (Tidak ditampilkan ke pendaftar)"
+                                                style="pointer-events: auto; z-index: 100; position: relative;">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                                                </svg>
+                                                Edit
+                                            </button>
+                                        </div>
                                     </div>
                                 </td>
                             @endif

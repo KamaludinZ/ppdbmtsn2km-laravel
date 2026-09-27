@@ -1915,7 +1915,7 @@ class DetailPendaftar extends Component
         } else {
             $this->daftarUlang = DaftarUlang::create([
                 'pendaftar_id' => $this->pendaftarId,
-                'status' => $this->du_status ?? 'belum',
+                'status' => $this->du_status ?? 'belum_diisi',
                 'pembayaran_lunas' => $this->du_pembayaran_lunas ?? false,
                 'seragam_diukur' => $this->du_seragam_diukur ?? false,
                 'berkas_lengkap' => $this->du_berkas_lengkap ?? false,
