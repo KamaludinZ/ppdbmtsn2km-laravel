@@ -1804,18 +1804,20 @@ class DetailPendaftar extends Component
         // Handle file uploads
         if ($this->newFileKartuKeluarga) {
             if ($this->pendaftar->file_kartu_keluarga) {
-                Storage::disk('public')->delete($this->pendaftar->file_kartu_keluarga);
+                Storage::disk('private')->delete($this->pendaftar->file_kartu_keluarga);
+                Storage::disk('public')->delete($this->pendaftar->file_kartu_keluarga); // file lama sebelum dipindah ke private
             }
-            $kkPath = $this->newFileKartuKeluarga->store('dokumen/kk', 'public');
+            $kkPath = $this->newFileKartuKeluarga->store('dokumen/kk', 'private');
             $dataToUpdate['file_kartu_keluarga'] = $kkPath;
             $this->file_kartu_keluarga = $kkPath;
         }
 
         if ($this->newFileAktaKelahiran) {
             if ($this->pendaftar->file_akta_kelahiran) {
-                Storage::disk('public')->delete($this->pendaftar->file_akta_kelahiran);
+                Storage::disk('private')->delete($this->pendaftar->file_akta_kelahiran);
+                Storage::disk('public')->delete($this->pendaftar->file_akta_kelahiran); // file lama sebelum dipindah ke private
             }
-            $aktaPath = $this->newFileAktaKelahiran->store('dokumen/akta', 'public');
+            $aktaPath = $this->newFileAktaKelahiran->store('dokumen/akta', 'private');
             $dataToUpdate['file_akta_kelahiran'] = $aktaPath;
             $this->file_akta_kelahiran = $aktaPath;
         }
@@ -1872,18 +1874,20 @@ class DetailPendaftar extends Component
         // Handle file uploads
         if ($this->newFileIjazahSd) {
             if ($this->pendaftar->file_ijazah_sd) {
-                Storage::disk('public')->delete($this->pendaftar->file_ijazah_sd);
+                Storage::disk('private')->delete($this->pendaftar->file_ijazah_sd);
+                Storage::disk('public')->delete($this->pendaftar->file_ijazah_sd); // file lama sebelum dipindah ke private
             }
-            $ijazahPath = $this->newFileIjazahSd->store('dokumen/ijazah', 'public');
+            $ijazahPath = $this->newFileIjazahSd->store('dokumen/ijazah', 'private');
             $dataToUpdate['file_ijazah_sd'] = $ijazahPath;
             $this->file_ijazah_sd = $ijazahPath;
         }
 
         if ($this->newFileSkhunSd) {
             if ($this->pendaftar->file_skhun_sd) {
-                Storage::disk('public')->delete($this->pendaftar->file_skhun_sd);
+                Storage::disk('private')->delete($this->pendaftar->file_skhun_sd);
+                Storage::disk('public')->delete($this->pendaftar->file_skhun_sd); // file lama sebelum dipindah ke private
             }
-            $skhunPath = $this->newFileSkhunSd->store('dokumen/skhun', 'public');
+            $skhunPath = $this->newFileSkhunSd->store('dokumen/skhun', 'private');
             $dataToUpdate['file_skhun_sd'] = $skhunPath;
             $this->file_skhun_sd = $skhunPath;
         }

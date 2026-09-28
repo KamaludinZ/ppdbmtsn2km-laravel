@@ -1788,7 +1788,7 @@ class Formulir extends Component
     {
         // Jika ada id, hapus dari database
         if (isset($this->prestasiList[$index]['id']) && $this->prestasiList[$index]['id']) {
-            $prestasi = Prestasi::find($this->prestasiList[$index]['id']);
+            $prestasi = $this->pendaftar->prestasis()->find($this->prestasiList[$index]['id']);
             if ($prestasi) {
                 // Delete file if exists
                 if ($prestasi->file_sertifikat && Storage::disk('public')->exists($prestasi->file_sertifikat)) {
@@ -1839,7 +1839,7 @@ class Formulir extends Component
 
                 // Delete old file FIRST if exists
                 if ($prestasiData['id']) {
-                    $oldPrestasi = Prestasi::find($prestasiData['id']);
+                    $oldPrestasi = $this->pendaftar->prestasis()->find($prestasiData['id']);
                     if ($oldPrestasi && $oldPrestasi->file_sertifikat) {
                         // Try both public and private storage for backward compatibility
                         if (Storage::disk('private')->exists($oldPrestasi->file_sertifikat)) {
@@ -1865,7 +1865,7 @@ class Formulir extends Component
 
             if ($prestasiData['id']) {
                 // Update existing
-                Prestasi::where('id', $prestasiData['id'])->update($dataToSave);
+                $this->pendaftar->prestasis()->whereKey($prestasiData['id'])->update($dataToSave);
             } else {
                 // Create new
                 $dataToSave['pendaftar_id'] = $this->pendaftar->id;
@@ -1933,7 +1933,7 @@ class Formulir extends Component
     {
         // Jika ada id, hapus dari database
         if (isset($this->beasiswaList[$index]['id']) && $this->beasiswaList[$index]['id']) {
-            Beasiswa::find($this->beasiswaList[$index]['id'])?->delete();
+            $this->pendaftar->beasiswas()->whereKey($this->beasiswaList[$index]['id'])->delete();
         }
 
         // Hapus dari array
@@ -1962,7 +1962,7 @@ class Formulir extends Component
         foreach ($this->beasiswaList as $beasiswaData) {
             if ($beasiswaData['id']) {
                 // Update existing
-                Beasiswa::where('id', $beasiswaData['id'])->update([
+                $this->pendaftar->beasiswas()->whereKey($beasiswaData['id'])->update([
                     'tahun' => $beasiswaData['tahun'],
                     'kategori' => $beasiswaData['kategori'],
                     'nama_beasiswa' => $beasiswaData['nama_beasiswa'],
@@ -2039,7 +2039,7 @@ class Formulir extends Component
     {
         // Jika ada id, hapus dari database
         if (isset($this->pendidikanLainList[$index]['id']) && $this->pendidikanLainList[$index]['id']) {
-            PendidikanLain::find($this->pendidikanLainList[$index]['id'])?->delete();
+            $this->pendaftar->pendidikanLains()->whereKey($this->pendidikanLainList[$index]['id'])->delete();
         }
 
         // Hapus dari array
@@ -2066,7 +2066,7 @@ class Formulir extends Component
         foreach ($this->pendidikanLainList as $pendidikanData) {
             if ($pendidikanData['id']) {
                 // Update existing
-                PendidikanLain::where('id', $pendidikanData['id'])->update([
+                $this->pendaftar->pendidikanLains()->whereKey($pendidikanData['id'])->update([
                     'nama_lembaga' => $pendidikanData['nama_lembaga'],
                     'jenis_lembaga' => $pendidikanData['jenis_lembaga'],
                     'mulai_belajar' => $pendidikanData['mulai_belajar'],
@@ -2941,7 +2941,7 @@ class Formulir extends Component
     {
         // Jika ada id, hapus dari database
         if (isset($this->keahlianList[$index]['id']) && $this->keahlianList[$index]['id']) {
-            $keahlian = Keahlian::find($this->keahlianList[$index]['id']);
+            $keahlian = $this->pendaftar->keahlians()->find($this->keahlianList[$index]['id']);
             if ($keahlian) {
                 // Delete file if exists
                 if ($keahlian->file_bukti_sertifikat && Storage::disk('public')->exists($keahlian->file_bukti_sertifikat)) {
@@ -2998,7 +2998,7 @@ class Formulir extends Component
 
                 // Delete old file FIRST if exists
                 if ($keahlianData['id']) {
-                    $oldKeahlian = Keahlian::find($keahlianData['id']);
+                    $oldKeahlian = $this->pendaftar->keahlians()->find($keahlianData['id']);
                     if ($oldKeahlian && $oldKeahlian->file_bukti_sertifikat) {
                         // Try both public and private storage for backward compatibility
                         if (Storage::disk('private')->exists($oldKeahlian->file_bukti_sertifikat)) {
@@ -3024,7 +3024,7 @@ class Formulir extends Component
 
             if ($keahlianData['id']) {
                 // Update existing
-                Keahlian::where('id', $keahlianData['id'])->update($dataToSave);
+                $this->pendaftar->keahlians()->whereKey($keahlianData['id'])->update($dataToSave);
             } else {
                 // Create new
                 $dataToSave['pendaftar_id'] = $this->pendaftar->id;
@@ -3080,7 +3080,7 @@ class Formulir extends Component
         if ($this->uploadTahfidzSyahadah) {
             // Delete old file FIRST if exists
             if ($this->tahfidz['id']) {
-                $oldTahfidz = Tahfidz::find($this->tahfidz['id']);
+                $oldTahfidz = Tahfidz::where('pendaftar_id', $this->pendaftar->id)->find($this->tahfidz['id']);
                 if ($oldTahfidz && $oldTahfidz->file_bukti_syahadah) {
                     // Try both public and private storage for backward compatibility
                     if (Storage::disk('private')->exists($oldTahfidz->file_bukti_syahadah)) {
@@ -3107,7 +3107,7 @@ class Formulir extends Component
         if ($this->uploadTahfidzTahsin) {
             // Delete old file FIRST if exists
             if ($this->tahfidz['id']) {
-                $oldTahfidz = Tahfidz::find($this->tahfidz['id']);
+                $oldTahfidz = Tahfidz::where('pendaftar_id', $this->pendaftar->id)->find($this->tahfidz['id']);
                 if ($oldTahfidz && $oldTahfidz->file_bukti_tahsin) {
                     // Try both public and private storage for backward compatibility
                     if (Storage::disk('private')->exists($oldTahfidz->file_bukti_tahsin)) {
@@ -3132,7 +3132,7 @@ class Formulir extends Component
 
         if ($this->tahfidz['id']) {
             // Update existing
-            Tahfidz::where('id', $this->tahfidz['id'])->update($dataToSave);
+            Tahfidz::where('pendaftar_id', $this->pendaftar->id)->whereKey($this->tahfidz['id'])->update($dataToSave);
         } else {
             // Create new
             $dataToSave['pendaftar_id'] = $this->pendaftar->id;

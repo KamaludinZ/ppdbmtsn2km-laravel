@@ -79,7 +79,7 @@
         <!-- Admin: Show both tabs -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden mb-6">
             <div class="border-b border-gray-200">
-                <nav class="flex -mb-px">
+                <nav class="flex -mb-px overflow-x-auto whitespace-nowrap">
                     <button wire:click="setMainTab('responses')" class="py-4 px-8 text-center border-b-2 font-medium text-sm transition focus:outline-none {{ $mainTab === 'responses' ? 'border-emerald-500 text-emerald-600 bg-emerald-50' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
                         <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -308,12 +308,12 @@
 
                         <div class="flex items-center space-x-6">
                             <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" wire:model.boolean="wajib_diisi" class="rounded border-gray-300 text-emerald-600 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                                <input type="checkbox" wire:model.boolean="wajib_diisi" class="rounded border-gray-300 text-emerald-600 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-200/50 ">
                                 <span class="ml-2 text-sm text-gray-700">Wajib diisi</span>
                             </label>
 
                             <label class="flex items-center cursor-pointer">
-                                <input type="checkbox" wire:model.boolean="aktif" class="rounded border-gray-300 text-emerald-600 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                                <input type="checkbox" wire:model.boolean="aktif" class="rounded border-gray-300 text-emerald-600 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-200/50 ">
                                 <span class="ml-2 text-sm text-gray-700">Aktif</span>
                             </label>
                         </div>

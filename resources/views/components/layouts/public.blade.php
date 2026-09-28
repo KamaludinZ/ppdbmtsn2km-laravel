@@ -29,43 +29,43 @@
         <div class="w-full px-4 sm:px-6 lg:px-12">
             <div class="flex justify-between items-center h-16 sm:h-20">
                 <!-- Logo -->
-                <div class="flex-shrink-0 flex items-center">
-                    <a href="/" class="flex items-center space-x-2 sm:space-x-3">
+                <div class="flex items-center min-w-0 mr-3">
+                    <a href="/" class="flex items-center space-x-2 sm:space-x-3 min-w-0">
                         @php $logo = \App\Models\Setting::get('app_logo'); @endphp
                         @if($logo && !empty($logo))
-                            <img src="{{ $logo }}" alt="Logo" class="w-10 h-10 sm:w-12 sm:h-12 object-contain">
+                            <img src="{{ $logo }}" alt="Logo" class="w-10 h-10 sm:w-12 sm:h-12 object-contain flex-shrink-0">
                         @else
-                            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-600 rounded-lg flex items-center justify-center">
+                            <div class="w-10 h-10 sm:w-12 sm:h-12 bg-emerald-600 rounded-lg flex items-center justify-center flex-shrink-0">
                                 <svg class="w-6 h-6 sm:w-8 sm:h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                                 </svg>
                             </div>
                         @endif
-                        <div>
-                            <h1 class="text-base sm:text-lg font-bold text-gray-900">{{ \App\Models\Setting::get('app_name', 'MTsN 2 Kota Malang') }}</h1>
-                            <p class="text-xs text-gray-600 hidden sm:block">{{ $appAcronym }} Online {{ \App\Models\Setting::get('tahun_pelajaran', date('Y')) }}</p>
+                        <div class="min-w-0">
+                            <h1 class="text-base sm:text-lg font-bold text-gray-900 truncate">{{ \App\Models\Setting::get('app_name', 'MTsN 2 Kota Malang') }}</h1>
+                            <p class="text-xs text-gray-600 hidden sm:block truncate">{{ $appAcronym }} Online {{ \App\Models\Setting::get('tahun_pelajaran', date('Y')) }}</p>
                         </div>
                     </a>
                 </div>
 
-                <!-- Desktop Navigation (lg+) -->
-                <div class="hidden lg:flex items-center space-x-1">
-                    <a href="/" class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-3 py-2 text-sm font-medium rounded-lg transition">
+                <!-- Desktop Navigation (2xl+) -->
+                <div class="hidden 2xl:flex items-center space-x-1 flex-shrink-0">
+                    <a href="/" class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-2.5 py-2 text-sm font-medium rounded-lg transition whitespace-nowrap">
                         Beranda
                     </a>
-                    <a href="/tentang" class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-3 py-2 text-sm font-medium rounded-lg transition">
+                    <a href="/tentang" class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-2.5 py-2 text-sm font-medium rounded-lg transition whitespace-nowrap">
                         Tentang
                     </a>
-                    <a href="/jalur-pendaftaran" class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-3 py-2 text-sm font-medium rounded-lg transition">
+                    <a href="/jalur-pendaftaran" class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-2.5 py-2 text-sm font-medium rounded-lg transition whitespace-nowrap">
                         Jalur Pendaftaran
                     </a>
-                    <a href="/informasi" class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-3 py-2 text-sm font-medium rounded-lg transition">
+                    <a href="/informasi" class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-2.5 py-2 text-sm font-medium rounded-lg transition whitespace-nowrap">
                         Informasi & Panduan
                     </a>
-                    <a href="/jadwal" class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-3 py-2 text-sm font-medium rounded-lg transition">
+                    <a href="/jadwal" class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-2.5 py-2 text-sm font-medium rounded-lg transition whitespace-nowrap">
                         Jadwal
                     </a>
-                    <a href="/alur-pendaftaran" class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-3 py-2 text-sm font-medium rounded-lg transition">
+                    <a href="/alur-pendaftaran" class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-2.5 py-2 text-sm font-medium rounded-lg transition whitespace-nowrap">
                         Alur Pendaftaran
                     </a>
 
@@ -74,7 +74,7 @@
                         <button
                             id="cekDataDropdownBtn"
                             onclick="toggleCekDataDropdown()"
-                            class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-3 py-2 text-sm font-medium rounded-lg transition inline-flex items-center"
+                            class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-2.5 py-2 text-sm font-medium rounded-lg transition whitespace-nowrap inline-flex items-center"
                         >
                             Cek Data
                             <svg class="ml-1 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -83,7 +83,7 @@
                         </button>
                         <div
                             id="cekDataDropdown"
-                            class="hidden absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white ring-1 ring-black ring-opacity-5 transition-all duration-200"
+                            class="hidden absolute right-0 mt-2 w-56 rounded-lg shadow-lg bg-white ring-1 ring-black/5 transition-all duration-200"
                         >
                             <div class="py-1">
                                 <a href="/cek-pendaftaran" class="block px-4 py-2 text-sm text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 transition">
@@ -114,20 +114,20 @@
                         </div>
                     </div>
 
-                    <a href="/kontak-panitia" class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-3 py-2 text-sm font-medium rounded-lg transition">
+                    <a href="/kontak-panitia" class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-2.5 py-2 text-sm font-medium rounded-lg transition whitespace-nowrap">
                         Kontak
                     </a>
-                    <a href="/pengumuman" class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-3 py-2 text-sm font-medium rounded-lg transition">
+                    <a href="/pengumuman" class="text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 px-2.5 py-2 text-sm font-medium rounded-lg transition whitespace-nowrap">
                         Pengumuman
                     </a>
                 </div>
 
                 <!-- Right Side -->
-                <div class="flex items-center space-x-2 sm:space-x-3">
-                    <!-- Mobile & Tablet: Burger Menu (hidden on lg+) -->
-                    <div class="flex lg:hidden items-center space-x-2">
+                <div class="flex items-center space-x-2 sm:space-x-3 flex-shrink-0">
+                    <!-- Mobile & Tablet: Burger Menu (hidden on 2xl+) -->
+                    <div class="flex 2xl:hidden items-center space-x-2">
                         <!-- Tablet Action Buttons (md to lg) -->
-                        <div class="hidden md:flex lg:hidden items-center space-x-2">
+                        <div class="hidden md:flex 2xl:hidden items-center space-x-2">
                             @guest
                                 @if(\App\Models\Setting::get('registration_phase') === 'dibuka')
                                 <a href="/daftar" class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs sm:text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm whitespace-nowrap">
@@ -151,8 +151,8 @@
                         </button>
                     </div>
 
-                    <!-- Desktop: Auth Buttons (lg+) -->
-                    <div class="hidden lg:flex items-center space-x-2">
+                    <!-- Desktop: Auth Buttons (2xl+) -->
+                    <div class="hidden 2xl:flex items-center space-x-2">
                         @auth
                             <!-- User Avatar Dropdown -->
                             <div class="relative" x-data="{ open: false }">
@@ -225,14 +225,14 @@
                         </div>
                     @else
                         <!-- Login Buttons (Guest) - Desktop Only (lg+) -->
-                        <a href="/login" class="hidden lg:inline-flex items-center px-4 py-2 border border-emerald-600 text-sm font-medium rounded-lg text-emerald-600 hover:bg-emerald-50 transition">
+                        <a href="/login" class="hidden 2xl:inline-flex items-center whitespace-nowrap px-3 py-2 border border-emerald-600 text-sm font-medium rounded-lg text-emerald-600 hover:bg-emerald-50 transition">
                             Login Pendaftar
                         </a>
-                        <a href="/login/admin" class="hidden lg:inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition shadow-sm">
+                        <a href="/login/admin" class="hidden 2xl:inline-flex items-center whitespace-nowrap px-3 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 transition shadow-sm">
                             Login Panitia
                         </a>
                         @if(\App\Models\Setting::get('registration_phase') === 'dibuka')
-                        <a href="/daftar" class="hidden lg:inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm">
+                        <a href="/daftar" class="hidden 2xl:inline-flex items-center whitespace-nowrap px-3 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-emerald-600 hover:bg-emerald-700 transition shadow-sm">
                             Daftar Sekarang
                         </a>
                         @endif
@@ -243,7 +243,7 @@
 
         <!-- Mobile Menu Panel -->
         <div id="mobileMenuPanel"
-             class="hidden border-t border-gray-200 bg-white transition-all duration-200 lg:hidden">
+             class="hidden border-t border-gray-200 bg-white transition-all duration-200 2xl:hidden">
             <div class="px-4 pt-2 pb-3 space-y-1">
                 <a href="/" class="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-emerald-600 hover:bg-emerald-50 transition">
                     Beranda

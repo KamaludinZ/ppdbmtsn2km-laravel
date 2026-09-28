@@ -68,7 +68,7 @@
 <body class="antialiased bg-gray-50" x-data="{ sidebarOpen: false }">
     <div class="min-h-screen flex">
         <!-- Mobile Sidebar Overlay -->
-        <div x-show="sidebarOpen" @click="sidebarOpen = false" x-cloak class="fixed inset-0 z-20 bg-black bg-opacity-50 transition-opacity lg:hidden"></div>
+        <div x-show="sidebarOpen" @click="sidebarOpen = false" x-cloak class="fixed inset-0 z-20 bg-black/50 transition-opacity lg:hidden"></div>
 
         <!-- Sidebar -->
         <aside :class="sidebarOpen ? 'translate-x-0 ease-out' : '-translate-x-full ease-in'" class="fixed inset-y-0 left-0 z-30 w-64 bg-white border-r border-gray-200 flex-shrink-0 transition duration-300 transform lg:translate-x-0 lg:static lg:inset-0">

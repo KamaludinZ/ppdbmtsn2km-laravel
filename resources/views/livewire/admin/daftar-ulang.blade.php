@@ -61,6 +61,14 @@
                             <input wire:model.live.debounce.300ms="search" type="text" placeholder="Cari nama, NISN, atau no. pendaftaran..." class="w-full text-sm rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                         </div>
                         <div>
+                            <select wire:model.live="filterRekap" aria-label="Filter status rekap daftar ulang" class="w-full sm:w-auto text-sm rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                <option value="">Semua Status Rekap</option>
+                                @foreach(\App\Support\RekapDaftarUlang::KATEGORI as $kategoriKey => $kategoriInfo)
+                                    <option value="{{ $kategoriKey }}">{{ $kategoriInfo['label'] }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                        <div>
                             <select wire:model.live="filterJalur" class="w-full sm:w-auto text-sm rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
                                 <option value="">Semua Jalur</option>
                                 @foreach($jalurPendaftaran as $jalur)
@@ -341,7 +349,7 @@
                                     <input :id="trixId" type="hidden" name="madrasahInfo">
                                     <trix-editor
                                         :input="trixId"
-                                        class="trix-content rounded-lg border border-indigo-300 shadow-sm focus-within:border-indigo-500 focus-within:ring focus-within:ring-indigo-200 focus-within:ring-opacity-50"
+                                        class="trix-content rounded-lg border border-indigo-300 shadow-sm focus-within:border-indigo-500 focus-within:ring focus-within:ring-indigo-200/50 "
                                         placeholder="Tulis informasi, pengumuman, atau petunjuk untuk pendaftar terkait daftar ulang madrasah..."
                                     ></trix-editor>
                                 </div>
@@ -606,7 +614,7 @@
                                     <input :id="trixId" type="hidden" name="seragamInfo">
                                     <trix-editor
                                         :input="trixId"
-                                        class="trix-content rounded-lg border border-cyan-300 shadow-sm focus-within:border-cyan-500 focus-within:ring focus-within:ring-cyan-200 focus-within:ring-opacity-50"
+                                        class="trix-content rounded-lg border border-cyan-300 shadow-sm focus-within:border-cyan-500 focus-within:ring focus-within:ring-cyan-200/50 "
                                         placeholder="Tulis informasi, pengumuman, atau petunjuk untuk pendaftar terkait pembelian seragam..."
                                     ></trix-editor>
                                 </div>
@@ -885,7 +893,7 @@
                                     <input :id="trixId" type="hidden" name="ukuranInfo">
                                     <trix-editor
                                         :input="trixId"
-                                        class="trix-content rounded-lg border border-purple-300 shadow-sm focus-within:border-purple-500 focus-within:ring focus-within:ring-purple-200 focus-within:ring-opacity-50"
+                                        class="trix-content rounded-lg border border-purple-300 shadow-sm focus-within:border-purple-500 focus-within:ring focus-within:ring-purple-200/50 "
                                         placeholder="Tulis informasi, pengumuman, atau petunjuk untuk pendaftar terkait pemilihan ukuran seragam..."
                                     ></trix-editor>
                                 </div>
@@ -1255,7 +1263,7 @@
             </div>
         @else
             <!-- Stats Overview -->
-            @include('livewire.admin.partials.daftar-ulang-stats', ['tab' => $activeTab])
+            @include('livewire.admin.partials.daftar-ulang-stats', ['tab' => $activeTab, 'clickable' => true])
 
             <!-- Information Banner -->
             <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -1441,7 +1449,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($item->jalurPendaftaran)
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-white" style="background-color: {{ $item->jalurPendaftaran->warna ?? '#6B7280' }}">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-white" style="background-color: {{ \App\Models\JalurPendaftaran::hexWarna($item->jalurPendaftaran->warna ?? '#6B7280') }}">
                                             {{ $item->jalurPendaftaran->nama }}
                                         </span>
                                     @else
@@ -1489,7 +1497,7 @@
                                              x-transition:leave="transition ease-in duration-75"
                                              x-transition:leave-start="transform opacity-100 scale-100"
                                              x-transition:leave-end="transform opacity-0 scale-95"
-                                             class="absolute right-0 z-[100] mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-xl ring-1 ring-black ring-opacity-5 focus:outline-none" x-cloak>
+                                             class="absolute right-0 z-[100] mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-xl ring-1 ring-black/5 focus:outline-none" x-cloak>
                                             <div class="py-1">
                                                 <div class="px-4 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Pilih Status</div>
                                                 <button wire:click="changeStatusPersetujuan({{ $item->id }}, 'belum_memilih')"
@@ -1718,7 +1726,7 @@
                                             @php $nominalBiayaAwal = $item->daftarUlang->nominal_biaya_awal; @endphp
                                             <div class="text-xs text-gray-900">
                                                 <div class="font-medium text-gray-700 mb-1">{{ $nominalBiayaAwal['name'] ?? '-' }}</div>
-                                                <div class="font-bold text-blue-700">Rp {{ number_format($nominalBiayaAwal['amount'] ?? 0, 0, ',', '.') }}</div>
+                                                <div class="font-bold text-blue-700">Rp {{ number_format(\App\Support\Nominal::toNumber($nominalBiayaAwal['amount'] ?? 0), 0, ',', '.') }}</div>
                                             </div>
                                         @else
                                             <span class="text-xs text-gray-500">Belum pilih</span>
@@ -1730,7 +1738,7 @@
                                             @php $nominalBiaya = $item->daftarUlang->nominal_biaya; @endphp
                                             <div class="text-xs text-gray-900">
                                                 <div class="font-medium text-gray-700 mb-1">{{ $nominalBiaya['name'] ?? '-' }}</div>
-                                                <div class="font-bold text-emerald-700">Rp {{ number_format($nominalBiaya['amount'] ?? 0, 0, ',', '.') }}</div>
+                                                <div class="font-bold text-emerald-700">Rp {{ number_format(\App\Support\Nominal::toNumber($nominalBiaya['amount'] ?? 0), 0, ',', '.') }}</div>
                                             </div>
                                         @else
                                             <span class="text-xs text-gray-500">Belum konfirmasi</span>
@@ -1846,8 +1854,8 @@
                                     </td>
 
                                     <!-- Aksi Opsi (Individual Toggles) - Madrasah -->
-                                    <td class="px-6 py-4">
-                                        <div class="flex flex-col gap-3">
+                                    <td class="px-4 py-3 min-w-[230px]">
+                                        <div class="flex flex-col gap-2">
                                             <!-- Toggle 1: Opsi Lainnya Dropdown -->
                                             @php
                                                 $dropdownEnabled = false;
@@ -1860,8 +1868,7 @@
                                             @endphp
                                             <div x-data="{
                                                 enabled: {{ $dropdownEnabled ? 'true' : 'false' }}
-                                            }" class="flex flex-col">
-                                                <label class="text-[10px] font-semibold text-gray-600 mb-1">Dropdown Opsi Lainnya</label>
+                                            }" class="flex items-center gap-2">
                                                 <button
                                                     @click="enabled = !enabled; $wire.toggleOpsiLainnyaDropdownIndividual({{ $item->id }}, 'madrasah')"
                                                     type="button"
@@ -1872,7 +1879,10 @@
                                                     <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
                                                           :class="enabled ? 'translate-x-5' : 'translate-x-0'"></span>
                                                 </button>
-                                                <span class="text-[9px] text-gray-500 mt-1" x-text="enabled ? 'Aktif untuk orang ini' : 'Tidak aktif'"></span>
+                                                <div class="leading-tight">
+                                                    <p class="text-xs font-medium text-gray-700 whitespace-nowrap">Dropdown Opsi Lainnya</p>
+                                                    <p class="text-[11px] text-gray-500 whitespace-nowrap" x-text="enabled ? 'Aktif untuk orang ini' : 'Tidak aktif'"></p>
+                                                </div>
                                             </div>
 
                                             <!-- Toggle 2: Opsi Lainnya Konfirmasi -->
@@ -1887,8 +1897,7 @@
                                             @endphp
                                             <div x-data="{
                                                 enabled: {{ $konfirmasiEnabled ? 'true' : 'false' }}
-                                            }" class="flex flex-col">
-                                                <label class="text-[10px] font-semibold text-gray-600 mb-1">Konfirmasi Opsi Lainnya</label>
+                                            }" class="flex items-center gap-2">
                                                 <button
                                                     @click="enabled = !enabled; $wire.toggleOpsiLainnyaKonfirmasiIndividual({{ $item->id }}, 'madrasah')"
                                                     type="button"
@@ -1899,7 +1908,10 @@
                                                     <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
                                                           :class="enabled ? 'translate-x-5' : 'translate-x-0'"></span>
                                                 </button>
-                                                <span class="text-[9px] text-gray-500 mt-1" x-text="enabled ? 'Aktif untuk orang ini' : 'Tidak aktif'"></span>
+                                                <div class="leading-tight">
+                                                    <p class="text-xs font-medium text-gray-700 whitespace-nowrap">Konfirmasi Opsi Lainnya</p>
+                                                    <p class="text-[11px] text-gray-500 whitespace-nowrap" x-text="enabled ? 'Aktif untuk orang ini' : 'Tidak aktif'"></p>
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
@@ -1953,7 +1965,7 @@
                                                     @php
                                                         $totalSeragam = 0;
                                                         foreach ($nominalSeragamAwal as $opt) {
-                                                            $totalSeragam += $opt['amount'] ?? 0;
+                                                            $totalSeragam += \App\Support\Nominal::toNumber($opt['amount'] ?? 0);
                                                         }
                                                     @endphp
                                                     <div class="font-medium text-purple-700 mb-1">
@@ -1964,7 +1976,7 @@
                                                     <div class="space-y-1 mt-1">
                                                         @foreach($nominalSeragamAwal as $idx => $opt)
                                                             <div class="text-xs text-gray-600">
-                                                                {{ $idx + 1 }}. {{ $opt['name'] ?? '-' }} - <span class="text-blue-600 font-medium">Rp {{ number_format($opt['amount'] ?? 0, 0, ',', '.') }}</span>
+                                                                {{ $idx + 1 }}. {{ $opt['name'] ?? '-' }} - <span class="text-blue-600 font-medium">Rp {{ number_format(\App\Support\Nominal::toNumber($opt['amount'] ?? 0), 0, ',', '.') }}</span>
                                                             </div>
                                                         @endforeach
                                                     </div>
@@ -1972,7 +1984,7 @@
                                                 @else
                                                     {{-- SINGLE SELECT MODE --}}
                                                     <div class="font-medium text-gray-700 mb-1">{{ $nominalSeragamAwal['name'] ?? '-' }}</div>
-                                                    <div class="font-bold text-blue-700">Rp {{ number_format($nominalSeragamAwal['amount'] ?? 0, 0, ',', '.') }}</div>
+                                                    <div class="font-bold text-blue-700">Rp {{ number_format(\App\Support\Nominal::toNumber($nominalSeragamAwal['amount'] ?? 0), 0, ',', '.') }}</div>
                                                 @endif
                                             </div>
                                         @else
@@ -1985,7 +1997,7 @@
                                             @php $nominalSeragam = $item->seragam->nominal_seragam; @endphp
                                             <div class="text-xs text-gray-900">
                                                 <div class="font-medium text-gray-700 mb-1">{{ $nominalSeragam['name'] ?? '-' }}</div>
-                                                <div class="font-bold text-emerald-700">Rp {{ number_format($nominalSeragam['amount'] ?? 0, 0, ',', '.') }}</div>
+                                                <div class="font-bold text-emerald-700">Rp {{ number_format(\App\Support\Nominal::toNumber($nominalSeragam['amount'] ?? 0), 0, ',', '.') }}</div>
                                             </div>
                                         @else
                                             <span class="text-xs text-gray-500">Belum konfirmasi</span>
@@ -2121,8 +2133,8 @@
                                     </td>
 
                                     <!-- Aksi Opsi (Individual Toggles) - Seragam -->
-                                    <td class="px-6 py-4">
-                                        <div class="flex flex-col gap-3">
+                                    <td class="px-4 py-3 min-w-[230px]">
+                                        <div class="flex flex-col gap-2">
                                             <!-- Toggle 1: Opsi Lainnya Dropdown -->
                                             @php
                                                 $dropdownEnabledSeragam = false;
@@ -2135,8 +2147,7 @@
                                             @endphp
                                             <div x-data="{
                                                 enabled: {{ $dropdownEnabledSeragam ? 'true' : 'false' }}
-                                            }" class="flex flex-col">
-                                                <label class="text-[10px] font-semibold text-gray-600 mb-1">Dropdown Opsi Lainnya</label>
+                                            }" class="flex items-center gap-2">
                                                 <button
                                                     @click="enabled = !enabled; $wire.toggleOpsiLainnyaDropdownIndividual({{ $item->id }}, 'seragam')"
                                                     type="button"
@@ -2147,7 +2158,10 @@
                                                     <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
                                                           :class="enabled ? 'translate-x-5' : 'translate-x-0'"></span>
                                                 </button>
-                                                <span class="text-[9px] text-gray-500 mt-1" x-text="enabled ? 'Aktif untuk orang ini' : 'Tidak aktif'"></span>
+                                                <div class="leading-tight">
+                                                    <p class="text-xs font-medium text-gray-700 whitespace-nowrap">Dropdown Opsi Lainnya</p>
+                                                    <p class="text-[11px] text-gray-500 whitespace-nowrap" x-text="enabled ? 'Aktif untuk orang ini' : 'Tidak aktif'"></p>
+                                                </div>
                                             </div>
 
                                             <!-- Toggle 2: Opsi Lainnya Konfirmasi -->
@@ -2162,8 +2176,7 @@
                                             @endphp
                                             <div x-data="{
                                                 enabled: {{ $konfirmasiEnabledSeragam ? 'true' : 'false' }}
-                                            }" class="flex flex-col">
-                                                <label class="text-[10px] font-semibold text-gray-600 mb-1">Konfirmasi Opsi Lainnya</label>
+                                            }" class="flex items-center gap-2">
                                                 <button
                                                     @click="enabled = !enabled; $wire.toggleOpsiLainnyaKonfirmasiIndividual({{ $item->id }}, 'seragam')"
                                                     type="button"
@@ -2174,7 +2187,10 @@
                                                     <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
                                                           :class="enabled ? 'translate-x-5' : 'translate-x-0'"></span>
                                                 </button>
-                                                <span class="text-[9px] text-gray-500 mt-1" x-text="enabled ? 'Aktif untuk orang ini' : 'Tidak aktif'"></span>
+                                                <div class="leading-tight">
+                                                    <p class="text-xs font-medium text-gray-700 whitespace-nowrap">Konfirmasi Opsi Lainnya</p>
+                                                    <p class="text-[11px] text-gray-500 whitespace-nowrap" x-text="enabled ? 'Aktif untuk orang ini' : 'Tidak aktif'"></p>
+                                                </div>
                                             </div>
                                         </div>
                                     </td>
@@ -2527,15 +2543,15 @@
             </div>
         @endif
 
-        <!-- Verification Modal -->
-        <div x-data="{ show: @entangle('currentPendaftarId').notEqual(null) }"
-             x-show="show"
-             class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10001] p-4"
-             style="display: none;">
+        <!-- Verification Modal (dirender server-side saat currentPendaftarId terisi) -->
+        @if($currentPendaftarId)
+        <div class="fixed inset-0 bg-black/50 flex items-center justify-center z-[10001] p-4"
+             role="dialog" aria-modal="true" aria-label="Verifikasi dokumen"
+             x-data @keydown.escape.window="$wire.set('currentPendaftarId', null)">
             <div class="bg-white rounded-lg shadow-xl w-full max-w-md">
                 <div class="px-6 py-4 border-b border-gray-200 bg-blue-600 flex items-center justify-between">
                     <h3 class="text-lg font-bold text-white uppercase tracking-wider">Verifikasi Dokumen</h3>
-                    <button @click="show = false; $wire.set('currentPendaftarId', null);" class="text-white">
+                    <button wire:click="$set('currentPendaftarId', null)" class="text-white">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
@@ -2566,7 +2582,7 @@
                     </div>
 
                     <div class="flex justify-end space-x-3">
-                        <button @click="show = false; $wire.set('currentPendaftarId', null);"
+                        <button wire:click="$set('currentPendaftarId', null)"
                                 class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 rounded-lg hover:bg-gray-300 transition">
                             Batal
                         </button>
@@ -2578,6 +2594,7 @@
                 </div>
             </div>
         </div>
+        @endif
     </div>
 
     <!-- Send Message Modal -->
@@ -2921,7 +2938,7 @@
                                                            class="text-emerald-600 focus:ring-emerald-500">
                                                     <div class="ml-3 flex-1 flex justify-between items-center">
                                                         <span class="font-medium text-gray-900">{{ $option['name'] ?? '-' }}</span>
-                                                        <span class="font-bold text-emerald-700">Rp {{ number_format($option['amount'] ?? 0, 0, ',', '.') }}</span>
+                                                        <span class="font-bold text-emerald-700">Rp {{ number_format(\App\Support\Nominal::toNumber($option['amount'] ?? 0), 0, ',', '.') }}</span>
                                                     </div>
                                                 </label>
                                             @endforeach
@@ -2939,9 +2956,9 @@
                                     // Check if multi-select
                                     $isMultiSelect = is_array($selectedOption) && isset($selectedOption[0]);
                                     if ($isMultiSelect) {
-                                        $totalAmount = array_sum(array_column($selectedOption, 'amount'));
+                                        $totalAmount = \App\Support\Nominal::sum($selectedOption);
                                     } else {
-                                        $totalAmount = $selectedOption['amount'] ?? 0;
+                                        $totalAmount = \App\Support\Nominal::toNumber($selectedOption['amount'] ?? 0);
                                     }
                                 @endphp
                                 <div class="mb-4">
@@ -2970,7 +2987,7 @@
                                                         <div class="text-xs text-gray-600 mt-1">
                                                             <strong>Rincian {{ count($selectedOption) }} opsi:</strong>
                                                             @foreach($selectedOption as $idx => $opt)
-                                                                <div class="ml-2">• {{ $opt['name'] ?? '' }} - Rp {{ number_format($opt['amount'] ?? 0, 0, ',', '.') }}</div>
+                                                                <div class="ml-2">• {{ $opt['name'] ?? '' }} - Rp {{ number_format(\App\Support\Nominal::toNumber($opt['amount'] ?? 0), 0, ',', '.') }}</div>
                                                             @endforeach
                                                         </div>
                                                     @else
@@ -3309,7 +3326,7 @@
                                                                class="text-blue-600 focus:ring-blue-500">
                                                         <div class="ml-3 flex-1 flex justify-between items-center">
                                                             <span class="font-medium text-gray-900">{{ $option['name'] ?? '-' }}</span>
-                                                            <span class="font-bold text-blue-700">Rp {{ number_format($option['amount'] ?? 0, 0, ',', '.') }}</span>
+                                                            <span class="font-bold text-blue-700">Rp {{ number_format(\App\Support\Nominal::toNumber($option['amount'] ?? 0), 0, ',', '.') }}</span>
                                                         </div>
                                                     </label>
                                                 @endforeach
@@ -3349,7 +3366,7 @@
                                                                    class="text-purple-600 focus:ring-purple-500 rounded">
                                                             <div class="ml-3 flex-1 flex justify-between items-center">
                                                                 <span class="font-medium text-gray-900">{{ $option['name'] ?? '-' }}</span>
-                                                                <span class="font-bold text-purple-700">Rp {{ number_format($option['amount'] ?? 0, 0, ',', '.') }}</span>
+                                                                <span class="font-bold text-purple-700">Rp {{ number_format(\App\Support\Nominal::toNumber($option['amount'] ?? 0), 0, ',', '.') }}</span>
                                                             </div>
                                                         </label>
                                                     @endforeach
@@ -3377,9 +3394,9 @@
                                     // Check if multi-select
                                     $isMultiSelect = is_array($selectedOption) && isset($selectedOption[0]);
                                     if ($isMultiSelect) {
-                                        $totalAmount = array_sum(array_column($selectedOption, 'amount'));
+                                        $totalAmount = \App\Support\Nominal::sum($selectedOption);
                                     } else {
-                                        $totalAmount = $selectedOption['amount'] ?? 0;
+                                        $totalAmount = \App\Support\Nominal::toNumber($selectedOption['amount'] ?? 0);
                                     }
                                 @endphp
                                 <div class="mb-4">
@@ -3408,7 +3425,7 @@
                                                         <div class="text-xs text-gray-600 mt-1">
                                                             <strong>Rincian {{ count($selectedOption) }} opsi:</strong>
                                                             @foreach($selectedOption as $idx => $opt)
-                                                                <div class="ml-2">• {{ $opt['name'] ?? '' }} - Rp {{ number_format($opt['amount'] ?? 0, 0, ',', '.') }}</div>
+                                                                <div class="ml-2">• {{ $opt['name'] ?? '' }} - Rp {{ number_format(\App\Support\Nominal::toNumber($opt['amount'] ?? 0), 0, ',', '.') }}</div>
                                                             @endforeach
                                                         </div>
                                                     @else

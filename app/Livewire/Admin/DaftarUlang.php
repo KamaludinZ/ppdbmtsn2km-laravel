@@ -27,6 +27,7 @@ class DaftarUlang extends Component
     public $filterJalur = '';
     public $filterStatusSeragam = '';
     public $filterStatusUkuran = '';
+    public $filterRekap = ''; // kategori rekap daftar ulang (lihat App\Support\RekapDaftarUlang)
 
     // For verification
     public $verificationStatus = '';
@@ -262,6 +263,11 @@ class DaftarUlang extends Component
     }
 
     // Livewire lifecycle hook - dipanggil otomatis saat selectedMessageTemplate berubah
+    public function updatedFilterRekap()
+    {
+        $this->resetPage();
+    }
+
     public function updatedSelectedMessageTemplate()
     {
         $this->loadMessageTemplate();
@@ -329,7 +335,7 @@ class DaftarUlang extends Component
     public function render()
     {
         $query = Pendaftar::with(['daftarUlang', 'pembayaran', 'seragam', 'dokumen', 'jalurPendaftaran'])
-            ->whereIn('status_pendaftaran', ['data_disetujui', 'lulus', 'diterima']); // Hanya yang data disetujui (lulus)
+            ->whereIn('status_pendaftaran', \App\Support\RekapDaftarUlang::STATUS_WAJIB); // Hanya yang lulus (sama dengan rekap)
 
         if ($this->search) {
             $query->where(function($q) {
@@ -387,118 +393,19 @@ class DaftarUlang extends Component
             $query->where('jalur_pendaftaran_id', $this->filterJalur);
         }
 
+        // Filter kategori rekap (belum konfirmasi, tidak melanjutkan, selesai, dst.)
+        \App\Support\RekapDaftarUlang::filterKategori($query, $this->filterRekap, in_array($this->activeTab, ['seragam', 'ukuran']) ? $this->activeTab : 'madrasah');
+
         $pendaftar = $this->applySorting($query)->paginate(10);
 
-        // Calculate stats based on active tab
-        // Get ALL pendaftar for total count
-        $allPendaftar = Pendaftar::with(['daftarUlang', 'pembayaran', 'seragam'])->get();
-
-        // Get only lulus pendaftar for lulus count
-        $lulusPendaftar = $allPendaftar->filter(function($p) {
-            return in_array($p->status_pendaftaran, ['lulus', 'diterima']);
-        });
-
-        $stats = [];
-        if ($this->activeTab === 'madrasah') {
-            $stats = [
-                // Total ALL pendaftar
-                'total_pendaftar' => $allPendaftar->count(),
-
-                // Total pendaftar lulus (from kelulusan menu)
-                'lulus' => $lulusPendaftar->count(),
-
-                // Backward compatibility
-                'total_lulus' => $lulusPendaftar->count(),
-
-                // Status persetujuan daftar ulang (dari pendaftar.status_persetujuan_daftar_ulang)
-                'setuju' => $allPendaftar->filter(function($p) {
-                    return $p->status_persetujuan_daftar_ulang === 'setuju';
-                })->count(),
-                'tidak_setuju' => $allPendaftar->filter(function($p) {
-                    return $p->status_persetujuan_daftar_ulang === 'tidak_setuju';
-                })->count(),
-
-                // Status proses daftar ulang (dari daftar_ulang.status)
-                'menunggu' => $allPendaftar->filter(function($p) {
-                    return !$p->daftarUlang || $p->daftarUlang->status === 'menunggu' || !$p->daftarUlang->status;
-                })->count(),
-                'disetujui' => $allPendaftar->filter(function($p) {
-                    return $p->daftarUlang && $p->daftarUlang->status === 'disetujui';
-                })->count(),
-                'ditolak' => $allPendaftar->filter(function($p) {
-                    return $p->daftarUlang && $p->daftarUlang->status === 'ditolak';
-                })->count(),
-                'perlu_perbaikan' => $allPendaftar->filter(function($p) {
-                    return $p->daftarUlang && $p->daftarUlang->status === 'perbaiki';
-                })->count(),
-
-                // Status upload surat pernyataan
-                'upload_surat' => $allPendaftar->filter(function($p) {
-                    return $p->daftarUlang && $p->daftarUlang->surat_pernyataan_path;
-                })->count(),
-            ];
-        } elseif ($this->activeTab === 'seragam') {
-            $stats = [
-                // Total ALL pendaftar
-                'total_pendaftar' => $allPendaftar->count(),
-
-                // Total pendaftar lulus (from kelulusan menu)
-                'lulus' => $lulusPendaftar->count(),
-
-                // Backward compatibility
-                'total_lulus' => $lulusPendaftar->count(),
-
-                // Status seragam (dari seragam.status_seragam)
-                'menunggu' => $allPendaftar->filter(function($p) {
-                    return !$p->seragam || $p->seragam->status_seragam === 'menunggu' || !$p->seragam->status_seragam;
-                })->count(),
-                'disetujui' => $allPendaftar->filter(function($p) {
-                    return $p->seragam && $p->seragam->status_seragam === 'disetujui';
-                })->count(),
-                'ditolak' => $allPendaftar->filter(function($p) {
-                    return $p->seragam && $p->seragam->status_seragam === 'ditolak';
-                })->count(),
-                'perlu_perbaikan' => $allPendaftar->filter(function($p) {
-                    return $p->seragam && $p->seragam->status_seragam === 'perbaiki';
-                })->count(),
-
-                // Status ukuran (dari seragam.status_ukuran)
-                'ukuran_menunggu' => $allPendaftar->filter(function($p) {
-                    return !$p->seragam || $p->seragam->status_ukuran === 'menunggu' || !$p->seragam->status_ukuran;
-                })->count(),
-                'ukuran_disetujui' => $allPendaftar->filter(function($p) {
-                    return $p->seragam && $p->seragam->status_ukuran === 'disetujui';
-                })->count(),
-                'ukuran_ditolak' => $allPendaftar->filter(function($p) {
-                    return $p->seragam && $p->seragam->status_ukuran === 'ditolak';
-                })->count(),
-            ];
-        } elseif ($this->activeTab === 'ukuran') {
-            $stats = [
-                // Total ALL pendaftar
-                'total_pendaftar' => $allPendaftar->count(),
-
-                // Total pendaftar lulus (from kelulusan menu)
-                'lulus' => $lulusPendaftar->count(),
-
-                // Backward compatibility
-                'total_lulus' => $lulusPendaftar->count(),
-
-                // Status ukuran (dari seragam.status_ukuran)
-                'menunggu' => $allPendaftar->filter(function($p) {
-                    return !$p->seragam || $p->seragam->status_ukuran === 'menunggu' || !$p->seragam->status_ukuran;
-                })->count(),
-                'disetujui' => $allPendaftar->filter(function($p) {
-                    return $p->seragam && $p->seragam->status_ukuran === 'disetujui';
-                })->count(),
-                'ditolak' => $allPendaftar->filter(function($p) {
-                    return $p->seragam && $p->seragam->status_ukuran === 'ditolak';
-                })->count(),
-                'perlu_perbaikan' => $allPendaftar->filter(function($p) {
-                    return $p->seragam && $p->seragam->status_ukuran === 'perbaiki';
-                })->count(),
-            ];
-        }
+        // Rekap konsisten: setiap pendaftar lulus masuk tepat satu kategori
+        // (termasuk yang belum konfirmasi / tidak melanjutkan), lihat App\Support\RekapDaftarUlang.
+        $stats = in_array($this->activeTab, ['madrasah', 'seragam', 'ukuran'])
+            ? \App\Support\RekapDaftarUlang::statsTab($this->activeTab, [
+                'jalur' => $this->filterJalur,
+                'jenis_kelamin' => in_array($this->activeTab, ['seragam', 'ukuran']) ? $this->filterJenisKelamin : null,
+            ])
+            : [];
 
         // Load jalur pendaftaran untuk filter
         $jalurPendaftaran = \App\Models\JalurPendaftaran::where('aktif', true)

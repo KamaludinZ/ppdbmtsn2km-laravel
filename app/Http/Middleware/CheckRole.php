@@ -24,6 +24,14 @@ class CheckRole
         // Check if user has required role
         $user = auth()->user();
 
+        // Akun yang dinonaktifkan admin langsung dikeluarkan, walau sesinya masih aktif
+        if ($user->aktif === false) {
+            auth()->logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+            abort(403, 'Akun Anda tidak aktif. Silakan hubungi administrator.');
+        }
+
         if (!in_array($user->role, $roles)) {
             abort(403, 'Anda tidak memiliki akses ke halaman ini.');
         }

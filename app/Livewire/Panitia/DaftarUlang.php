@@ -22,6 +22,7 @@ class DaftarUlang extends Component
     public $search = '';
     public $filterStatus = '';
     public $filterJalur = ''; // Filter jalur
+    public $filterRekap = ''; // kategori rekap daftar ulang
 
     public $verificationStatus = '';
     public $verificationNote = '';
@@ -239,10 +240,15 @@ class DaftarUlang extends Component
         $this->dispatch('saved', message: 'Template berhasil direset');
     }
 
+    public function updatedFilterRekap()
+    {
+        $this->resetPage();
+    }
+
     public function render()
     {
         $query = Pendaftar::with(['daftarUlang', 'pembayaran', 'seragam', 'dokumen', 'jalurPendaftaran'])
-            ->whereIn('status_pendaftaran', ['data_disetujui', 'lulus', 'diterima']); // Semua pendaftar dengan data disetujui (lulus) otomatis muncul
+            ->whereIn('status_pendaftaran', \App\Support\RekapDaftarUlang::STATUS_WAJIB); // Hanya yang lulus (sama dengan rekap)
 
         if ($this->search) {
             $query->where(function($q) {
@@ -263,55 +269,13 @@ class DaftarUlang extends Component
             $query->where('jalur_pendaftaran_id', $this->filterJalur);
         }
 
+        // Filter kategori rekap (belum konfirmasi, tidak melanjutkan, selesai, dst.)
+        \App\Support\RekapDaftarUlang::filterKategori($query, $this->filterRekap, 'madrasah');
+
         $pendaftar = $this->applySorting($query)->paginate(10);
 
-        // Calculate stats based on active tab (same pattern as Admin)
-        // Get ALL pendaftar for total count (no status filter for stats)
-        $allPendaftar = Pendaftar::with(['daftarUlang', 'pembayaran', 'seragam'])->get();
-
-        // Get only lulus pendaftar for lulus count
-        $lulusPendaftar = $allPendaftar->filter(function($p) {
-            return in_array($p->status_pendaftaran, ['lulus', 'diterima']);
-        });
-
-        // Panitia Daftar Ulang only handles madrasah tab
-        $stats = [
-            // Total ALL pendaftar
-            'total_pendaftar' => $allPendaftar->count(),
-
-            // Total pendaftar lulus (from kelulusan menu)
-            'lulus' => $lulusPendaftar->count(),
-
-            // Backward compatibility
-            'total_lulus' => $lulusPendaftar->count(),
-
-            // Status persetujuan daftar ulang (dari pendaftar.status_persetujuan_daftar_ulang)
-            'setuju' => $allPendaftar->filter(function($p) {
-                return $p->status_persetujuan_daftar_ulang === 'setuju';
-            })->count(),
-            'tidak_setuju' => $allPendaftar->filter(function($p) {
-                return $p->status_persetujuan_daftar_ulang === 'tidak_setuju';
-            })->count(),
-
-            // Status proses daftar ulang (dari daftar_ulang.status)
-            'menunggu' => $allPendaftar->filter(function($p) {
-                return !$p->daftarUlang || $p->daftarUlang->status === 'menunggu' || !$p->daftarUlang->status;
-            })->count(),
-            'disetujui' => $allPendaftar->filter(function($p) {
-                return $p->daftarUlang && $p->daftarUlang->status === 'disetujui';
-            })->count(),
-            'ditolak' => $allPendaftar->filter(function($p) {
-                return $p->daftarUlang && $p->daftarUlang->status === 'ditolak';
-            })->count(),
-            'perlu_perbaikan' => $allPendaftar->filter(function($p) {
-                return $p->daftarUlang && $p->daftarUlang->status === 'perbaiki';
-            })->count(),
-
-            // Status upload surat pernyataan
-            'upload_surat' => $allPendaftar->filter(function($p) {
-                return $p->daftarUlang && $p->daftarUlang->surat_pernyataan_path;
-            })->count(),
-        ];
+        // Rekap konsisten: setiap pendaftar lulus masuk tepat satu kategori (lihat App\Support\RekapDaftarUlang)
+        $stats = \App\Support\RekapDaftarUlang::statsTab('madrasah', ['jalur' => $this->filterJalur]);
 
         // Load jalur pendaftaran untuk filter
         $jalurPendaftaran = \App\Models\JalurPendaftaran::where('aktif', true)

@@ -29,12 +29,12 @@
                         type="text"
                         wire:model.live="search"
                         placeholder="Cari nama sekolah, NPSN, NSM..."
-                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                     >
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-2">Per Halaman</label>
-                    <select wire:model.live="perPage" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                    <select wire:model.live="perPage" class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 ">
                         <option value="10">10 per halaman</option>
                         <option value="25">25 per halaman</option>
                         <option value="50">50 per halaman</option>

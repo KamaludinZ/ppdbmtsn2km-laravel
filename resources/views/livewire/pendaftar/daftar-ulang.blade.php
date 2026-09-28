@@ -354,7 +354,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <div class="flex-1 text-sm text-indigo-900 prose prose-sm prose-indigo max-w-none">
-                                    {!! $this->madrasahInfo !!}
+                                    {!! \App\Support\HtmlSanitizer::clean($this->madrasahInfo) !!}
                                 </div>
                             </div>
                         </div>
@@ -530,7 +530,7 @@
                                 <div class="p-3 bg-gray-50 rounded-lg">
                                     <p class="text-gray-600 mb-1">Nominal Biaya (Surat Pernyataan):</p>
                                     <p class="font-semibold text-gray-900">
-                                        Rp {{ number_format($daftarUlang->nominal_biaya_awal['amount'] ?? 0, 0, ',', '.') }}
+                                        Rp {{ number_format(\App\Support\Nominal::toNumber($daftarUlang->nominal_biaya_awal['amount'] ?? 0), 0, ',', '.') }}
                                         @if(isset($daftarUlang->nominal_biaya_awal['name']))
                                             <span class="text-xs text-gray-500">({{ $daftarUlang->nominal_biaya_awal['name'] }})</span>
                                         @endif
@@ -542,7 +542,7 @@
                                 <div class="p-3 bg-gray-50 rounded-lg">
                                     <p class="text-gray-600 mb-1">Nominal Dibayarkan:</p>
                                     <p class="font-semibold text-gray-900">
-                                        Rp {{ number_format($daftarUlang->nominal_biaya['amount'] ?? 0, 0, ',', '.') }}
+                                        Rp {{ number_format(\App\Support\Nominal::toNumber($daftarUlang->nominal_biaya['amount'] ?? 0), 0, ',', '.') }}
                                         @if(isset($daftarUlang->nominal_biaya['name']))
                                             <span class="text-xs text-gray-500">({{ $daftarUlang->nominal_biaya['name'] }})</span>
                                         @endif
@@ -865,7 +865,7 @@
                                                            class="text-emerald-600 focus:ring-emerald-500">
                                                     <div class="ml-3 flex-1 flex justify-between items-center">
                                                         <span class="font-medium text-gray-900">{{ $option['name'] ?? '-' }}</span>
-                                                        <span class="font-bold text-emerald-700">Rp {{ number_format($option['amount'] ?? 0, 0, ',', '.') }}</span>
+                                                        <span class="font-bold text-emerald-700">Rp {{ number_format(\App\Support\Nominal::toNumber($option['amount'] ?? 0), 0, ',', '.') }}</span>
                                                     </div>
                                                 </label>
                                             @endforeach
@@ -934,7 +934,7 @@
                                                     <span class="font-medium text-gray-900">Bayar Penuh</span>
                                                     <p class="text-xs text-gray-600 mt-1">{{ $selectedOption['name'] ?? '' }}</p>
                                                 </div>
-                                                <span class="font-bold text-green-700">Rp {{ number_format($selectedOption['amount'] ?? 0, 0, ',', '.') }}</span>
+                                                <span class="font-bold text-green-700">Rp {{ number_format(\App\Support\Nominal::toNumber($selectedOption['amount'] ?? 0), 0, ',', '.') }}</span>
                                             </div>
                                         </label>
 
@@ -1031,7 +1031,7 @@
                             <input type="text"
                                    wire:model="namaPengirim"
                                    placeholder="Masukkan nama pengirim sesuai bukti transfer"
-                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                                   class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 ">
                             <p class="mt-1 text-xs text-gray-500">Nama pengirim harus sesuai dengan yang tertera pada bukti transfer</p>
                             @error('namaPengirim')
                                 <span class="text-red-500 text-xs mt-1 block">{{ $message }}</span>
@@ -1418,7 +1418,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <div class="flex-1 text-sm text-cyan-900 prose prose-sm prose-cyan max-w-none">
-                                    {!! $this->seragamInfo !!}
+                                    {!! \App\Support\HtmlSanitizer::clean($this->seragamInfo) !!}
                                 </div>
                             </div>
                         </div>
@@ -1639,7 +1639,7 @@
                                                     </span>
                                                     @if(isset($opsi['amount']))
                                                         <span class="text-sm text-purple-700 font-medium">
-                                                            Rp {{ number_format($opsi['amount'], 0, ',', '.') }}
+                                                            Rp {{ number_format(\App\Support\Nominal::toNumber($opsi['amount']), 0, ',', '.') }}
                                                         </span>
                                                     @endif
                                                 </div>
@@ -1647,7 +1647,7 @@
                                             <div class="pt-2 border-t-2 border-purple-200 flex justify-between items-center">
                                                 <span class="font-bold text-gray-900">Total:</span>
                                                 <span class="font-bold text-purple-700">
-                                                    Rp {{ number_format(array_sum(array_column($opsiSeragamData, 'amount')), 0, ',', '.') }}
+                                                    Rp {{ number_format(\App\Support\Nominal::sum($opsiSeragamData), 0, ',', '.') }}
                                                 </span>
                                             </div>
                                         </div>
@@ -1656,7 +1656,7 @@
                                         <p class="font-semibold text-gray-900">
                                             {{ $opsiSeragamData['name'] ?? '-' }}
                                             @if(isset($opsiSeragamData['amount']))
-                                                <span class="text-xs text-gray-500">(Rp {{ number_format($opsiSeragamData['amount'], 0, ',', '.') }})</span>
+                                                <span class="text-xs text-gray-500">(Rp {{ number_format(\App\Support\Nominal::toNumber($opsiSeragamData['amount']), 0, ',', '.') }})</span>
                                             @endif
                                         </p>
                                     @endif
@@ -1667,7 +1667,7 @@
                                 <div class="p-3 bg-gray-50 rounded-lg">
                                     <p class="text-gray-600 mb-1">Nominal yang Dibayarkan:</p>
                                     <p class="font-semibold text-gray-900">
-                                        Rp {{ number_format($nominalSeragamData['amount'] ?? 0, 0, ',', '.') }}
+                                        Rp {{ number_format(\App\Support\Nominal::toNumber($nominalSeragamData['amount'] ?? 0), 0, ',', '.') }}
                                         @if(isset($nominalSeragamData['name']) && $nominalSeragamData['name'] !== ($opsiSeragamData['name'] ?? ''))
                                             <span class="text-xs text-gray-500">({{ $nominalSeragamData['name'] }})</span>
                                         @endif
@@ -1823,7 +1823,7 @@
                                                                {{ $isSeragamApproved ? 'disabled' : '' }}>
                                                         <div class="ml-3 flex-1 flex justify-between items-center">
                                                             <span class="font-medium text-gray-900">{{ $option['name'] ?? '-' }}</span>
-                                                            <span class="font-bold text-blue-700">Rp {{ number_format($option['amount'] ?? 0, 0, ',', '.') }}</span>
+                                                            <span class="font-bold text-blue-700">Rp {{ number_format(\App\Support\Nominal::toNumber($option['amount'] ?? 0), 0, ',', '.') }}</span>
                                                         </div>
                                                     </label>
                                                 @endforeach
@@ -1868,7 +1868,7 @@
                                                                    {{ $isSeragamApproved ? 'disabled' : '' }}>
                                                             <div class="ml-3 flex-1 flex justify-between items-center">
                                                                 <span class="font-medium text-gray-900">{{ $option['name'] ?? '-' }}</span>
-                                                                <span class="font-bold text-purple-700">Rp {{ number_format($option['amount'] ?? 0, 0, ',', '.') }}</span>
+                                                                <span class="font-bold text-purple-700">Rp {{ number_format(\App\Support\Nominal::toNumber($option['amount'] ?? 0), 0, ',', '.') }}</span>
                                                             </div>
                                                         </label>
                                                     @endforeach
@@ -1897,7 +1897,7 @@
                                             'amount' => $paketSeragamCustomAmount ?? 0
                                         ];
                                         $isMultiSelect = false;
-                                        $totalAmount = $selectedOption['amount'];
+                                        $totalAmount = \App\Support\Nominal::toNumber($selectedOption['amount']);
                                         $selectedNames = [$selectedOption['name']];
                                     } else {
                                         // Normal package: Deteksi apakah opsiSeragam adalah array (checkbox mode) atau single object (radio mode)
@@ -1918,11 +1918,11 @@
                                             $totalAmount = 0;
                                             $selectedNames = [];
                                             foreach ($selectedOption as $opt) {
-                                                $totalAmount += $opt['amount'] ?? 0;
+                                                $totalAmount += \App\Support\Nominal::toNumber($opt['amount'] ?? 0);
                                                 $selectedNames[] = $opt['name'] ?? '';
                                             }
                                         } else {
-                                            $totalAmount = $selectedOption['amount'] ?? 0;
+                                            $totalAmount = \App\Support\Nominal::toNumber($selectedOption['amount'] ?? 0);
                                             $selectedNames = [$selectedOption['name'] ?? ''];
                                         }
                                     }
@@ -1971,7 +1971,7 @@
                                                         <div class="text-xs text-gray-600 mt-1">
                                                             <strong>Rincian {{ count($selectedOption) }} opsi:</strong>
                                                             @foreach($selectedOption as $idx => $opt)
-                                                                <div class="ml-2">• {{ $opt['name'] ?? '' }} - Rp {{ number_format($opt['amount'] ?? 0, 0, ',', '.') }}</div>
+                                                                <div class="ml-2">• {{ $opt['name'] ?? '' }} - Rp {{ number_format(\App\Support\Nominal::toNumber($opt['amount'] ?? 0), 0, ',', '.') }}</div>
                                                             @endforeach
                                                         </div>
                                                     @else
@@ -2403,7 +2403,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <div class="flex-1 text-sm text-purple-900 prose prose-sm prose-purple max-w-none">
-                                    {!! $this->ukuranInfo !!}
+                                    {!! \App\Support\HtmlSanitizer::clean($this->ukuranInfo) !!}
                                 </div>
                             </div>
                         </div>

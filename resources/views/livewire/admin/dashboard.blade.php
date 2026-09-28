@@ -3,8 +3,8 @@
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <!-- Total Pendaftar -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Total Pendaftar</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['total_pendaftar']) }}</p>
                     <p class="text-sm {{ $stats['total_pendaftar_increase'] >= 0 ? 'text-green-600' : 'text-red-600' }} mt-2">
@@ -21,8 +21,8 @@
 
         <!-- Menunggu Verifikasi -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Menunggu Verifikasi</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['menunggu_verifikasi']) }}</p>
                     <p class="text-sm text-yellow-600 mt-2">{{ $stats['menunggu_verifikasi'] > 0 ? 'Perlu ditindaklanjuti' : 'Semua terverifikasi' }}</p>
@@ -37,8 +37,8 @@
 
         <!-- Lengkapi Data -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Lengkapi Data</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['lengkapi_data']) }}</p>
                     <p class="text-sm text-orange-600 mt-2">{{ $stats['lengkapi_data_percentage'] }}% dari total</p>
@@ -53,8 +53,8 @@
 
         <!-- Perbaiki Data -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Perbaiki Data</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['perbaiki_data']) }}</p>
                     <p class="text-sm text-red-600 mt-2">{{ $stats['perbaiki_data_percentage'] }}% dari total</p>
@@ -69,8 +69,8 @@
 
         <!-- Data Disetujui -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">Data Disetujui</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['data_disetujui']) }}</p>
                     <p class="text-sm text-green-600 mt-2">{{ $stats['data_disetujui_percentage'] }}% dari total</p>
@@ -85,8 +85,8 @@
 
         <!-- User Aktif -->
         <div class="bg-white rounded-lg shadow p-6">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium text-gray-600">User Aktif</p>
                     <p class="text-3xl font-bold text-gray-900 mt-2">{{ number_format($stats['user_aktif']) }}</p>
                     <p class="text-sm text-gray-600 mt-2">Sedang Online</p>
@@ -325,7 +325,7 @@
                         <svg class="w-6 h-6 text-white mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
                         <h3 class="text-lg font-bold text-white uppercase tracking-wider">Kelengkapan Data EMIS Kemenag 4.0</h3>
                     </div>
-                    <div class="bg-white bg-opacity-20 px-4 py-2 rounded-lg">
+                    <div class="bg-white/20 px-4 py-2 rounded-lg">
                         <p class="text-xs text-gray-900 opacity-90">Rata-rata Kelengkapan</p>
                         <p class="text-2xl font-bold text-gray-900">{{ $emisCompletenessStats['average_completion'] ?? 0 }}%</p>
                     </div>
@@ -406,7 +406,7 @@
                                         </div>
                                         <span class="text-lg font-bold {{ $textColor }} ml-2">{{ $percentage }}%</span>
                                     </div>
-                                    <div class="w-full bg-white bg-opacity-70 rounded-full h-2.5 shadow-inner">
+                                    <div class="w-full bg-white/70 rounded-full h-2.5 shadow-inner">
                                         <div class="{{ $barColor }} h-2.5 rounded-full transition-all duration-500 ease-out" style="width: {{ $percentage }}%"></div>
                                     </div>
                                 </div>
@@ -467,7 +467,7 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
-                                <div class="w-3 h-3 rounded-full mr-3" style="background-color: {{ $jalur['warna'] }}"></div>
+                                <div class="w-3 h-3 rounded-full mr-3" style="background-color: {{ \App\Models\JalurPendaftaran::hexWarna($jalur['warna']) }}"></div>
                                 <span class="text-sm font-medium text-gray-900">{{ $jalur['nama'] }}</span>
                             </div>
                         </td>

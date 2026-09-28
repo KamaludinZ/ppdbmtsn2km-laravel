@@ -25,7 +25,7 @@
 
                         <!-- Info Cards -->
                         <div class="space-y-4 mb-8">
-                            <div class="bg-blue-700 bg-opacity-40 rounded-xl p-4 border border-blue-400 border-opacity-30">
+                            <div class="bg-blue-700/40 rounded-xl p-4 border border-blue-400/30 ">
                                 <div class="flex items-start">
                                     <svg class="w-6 h-6 text-white mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path>
@@ -37,7 +37,7 @@
                                 </div>
                             </div>
 
-                            <div class="bg-blue-700 bg-opacity-40 rounded-xl p-4 border border-blue-400 border-opacity-30">
+                            <div class="bg-blue-700/40 rounded-xl p-4 border border-blue-400/30 ">
                                 <div class="flex items-start">
                                     <svg class="w-6 h-6 text-white mr-3 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -76,7 +76,7 @@
 
                     <!-- Bottom Security Info -->
                     <div class="relative z-10 mt-auto">
-                        <div class="bg-blue-700 bg-opacity-40 rounded-xl p-4 border border-blue-400 border-opacity-30">
+                        <div class="bg-blue-700/40 rounded-xl p-4 border border-blue-400/30 ">
                             <div class="flex items-center text-white text-sm">
                                 <svg class="w-5 h-5 mr-2 text-white opacity-90" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
@@ -162,16 +162,14 @@
                                 Kode Keamanan
                             </label>
                             <div class="flex gap-3 items-center mb-3">
-                                <div class="flex-1 bg-gradient-to-r from-blue-50 to-indigo-100 rounded-lg p-3 border-2 border-blue-300">
-                                    <p class="text-2xl font-bold text-center text-blue-800 tracking-wider select-none" style="font-family: 'Courier New', monospace; letter-spacing: 8px;">
-                                        {{ $captchaCode }}
-                                    </p>
+                                <div class="flex-1 bg-white rounded-lg border-2 border-blue-300 overflow-hidden">
+                                    <img src="{{ \App\Support\Captcha::url('admin_login_captcha', $captchaVersion) }}" alt="Kode keamanan: 6 angka pada gambar" width="200" height="60" class="block w-full h-14 object-contain select-none" draggable="false">
                                 </div>
                                 <button
                                     type="button"
                                     wire:click="refreshCaptcha"
                                     class="p-3 bg-blue-100 hover:bg-blue-200 rounded-lg transition"
-                                    title="Refresh Captcha"
+                                    title="Ganti gambar kode" aria-label="Ganti gambar kode keamanan"
                                 >
                                     <svg class="w-5 h-5 text-blue-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
@@ -184,7 +182,9 @@
                                 wire:model="captcha"
                                 maxlength="6"
                                 class="block w-full px-3 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('captcha') border-red-500 @enderror"
-                                placeholder="Masukkan kode di atas"
+                                placeholder="Masukkan 6 angka pada gambar"
+                                inputmode="numeric"
+                                autocomplete="off"
                             >
                             @error('captcha')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>

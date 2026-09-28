@@ -6,8 +6,8 @@
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>{{ $pageTitle ?? 'Print Preview' }}</title>
 
-    <!-- Tailwind CSS -->
-    @vite(['resources/css/app.css'])
+    <!-- Tailwind CSS (Vite saat dev, file CSS statis di production) -->
+    <x-asset-loader />
 
     <!-- Livewire Styles -->
     @livewireStyles
@@ -32,8 +32,5 @@
 
     <!-- Livewire Scripts -->
     @livewireScripts
-
-    <!-- Vite Scripts -->
-    @vite(['resources/js/app.js'])
 </body>
 </html>

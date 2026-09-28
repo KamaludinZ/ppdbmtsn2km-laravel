@@ -170,7 +170,7 @@
                                     @endif
                                 </p>
                                 @if($this->isAllDocumentsVerified)
-                                    <select wire:model.live="status_pendaftaran" wire:change="updateStatusPendaftaran" class="bg-white text-gray-800 rounded-lg border-2 border-white shadow-md px-4 py-2 text-sm font-semibold focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 hover:bg-gray-50 transition cursor-pointer">
+                                    <select wire:model.live="status_pendaftaran" wire:change="updateStatusPendaftaran" class="bg-white text-gray-800 rounded-lg border-2 border-white shadow-md px-4 py-2 text-sm font-semibold focus:border-emerald-300 focus:ring focus:ring-emerald-200/50 hover:bg-gray-50 transition cursor-pointer">
                                         <option value="menunggu_verifikasi" class="text-gray-800">Menunggu Verifikasi</option>
                                         <option value="lengkapi_data" class="text-gray-800">Lengkapi Data</option>
                                         <option value="perbaiki_data" class="text-gray-800">Perbaiki Data</option>
@@ -338,7 +338,7 @@
 
                             <!-- Madrasah Sub-tab -->
                             <div x-show="subTab === 'madrasah'" x-transition class="p-6 space-y-6">
-                                <h4 class="text-md font-semibold text-gray-900 mb-4 border-b pb-2">Daftar Ulang Madrasah</h4>
+                                <h4 class="text-base font-semibold text-gray-900 mb-4 border-b pb-2">Daftar Ulang Madrasah</h4>
 
                                 <!-- Informasi Pembayaran -->
                                 <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-4">
@@ -373,7 +373,7 @@
                                                 @if($daftarUlang && $daftarUlang->nominal_biaya)
                                                     @php
                                                         $nominalBiaya = is_array($daftarUlang->nominal_biaya) ? $daftarUlang->nominal_biaya : json_decode($daftarUlang->nominal_biaya, true);
-                                                        $totalNominal = is_array($nominalBiaya) ? array_sum($nominalBiaya) : 0;
+                                                        $totalNominal = is_array($nominalBiaya) ? \App\Support\Nominal::sum($nominalBiaya) : 0;
                                                     @endphp
                                                     Rp {{ number_format($totalNominal, 0, ',', '.') }}
                                                 @else
@@ -478,7 +478,7 @@
 
                             <!-- Seragam Sub-tab -->
                             <div x-show="subTab === 'seragam'" x-transition class="p-6 space-y-6">
-                                <h4 class="text-md font-semibold text-gray-900 mb-4 border-b pb-2">Daftar Ulang Seragam</h4>
+                                <h4 class="text-base font-semibold text-gray-900 mb-4 border-b pb-2">Daftar Ulang Seragam</h4>
 
                                 <!-- Informasi Pembayaran Seragam -->
                                 <div class="bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 rounded-lg p-4">
@@ -513,7 +513,7 @@
                                                 @if($seragam && $seragam->nominal_seragam)
                                                     @php
                                                         $nominalSeragam = is_array($seragam->nominal_seragam) ? $seragam->nominal_seragam : json_decode($seragam->nominal_seragam, true);
-                                                        $totalSeragam = is_array($nominalSeragam) ? array_sum($nominalSeragam) : 0;
+                                                        $totalSeragam = is_array($nominalSeragam) ? \App\Support\Nominal::sum($nominalSeragam) : 0;
                                                     @endphp
                                                     Rp {{ number_format($totalSeragam, 0, ',', '.') }}
                                                 @else
@@ -570,7 +570,7 @@
                                                             @foreach($paketData['options'] as $option)
                                                                 <li class="flex items-center justify-between text-sm bg-indigo-50 px-2 py-1 rounded">
                                                                     <span class="font-medium text-gray-700">{{ $option['name'] ?? 'N/A' }}</span>
-                                                                    <span class="text-indigo-600 font-semibold">Rp {{ number_format($option['amount'] ?? 0, 0, ',', '.') }}</span>
+                                                                    <span class="text-indigo-600 font-semibold">Rp {{ number_format(\App\Support\Nominal::toNumber($option['amount'] ?? 0), 0, ',', '.') }}</span>
                                                                 </li>
                                                             @endforeach
                                                         </ul>
@@ -652,7 +652,7 @@
 
                             <!-- Ukuran Sub-tab -->
                             <div x-show="subTab === 'ukuran'" x-transition class="p-6 space-y-6">
-                                <h4 class="text-md font-semibold text-gray-900 mb-4 border-b pb-2">Ukuran Seragam & Atribut</h4>
+                                <h4 class="text-base font-semibold text-gray-900 mb-4 border-b pb-2">Ukuran Seragam & Atribut</h4>
 
                                 <!-- Status Ukuran -->
                                 <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
@@ -1039,7 +1039,7 @@
                                         <!-- Status Dropdown -->
                                         <div>
                                             <label class="block text-sm font-medium text-gray-700 mb-1">Ubah Status</label>
-                                            <select wire:model="{{$statusField}}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 text-sm">
+                                            <select wire:model="{{$statusField}}" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 text-sm">
                                                 <option value="belum_upload">Belum Upload</option>
                                                 <option value="menunggu_verifikasi">Menunggu Verifikasi</option>
                                                 <option value="tidak_sesuai">Tidak Sesuai</option>
@@ -1054,7 +1054,7 @@
                                             <input
                                                 type="text"
                                                 wire:model="{{$catatanField}}"
-                                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 text-sm"
+                                                class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 text-sm"
                                                 placeholder="Tambahkan catatan (opsional)"
                                             >
                                         </div>
@@ -1169,7 +1169,7 @@
 
     <!-- Modal Edit Nilai Rapor -->
     @if($showEditNilaiRapor)
-        <div class="fixed inset-0 bg-gray-600 bg-opacity-75 overflow-y-auto h-full w-full z-50" wire:click.self="closeEditNilaiRapor">
+        <div class="fixed inset-0 bg-gray-600/75 overflow-y-auto h-full w-full z-50" wire:click.self="closeEditNilaiRapor">
             <div class="relative top-10 mx-auto p-6 border w-full max-w-5xl shadow-2xl rounded-xl bg-white mb-10">
                 <div class="flex items-center justify-between mb-4 border-b pb-3">
                     <h3 class="text-xl font-bold text-gray-900 flex items-center">
@@ -1346,7 +1346,7 @@
     @endif
 
     <!-- Modal Edit Catatan Verifikasi -->
-    <div id="editCatatanModal" class="hidden fixed inset-0 bg-gray-900 bg-opacity-50 z-50 flex items-center justify-center p-4">
+    <div id="editCatatanModal" class="hidden fixed inset-0 bg-gray-900/50 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-lg shadow-xl max-w-lg w-full">
             <div class="bg-gradient-to-r from-blue-600 to-blue-700 px-6 py-4 rounded-t-lg flex items-center justify-between">
                 <h3 class="text-lg font-bold text-white flex items-center">

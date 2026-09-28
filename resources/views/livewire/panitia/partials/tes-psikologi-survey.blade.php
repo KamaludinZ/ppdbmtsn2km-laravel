@@ -46,7 +46,7 @@
                     <input :id="trixId" type="hidden" name="survey_informasi" value="{{ $survey_informasi ?? '' }}">
                     <trix-editor
                         :input="trixId"
-                        class="trix-content rounded-lg border border-gray-300 shadow-sm focus-within:border-purple-500 focus-within:ring focus-within:ring-purple-200 focus-within:ring-opacity-50"
+                        class="trix-content rounded-lg border border-gray-300 shadow-sm focus-within:border-purple-500 focus-within:ring focus-within:ring-purple-200/50 "
                         placeholder="Masukkan informasi atau instruksi untuk survey..."
                     ></trix-editor>
                 </div>

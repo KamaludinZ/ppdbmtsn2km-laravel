@@ -376,8 +376,8 @@
                     <div class="mt-8 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-gray-100 pt-8">
                         <div class="w-full md:max-w-md">
                             <label class="block text-xs font-bold text-gray-500 uppercase mb-2 ml-1">Email Penerima Tes</label>
-                            <div class="flex gap-2 p-1 bg-gray-100 rounded-2xl border border-gray-200">
-                                <input type="email" wire:model="test_email_recipient" class="flex-1 bg-transparent border-none focus:ring-0 px-4 py-2 text-sm font-medium" placeholder="email@tujuan.com">
+                            <div class="flex flex-wrap sm:flex-nowrap gap-2 p-1 bg-gray-100 rounded-2xl border border-gray-200">
+                                <input type="email" wire:model="test_email_recipient" class="flex-1 min-w-0 bg-transparent border-none focus:ring-0 px-4 py-2 text-sm font-medium" placeholder="email@tujuan.com">
                                 <button type="button" wire:click="sendTestEmail" class="bg-white text-blue-600 px-6 py-2 rounded-xl hover:bg-blue-50 transition text-xs font-bold shadow-sm whitespace-nowrap border border-blue-100 uppercase tracking-widest active:scale-95">
                                     <span wire:loading.remove wire:target="sendTestEmail">Kirim Tes</span>
                                     <span wire:loading wire:target="sendTestEmail">Mengirim...</span>
@@ -491,12 +491,12 @@
                     <div class="mt-8 flex flex-col md:flex-row justify-between items-center gap-6 border-t border-gray-100 pt-8">
                         <div class="w-full md:max-w-md">
                             <label class="block text-xs font-bold text-gray-500 uppercase mb-2 ml-1">Nomor Penerima Tes</label>
-                            <div class="flex gap-2 p-1 bg-gray-100 rounded-2xl border border-gray-200">
+                            <div class="flex flex-wrap sm:flex-nowrap gap-2 p-1 bg-gray-100 rounded-2xl border border-gray-200">
                                 <input
                                     type="text"
                                     wire:model="test_whatsapp_number"
                                     id="test_whatsapp_number"
-                                    class="flex-1 bg-transparent border-none focus:ring-0 px-4 py-2 text-sm font-medium"
+                                    class="flex-1 min-w-0 bg-transparent border-none focus:ring-0 px-4 py-2 text-sm font-medium"
                                     placeholder="628..."
                                     oninput="formatPhoneNumber(this)"
                                 >

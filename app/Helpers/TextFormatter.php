@@ -26,9 +26,9 @@ class TextFormatter
         // Check if content is already HTML from Trix editor
         // Trix generates content with HTML tags like <div>, <strong>, <em>, <a>, <ul>, <ol>, etc
         if (self::isHtmlContent($text)) {
-            // Content already formatted by Trix, return as-is
-            // Trix output is already safe, no need to escape
-            return $text;
+            // Konten HTML dari Trix tetap dibersihkan: isi dikirim dari browser,
+            // jadi bisa saja disisipi <script>/onerror (stored XSS)
+            return \App\Support\HtmlSanitizer::clean($text);
         }
 
         // Legacy plain text with markdown-like syntax

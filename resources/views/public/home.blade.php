@@ -221,7 +221,7 @@
         <div class="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24" style="z-index: 10;">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
                 <div class="lg:col-span-7">
-                    <div class="inline-block bg-emerald-500 bg-opacity-50 rounded-full px-4 py-2 mb-6 hero-content">
+                    <div class="inline-block bg-emerald-500/50 rounded-full px-4 py-2 mb-6 hero-content">
                         <p class="text-sm font-semibold">Tahun Pelajaran {{ \App\Models\Setting::get('tahun_pelajaran', '2025/2026') }}</p>
                     </div>
                     <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-6 leading-tight hero-content-delay-1">
@@ -376,12 +376,10 @@
                                 Kode Keamanan
                             </label>
                             <div class="flex gap-3 items-center mb-3">
-                                <div class="flex-1 bg-gradient-to-r from-gray-100 to-gray-200 rounded-lg p-3 border-2 {{ $errors->has('captcha') ? 'border-red-300' : 'border-gray-300' }}">
-                                    <p class="text-2xl font-bold text-center text-gray-800 tracking-wider select-none" style="font-family: 'Courier New', monospace; letter-spacing: 8px;">
-                                        {{ $loginCaptcha ?? '000000' }}
-                                    </p>
+                                <div class="flex-1 bg-white rounded-lg border-2 overflow-hidden {{ $errors->has('captcha') ? 'border-red-300' : 'border-gray-300' }}">
+                                    <img id="home-login-captcha" src="{{ $loginCaptcha }}" alt="Kode keamanan: 6 angka pada gambar" width="200" height="60" class="block w-full h-14 object-contain select-none" draggable="false">
                                 </div>
-                                <button type="button" onclick="location.reload()" class="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition" title="Refresh Captcha">
+                                <button type="button" onclick="var i=document.getElementById('home-login-captcha'); i.src=i.src.split('?')[0]+'?v='+Date.now();" class="p-2 bg-gray-200 hover:bg-gray-300 rounded-lg transition" title="Ganti gambar kode" aria-label="Ganti gambar kode keamanan">
                                     <svg class="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                                     </svg>
@@ -391,7 +389,10 @@
                                 type="text"
                                 name="captcha"
                                 class="block w-full px-3 py-2.5 border rounded-lg focus:ring-2 text-sm text-gray-900 @if($errors->has('captcha')) border-red-500 focus:ring-red-500 focus:border-red-500 @else border-gray-300 focus:ring-emerald-500 focus:border-emerald-500 @endif"
-                                placeholder="Masukkan kode di atas"
+                                placeholder="Masukkan 6 angka pada gambar"
+                                inputmode="numeric"
+                                autocomplete="off"
+                                maxlength="6"
                                 @if($loginEnabled) required @endif
                                 @if(!$loginEnabled) disabled @endif
                             >
@@ -745,6 +746,9 @@
         </div>
     </section>
 
+    <!-- Cek Status Pendaftaran (tanpa login) -->
+    <livewire:public.cek-pendaftaran :embedded="true" />
+
     <!-- Timeline Pendaftaran -->
     <section class="py-20 bg-white">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -830,7 +834,7 @@
                             @foreach($timelines->sortBy('urutan') as $timeline)
                                 <div class="relative pl-6 {{ !$loop->last ? 'pb-6' : '' }} border-l-2 {{ $colorConfig['borderLine'] }}">
                                     <div class="absolute -left-2 top-0.5 w-4 h-4 rounded-full shadow-sm" style="{{ $colorConfig['dotBg'] }}"></div>
-                                    <div class="bg-white bg-opacity-60 rounded-lg p-3 hover:bg-opacity-100 transition-all">
+                                    <div class="bg-white/60 rounded-lg p-3 hover:bg-white transition-all">
                                         <div class="text-sm font-bold mb-1.5" style="{{ $colorConfig['textColor'] }}">{{ $timeline->judul_kegiatan }}</div>
                                         <div class="text-xs text-gray-700 font-semibold mb-1 flex items-center">
                                             <svg class="w-3.5 h-3.5 mr-1.5 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1037,7 +1041,7 @@
                                     <div class="absolute inset-y-0 left-0 flex items-center">
                                         <button
                                             onclick="prevInfografisSlide()"
-                                            class="bg-white bg-opacity-70 rounded-full p-1 ml-1 hover:bg-opacity-100 transition"
+                                            class="bg-white/70 rounded-full p-1 ml-1 hover:bg-white transition"
                                             aria-label="Previous slide"
                                         >
                                             <svg class="w-4 h-4 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1048,7 +1052,7 @@
                                     <div class="absolute inset-y-0 right-0 flex items-center">
                                         <button
                                             onclick="nextInfografisSlide()"
-                                            class="bg-white bg-opacity-70 rounded-full p-1 mr-1 hover:bg-opacity-100 transition"
+                                            class="bg-white/70 rounded-full p-1 mr-1 hover:bg-white transition"
                                             aria-label="Next slide"
                                         >
                                             <svg class="w-4 h-4 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1124,7 +1128,7 @@
                                 <div class="absolute inset-y-0 left-0 flex items-center">
                                     <button
                                         onclick="prevInfografisSlide()"
-                                        class="bg-white bg-opacity-70 rounded-full p-1 ml-1 hover:bg-opacity-100 transition"
+                                        class="bg-white/70 rounded-full p-1 ml-1 hover:bg-white transition"
                                         aria-label="Previous slide"
                                     >
                                         <svg class="w-4 h-4 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1135,7 +1139,7 @@
                                 <div class="absolute inset-y-0 right-0 flex items-center">
                                     <button
                                         onclick="nextInfografisSlide()"
-                                        class="bg-white bg-opacity-70 rounded-full p-1 mr-1 hover:bg-opacity-100 transition"
+                                        class="bg-white/70 rounded-full p-1 mr-1 hover:bg-white transition"
                                         aria-label="Next slide"
                                     >
                                         <svg class="w-4 h-4 text-gray-800" fill="none" stroke="currentColor" viewBox="0 0 24 24">

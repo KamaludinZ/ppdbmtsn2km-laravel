@@ -2,7 +2,9 @@
 
 namespace App\Exports;
 
+use App\Exports\Concerns\PendaftarWajibDaftarUlang;
 use App\Models\Seragam;
+use App\Support\RekapDaftarUlang;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -14,10 +16,13 @@ use Carbon\Carbon;
 
 class SeragamExport implements FromQuery, WithHeadings, WithMapping, WithStyles, ShouldAutoSize, WithTitle
 {
+    use PendaftarWajibDaftarUlang;
+
     protected $status;
     protected $search;
     protected $jenisKelamin;
     protected $jalur;
+    protected $jenisRekap = 'ukuran';
 
     public function __construct($status = null, $search = null, $jenisKelamin = null, $jalur = null)
     {
@@ -29,37 +34,13 @@ class SeragamExport implements FromQuery, WithHeadings, WithMapping, WithStyles,
 
     public function query()
     {
-        $query = Seragam::with(['pendaftar.jalurPendaftaran', 'pendaftar.user']);
-
-        if ($this->status) {
-            $query->where('status_ukuran', $this->status);
-        }
-
-        if ($this->search) {
-            $query->whereHas('pendaftar', function($q) {
-                $q->where('nama_lengkap', 'like', '%' . $this->search . '%')
-                  ->orWhere('nomor_pendaftaran', 'like', '%' . $this->search . '%');
-            });
-        }
-
-        if ($this->jenisKelamin) {
-            $query->whereHas('pendaftar', function($q) {
-                $q->where('jenis_kelamin', $this->jenisKelamin);
-            });
-        }
-
-        if ($this->jalur) {
-            $query->whereHas('pendaftar', function($q) {
-                $q->where('jalur_pendaftaran_id', $this->jalur);
-            });
-        }
-
-        return $query->orderBy('created_at', 'desc');
+        return $this->queryPendaftarWajib($this->status, $this->jenisRekap ?? 'ukuran', $this->search, $this->jalur ?? null, $this->jenisKelamin ?? null);
     }
 
-    public function map($seragam): array
+    public function map($pendaftar): array
     {
-        $pendaftar = $seragam->pendaftar;
+        // Pendaftar yang belum mengisi seragam tetap tampil (kolom seragam kosong)
+        $seragam = $pendaftar->seragam ?? new Seragam();
 
         // Get nominal seragam (supports both predefined and custom "opsi lainnya")
         $nominalSeragam = $seragam->nominal_seragam;
@@ -68,7 +49,7 @@ class SeragamExport implements FromQuery, WithHeadings, WithMapping, WithStyles,
 
         if (is_array($nominalSeragam)) {
             $nominalSeragamName = $nominalSeragam['name'] ?? '';
-            $nominalSeragamAmount = $nominalSeragam['amount'] ?? 0;
+            $nominalSeragamAmount = \App\Support\Nominal::toNumber($nominalSeragam['amount'] ?? 0);
         }
 
         return [
@@ -83,7 +64,8 @@ class SeragamExport implements FromQuery, WithHeadings, WithMapping, WithStyles,
             $seragam->ukuran_baju_harian ?? '',
             $seragam->ukuran_celana_rok_harian ?? '',
             $pendaftar->jenis_kelamin === 'L' ? ($seragam->ukuran_kopyah ?? '') : 'N/A',
-            $seragam->paket_seragam ?? '',
+            $this->namaPaket($seragam->paket_seragam),
+            RekapDaftarUlang::label(RekapDaftarUlang::kategori($pendaftar, 'ukuran')),
             $this->getStatusLabel($seragam->status_ukuran),
             $this->getStatusLabel($seragam->status_seragam),
             $nominalSeragamName,
@@ -112,6 +94,7 @@ class SeragamExport implements FromQuery, WithHeadings, WithMapping, WithStyles,
             'Ukuran Celana/Rok Harian',
             'Ukuran Kopyah (Laki-laki)',
             'Paket Seragam',
+            'Status Rekap',
             'Status Ukuran',
             'Status Pembayaran Seragam',
             'Jenis Nominal Seragam',
@@ -137,21 +120,22 @@ class SeragamExport implements FromQuery, WithHeadings, WithMapping, WithStyles,
         return 'Data Seragam';
     }
 
+    /** Nama paket yang terbaca (paket_seragam disimpan sebagai JSON atau "paket_lainnya"). */
+    private function namaPaket($paket): string
+    {
+        if (empty($paket)) {
+            return 'Belum Dipilih';
+        }
+        if ($paket === 'paket_lainnya') {
+            return 'Paket Lainnya (Manual)';
+        }
+        $data = is_array($paket) ? $paket : json_decode((string) $paket, true);
+
+        return is_array($data) && isset($data['name']) ? $data['name'] : (string) $paket;
+    }
+
     private function getStatusLabel($status)
     {
-        $statusLabels = [
-            'menunggu' => 'Menunggu',
-            'disetujui' => 'Disetujui',
-            'ditolak' => 'Ditolak',
-            'perbaiki' => 'Perlu Perbaikan',
-            'menunggu_pembayaran' => 'Menunggu Pembayaran',
-            'menunggu_verifikasi' => 'Menunggu Verifikasi',
-            'pembayaran_diterima' => 'Pembayaran Diterima',
-            'seragam_disiapkan' => 'Seragam Disiapkan',
-            'selesai' => 'Selesai',
-            'dibatalkan' => 'Dibatalkan'
-        ];
-
-        return $statusLabels[$status] ?? ucfirst(str_replace('_', ' ', $status ?? ''));
+        return RekapDaftarUlang::labelStatusProses($status);
     }
 }

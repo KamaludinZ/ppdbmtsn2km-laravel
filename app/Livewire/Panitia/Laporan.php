@@ -91,7 +91,7 @@ class Laporan extends Component
     {
         // Jika panitia tes psikologi, hanya load data tes psikologi
         if ($this->isPanitiaPsikologi) {
-            $jalurPendaftaran = JalurPendaftaran::aktif()->ordered()->get();
+            $jalurPendaftaran = \App\Support\RekapPendaftaran::pilihanJalur();
             $tesPsikologiStats = $this->getTesPsikologiStats();
 
             return view('livewire.panitia.laporan', [
@@ -112,7 +112,7 @@ class Laporan extends Component
 
         // Jika panitia daftar ulang, hanya load data daftar ulang
         if ($this->isPanitiaDaftarUlang) {
-            $jalurPendaftaran = JalurPendaftaran::aktif()->ordered()->get();
+            $jalurPendaftaran = \App\Support\RekapPendaftaran::pilihanJalur();
             $daftarUlangStats = $this->getDaftarUlangStats();
 
             return view('livewire.panitia.laporan', [
@@ -172,7 +172,7 @@ class Laporan extends Component
             });
         }])->get();
 
-        $jalurPendaftaran = JalurPendaftaran::aktif()->ordered()->get();
+        $jalurPendaftaran = \App\Support\RekapPendaftaran::pilihanJalur();
 
         // Get statistik tes psikologi untuk tab tes_psikologi
         $tesPsikologiStats = $this->getTesPsikologiStats();
@@ -219,7 +219,7 @@ class Laporan extends Component
 
         // Get per jalur statistics
         $jalurStats = [];
-        $jalurs = JalurPendaftaran::aktif()->ordered()->get();
+        $jalurs = \App\Support\RekapPendaftaran::pilihanJalur();
 
         foreach ($jalurs as $jalur) {
             $jalurData = $allData->where('pendaftar.jalur_pendaftaran_id', $jalur->id);
@@ -284,7 +284,7 @@ class Laporan extends Component
 
         return Excel::download(
             new DaftarUlangExport(
-                $this->filterStatus,
+                $this->filterStatusDU ?: null, // kategori rekap (RekapDaftarUlang::KATEGORI)
                 null
             ),
             $fileName
@@ -321,46 +321,7 @@ class Laporan extends Component
 
     private function getDaftarUlangStats()
     {
-        // Get all pendaftar lulus
-        $allPendaftar = Pendaftar::with(['daftarUlang'])
-            ->whereIn('status_pendaftaran', ['data_disetujui', 'lulus', 'diterima'])
-            ->when($this->filterJalur, function ($q) {
-                $q->where('jalur_pendaftaran_id', $this->filterJalur);
-            })
-            ->get();
-
-        $stats = [
-            // Total pendaftar lulus
-            'total_lulus' => $allPendaftar->count(),
-
-            // Status persetujuan daftar ulang (dari pendaftar.status_persetujuan_daftar_ulang)
-            'setuju' => $allPendaftar->filter(function($p) {
-                return $p->status_persetujuan_daftar_ulang === 'setuju';
-            })->count(),
-            'tidak_setuju' => $allPendaftar->filter(function($p) {
-                return $p->status_persetujuan_daftar_ulang === 'tidak_setuju';
-            })->count(),
-
-            // Status proses daftar ulang (dari daftar_ulang.status)
-            'menunggu' => $allPendaftar->filter(function($p) {
-                return !$p->daftarUlang || $p->daftarUlang->status === 'menunggu' || !$p->daftarUlang->status;
-            })->count(),
-            'disetujui' => $allPendaftar->filter(function($p) {
-                return $p->daftarUlang && $p->daftarUlang->status === 'disetujui';
-            })->count(),
-            'ditolak' => $allPendaftar->filter(function($p) {
-                return $p->daftarUlang && $p->daftarUlang->status === 'ditolak';
-            })->count(),
-            'perlu_perbaikan' => $allPendaftar->filter(function($p) {
-                return $p->daftarUlang && $p->daftarUlang->status === 'perlu_perbaikan';
-            })->count(),
-
-            // Status upload surat pernyataan
-            'upload_surat' => $allPendaftar->filter(function($p) {
-                return $p->daftarUlang && $p->daftarUlang->surat_pernyataan_path;
-            })->count(),
-        ];
-
-        return $stats;
+        // Rekap konsisten (jumlah semua kategori = total wajib daftar ulang)
+        return \App\Support\RekapDaftarUlang::statsTab('madrasah', ['jalur' => $this->filterJalur]);
     }
 }

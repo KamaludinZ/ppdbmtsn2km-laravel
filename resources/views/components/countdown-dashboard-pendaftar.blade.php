@@ -24,7 +24,7 @@
         </div>
 
         <!-- Countdown Timer -->
-        <div class="flex-shrink-0 bg-white bg-opacity-70 rounded-xl p-4 border-2 border-emerald-300 shadow-md"
+        <div class="flex-shrink-0 bg-white/70 rounded-xl p-4 border-2 border-emerald-300 shadow-md"
              x-data="countdown('{{ $endDate->format('Y-m-d H:i:s') }}')"
              x-init="init()">
             <p class="text-xs font-bold text-emerald-900 uppercase tracking-wider mb-2 text-center">Berakhir Dalam:</p>

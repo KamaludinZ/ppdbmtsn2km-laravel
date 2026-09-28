@@ -75,7 +75,7 @@
                                 <input
                                     type="text"
                                     wire:model="name"
-                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                     placeholder="Masukkan nama lengkap"
                                 >
                                 @error('name') <span class="text-red-500 text-xs mt-1">{{ $message }}</span> @enderror
@@ -87,7 +87,7 @@
                                 <input
                                     type="email"
                                     wire:model="email"
-                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 disabled:bg-gray-100 disabled:text-gray-500"
+                                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 disabled:bg-gray-100 disabled:text-gray-500"
                                     placeholder="Masukkan email"
                                     @if(Auth::user()->role !== 'admin') disabled @endif
                                 >
@@ -105,7 +105,7 @@
                                         type="text"
                                         wire:model="telepon_ortu"
                                         id="telepon_edit"
-                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                        class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                         placeholder="Contoh: 628123456789"
                                         oninput="formatPhoneNumber(this)"
                                     >
@@ -125,7 +125,7 @@
                                         <input
                                             :type="showCurrentPass ? 'text' : 'password'"
                                             wire:model="current_password"
-                                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 pr-10"
+                                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 pr-10"
                                             placeholder="Masukkan password lama"
                                         >
                                         <button
@@ -152,7 +152,7 @@
                                         <input
                                             :type="showNewPass ? 'text' : 'password'"
                                             wire:model="new_password"
-                                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 pr-10"
+                                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 pr-10"
                                             placeholder="Masukkan password baru (min. 6 karakter)"
                                         >
                                         <button
@@ -179,7 +179,7 @@
                                         <input
                                             :type="showConfirmPass ? 'text' : 'password'"
                                             wire:model="new_password_confirmation"
-                                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 pr-10"
+                                            class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 pr-10"
                                             placeholder="Konfirmasi password baru"
                                         >
                                         <button

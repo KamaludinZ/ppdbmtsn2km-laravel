@@ -3,13 +3,13 @@
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
         <!-- Total Lulus -->
         <div class="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium opacity-90">Total Lulus</p>
                     <p class="text-3xl font-bold mt-2">{{ number_format($stats['total_lulus'] ?? 0) }}</p>
                     <p class="text-xs opacity-80 mt-2">Siswa yang lulus tes</p>
                 </div>
-                <div class="bg-black bg-opacity-10 rounded-full p-3">
+                <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path>
                     </svg>
@@ -19,13 +19,13 @@
 
         <!-- Belum Isi -->
         <div class="bg-gradient-to-br from-gray-500 to-gray-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium opacity-90">Belum Isi</p>
                     <p class="text-3xl font-bold mt-2">{{ number_format($stats['belum_isi'] ?? 0) }}</p>
                     <p class="text-xs opacity-80 mt-2">{{ number_format($stats['belum_isi_percentage'] ?? 0, 1) }}% dari total</p>
                 </div>
-                <div class="bg-black bg-opacity-10 rounded-full p-3">
+                <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
@@ -35,13 +35,13 @@
 
         <!-- Menunggu Verifikasi -->
         <div class="bg-gradient-to-br from-yellow-400 to-yellow-500 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium opacity-90">Menunggu Verifikasi</p>
                     <p class="text-3xl font-bold mt-2">{{ number_format($stats['menunggu_verifikasi'] ?? 0) }}</p>
                     <p class="text-xs opacity-80 mt-2">{{ number_format($stats['menunggu_percentage'] ?? 0, 1) }}% dari total</p>
                 </div>
-                <div class="bg-black bg-opacity-10 rounded-full p-3">
+                <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
@@ -51,13 +51,13 @@
 
         <!-- Disetujui -->
         <div class="bg-gradient-to-br from-green-500 to-green-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium opacity-90">Disetujui</p>
                     <p class="text-3xl font-bold mt-2">{{ number_format($stats['disetujui'] ?? 0) }}</p>
                     <p class="text-xs opacity-80 mt-2">{{ number_format($stats['disetujui_percentage'] ?? 0, 1) }}% dari total</p>
                 </div>
-                <div class="bg-black bg-opacity-10 rounded-full p-3">
+                <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
@@ -67,13 +67,13 @@
 
         <!-- Perlu Perbaikan -->
         <div class="bg-gradient-to-br from-orange-400 to-orange-500 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium opacity-90">Perlu Perbaikan</p>
                     <p class="text-3xl font-bold mt-2">{{ number_format($stats['perlu_perbaikan'] ?? 0) }}</p>
                     <p class="text-xs opacity-80 mt-2">{{ number_format($stats['perlu_perbaikan_percentage'] ?? 0, 1) }}% dari total</p>
                 </div>
-                <div class="bg-black bg-opacity-10 rounded-full p-3">
+                <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
                     </svg>
@@ -83,13 +83,13 @@
 
         <!-- Ditolak -->
         <div class="bg-gradient-to-br from-red-500 to-red-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
-            <div class="flex items-center justify-between">
-                <div>
+            <div class="flex items-center justify-between gap-3">
+                <div class="min-w-0">
                     <p class="text-sm font-medium opacity-90">Ditolak</p>
                     <p class="text-3xl font-bold mt-2">{{ number_format($stats['ditolak'] ?? 0) }}</p>
                     <p class="text-xs opacity-80 mt-2">{{ number_format($stats['ditolak_percentage'] ?? 0, 1) }}% dari total</p>
                 </div>
-                <div class="bg-black bg-opacity-10 rounded-full p-3">
+                <div class="bg-black/10 rounded-full p-3 flex-shrink-0">
                     <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
@@ -156,7 +156,7 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-white" style="background-color: {{ $pendaftar['jalur_color'] ?? '#6B7280' }}">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-white" style="background-color: {{ \App\Models\JalurPendaftaran::hexWarna($pendaftar['jalur_color'] ?? null) }}">
                                             {{ $pendaftar['jalur'] }}
                                         </span>
                                     </td>
@@ -273,7 +273,7 @@
                         @foreach($jalurSetujuDaftarUlang as $jalur)
                             <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                 <div class="flex items-center">
-                                    <div class="w-3 h-3 rounded-full mr-3" style="background-color: {{ $jalur['warna'] }}"></div>
+                                    <div class="w-3 h-3 rounded-full mr-3" style="background-color: {{ \App\Models\JalurPendaftaran::hexWarna($jalur['warna']) }}"></div>
                                     <span class="text-sm font-medium text-gray-700">{{ $jalur['nama'] }}</span>
                                 </div>
                                 <span class="text-lg font-bold text-gray-900">{{ $jalur['count'] }}</span>
@@ -332,7 +332,7 @@
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
-                                <div class="w-3 h-3 rounded-full mr-3" style="background-color: {{ $jalur['warna'] }}"></div>
+                                <div class="w-3 h-3 rounded-full mr-3" style="background-color: {{ \App\Models\JalurPendaftaran::hexWarna($jalur['warna']) }}"></div>
                                 <span class="text-sm font-medium text-gray-900">{{ $jalur['nama'] }}</span>
                             </div>
                         </td>

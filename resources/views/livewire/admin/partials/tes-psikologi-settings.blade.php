@@ -44,7 +44,7 @@
                     <input :id="trixId" type="hidden" name="informasi" value="{{ $informasi ?? '' }}">
                     <trix-editor
                         :input="trixId"
-                        class="trix-content rounded-lg border border-gray-300 shadow-sm focus-within:border-emerald-500 focus-within:ring focus-within:ring-emerald-200 focus-within:ring-opacity-50"
+                        class="trix-content rounded-lg border border-gray-300 shadow-sm focus-within:border-emerald-500 focus-within:ring focus-within:ring-emerald-200/50 "
                         placeholder="Masukkan informasi tentang tes psikologi..."
                     ></trix-editor>
                 </div>
@@ -82,7 +82,7 @@
                     <input :id="trixId" type="hidden" name="informasi_admin_panitia" value="{{ $informasi_admin_panitia ?? '' }}">
                     <trix-editor
                         :input="trixId"
-                        class="trix-content rounded-lg border border-gray-300 shadow-sm focus-within:border-blue-500 focus-within:ring focus-within:ring-blue-200 focus-within:ring-opacity-50"
+                        class="trix-content rounded-lg border border-gray-300 shadow-sm focus-within:border-blue-500 focus-within:ring focus-within:ring-blue-200/50 "
                         placeholder="Contoh: Reminder untuk verifikasi pembayaran, catatan internal, dll..."
                     ></trix-editor>
                 </div>

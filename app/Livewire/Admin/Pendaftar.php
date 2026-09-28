@@ -420,9 +420,12 @@ class Pendaftar extends Component
             $pendaftar = PendaftarModel::findOrFail($id);
 
             // Batalkan persetujuan daftar ulang
+            // Kolom tanggal_setuju_daftar_ulang sudah di-rename menjadi tanggal_pilihan_daftar_ulang;
+            // status persetujuan juga dikembalikan agar rekap daftar ulang tetap konsisten.
             $pendaftar->update([
                 'setuju_daftar_ulang' => false,
-                'tanggal_setuju_daftar_ulang' => null,
+                'status_persetujuan_daftar_ulang' => 'belum_memilih',
+                'tanggal_pilihan_daftar_ulang' => null,
             ]);
 
             // Hapus record daftar ulang jika ada

@@ -189,7 +189,7 @@
         <!-- Title -->
         <div class="title">
             <h3>INVOICE DAFTAR ULANG SERAGAM</h3>
-            <p class="invoice-no">No: {{ str_replace(['{TAHUN}', '{NOMOR}'], [date('Y'), str_pad($seragam->id, 3, '0', STR_PAD_LEFT)], $invoiceSettings['nomor_format'] ?? 'INV-SRG-{TAHUN}-{NOMOR}') }}</p>
+            <p class="invoice-no">No: {{ str_replace(['{TAHUN}', '{NOMOR}'], [date('Y'), str_pad($seragam?->id, 3, '0', STR_PAD_LEFT)], $invoiceSettings['nomor_format'] ?? 'INV-SRG-{TAHUN}-{NOMOR}') }}</p>
             <p class="date">Tanggal: {{ now()->format('d/m/Y') }}</p>
         </div>
 
@@ -242,20 +242,20 @@
                         <tr>
                             <td class="label" style="width: 30%;">Nama Pengirim</td>
                             <td class="separator">:</td>
-                            <td class="value">{{ $seragam->nama_pengirim_seragam ?? '-' }}</td>
+                            <td class="value">{{ $seragam?->nama_pengirim_seragam ?? '-' }}</td>
                         </tr>
                         <tr>
                             <td class="label" style="width: 30%;">Waktu Transfer</td>
                             <td class="separator">:</td>
-                            <td class="value">{{ $seragam->updated_at ? $seragam->updated_at->format('d/m/Y H:i') . ' WIB' : '-' }}</td>
+                            <td class="value">{{ $seragam?->updated_at ? $seragam?->updated_at->format('d/m/Y H:i') . ' WIB' : '-' }}</td>
                         </tr>
                         <tr>
                             <td class="label" style="width: 30%;">Status</td>
                             <td class="separator">:</td>
-                            <td class="value" style="color: {{ $seragam->status_seragam == 'disetujui' ? 'green' : ($seragam->status_seragam == 'ditolak' ? 'red' : 'orange') }}; text-transform: uppercase;">
-                                @if($seragam->status_seragam == 'disetujui')
+                            <td class="value" style="color: {{ $seragam?->status_seragam == 'disetujui' ? 'green' : ($seragam?->status_seragam == 'ditolak' ? 'red' : 'orange') }}; text-transform: uppercase;">
+                                @if($seragam?->status_seragam == 'disetujui')
                                     LUNAS / DISETUJUI
-                                @elseif($seragam->status_seragam == 'ditolak')
+                                @elseif($seragam?->status_seragam == 'ditolak')
                                     DITOLAK
                                 @else
                                     MENUNGGU VERIFIKASI
@@ -266,7 +266,7 @@
                             <td class="label" style="width: 30%;">Opsi Pembayaran</td>
                             <td class="separator">:</td>
                             <td class="value" style="text-transform: uppercase;">
-                                {{ $seragam->opsi_pembayaran_seragam ? strtoupper($seragam->opsi_pembayaran_seragam) : 'LUNAS' }}
+                                {{ $seragam?->opsi_pembayaran_seragam ? strtoupper($seragam?->opsi_pembayaran_seragam) : 'LUNAS' }}
                             </td>
                         </tr>
                     </table>
@@ -281,21 +281,21 @@
                 <table class="size-table">
                     <tr>
                         <td class="size-label">Jas</td>
-                        <td class="size-value">: {{ $seragam->ukuran_jas ?? '-' }}</td>
+                        <td class="size-value">: {{ $seragam?->ukuran_jas ?? '-' }}</td>
                         <td class="size-label">Baju Olahraga</td>
-                        <td class="size-value">: {{ $seragam->ukuran_baju_olahraga ?? '-' }}</td>
+                        <td class="size-value">: {{ $seragam?->ukuran_baju_olahraga ?? '-' }}</td>
                     </tr>
                     <tr>
                         <td class="size-label">Celana Olahraga</td>
-                        <td class="size-value">: {{ $seragam->ukuran_celana_olahraga ?? '-' }}</td>
+                        <td class="size-value">: {{ $seragam?->ukuran_celana_olahraga ?? '-' }}</td>
                         <td class="size-label">Baju Harian</td>
-                        <td class="size-value">: {{ $seragam->ukuran_baju_harian ?? '-' }}</td>
+                        <td class="size-value">: {{ $seragam?->ukuran_baju_harian ?? '-' }}</td>
                     </tr>
                     <tr>
                         <td class="size-label">Celana/Rok Harian</td>
-                        <td class="size-value">: {{ $seragam->ukuran_celana_rok_harian ?? '-' }}</td>
+                        <td class="size-value">: {{ $seragam?->ukuran_celana_rok_harian ?? '-' }}</td>
                         <td class="size-label">Kopyah</td>
-                        <td class="size-value">: {{ $seragam->ukuran_kopyah ?? '-' }}</td>
+                        <td class="size-value">: {{ $seragam?->ukuran_kopyah ?? '-' }}</td>
                     </tr>
                 </table>
             </div>
@@ -315,7 +315,7 @@
                 <tbody>
                     @php
                         // Nominal Seragam Awal (yang dipilih di "Pilih Paket Seragam")
-                        $nominalSeragamAwal = $seragam->nominal_seragam_awal ?? [];
+                        $nominalSeragamAwal = $seragam?->nominal_seragam_awal ?? [];
 
                         // Deteksi apakah multi-select (array) atau single (object)
                         $isMultiSelect = is_array($nominalSeragamAwal) && isset($nominalSeragamAwal[0]);
@@ -324,15 +324,15 @@
                         if ($isMultiSelect) {
                             $jumlahAwal = 0;
                             foreach ($nominalSeragamAwal as $item) {
-                                $jumlahAwal += $item['amount'] ?? 0;
+                                $jumlahAwal += \App\Support\Nominal::toNumber($item['amount'] ?? 0);
                             }
                         } else {
-                            $jumlahAwal = $nominalSeragamAwal['amount'] ?? 0;
+                            $jumlahAwal = \App\Support\Nominal::toNumber($nominalSeragamAwal['amount'] ?? 0);
                         }
 
                         // Nominal Seragam Konfirmasi (yang dipilih di "Konfirmasi Nominal yang Dibayarkan")
-                        $nominalSeragamKonfirmasi = $seragam->nominal_seragam ?? [];
-                        $jumlahKonfirmasi = $nominalSeragamKonfirmasi['amount'] ?? 0;
+                        $nominalSeragamKonfirmasi = $seragam?->nominal_seragam ?? [];
+                        $jumlahKonfirmasi = \App\Support\Nominal::toNumber($nominalSeragamKonfirmasi['amount'] ?? 0);
 
                         // Hitung selisih
                         $selisih = $jumlahKonfirmasi - $jumlahAwal;
@@ -351,7 +351,7 @@
                         @foreach($nominalSeragamAwal as $idx => $item)
                             <tr>
                                 <td>{{ ($idx + 1) }}. {{ $item['name'] ?? 'Biaya Seragam & Atribut' }}</td>
-                                <td class="text-right">Rp {{ number_format($item['amount'] ?? 0, 0, ',', '.') }}</td>
+                                <td class="text-right">Rp {{ number_format(\App\Support\Nominal::toNumber($item['amount'] ?? 0), 0, ',', '.') }}</td>
                                 <td class="text-right">
                                     @if($idx == 0)
                                         {{-- Tampilkan total konfirmasi di baris pertama --}}

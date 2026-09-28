@@ -2,7 +2,9 @@
 
 namespace App\Exports;
 
+use App\Exports\Concerns\PendaftarWajibDaftarUlang;
 use App\Models\Seragam;
+use App\Support\RekapDaftarUlang;
 use Maatwebsite\Excel\Concerns\FromQuery;
 use Maatwebsite\Excel\Concerns\WithHeadings;
 use Maatwebsite\Excel\Concerns\WithMapping;
@@ -14,39 +16,36 @@ use Carbon\Carbon;
 
 class DaftarUlangSeragamSheet implements FromQuery, WithHeadings, WithMapping, WithStyles, ShouldAutoSize, WithTitle
 {
+    use PendaftarWajibDaftarUlang;
+
     protected $status;
     protected $search;
+    protected $jalur;
+    protected $jenisRekap;
+    protected $jenisKelamin;
 
-    public function __construct($status = null, $search = null)
+    /**
+     * @param  string|null  $status  kategori rekap (RekapDaftarUlang::KATEGORI)
+     * @param  string|null  $jenisRekap  madrasah|seragam|ukuran — dasar kategori $status
+     */
+    public function __construct($status = null, $search = null, $jalur = null, $jenisRekap = null, $jenisKelamin = null)
     {
         $this->status = $status;
         $this->search = $search;
+        $this->jalur = $jalur;
+        $this->jenisRekap = $jenisRekap;
+        $this->jenisKelamin = $jenisKelamin;
     }
 
     public function query()
     {
-        $query = Seragam::with(['pendaftar.jalurPendaftaran', 'pendaftar.user', 'pendaftar.daftarUlang']);
-
-        // Filter based on daftar ulang status if provided
-        if ($this->status) {
-            $query->whereHas('pendaftar.daftarUlang', function($q) {
-                $q->where('status_daftar_ulang', $this->status);
-            });
-        }
-
-        if ($this->search) {
-            $query->whereHas('pendaftar', function($q) {
-                $q->where('nama_lengkap', 'like', '%' . $this->search . '%')
-                  ->orWhere('nomor_pendaftaran', 'like', '%' . $this->search . '%');
-            });
-        }
-
-        return $query->orderBy('created_at', 'desc');
+        return $this->queryPendaftarWajib($this->status, $this->jenisRekap ?? 'seragam', $this->search, $this->jalur ?? null, $this->jenisKelamin ?? null);
     }
 
-    public function map($seragam): array
+    public function map($pendaftar): array
     {
-        $pendaftar = $seragam->pendaftar;
+        // Pendaftar yang belum mengisi seragam tetap tampil (kolom seragam kosong)
+        $seragam = $pendaftar->seragam ?? new Seragam();
 
         // Parse paket seragam (JSON paket normal atau "paket_lainnya")
         $paketName = 'Belum Dipilih';
@@ -78,14 +77,14 @@ class DaftarUlangSeragamSheet implements FromQuery, WithHeadings, WithMapping, W
                 $totalAmount = 0;
                 foreach ($nominalSeragamAwal as $opsi) {
                     $names[] = $opsi['name'] ?? '';
-                    $totalAmount += $opsi['amount'] ?? 0;
+                    $totalAmount += \App\Support\Nominal::toNumber($opsi['amount'] ?? 0);
                 }
                 $opsiName = implode(' + ', array_filter($names));
                 $opsiAmount = $totalAmount;
             } else {
                 // Single select or paket_lainnya
                 $opsiName = $nominalSeragamAwal['name'] ?? '';
-                $opsiAmount = $nominalSeragamAwal['amount'] ?? 0;
+                $opsiAmount = \App\Support\Nominal::toNumber($nominalSeragamAwal['amount'] ?? 0);
             }
         }
 
@@ -99,11 +98,11 @@ class DaftarUlangSeragamSheet implements FromQuery, WithHeadings, WithMapping, W
             if (isset($nominalSeragam['items']) && is_array($nominalSeragam['items'])) {
                 // Multi-select konfirmasi
                 $nominalSeragamName = $nominalSeragam['name'] ?? '';
-                $nominalSeragamAmount = $nominalSeragam['amount'] ?? 0;
+                $nominalSeragamAmount = \App\Support\Nominal::toNumber($nominalSeragam['amount'] ?? 0);
             } else {
                 // Single konfirmasi
                 $nominalSeragamName = $nominalSeragam['name'] ?? '';
-                $nominalSeragamAmount = $nominalSeragam['amount'] ?? 0;
+                $nominalSeragamAmount = \App\Support\Nominal::toNumber($nominalSeragam['amount'] ?? 0);
             }
         }
 
@@ -124,6 +123,7 @@ class DaftarUlangSeragamSheet implements FromQuery, WithHeadings, WithMapping, W
             $seragam->opsi_pembayaran_seragam ?? '',
             $seragam->bank_seragam ?? '',
             $seragam->nama_pengirim_seragam ?? '-',
+            RekapDaftarUlang::label(RekapDaftarUlang::kategori($pendaftar, 'seragam')),
             $this->getStatusLabel($seragam->status_seragam),
             $seragam->bukti_pembayaran ? 'Sudah Upload' : 'Belum Upload',
             $seragam->catatan_seragam ?? '',
@@ -150,6 +150,7 @@ class DaftarUlangSeragamSheet implements FromQuery, WithHeadings, WithMapping, W
             'Opsi Pembayaran',
             'Bank',
             'Nama Pengirim',
+            'Status Rekap',
             'Status Pembayaran',
             'Status Bukti Bayar',
             'Catatan',
@@ -178,16 +179,7 @@ class DaftarUlangSeragamSheet implements FromQuery, WithHeadings, WithMapping, W
 
     private function getStatusLabel($status)
     {
-        $statusLabels = [
-            'menunggu_pembayaran' => 'Menunggu Pembayaran',
-            'menunggu_verifikasi' => 'Menunggu Verifikasi',
-            'pembayaran_diterima' => 'Pembayaran Diterima',
-            'seragam_disiapkan' => 'Seragam Disiapkan',
-            'selesai' => 'Selesai',
-            'dibatalkan' => 'Dibatalkan'
-        ];
-
-        return $statusLabels[$status] ?? ucfirst(str_replace('_', ' ', $status));
+        return RekapDaftarUlang::labelStatusProses($status);
     }
 
     private function getStatusPersetujuanLabel($status)

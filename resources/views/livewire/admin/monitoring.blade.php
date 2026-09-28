@@ -252,7 +252,7 @@
 
                 <!-- Log Monitoring Section -->
                 <div class="bg-gray-50 shadow overflow-hidden sm:rounded-lg mt-8">
-                    <div class="px-4 py-5 bg-white sm:px-6 flex justify-between items-center">
+                    <div class="px-4 py-5 bg-white sm:px-6 flex flex-wrap justify-between items-center gap-3">
                         <div>
                             <h3 class="text-lg leading-6 font-medium text-gray-900">📊 Log Monitoring</h3>
                             <p class="mt-1 text-sm text-gray-500">Statistik dan monitoring log aplikasi</p>
@@ -318,7 +318,7 @@
                             <!-- Recent Errors -->
                             @if(count($recentErrors) > 0)
                                 <div class="bg-white border border-red-200 rounded-lg p-4 mb-6">
-                                    <h4 class="text-md font-semibold text-gray-900 mb-3">
+                                    <h4 class="text-base font-semibold text-gray-900 mb-3">
                                         <i class="fas fa-exclamation-circle text-red-500 mr-2"></i>
                                         Recent Errors (Last 5)
                                     </h4>

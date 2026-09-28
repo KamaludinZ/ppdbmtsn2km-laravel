@@ -8,19 +8,24 @@ class DaftarUlangExport implements WithMultipleSheets
 {
     protected $status;
     protected $search;
+    protected $jalur;
 
-    public function __construct($status = null, $search = null)
+    /**
+     * @param  string|null  $status  kategori rekap daftar ulang MADRASAH; ketiga sheet memuat pendaftar yang sama
+     */
+    public function __construct($status = null, $search = null, $jalur = null)
     {
         $this->status = $status;
         $this->search = $search;
+        $this->jalur = $jalur;
     }
 
     public function sheets(): array
     {
         return [
-            new DaftarUlangMadrasahSheet($this->status, $this->search),
-            new DaftarUlangSeragamSheet($this->status, $this->search),
-            new DaftarUlangUkuranSheet($this->status, $this->search),
+            new DaftarUlangMadrasahSheet($this->status, $this->search, $this->jalur),
+            new DaftarUlangSeragamSheet($this->status, $this->search, $this->jalur, 'madrasah'),
+            new DaftarUlangUkuranSheet($this->status, $this->search, $this->jalur, 'madrasah'),
         ];
     }
 }

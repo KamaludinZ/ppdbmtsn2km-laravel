@@ -95,11 +95,11 @@ class EmisInput extends Component
                 $documentName = 'Akta_Kelahiran_' . $applicant->nama_lengkap . '.pdf';
                 break;
             case 'ijazah':
-                $documentPath = $applicant->file_ijazah;
+                $documentPath = $applicant->file_ijazah_sd;
                 $documentName = 'Ijazah_' . $applicant->nama_lengkap . '.pdf';
                 break;
             case 'skhun':
-                $documentPath = $applicant->file_skhun;
+                $documentPath = $applicant->file_skhun_sd;
                 $documentName = 'SKHUN_' . $applicant->nama_lengkap . '.pdf';
                 break;
             case 'pas_foto':

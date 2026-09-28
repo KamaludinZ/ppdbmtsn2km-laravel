@@ -34,130 +34,12 @@ class LaporanPendaftaranExport implements FromCollection, WithHeadings, WithStyl
     public function collection()
     {
         // Get per jalur statistics (only active jalur)
-        $jalurStats = JalurPendaftaran::aktif()
-            ->withCount([
-                'pendaftar' => function ($q) {
-                    $q->when($this->status, function ($query) {
-                        $query->where('status_pendaftaran', $this->status);
-                    })
-                    ->when($this->startDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '>=', $this->startDate);
-                    })
-                    ->when($this->endDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '<=', $this->endDate);
-                    });
-                },
-                'pendaftar as menunggu_count' => function ($q) {
-                    $q->where('status_pendaftaran', 'menunggu_verifikasi')
-                    ->when($this->startDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '>=', $this->startDate);
-                    })
-                    ->when($this->endDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '<=', $this->endDate);
-                    });
-                },
-                'pendaftar as lengkapi_count' => function ($q) {
-                    $q->where('status_pendaftaran', 'lengkapi_data')
-                    ->when($this->startDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '>=', $this->startDate);
-                    })
-                    ->when($this->endDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '<=', $this->endDate);
-                    });
-                },
-                'pendaftar as perbaiki_count' => function ($q) {
-                    $q->where('status_pendaftaran', 'perbaiki_data')
-                    ->when($this->startDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '>=', $this->startDate);
-                    })
-                    ->when($this->endDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '<=', $this->endDate);
-                    });
-                },
-                'pendaftar as ditolak_count' => function ($q) {
-                    $q->where('status_pendaftaran', 'data_ditolak')
-                    ->when($this->startDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '>=', $this->startDate);
-                    })
-                    ->when($this->endDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '<=', $this->endDate);
-                    });
-                },
-                'pendaftar as disetujui_count' => function ($q) {
-                    $q->whereIn('status_pendaftaran', ['data_disetujui', 'lulus', 'diterima', 'tidak_lulus', 'cadangan', 'ditolak'])
-                    ->when($this->startDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '>=', $this->startDate);
-                    })
-                    ->when($this->endDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '<=', $this->endDate);
-                    });
-                },
-                'pendaftar as lulus_count' => function ($q) {
-                    $q->whereIn('status_pendaftaran', ['lulus', 'diterima'])
-                    ->when($this->startDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '>=', $this->startDate);
-                    })
-                    ->when($this->endDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '<=', $this->endDate);
-                    });
-                },
-                'pendaftar as tidak_lulus_count' => function ($q) {
-                    $q->where('status_pendaftaran', 'tidak_lulus')
-                    ->when($this->startDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '>=', $this->startDate);
-                    })
-                    ->when($this->endDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '<=', $this->endDate);
-                    });
-                },
-                'pendaftar as cadangan_count' => function ($q) {
-                    $q->where('status_pendaftaran', 'cadangan')
-                    ->when($this->startDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '>=', $this->startDate);
-                    })
-                    ->when($this->endDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '<=', $this->endDate);
-                    });
-                },
-                'pendaftar as laki_laki_count' => function ($q) {
-                    $q->where('jenis_kelamin', 'L')
-                    ->when($this->startDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '>=', $this->startDate);
-                    })
-                    ->when($this->endDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '<=', $this->endDate);
-                    });
-                },
-                'pendaftar as perempuan_count' => function ($q) {
-                    $q->where('jenis_kelamin', 'P')
-                    ->when($this->startDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '>=', $this->startDate);
-                    })
-                    ->when($this->endDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '<=', $this->endDate);
-                    });
-                },
-                'pendaftar as madrasah_count' => function ($q) {
-                    $q->where('jenis_sekolah_asal', 'madrasah')
-                    ->when($this->startDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '>=', $this->startDate);
-                    })
-                    ->when($this->endDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '<=', $this->endDate);
-                    });
-                },
-                'pendaftar as umum_count' => function ($q) {
-                    $q->where('jenis_sekolah_asal', 'umum')
-                    ->when($this->startDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '>=', $this->startDate);
-                    })
-                    ->when($this->endDate, function ($query) {
-                        $query->whereDate('tanggal_daftar', '<=', $this->endDate);
-                    });
-                }
-            ])
-            ->ordered()
-            ->get();
+        $jalurStats = \App\Support\RekapPendaftaran::perJalur([
+            'jalur' => $this->jalurId,
+            'status' => $this->status,
+            'start_date' => $this->startDate,
+            'end_date' => $this->endDate,
+        ]);
 
         // Get settings - Identitas Cetak (Kop PDF)
         $printInstitutionName = Setting::get('print_institution_name', 'MADRASAH TSANAWIYAH NEGERI 2 KOTA MALANG');
@@ -286,7 +168,7 @@ class LaporanPendaftaranExport implements FromCollection, WithHeadings, WithStyl
         foreach ($jalurStats as $jalur) {
             $percentage = $jalur->kuota > 0 ? round(($jalur->pendaftar_count / $jalur->kuota) * 100, 2) : 0;
             $data->push([
-                $jalur->nama,
+                $jalur->nama . ($jalur->nonaktif ? ' (nonaktif)' : ''),
                 number_format($jalur->kuota),
                 number_format($jalur->pendaftar_count),
                 number_format($jalur->menunggu_count),

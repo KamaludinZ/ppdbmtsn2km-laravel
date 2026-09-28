@@ -287,7 +287,7 @@
             </div>
             <div class="p-6">
                 <p class="text-gray-600 mb-4">
-                    Laporan ini menampilkan data siswa yang telah melakukan daftar ulang madrasah, termasuk status pembayaran dan kelengkapan berkas.
+                    Laporan ini menampilkan <strong>semua pendaftar lulus</strong> beserta status daftar ulangnya — termasuk yang belum konfirmasi atau tidak melanjutkan — sehingga jumlahnya selalu sama dengan total wajib daftar ulang.
                 </p>
 
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
@@ -301,13 +301,12 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Status Daftar Ulang</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Status Rekap Daftar Ulang</label>
                         <select wire:model.live="filterStatusDU" class="w-full rounded-lg border-gray-300 shadow-sm">
-                            <option value="">Semua Status</option>
-                            <option value="menunggu">Menunggu</option>
-                            <option value="disetujui">Disetujui</option>
-                            <option value="ditolak">Ditolak</option>
-                            <option value="perlu_perbaikan">Perlu Perbaikan</option>
+                            <option value="">Semua Status Rekap</option>
+                            @foreach(\App\Support\RekapDaftarUlang::KATEGORI as $kategoriKey => $kategoriInfo)
+                                <option value="{{ $kategoriKey }}">{{ $kategoriInfo['label'] }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="flex items-end" x-data="{ showProgressDU: false, progressDU: 0, elapsedDU: 0, stageDU: '', totalRecordsDU: 0 }">
@@ -329,7 +328,7 @@
                         <div x-show="showProgressDU" x-transition class="fixed inset-0 z-50 overflow-y-auto" style="display: none;"
                              x-init="$watch('showProgressDU', value => { if (value) { let startTime = Date.now(); let interval = setInterval(() => { elapsedDU = Math.floor((Date.now() - startTime) / 1000); if (progressDU < 20) { stageDU = 'Mempersiapkan data...'; progressDU += 2; } else if (progressDU < 40) { stageDU = 'Mengambil data daftar ulang...'; progressDU += 1.5; } else if (progressDU < 60) { stageDU = 'Memproses data pembayaran...'; progressDU += 1; } else if (progressDU < 80) { stageDU = 'Menyusun struktur Excel...'; progressDU += 1; } else if (progressDU < 95) { stageDU = 'Generating file Excel...'; progressDU += 0.5; } else { stageDU = 'Menyelesaikan export...'; if (progressDU < 99) progressDU += 0.2; } if (progressDU >= 100) { setTimeout(() => { showProgressDU = false; progressDU = 0; elapsedDU = 0; clearInterval(interval); }, 1500); } }, 200); setTimeout(() => { showProgressDU = false; progressDU = 0; elapsedDU = 0; clearInterval(interval); }, 30000); } });">
                             <div class="flex items-center justify-center min-h-screen px-4">
-                                <div class="fixed inset-0 z-40 bg-gray-500 bg-opacity-75" @click="showProgressDU = false"></div>
+                                <div class="fixed inset-0 z-40 bg-gray-500/75 " @click="showProgressDU = false"></div>
                                 <div class="relative z-50 inline-block bg-white rounded-lg px-6 py-6 shadow-xl max-w-lg w-full">
                                     <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-emerald-100 mb-4">
                                         <svg class="h-8 w-8 text-emerald-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -364,7 +363,7 @@
                 </div>
 
                 <!-- Stats Overview -->
-                @include('livewire.panitia.partials.daftar-ulang-stats', ['stats' => $daftarUlangStats, 'tab' => 'madrasah'])
+                @include('livewire.admin.partials.daftar-ulang-stats', ['stats' => $daftarUlangStats, 'tab' => 'madrasah'])
 
                 <div class="text-sm text-gray-600">
                     <p class="font-semibold mb-2">Data yang akan diexport meliputi:</p>
@@ -493,7 +492,7 @@
         </div>
 
         <!-- Stats Overview -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
+        <div class="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4 mb-6">
             <!-- Total -->
             <div class="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl shadow-lg p-5 text-white hover:shadow-xl transition-all duration-300">
                 <div class="flex items-center justify-between">

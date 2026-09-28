@@ -50,7 +50,7 @@
                 <div>
                     <h2 class="text-3xl font-bold text-gray-900 mb-6">Profil Madrasah</h2>
                     <div class="prose prose-lg text-gray-600 text-justify">
-                        {!! \App\Models\Setting::get('page_tentang_content', '<p>Konten profil belum diisi.</p>') !!}
+                        {!! \App\Support\HtmlSanitizer::clean(\App\Models\Setting::get('page_tentang_content', '<p>Konten profil belum diisi.</p>')) !!}
                     </div>
                 </div>
                 <div class="bg-gray-100 rounded-2xl p-8">
@@ -102,7 +102,7 @@
                         <h3 class="text-2xl font-bold text-gray-900">Visi</h3>
                     </div>
                     <div class="text-gray-700 leading-relaxed text-lg prose prose-emerald max-w-none text-justify">
-                        {!! \App\Models\Setting::get('page_tentang_visi', 'Visi belum diisi.') !!}
+                        {!! \App\Support\HtmlSanitizer::clean(\App\Models\Setting::get('page_tentang_visi', 'Visi belum diisi.')) !!}
                     </div>
                 </div>
 

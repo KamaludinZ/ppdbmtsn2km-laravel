@@ -105,7 +105,7 @@
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm text-gray-900">{{ $data->pendaftar->nisn ?? '-' }}</div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 min-w-[200px]">
                             <div class="text-sm font-medium text-gray-900">{{ $data->pendaftar->nama_lengkap }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
@@ -131,7 +131,7 @@
                                 @endif
                             </div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-4 min-w-[160px]">
                             <div class="text-sm text-gray-700">{{ $data->pendaftar->jalurPendaftaran->nama ?? '-' }}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-center">

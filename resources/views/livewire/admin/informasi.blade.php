@@ -40,12 +40,12 @@
                             type="text"
                             wire:model.live="searchKonten"
                             placeholder="Cari judul atau isi konten..."
-                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                         >
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Per Halaman</label>
-                        <select wire:model.live="perPageKonten" class="rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                        <select wire:model.live="perPageKonten" class="rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 ">
                             <option value="10">10 per halaman</option>
                             <option value="25">25 per halaman</option>
                             <option value="50">50 per halaman</option>
@@ -138,12 +138,12 @@
                             type="text"
                             wire:model.live="search"
                             placeholder="Cari pertanyaan atau jawaban..."
-                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                            class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200/50 "
                         >
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-2">Per Halaman</label>
-                        <select wire:model.live="perPage" class="rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50">
+                        <select wire:model.live="perPage" class="rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200/50 ">
                             <option value="10">10 per halaman</option>
                             <option value="25">25 per halaman</option>
                             <option value="50">50 per halaman</option>
@@ -227,7 +227,7 @@
                                 <input
                                     type="text"
                                     wire:model="judul"
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                     placeholder="Masukkan judul konten..."
                                 >
                                 @error('judul') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
@@ -237,7 +237,7 @@
                                 <textarea
                                     wire:model="isi"
                                     rows="10"
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                     placeholder="Masukkan isi konten... (HTML didukung)"
                                 ></textarea>
                                 <p class="mt-1 text-xs text-gray-500">Anda dapat menggunakan HTML untuk formatting.</p>
@@ -249,7 +249,7 @@
                                     <input
                                         type="number"
                                         wire:model="urutan"
-                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50"
+                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 "
                                         min="0"
                                     >
                                 </div>
@@ -304,7 +304,7 @@
                                 <input
                                     type="text"
                                     wire:model="pertanyaan"
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200/50 "
                                     placeholder="Masukkan pertanyaan..."
                                 >
                                 @error('pertanyaan') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
@@ -314,7 +314,7 @@
                                 <textarea
                                     wire:model="jawaban"
                                     rows="4"
-                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                                    class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200/50 "
                                     placeholder="Masukkan jawaban..."
                                 ></textarea>
                                 @error('jawaban') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
@@ -325,7 +325,7 @@
                                     <input
                                         type="number"
                                         wire:model="urutan_faq"
-                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200 focus:ring-opacity-50"
+                                        class="w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring focus:ring-blue-200/50 "
                                         min="0"
                                     >
                                 </div>

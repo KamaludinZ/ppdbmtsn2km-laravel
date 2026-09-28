@@ -68,7 +68,6 @@ class Pendaftar extends Model
         'setuju_daftar_ulang',
         'status_persetujuan_daftar_ulang',
         'alasan_tidak_setuju',
-        'tanggal_setuju_daftar_ulang',
         'tanggal_pilihan_daftar_ulang',
         'diperbarui_oleh',
         'catatan_verifikasi',
@@ -263,7 +262,6 @@ class Pendaftar extends Model
         'tanggal_daftar' => 'datetime',
         'tanggal_verifikasi' => 'datetime',
         'setuju_daftar_ulang' => 'boolean',
-        'tanggal_setuju_daftar_ulang' => 'datetime',
         'tanggal_pilihan_daftar_ulang' => 'datetime',
         'nilai_rata_rata' => 'decimal:2',
         'nilai_b_indo_5_1' => 'decimal:2',
@@ -895,9 +893,15 @@ class Pendaftar extends Model
         foreach ($arrayFields as $field => $label) {
             // Cek relasi model jika ada
             if (in_array($field, ['prestasi', 'beasiswa', 'pendidikan_lain'])) {
-                // Gunakan relasi untuk cek data
-                $relationData = $this->$field()->exists();
-                $hasFilled = $relationData;
+                // Pakai hasil withExists()/eager load bila tersedia (hemat 1 query per pendaftar),
+                // kalau tidak baru query ke database
+                if (array_key_exists($field . '_exists', $this->attributes)) {
+                    $hasFilled = (bool) $this->attributes[$field . '_exists'];
+                } elseif ($this->relationLoaded($field)) {
+                    $hasFilled = $this->getRelation($field)->isNotEmpty();
+                } else {
+                    $hasFilled = $this->$field()->exists();
+                }
             } else {
                 // Fallback ke JSON field
                 $arrayData = $this->$field;

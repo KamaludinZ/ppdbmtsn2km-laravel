@@ -45,7 +45,7 @@
                     <input :id="trixId" type="hidden" name="survey_informasi" value="{{ $survey_informasi ?? '' }}">
                     <trix-editor
                         :input="trixId"
-                        class="trix-content rounded-lg border border-gray-300 shadow-sm focus-within:border-purple-500 focus-within:ring focus-within:ring-purple-200 focus-within:ring-opacity-50"
+                        class="trix-content rounded-lg border border-gray-300 shadow-sm focus-within:border-purple-500 focus-within:ring focus-within:ring-purple-200/50 "
                         placeholder="Masukkan informasi atau instruksi untuk survey..."
                     ></trix-editor>
                 </div>
@@ -304,7 +304,7 @@
 
 {{-- Modal Edit Option --}}
 @if($showOptionModal)
-<div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity z-50" wire:click="closeOptionModal"></div>
+<div class="fixed inset-0 bg-gray-500/75 transition-opacity z-50" wire:click="closeOptionModal"></div>
 <div class="fixed inset-0 z-50 overflow-y-auto">
     <div class="flex min-h-full items-center justify-center p-4">
         <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all w-full max-w-lg" wire:click.stop>

@@ -17,7 +17,7 @@
                     <div class="space-y-6">
                         <!-- Two Factor Authentication -->
                         <div>
-                            <h4 class="text-md font-medium text-gray-900 mb-4">Autentikasi Dua Faktor</h4>
+                            <h4 class="text-base font-medium text-gray-900 mb-4">Autentikasi Dua Faktor</h4>
 
                             <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                 <div>
@@ -40,7 +40,7 @@
                         <!-- Recent Login Attempts -->
                         <div>
                             <div class="flex justify-between items-center mb-4">
-                                <h4 class="text-md font-medium text-gray-900">Aktivitas Login Terakhir</h4>
+                                <h4 class="text-base font-medium text-gray-900">Aktivitas Login Terakhir</h4>
                                 <button
                                     wire:click="refreshSecurityData"
                                     class="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
@@ -54,7 +54,7 @@
                                     @forelse($loginAttempts as $attempt)
                                         <li>
                                             <div class="px-4 py-4 sm:px-6">
-                                                <div class="flex items-center justify-between">
+                                                <div class="flex flex-wrap items-center justify-between gap-2">
                                                     <div class="text-sm font-medium text-emerald-600 truncate">{{ $attempt['ip'] }}</div>
                                                     <div class="ml-2 flex-shrink-0 flex">
                                                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
@@ -96,14 +96,14 @@
 
                         <!-- Security Logs -->
                         <div>
-                            <h4 class="text-md font-medium text-gray-900 mb-4">Log Keamanan</h4>
+                            <h4 class="text-base font-medium text-gray-900 mb-4">Log Keamanan</h4>
 
                             <div class="bg-white shadow overflow-hidden sm:rounded-md">
                                 <ul class="divide-y divide-gray-200">
                                     @forelse($securityLogs as $log)
                                         <li>
                                             <div class="px-4 py-4 sm:px-6">
-                                                <div class="flex items-center justify-between">
+                                                <div class="flex flex-wrap items-center justify-between gap-2">
                                                     <div class="text-sm font-medium text-emerald-600 truncate">{{ $log['action'] }}</div>
                                                     <div class="text-sm text-gray-500">{{ $log['user'] }}</div>
                                                 </div>
@@ -143,7 +143,7 @@
                         <div>
                             <div class="flex justify-between items-center mb-4">
                                 <div>
-                                    <h4 class="text-md font-medium text-gray-900">🚨 Aktivitas Mencurigakan & Deteksi Serangan</h4>
+                                    <h4 class="text-base font-medium text-gray-900">🚨 Aktivitas Mencurigakan & Deteksi Serangan</h4>
                                     <p class="text-sm text-gray-500 mt-1">Monitoring real-time terhadap potensi serangan hacker</p>
                                 </div>
                             </div>
@@ -153,7 +153,7 @@
                                     @forelse($suspiciousActivities as $index => $activity)
                                         <li class="hover:bg-gray-50">
                                             <div class="px-4 py-4 sm:px-6">
-                                                <div class="flex items-center justify-between">
+                                                <div class="flex flex-wrap items-center justify-between gap-2">
                                                     <div class="flex items-center space-x-3">
                                                         <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full
                                                             {{ $activity['severity'] === 'critical' ? 'bg-red-600 text-white' :
@@ -214,7 +214,7 @@
                         <div>
                             <div class="flex justify-between items-center mb-4">
                                 <div>
-                                    <h4 class="text-md font-medium text-gray-900">🚫 IP yang Diblokir</h4>
+                                    <h4 class="text-base font-medium text-gray-900">🚫 IP yang Diblokir</h4>
                                     <p class="text-sm text-gray-500 mt-1">Daftar IP address yang diblokir oleh sistem</p>
                                 </div>
                             </div>
@@ -224,7 +224,7 @@
                                     @forelse($blockedIps as $blocked)
                                         <li class="hover:bg-gray-50">
                                             <div class="px-4 py-4 sm:px-6">
-                                                <div class="flex items-center justify-between">
+                                                <div class="flex flex-wrap items-center justify-between gap-2">
                                                     <div class="flex items-center space-x-3">
                                                         <span class="px-3 py-1 inline-flex text-xs leading-5 font-semibold rounded-full bg-red-100 text-red-800">
                                                             BLOCKED

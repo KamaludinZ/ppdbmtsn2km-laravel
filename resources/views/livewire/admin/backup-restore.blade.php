@@ -1,6 +1,6 @@
 <div>
     <!-- Loading Overlay - Only for createBackup and restoreBackup -->
-    <div wire:loading.delay.long wire:target="createBackup,restoreBackup" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-40 flex items-center justify-center">
+    <div wire:loading.delay.long wire:target="createBackup,restoreBackup" class="fixed inset-0 bg-gray-900/50 z-40 flex items-center justify-center">
         <div class="bg-white rounded-lg p-6 shadow-xl flex items-center space-x-3">
             <svg class="animate-spin h-8 w-8 text-emerald-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -59,7 +59,7 @@
                 
                 <!-- Create Backup Section -->
                 <div class="mb-8">
-                    <h4 class="text-md font-medium text-gray-900 mb-4">Buat Backup</h4>
+                    <h4 class="text-base font-medium text-gray-900 mb-4">Buat Backup</h4>
                     
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -126,7 +126,7 @@
                 <!-- Available Backups -->
                 <div class="mb-8" wire:key="backup-list-{{ count($backups) }}">
                     <div class="flex justify-between items-center mb-4">
-                        <h4 class="text-md font-medium text-gray-900">Backup Tersedia ({{ count($backups) }})</h4>
+                        <h4 class="text-base font-medium text-gray-900">Backup Tersedia ({{ count($backups) }})</h4>
                         <button
                             wire:click="refreshBackups"
                             class="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-emerald-500"
@@ -201,7 +201,7 @@
                 
                 <!-- Restore Section -->
                 <div>
-                    <h4 class="text-md font-medium text-gray-900 mb-4">Restore Data</h4>
+                    <h4 class="text-base font-medium text-gray-900 mb-4">Restore Data</h4>
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>

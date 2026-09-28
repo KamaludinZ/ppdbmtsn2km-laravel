@@ -163,7 +163,7 @@
         <!-- Title -->
         <div class="title">
             <h3>INVOICE DAFTAR ULANG MADRASAH</h3>
-            <p class="invoice-no">No: {{ str_replace(['{TAHUN}', '{NOMOR}'], [date('Y'), str_pad($daftarUlang->id, 3, '0', STR_PAD_LEFT)], $invoiceSettings['nomor_format'] ?? 'INV-MDR-{TAHUN}-{NOMOR}') }}</p>
+            <p class="invoice-no">No: {{ str_replace(['{TAHUN}', '{NOMOR}'], [date('Y'), str_pad($daftarUlang?->id, 3, '0', STR_PAD_LEFT)], $invoiceSettings['nomor_format'] ?? 'INV-MDR-{TAHUN}-{NOMOR}') }}</p>
             <p class="date">Tanggal: {{ now()->format('d/m/Y') }}</p>
         </div>
 
@@ -216,20 +216,20 @@
                         <tr>
                             <td class="label" style="width: 30%;">Nama Pengirim</td>
                             <td class="separator">:</td>
-                            <td class="value">{{ $daftarUlang->nama_pengirim ?? '-' }}</td>
+                            <td class="value">{{ $daftarUlang?->nama_pengirim ?? '-' }}</td>
                         </tr>
                         <tr>
                             <td class="label" style="width: 30%;">Waktu Transfer</td>
                             <td class="separator">:</td>
-                            <td class="value">{{ $daftarUlang->updated_at ? $daftarUlang->updated_at->format('d/m/Y H:i') . ' WIB' : '-' }}</td>
+                            <td class="value">{{ $daftarUlang?->updated_at ? $daftarUlang?->updated_at->format('d/m/Y H:i') . ' WIB' : '-' }}</td>
                         </tr>
                         <tr>
                             <td class="label" style="width: 30%;">Status</td>
                             <td class="separator">:</td>
-                            <td class="value" style="color: {{ in_array($daftarUlang->status, ['disetujui', 'selesai']) || $daftarUlang->pembayaran_lunas ? 'green' : ($daftarUlang->status == 'ditolak' ? 'red' : 'orange') }}; text-transform: uppercase;">
-                                @if($daftarUlang->pembayaran_lunas || in_array($daftarUlang->status, ['disetujui', 'selesai']))
+                            <td class="value" style="color: {{ in_array($daftarUlang?->status, ['disetujui', 'selesai']) || $daftarUlang?->pembayaran_lunas ? 'green' : ($daftarUlang?->status == 'ditolak' ? 'red' : 'orange') }}; text-transform: uppercase;">
+                                @if($daftarUlang?->pembayaran_lunas || in_array($daftarUlang?->status, ['disetujui', 'selesai']))
                                     LUNAS / DISETUJUI
-                                @elseif($daftarUlang->status == 'ditolak')
+                                @elseif($daftarUlang?->status == 'ditolak')
                                     DITOLAK
                                 @else
                                     MENUNGGU VERIFIKASI
@@ -240,7 +240,7 @@
                             <td class="label" style="width: 30%;">Opsi Pembayaran</td>
                             <td class="separator">:</td>
                             <td class="value" style="text-transform: uppercase;">
-                                {{ $daftarUlang->opsi_pembayaran ? strtoupper($daftarUlang->opsi_pembayaran) : 'LUNAS' }}
+                                {{ $daftarUlang?->opsi_pembayaran ? strtoupper($daftarUlang?->opsi_pembayaran) : 'LUNAS' }}
                             </td>
                         </tr>
                     </table>
@@ -262,13 +262,13 @@
                 <tbody>
                     @php
                         // Nominal Biaya Awal (yang dipilih di "Pilih Nominal Biaya")
-                        $nominalBiayaAwal = $daftarUlang->nominal_biaya_awal ?? [];
+                        $nominalBiayaAwal = $daftarUlang?->nominal_biaya_awal ?? [];
                         $keterangan = $nominalBiayaAwal['name'] ?? 'Biaya Daftar Ulang Madrasah';
-                        $jumlahAwal = $nominalBiayaAwal['amount'] ?? 0;
+                        $jumlahAwal = \App\Support\Nominal::toNumber($nominalBiayaAwal['amount'] ?? 0);
 
                         // Nominal Biaya Konfirmasi (yang dipilih di "Konfirmasi Nominal yang Dibayarkan")
-                        $nominalBiayaKonfirmasi = $daftarUlang->nominal_biaya ?? [];
-                        $jumlahKonfirmasi = $nominalBiayaKonfirmasi['amount'] ?? 0;
+                        $nominalBiayaKonfirmasi = $daftarUlang?->nominal_biaya ?? [];
+                        $jumlahKonfirmasi = \App\Support\Nominal::toNumber($nominalBiayaKonfirmasi['amount'] ?? 0);
 
                         // Hitung selisih
                         $selisih = $jumlahKonfirmasi - $jumlahAwal;

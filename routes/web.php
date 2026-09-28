@@ -35,8 +35,8 @@ Route::get('/', function () {
     $loginEnabled = in_array($registrationPhase, ['dibuka', 'proses', 'pengumuman', 'daftar_ulang']);
 
     // Generate captcha untuk login form di hero section
-    $loginCaptcha = sprintf('%06d', rand(100000, 999999));
-    session(['login_captcha' => $loginCaptcha]);
+    // Captcha berupa gambar; kodenya dibuat saat gambar dimuat (route captcha.image)
+    $loginCaptcha = \App\Support\Captcha::url('login_captcha');
 
     // Add missing variables for the view
     $appAcronym = \App\Models\Setting::get('app_acronym', 'PPDB');
@@ -196,6 +196,15 @@ Route::get('/pengumuman', function () {
     return view('public.pengumuman', compact('pengumumanPenting', 'registrationPhase', 'registrationPhaseLabel', 'registrationPhaseDescription'));
 })->name('pengumuman');
 
+// Gambar captcha (kode angka hanya disimpan di session)
+Route::get('/captcha/{key}', function (string $key) {
+    return response(\App\Support\Captcha::png($key), 200, [
+        'Content-Type' => 'image/png',
+        'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+        'Pragma' => 'no-cache',
+    ]);
+})->whereIn('key', \App\Support\Captcha::KEYS)->middleware('throttle:60,1')->name('captcha.image');
+
 // Auth Routes
 Route::get('/login', Login::class)->name('login'); // Login untuk Pendaftar
 Route::post('/login', function (\Illuminate\Http\Request $request) {
@@ -206,21 +215,29 @@ Route::post('/login', function (\Illuminate\Http\Request $request) {
         'captcha' => 'required|size:6',
     ]);
 
-    // Verify captcha
-    if ($request->captcha !== session('login_captcha')) {
-        return back()->withErrors(['captcha' => 'Kode keamanan tidak sesuai'])->withInput();
+    // Batasi percobaan login (cegah brute-force): 5x per menit per email+IP
+    $throttleKey = 'login:' . \Illuminate\Support\Str::lower($credentials['email']) . '|' . $request->ip();
+    if (\Illuminate\Support\Facades\RateLimiter::tooManyAttempts($throttleKey, 5)) {
+        $seconds = \Illuminate\Support\Facades\RateLimiter::availableIn($throttleKey);
+        return back()->withErrors(['email' => "Terlalu banyak percobaan login. Coba lagi dalam {$seconds} detik."])->withInput($request->only('email'));
+    }
+    \Illuminate\Support\Facades\RateLimiter::hit($throttleKey, 60);
+
+    // Verify captcha (sekali pakai)
+    if (!\App\Support\Captcha::verify('login_captcha', $request->captcha)) {
+        return back()->withErrors(['captcha' => 'Kode keamanan tidak sesuai'])->withInput($request->only('email'));
     }
 
     // Check if registration is open for login
     $registrationPhase = \App\Models\Setting::get('registration_phase', 'belum_dibuka');
     if (!in_array($registrationPhase, ['dibuka', 'proses', 'pengumuman', 'daftar_ulang'])) {
-        return back()->withErrors(['email' => 'Login pendaftar sedang tidak aktif. Silakan cek kembali jadwal pendaftaran.'])->withInput();
+        return back()->withErrors(['email' => 'Login pendaftar sedang tidak aktif. Silakan cek kembali jadwal pendaftaran.'])->withInput($request->only('email'));
     }
 
     // Attempt login
     if (\Illuminate\Support\Facades\Auth::attempt(['email' => $credentials['email'], 'password' => $credentials['password'], 'aktif' => true])) {
+        \Illuminate\Support\Facades\RateLimiter::clear($throttleKey);
         $request->session()->regenerate();
-        $request->session()->forget('login_captcha');
 
         $user = \Illuminate\Support\Facades\Auth::user();
 
@@ -231,7 +248,7 @@ Route::post('/login', function (\Illuminate\Http\Request $request) {
 
         // If admin or panitia, logout and show error
         \Illuminate\Support\Facades\Auth::logout();
-        return back()->withErrors(['email' => 'Akses ditolak. Admin dan Panitia silakan login di halaman khusus.'])->withInput();
+        return back()->withErrors(['email' => 'Akses ditolak. Admin dan Panitia silakan login di halaman khusus.'])->withInput($request->only('email'));
     }
 
     return back()->withErrors(['email' => 'Email atau password salah, atau akun tidak aktif.'])->withInput(['email' => $credentials['email']]);
@@ -246,13 +263,13 @@ Route::post('/logout', function () {
     return redirect('/');
 })->name('logout');
 
-// Demo route untuk Livewire component
-Route::get('/welcome', function () {
-    return view('welcome');
-});
-
-// Test Livewire functionality
-Route::get('/test-livewire', \App\Livewire\TestLivewire::class)->name('test.livewire');
+// Halaman demo/uji hanya tersedia di lingkungan lokal (tidak di production)
+if (app()->environment('local')) {
+    Route::get('/welcome', function () {
+        return view('welcome');
+    });
+    Route::get('/test-livewire', \App\Livewire\TestLivewire::class)->name('test.livewire');
+}
 
 // Dashboard Routes - Admin Only
 Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
@@ -278,6 +295,9 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/panitia', \App\Livewire\Admin\Panitia::class)->name('admin.panitia');
     Route::get('/jalur', \App\Livewire\Admin\Jalur::class)->name('admin.jalur');
     Route::get('/laporan', \App\Livewire\Admin\Laporan::class)->name('admin.laporan');
+    Route::get('/laporan/export/{jenis}', \App\Http\Controllers\Admin\LaporanExportController::class)
+        ->whereIn('jenis', ['data-lengkap', 'daftar-ulang', 'daftar-ulang-seragam', 'seragam', 'tes-psikologi'])
+        ->name('admin.laporan.export');
     Route::get('/survey', \App\Livewire\Admin\SurveyManagement::class)->name('admin.survey');
     Route::get('/data-asal-sekolah', \App\Livewire\Admin\DataAsalSekolah::class)->name('admin.data-asal-sekolah');
     Route::get('/video-infografis', \App\Livewire\Admin\VideoInfografis::class)->name('admin.video-infografis');
@@ -286,7 +306,7 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/security', \App\Livewire\Admin\Security::class)->name('admin.security');
     Route::get('/backup-restore', \App\Livewire\Admin\BackupRestore::class)->name('admin.backup-restore');
     Route::get('/backup-restore/download/{filename}', function($filename) {
-        $path = storage_path("app/backups/{$filename}");
+        $path = storage_path("app/backups/" . basename((string) $filename));
 
         if (!file_exists($path)) {
             abort(404, 'File backup tidak ditemukan.');
@@ -300,7 +320,9 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
 
 // Admin Timeline Pendaftaran Routes
 Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
-    Route::resource('timeline-pendaftaran', \App\Http\Controllers\Admin\TimelinePendaftaranController::class);
+    Route::resource('timeline-pendaftaran', \App\Http\Controllers\Admin\TimelinePendaftaranController::class)
+        ->except(['show'])
+        ->parameters(['timeline-pendaftaran' => 'timeline']);
 });
 
 // Pendaftar Routes
@@ -402,7 +424,7 @@ Route::get('/dokumen/{id}/download', function ($id) {
 
     // Pendaftar only can access their own documents
     if ($user->role === 'pendaftar') {
-        if ($user->pendaftar->id !== $dokumen->pendaftar_id) {
+        if (optional($user->pendaftar)->id !== $dokumen->pendaftar_id) {
             abort(403, 'Anda tidak memiliki akses ke dokumen ini.');
         }
     }
@@ -412,14 +434,14 @@ Route::get('/dokumen/{id}/download', function ($id) {
         abort(403, 'Anda tidak memiliki akses ke dokumen ini.');
     }
 
-    // Check if file exists
-    if (!Storage::exists($dokumen->path_file)) {
+    // File dokumen disimpan di private storage (sama seperti route dokumen.view)
+    if (!Storage::disk('private')->exists($dokumen->path_file)) {
         abort(404, 'File tidak ditemukan.');
     }
 
     // Return file for download
     return response()->download(
-        storage_path('app/' . $dokumen->path_file),
+        Storage::disk('private')->path($dokumen->path_file),
         $dokumen->nama_file,
         [
             'Content-Type' => $dokumen->mime_type ?? 'application/pdf',
@@ -439,7 +461,7 @@ Route::get('/dokumen/{id}/view', function ($id) {
 
     // Pendaftar only can access their own documents
     if ($user->role === 'pendaftar') {
-        if ($user->pendaftar->id !== $dokumen->pendaftar_id) {
+        if (optional($user->pendaftar)->id !== $dokumen->pendaftar_id) {
             abort(403, 'Anda tidak memiliki akses ke dokumen ini.');
         }
     }
@@ -493,9 +515,15 @@ Route::get('/file/view/{model}/{id}/{field}', function ($model, $id, $field) {
         'keahlian' => \App\Models\Keahlian::class,
         'tahfidz' => \App\Models\Tahfidz::class,
     ];
+    // Hanya kolom file yang boleh dibaca (bukan sembarang atribut model)
+    $fieldMap = [
+        'prestasi' => ['file_sertifikat'],
+        'keahlian' => ['file_bukti_sertifikat'],
+        'tahfidz' => ['file_bukti_syahadah', 'file_bukti_tahsin'],
+    ];
 
-    if (!isset($modelMap[$model])) {
-        abort(404, 'Model tidak ditemukan.');
+    if (!isset($modelMap[$model]) || !in_array($field, $fieldMap[$model], true)) {
+        abort(404, 'File tidak ditemukan.');
     }
 
     $modelClass = $modelMap[$model];
@@ -503,10 +531,10 @@ Route::get('/file/view/{model}/{id}/{field}', function ($model, $id, $field) {
 
     // Authorization check - Admin, Panitia can access all, Pendaftar only their own
     if ($user->role === 'pendaftar') {
-        if ($user->pendaftar->id !== $record->pendaftar_id) {
+        if (optional($user->pendaftar)->id !== $record->pendaftar_id) {
             abort(403, 'Anda tidak memiliki akses ke file ini.');
         }
-    } elseif (!in_array($user->role, ['admin', 'panitia', 'panitia_pendaftaran', 'panitia_seragam', 'panitia_tes_psikologi'])) {
+    } elseif (!$user->isAdmin() && !$user->isPanitia()) {
         abort(403, 'Anda tidak memiliki akses ke file ini.');
     }
 
@@ -531,10 +559,15 @@ Route::get('/file/view/{model}/{id}/{field}', function ($model, $id, $field) {
     $file = Storage::disk($disk)->get($filePath);
     $mimeType = Storage::disk($disk)->mimeType($filePath);
 
+    // Hanya PDF/gambar biasa yang ditampilkan inline; tipe lain (HTML, SVG, dll) diunduh
+    // agar tidak bisa menjalankan skrip di domain aplikasi.
+    $inline = in_array($mimeType, ['application/pdf', 'image/jpeg', 'image/png', 'image/gif', 'image/webp'], true);
+
     // Return file for viewing in browser with no-cache headers
     return response($file, 200)
-        ->header('Content-Type', $mimeType)
-        ->header('Content-Disposition', 'inline; filename="' . basename($filePath) . '"')
+        ->header('Content-Type', $inline ? $mimeType : 'application/octet-stream')
+        ->header('Content-Disposition', ($inline ? 'inline' : 'attachment') . '; filename="' . basename($filePath) . '"')
+        ->header('X-Content-Type-Options', 'nosniff')
         ->header('Cache-Control', 'no-cache, no-store, must-revalidate')
         ->header('Pragma', 'no-cache')
         ->header('Expires', '0');

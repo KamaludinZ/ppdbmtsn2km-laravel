@@ -30,37 +30,37 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div class="md:col-span-2">
                             <label class="block text-sm font-bold text-gray-900 mb-1">Alamat Sekolah</label>
-                            <textarea wire:model="app_address" rows="2" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 font-medium"></textarea>
+                            <textarea wire:model="app_address" rows="2" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 font-medium"></textarea>
                             @error('app_address') <span class="text-red-500 text-xs font-semibold">{{ $message }}</span> @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-900 mb-1">Telepon Sekolah</label>
-                            <input type="text" wire:model="app_phone" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 font-medium">
+                            <input type="text" wire:model="app_phone" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 font-medium">
                             @error('app_phone') <span class="text-red-500 text-xs font-semibold">{{ $message }}</span> @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-900 mb-1">Email Sekolah / PTSP</label>
-                            <input type="email" wire:model="app_email_ptsp" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 font-medium">
+                            <input type="email" wire:model="app_email_ptsp" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 font-medium">
                             @error('app_email_ptsp') <span class="text-red-500 text-xs font-semibold">{{ $message }}</span> @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-900 mb-1">NSM</label>
-                            <input type="text" wire:model="app_nsm" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 font-medium">
+                            <input type="text" wire:model="app_nsm" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 font-medium">
                             @error('app_nsm') <span class="text-red-500 text-xs font-semibold">{{ $message }}</span> @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-900 mb-1">NPSN</label>
-                            <input type="text" wire:model="app_npsn" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 font-medium">
+                            <input type="text" wire:model="app_npsn" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 font-medium">
                             @error('app_npsn') <span class="text-red-500 text-xs font-semibold">{{ $message }}</span> @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-900 mb-1">Akreditasi</label>
-                            <input type="text" wire:model="app_akreditasi" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 font-medium">
+                            <input type="text" wire:model="app_akreditasi" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 font-medium">
                             @error('app_akreditasi') <span class="text-red-500 text-xs font-semibold">{{ $message }}</span> @enderror
                         </div>
                         <div>
                             <label class="block text-sm font-bold text-gray-900 mb-1">Kontak WhatsApp Panitia</label>
-                            <input type="text" wire:model="app_whatsapp_contact" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50 font-medium">
+                            <input type="text" wire:model="app_whatsapp_contact" class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 font-medium">
                             @error('app_whatsapp_contact') <span class="text-red-500 text-xs font-semibold">{{ $message }}</span> @enderror
                         </div>
                     </div>
@@ -331,7 +331,7 @@
         @if($showMisiForm)
         <div class="fixed inset-0 overflow-y-auto z-[9999]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="cancelMisi"></div>
+                <div class="fixed inset-0 bg-gray-500/75 transition-opacity" aria-hidden="true" wire:click="cancelMisi"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                     <form wire:submit.prevent="saveMisi">
@@ -340,18 +340,18 @@
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Konten Misi *</label>
-                                    <textarea wire:model="misi_text" rows="4" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50"></textarea>
+                                    <textarea wire:model="misi_text" rows="4" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200/50 "></textarea>
                                     @error('misi_text') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Urutan</label>
-                                        <input type="number" wire:model="urutan_misi" min="0" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                        <input type="number" wire:model="urutan_misi" min="0" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200/50 ">
                                         @error('urutan_misi') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                                        <select wire:model="aktif_misi" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                        <select wire:model="aktif_misi" class="w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring focus:ring-indigo-200/50 ">
                                             <option value="1">Aktif</option>
                                             <option value="0">Nonaktif</option>
                                         </select>
@@ -373,7 +373,7 @@
         @if($showTujuanForm)
         <div class="fixed inset-0 overflow-y-auto z-[9999]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="cancelTujuan"></div>
+                <div class="fixed inset-0 bg-gray-500/75 transition-opacity" aria-hidden="true" wire:click="cancelTujuan"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                     <form wire:submit.prevent="saveTujuan">
@@ -382,18 +382,18 @@
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Konten Tujuan *</label>
-                                    <textarea wire:model="tujuan_text" rows="4" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200 focus:ring-opacity-50"></textarea>
+                                    <textarea wire:model="tujuan_text" rows="4" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200/50 "></textarea>
                                     @error('tujuan_text') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Urutan</label>
-                                        <input type="number" wire:model="urutan_tujuan" min="0" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                                        <input type="number" wire:model="urutan_tujuan" min="0" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200/50 ">
                                         @error('urutan_tujuan') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                                        <select wire:model="aktif_tujuan" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                                        <select wire:model="aktif_tujuan" class="w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200/50 ">
                                             <option value="1">Aktif</option>
                                             <option value="0">Nonaktif</option>
                                         </select>
@@ -415,7 +415,7 @@
         @if($showFasilitasForm)
         <div class="fixed inset-0 overflow-y-auto z-[9999]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
             <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-                <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="cancelFasilitas"></div>
+                <div class="fixed inset-0 bg-gray-500/75 transition-opacity" aria-hidden="true" wire:click="cancelFasilitas"></div>
                 <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
                 <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                     <form wire:submit.prevent="saveFasilitas">
@@ -424,18 +424,18 @@
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Nama Fasilitas *</label>
-                                    <input type="text" wire:model="nama_fasilitas" maxlength="100" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50" placeholder="Contoh: Laboratorium Komputer">
+                                    <input type="text" wire:model="nama_fasilitas" maxlength="100" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200/50 " placeholder="Contoh: Laboratorium Komputer">
                                     @error('nama_fasilitas') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                                    <textarea wire:model="deskripsi_fasilitas" rows="3" maxlength="200" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50" placeholder="Deskripsi singkat fasilitas (opsional)"></textarea>
+                                    <textarea wire:model="deskripsi_fasilitas" rows="3" maxlength="200" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200/50 " placeholder="Deskripsi singkat fasilitas (opsional)"></textarea>
                                     @error('deskripsi_fasilitas') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Icon</label>
-                                        <select wire:model="icon_fasilitas" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50">
+                                        <select wire:model="icon_fasilitas" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200/50 ">
                                             <option value="building">🏢 Building</option>
                                             <option value="computer">💻 Computer</option>
                                             <option value="book">📚 Book</option>
@@ -451,7 +451,7 @@
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Warna</label>
-                                        <select wire:model="warna_fasilitas" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50">
+                                        <select wire:model="warna_fasilitas" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200/50 ">
                                             <option value="emerald">🟢 Emerald</option>
                                             <option value="blue">🔵 Blue</option>
                                             <option value="purple">🟣 Purple</option>
@@ -467,12 +467,12 @@
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Urutan</label>
-                                        <input type="number" wire:model="urutan_fasilitas" min="0" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50">
+                                        <input type="number" wire:model="urutan_fasilitas" min="0" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200/50 ">
                                         @error('urutan_fasilitas') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                                        <select wire:model="aktif_fasilitas" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50">
+                                        <select wire:model="aktif_fasilitas" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200/50 ">
                                             <option value="1">Aktif</option>
                                             <option value="0">Nonaktif</option>
                                         </select>
@@ -566,7 +566,7 @@
     @if($showFasilitasForm)
     <div class="fixed inset-0 overflow-y-auto z-[9999]" aria-labelledby="modal-title" role="dialog" aria-modal="true">
         <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-            <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" wire:click="cancelFasilitas"></div>
+            <div class="fixed inset-0 bg-gray-500/75 transition-opacity" aria-hidden="true" wire:click="cancelFasilitas"></div>
             <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
             <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
                 <form wire:submit.prevent="saveFasilitas">
@@ -575,18 +575,18 @@
                         <div class="space-y-4">
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Nama Fasilitas *</label>
-                                <input type="text" wire:model="nama_fasilitas" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50">
+                                <input type="text" wire:model="nama_fasilitas" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200/50 ">
                                 @error('nama_fasilitas') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-700 mb-1">Deskripsi</label>
-                                <input type="text" wire:model="deskripsi_fasilitas" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50">
+                                <input type="text" wire:model="deskripsi_fasilitas" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200/50 ">
                                 @error('deskripsi_fasilitas') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                             </div>
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Icon</label>
-                                    <select wire:model="icon_fasilitas" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50">
+                                    <select wire:model="icon_fasilitas" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200/50 ">
                                         <option value="building">Building</option>
                                         <option value="library">Library</option>
                                         <option value="computer">Computer</option>
@@ -604,7 +604,7 @@
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Warna</label>
-                                    <select wire:model="warna_fasilitas" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50">
+                                    <select wire:model="warna_fasilitas" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200/50 ">
                                         <option value="emerald">Emerald</option>
                                         <option value="blue">Blue</option>
                                         <option value="purple">Purple</option>
@@ -624,12 +624,12 @@
                             <div class="grid grid-cols-2 gap-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Urutan</label>
-                                    <input type="number" wire:model="urutan_fasilitas" min="0" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50">
+                                    <input type="number" wire:model="urutan_fasilitas" min="0" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200/50 ">
                                     @error('urutan_fasilitas') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                 </div>
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                                    <select wire:model="aktif_fasilitas" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200 focus:ring-opacity-50">
+                                    <select wire:model="aktif_fasilitas" class="w-full rounded-md border-gray-300 shadow-sm focus:border-orange-500 focus:ring focus:ring-orange-200/50 ">
                                         <option value="1">Aktif</option>
                                         <option value="0">Nonaktif</option>
                                     </select>

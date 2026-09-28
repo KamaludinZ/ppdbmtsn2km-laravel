@@ -4,6 +4,34 @@
 /* Then Tailwind - v4 syntax */
 @import 'tailwindcss';
 
+/*
+ * Banyak view membentuk class warna secara dinamis, mis. bg-{{ $color }}-100 atau
+ * text-{{ $jalur->warna }}-800. Tailwind tidak bisa "melihat" class seperti itu, sehingga
+ * warnanya tidak ikut ter-build dan kartu/badge tampil putih. Daftar ini memastikan
+ * semua kombinasi warna tersebut selalu ada di CSS.
+ */
+@source inline("{bg,text,border,from,to,ring}-{red,orange,amber,yellow,lime,green,emerald,teal,cyan,sky,blue,indigo,violet,purple,fuchsia,pink,rose,gray,slate}-{50,{100..900..100}}");
+
+/*
+ * Pengganti @tailwindcss/forms (plugin di tailwind.config.js tidak dibaca Tailwind v4).
+ * Banyak input/select/textarea hanya diberi warna border (mis. border-gray-300) tanpa
+ * ketebalan, sehingga tampil tanpa garis. Aturan ini hanya berlaku untuk kontrol yang
+ * memakai class border-*, dan kalah oleh utility Tailwind (border-0, px-4, dst.).
+ */
+@layer base {
+    :where(input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not([type="file"]):not([type="color"]):not([type="hidden"]), select, textarea)[class*="border-"] {
+        border-width: 1px;
+        border-style: solid;
+        background-color: #fff;
+        padding: 0.5rem 0.75rem;
+        line-height: 1.5rem;
+    }
+
+    :where(select)[class*="border-"] {
+        padding-right: 2.25rem;
+    }
+}
+
 /* Custom theme configuration */
 @theme {
     --font-sans: 'Figtree', 'Inter', ui-sans-serif, system-ui, sans-serif;

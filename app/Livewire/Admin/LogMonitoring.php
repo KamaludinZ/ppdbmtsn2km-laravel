@@ -104,7 +104,8 @@ class LogMonitoring extends Component
             return;
         }
 
-        $content = File::get($logPath);
+        // Baca maksimal 5 MB terakhir saja agar log besar tidak menghabiskan memori server
+        $content = $this->bacaEkor($logPath, 5 * 1024 * 1024);
 
         // Filter by date if selected
         if ($this->selectedDate) {
@@ -139,9 +140,36 @@ class LogMonitoring extends Component
         $this->logContent = implode("\n", $lines);
     }
 
+    /**
+     * Ambil bagian akhir file (maks $maxBytes) tanpa memuat seluruh file ke memori.
+     */
+    protected function bacaEkor(string $path, int $maxBytes): string
+    {
+        $size = File::size($path);
+        if ($size <= $maxBytes) {
+            return File::get($path);
+        }
+
+        $handle = fopen($path, 'rb');
+        fseek($handle, -$maxBytes, SEEK_END);
+        $content = (string) fread($handle, $maxBytes);
+        fclose($handle);
+
+        return substr($content, (int) strpos($content, "\n") + 1); // buang baris yang terpotong
+    }
+
     protected function getLogPath()
     {
         $logsPath = storage_path('logs');
+
+        // Nama log & tanggal dibatasi agar tidak bisa keluar dari folder logs (../)
+        if (!preg_match('/^[A-Za-z0-9_\-]+$/', (string) $this->selectedLog)) {
+            $this->selectedLog = 'laravel';
+        }
+        if ($this->selectedDate && !preg_match('/^\d{4}-\d{2}-\d{2}$/', (string) $this->selectedDate)) {
+            $this->selectedDate = '';
+        }
+
         $logFile = $this->selectedLog . '.log';
 
         // Check if specific date log exists
@@ -208,7 +236,7 @@ class LogMonitoring extends Component
             return [];
         }
 
-        $content = File::get($logFile);
+        $content = $this->bacaEkor($logFile, 512 * 1024);
         $lines = explode("\n", $content);
         $errors = [];
 

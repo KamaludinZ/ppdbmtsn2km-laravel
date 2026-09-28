@@ -30,6 +30,7 @@
                     Tambah Kontak
                 </button>
             </div>
+            <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
@@ -65,6 +66,7 @@
                     @endforelse
                 </tbody>
             </table>
+            </div>
         </div>
 
         <!-- Modal Form -->
@@ -81,26 +83,26 @@
                                 <div class="space-y-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Nama Panitia</label>
-                                        <input type="text" wire:model="nama" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                                        <input type="text" wire:model="nama" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 ">
                                         @error('nama') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Nomor WhatsApp</label>
-                                        <input type="text" wire:model="nomor_wa" placeholder="628..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                                        <input type="text" wire:model="nomor_wa" placeholder="628..." class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 ">
                                         @error('nomor_wa') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                     </div>
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700">Keterangan (Jabatan/Posisi)</label>
-                                        <input type="text" wire:model="keterangan" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                                        <input type="text" wire:model="keterangan" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 ">
                                         @error('keterangan') <span class="text-red-500 text-xs">{{ $message }}</span> @enderror
                                     </div>
                                     <div class="flex gap-4">
                                         <div class="flex-1">
                                             <label class="block text-sm font-medium text-gray-700">Urutan</label>
-                                            <input type="number" wire:model="urutan" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                                            <input type="number" wire:model="urutan" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200/50 ">
                                         </div>
                                         <div class="flex items-center pt-6">
-                                            <input type="checkbox" wire:model="aktif" id="aktif" class="rounded border-gray-300 text-emerald-600 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-200 focus:ring-opacity-50">
+                                            <input type="checkbox" wire:model="aktif" id="aktif" class="rounded border-gray-300 text-emerald-600 shadow-sm focus:border-emerald-300 focus:ring focus:ring-emerald-200/50 ">
                                             <label for="aktif" class="ml-2 block text-sm text-gray-900">Aktif</label>
                                         </div>
                                     </div>
