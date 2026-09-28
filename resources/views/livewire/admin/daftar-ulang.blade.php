@@ -1449,7 +1449,7 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @if($item->jalurPendaftaran)
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-white" style="background-color: {{ $item->jalurPendaftaran->warna ?? '#6B7280' }}">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-white" style="background-color: {{ \App\Models\JalurPendaftaran::hexWarna($item->jalurPendaftaran->warna ?? '#6B7280') }}">
                                             {{ $item->jalurPendaftaran->nama }}
                                         </span>
                                     @else

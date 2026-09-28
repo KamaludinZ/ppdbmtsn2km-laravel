@@ -59,6 +59,28 @@ class JalurPendaftaran extends Model
      * Get prefix untuk nomor pendaftaran
      * Menggunakan prefix_nomor dari database, atau huruf pertama nama jalur sebagai fallback
      */
+    /**
+     * Warna jalur disimpan sebagai nama warna Tailwind (mis. "emerald"). Untuk atribut style
+     * perlu kode hex, karena browser tidak mengenal nama seperti "emerald" / "indigo".
+     */
+    public const HEX_WARNA = [
+        'blue' => '#2563eb', 'indigo' => '#4f46e5', 'emerald' => '#059669', 'green' => '#16a34a',
+        'purple' => '#9333ea', 'orange' => '#ea580c', 'teal' => '#0d9488', 'red' => '#dc2626',
+        'yellow' => '#ca8a04', 'amber' => '#d97706', 'pink' => '#db2777', 'rose' => '#e11d48',
+        'cyan' => '#0891b2', 'sky' => '#0284c7', 'violet' => '#7c3aed', 'gray' => '#4b5563',
+        'slate' => '#475569', 'lime' => '#65a30d', 'fuchsia' => '#c026d3',
+    ];
+
+    public static function hexWarna(?string $warna): string
+    {
+        $warna = trim((string) $warna);
+        if (preg_match('/^#[0-9a-fA-F]{3,8}$/', $warna)) {
+            return $warna;
+        }
+
+        return self::HEX_WARNA[strtolower($warna)] ?? '#4b5563';
+    }
+
     public function getNomorPrefix(): string
     {
         // Gunakan prefix_nomor jika ada, jika tidak ambil huruf pertama dari nama jalur

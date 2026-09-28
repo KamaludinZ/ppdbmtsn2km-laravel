@@ -91,19 +91,12 @@
                 </section>
 
                 <div class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-                    @foreach([
-                        ['Total Pendaftar', $stats['total'], 'text-gray-900', 'border-gray-200'],
-                        ['Menunggu Verifikasi', $stats['menunggu_verifikasi'], 'text-amber-700', 'border-amber-200'],
-                        ['Lengkapi Data', $stats['lengkapi_data'], 'text-orange-700', 'border-orange-200'],
-                        ['Perbaiki Data', $stats['perbaiki_data'], 'text-orange-700', 'border-orange-200'],
-                        ['Data Ditolak', $stats['data_ditolak'], 'text-red-700', 'border-red-200'],
-                        ['Data Disetujui', $stats['data_disetujui'], 'text-emerald-700', 'border-emerald-200'],
-                    ] as [$judul, $nilai, $warna, $garis])
-                        <div class="min-w-0 rounded-xl border {{ $garis }} bg-white p-4">
-                            <p class="text-xs font-medium text-gray-500">{{ $judul }}</p>
-                            <p class="mt-1 text-2xl font-bold tabular-nums {{ $warna }}">{{ number_format($nilai) }}</p>
-                        </div>
-                    @endforeach
+                    <x-stat-card color="blue" label="Total Pendaftar" :value="$stats['total']" />
+                    <x-stat-card color="yellow" label="Menunggu Verifikasi" :value="$stats['menunggu_verifikasi']" />
+                    <x-stat-card color="orange" label="Lengkapi Data" :value="$stats['lengkapi_data']" />
+                    <x-stat-card color="amber" label="Perbaiki Data" :value="$stats['perbaiki_data']" />
+                    <x-stat-card color="red" label="Data Ditolak" :value="$stats['data_ditolak']" />
+                    <x-stat-card color="green" label="Data Disetujui" :value="$stats['data_disetujui']" />
                 </div>
 
                 {{-- Statistik per jalur --}}
@@ -250,27 +243,19 @@
                 ])
 
                 <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
-                    <div class="min-w-0 rounded-xl border border-gray-200 bg-white p-4">
-                        <p class="text-xs font-medium text-gray-500">Pendaftar (sesuai filter)</p>
-                        <p class="mt-1 text-2xl font-bold tabular-nums text-gray-900">{{ number_format($s['total']) }}</p>
-                        <p class="mt-1 text-xs text-gray-500">dari {{ number_format($s['total_pendaftar']) }} pendaftar{{ $filterJalur ? ' di jalur ini' : '' }}</p>
-                    </div>
-                    <div class="min-w-0 rounded-xl border border-gray-200 bg-white p-4">
-                        <p class="text-xs font-medium text-gray-500">Rata-rata Kelengkapan</p>
-                        <p class="mt-1 text-2xl font-bold tabular-nums text-gray-900">{{ $s['rata_rata'] }}%</p>
-                        <div class="mt-2 h-1.5 rounded-full bg-gray-100"><div class="h-1.5 rounded-full bg-emerald-600" style="width: {{ $s['rata_rata'] }}%"></div></div>
-                    </div>
-                    <div class="min-w-0 rounded-xl border border-emerald-200 bg-white p-4">
-                        <p class="text-xs font-medium text-emerald-700">Formulir 100% Lengkap</p>
-                        <p class="mt-1 text-2xl font-bold tabular-nums text-emerald-700">{{ number_format($s['semua_lengkap']) }}</p>
-                        <p class="mt-1 text-xs text-gray-500">{{ $s['total'] > 0 ? round($s['semua_lengkap'] / $s['total'] * 100) : 0 }}% dari pendaftar</p>
-                    </div>
-                    <div class="min-w-0 rounded-xl border border-gray-200 bg-white p-4">
-                        <p class="text-xs font-medium text-gray-500">Status Kelulusan</p>
+                    <x-stat-card color="blue" label="Pendaftar (sesuai filter)" :value="$s['total']"
+                        :sub="'dari ' . number_format($s['total_pendaftar']) . ' pendaftar' . ($filterJalur ? ' di jalur ini' : '')" />
+                    <x-stat-card color="indigo" label="Rata-rata Kelengkapan" :value="$s['rata_rata'] . '%'">
+                        <div class="mt-2 h-1.5 rounded-full bg-white/30"><div class="h-1.5 rounded-full bg-white" style="width: {{ $s['rata_rata'] }}%"></div></div>
+                    </x-stat-card>
+                    <x-stat-card color="emerald" label="Formulir 100% Lengkap" :value="$s['semua_lengkap']"
+                        :sub="($s['total'] > 0 ? round($s['semua_lengkap'] / $s['total'] * 100) : 0) . '% dari pendaftar'" />
+                    <div class="min-w-0 rounded-xl bg-gradient-to-br from-slate-500 to-slate-600 p-4 text-white shadow-sm">
+                        <p class="text-xs font-medium text-white/90">Status Kelulusan</p>
                         <dl class="mt-1 space-y-0.5 text-sm">
-                            <div class="flex justify-between gap-2"><dt class="text-gray-600">Lulus</dt><dd class="font-semibold tabular-nums text-emerald-700">{{ number_format($s['lulus']) }}</dd></div>
-                            <div class="flex justify-between gap-2"><dt class="text-gray-600">Tidak lulus</dt><dd class="font-semibold tabular-nums text-rose-700">{{ number_format($s['tidak_lulus']) }}</dd></div>
-                            <div class="flex justify-between gap-2"><dt class="text-gray-600">Cadangan</dt><dd class="font-semibold tabular-nums text-blue-700">{{ number_format($s['cadangan']) }}</dd></div>
+                            <div class="flex justify-between gap-2"><dt class="text-white/85">Lulus</dt><dd class="font-semibold tabular-nums">{{ number_format($s['lulus']) }}</dd></div>
+                            <div class="flex justify-between gap-2"><dt class="text-white/85">Tidak lulus</dt><dd class="font-semibold tabular-nums">{{ number_format($s['tidak_lulus']) }}</dd></div>
+                            <div class="flex justify-between gap-2"><dt class="text-white/85">Cadangan</dt><dd class="font-semibold tabular-nums">{{ number_format($s['cadangan']) }}</dd></div>
                         </dl>
                     </div>
                 </div>
@@ -383,19 +368,12 @@
                 ])
 
                 <div class="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-                    @foreach([
-                        ['Total', $st['total'], 'text-gray-900', 'border-gray-200'],
-                        ['Belum Upload', $st['belum_upload'], 'text-gray-700', 'border-gray-200'],
-                        ['Menunggu Verifikasi', $st['menunggu'], 'text-amber-700', 'border-amber-200'],
-                        ['Disetujui', $st['disetujui'], 'text-emerald-700', 'border-emerald-200'],
-                        ['Ditolak', $st['ditolak'], 'text-red-700', 'border-red-200'],
-                        ['Perlu Perbaikan', $st['perbaiki'], 'text-orange-700', 'border-orange-200'],
-                    ] as [$judul, $nilai, $warna, $garis])
-                        <div class="min-w-0 rounded-xl border {{ $garis }} bg-white p-4">
-                            <p class="text-xs font-medium text-gray-500">{{ $judul }}</p>
-                            <p class="mt-1 text-2xl font-bold tabular-nums {{ $warna }}">{{ number_format($nilai) }}</p>
-                        </div>
-                    @endforeach
+                    <x-stat-card color="purple" label="Total" :value="$st['total']" />
+                    <x-stat-card color="gray" label="Belum Upload" :value="$st['belum_upload']" />
+                    <x-stat-card color="yellow" label="Menunggu Verifikasi" :value="$st['menunggu']" />
+                    <x-stat-card color="green" label="Disetujui" :value="$st['disetujui']" />
+                    <x-stat-card color="red" label="Ditolak" :value="$st['ditolak']" />
+                    <x-stat-card color="orange" label="Perlu Perbaikan" :value="$st['perbaiki']" />
                 </div>
 
                 <section class="rounded-xl border border-gray-200 bg-white">

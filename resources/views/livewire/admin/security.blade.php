@@ -17,7 +17,7 @@
                     <div class="space-y-6">
                         <!-- Two Factor Authentication -->
                         <div>
-                            <h4 class="text-md font-medium text-gray-900 mb-4">Autentikasi Dua Faktor</h4>
+                            <h4 class="text-base font-medium text-gray-900 mb-4">Autentikasi Dua Faktor</h4>
 
                             <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
                                 <div>
@@ -40,7 +40,7 @@
                         <!-- Recent Login Attempts -->
                         <div>
                             <div class="flex justify-between items-center mb-4">
-                                <h4 class="text-md font-medium text-gray-900">Aktivitas Login Terakhir</h4>
+                                <h4 class="text-base font-medium text-gray-900">Aktivitas Login Terakhir</h4>
                                 <button
                                     wire:click="refreshSecurityData"
                                     class="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50"
@@ -96,7 +96,7 @@
 
                         <!-- Security Logs -->
                         <div>
-                            <h4 class="text-md font-medium text-gray-900 mb-4">Log Keamanan</h4>
+                            <h4 class="text-base font-medium text-gray-900 mb-4">Log Keamanan</h4>
 
                             <div class="bg-white shadow overflow-hidden sm:rounded-md">
                                 <ul class="divide-y divide-gray-200">
@@ -143,7 +143,7 @@
                         <div>
                             <div class="flex justify-between items-center mb-4">
                                 <div>
-                                    <h4 class="text-md font-medium text-gray-900">🚨 Aktivitas Mencurigakan & Deteksi Serangan</h4>
+                                    <h4 class="text-base font-medium text-gray-900">🚨 Aktivitas Mencurigakan & Deteksi Serangan</h4>
                                     <p class="text-sm text-gray-500 mt-1">Monitoring real-time terhadap potensi serangan hacker</p>
                                 </div>
                             </div>
@@ -214,7 +214,7 @@
                         <div>
                             <div class="flex justify-between items-center mb-4">
                                 <div>
-                                    <h4 class="text-md font-medium text-gray-900">🚫 IP yang Diblokir</h4>
+                                    <h4 class="text-base font-medium text-gray-900">🚫 IP yang Diblokir</h4>
                                     <p class="text-sm text-gray-500 mt-1">Daftar IP address yang diblokir oleh sistem</p>
                                 </div>
                             </div>

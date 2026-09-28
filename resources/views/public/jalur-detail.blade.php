@@ -149,7 +149,7 @@
                         <div class="prose prose-lg max-w-none text-gray-700 leading-relaxed">
                             <!-- Deskripsi Singkat -->
                             @if($jalur->deskripsi)
-                                <div class="bg-{{ $colors['bgLight'] }} rounded-lg p-6 mb-6 border-l-4 {{ $colors['border'] }}">
+                                <div class="{{ $colors['bgLight'] }} rounded-lg p-6 mb-6 border-l-4 {{ $colors['border'] }}">
                                     <p class="text-lg font-medium {{ $colors['textDark'] }} leading-relaxed">
                                         {{ $jalur->deskripsi }}
                                     </p>
@@ -220,7 +220,7 @@
                     @endif
 
                     <!-- Nilai Rapor Info -->
-                    <div class="bg-gradient-to-br {{ $colors['bgLight'] }} rounded-2xl p-8 shadow-lg border-2 {{ $colors['border'] }}">
+                    <div class="{{ $colors['bgLight'] }} rounded-2xl p-8 shadow-lg border-2 {{ $colors['border'] }}">
                         <h2 class="text-2xl font-bold {{ $colors['textDark'] }} mb-6 flex items-center">
                             <svg class="w-6 h-6 {{ $colors['text'] }} mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
@@ -367,7 +367,7 @@
                     </div>
 
                     <!-- Info Card -->
-                    <div class="bg-gradient-to-br {{ $colors['bgLight'] }} rounded-2xl p-6 border-2 {{ $colors['border'] }}">
+                    <div class="{{ $colors['bgLight'] }} rounded-2xl p-6 border-2 {{ $colors['border'] }}">
                         <h4 class="font-bold {{ $colors['textDark'] }} mb-3 flex items-center">
                             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>

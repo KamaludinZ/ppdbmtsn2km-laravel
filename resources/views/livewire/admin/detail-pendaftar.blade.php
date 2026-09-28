@@ -383,7 +383,7 @@
 
                             <!-- Madrasah Sub-tab -->
                             <div x-show="subTab === 'madrasah'" x-transition class="p-6 space-y-6">
-                                <h4 class="text-md font-semibold text-gray-900 mb-4 border-b pb-2">Daftar Ulang Madrasah</h4>
+                                <h4 class="text-base font-semibold text-gray-900 mb-4 border-b pb-2">Daftar Ulang Madrasah</h4>
 
                                 <!-- Informasi Pembayaran -->
                                 <div class="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 rounded-lg p-4">
@@ -523,7 +523,7 @@
 
                             <!-- Seragam Sub-tab -->
                             <div x-show="subTab === 'seragam'" x-transition class="p-6 space-y-6">
-                                <h4 class="text-md font-semibold text-gray-900 mb-4 border-b pb-2">Daftar Ulang Seragam</h4>
+                                <h4 class="text-base font-semibold text-gray-900 mb-4 border-b pb-2">Daftar Ulang Seragam</h4>
 
                                 <!-- Informasi Pembayaran Seragam -->
                                 <div class="bg-gradient-to-r from-cyan-50 to-blue-50 border border-cyan-200 rounded-lg p-4">
@@ -697,7 +697,7 @@
 
                             <!-- Ukuran Sub-tab -->
                             <div x-show="subTab === 'ukuran'" x-transition class="p-6 space-y-6">
-                                <h4 class="text-md font-semibold text-gray-900 mb-4 border-b pb-2">Ukuran Seragam & Atribut</h4>
+                                <h4 class="text-base font-semibold text-gray-900 mb-4 border-b pb-2">Ukuran Seragam & Atribut</h4>
 
                                 <!-- Status Ukuran -->
                                 <div class="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">

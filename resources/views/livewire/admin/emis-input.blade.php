@@ -615,7 +615,7 @@
                     <div class="mt-4 space-y-6">
                         <!-- Identitas Section -->
                         <div>
-                            <h4 class="text-md font-semibold text-gray-900 mb-3">Identitas Dasar</h4>
+                            <h4 class="text-base font-semibold text-gray-900 mb-3">Identitas Dasar</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <p class="text-sm font-medium text-gray-500">No. Pendaftaran</p>
@@ -658,7 +658,7 @@
 
                         <!-- Alamat Section -->
                         <div>
-                            <h4 class="text-md font-semibold text-gray-900 mb-3">Alamat</h4>
+                            <h4 class="text-base font-semibold text-gray-900 mb-3">Alamat</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div class="md:col-span-2">
                                     <p class="text-sm font-medium text-gray-500">Alamat Lengkap</p>
@@ -685,7 +685,7 @@
 
                         <!-- Orang Tua Section -->
                         <div>
-                            <h4 class="text-md font-semibold text-gray-900 mb-3">Data Orang Tua</h4>
+                            <h4 class="text-base font-semibold text-gray-900 mb-3">Data Orang Tua</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <p class="text-sm font-medium text-gray-500">Nama Ayah</p>
@@ -708,7 +708,7 @@
 
                         <!-- Sekolah Asal Section -->
                         <div>
-                            <h4 class="text-md font-semibold text-gray-900 mb-3">Sekolah Asal</h4>
+                            <h4 class="text-base font-semibold text-gray-900 mb-3">Sekolah Asal</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <p class="text-sm font-medium text-gray-500">Nama Sekolah</p>
@@ -731,7 +731,7 @@
 
                         <!-- Status Section -->
                         <div>
-                            <h4 class="text-md font-semibold text-gray-900 mb-3">Status</h4>
+                            <h4 class="text-base font-semibold text-gray-900 mb-3">Status</h4>
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                                 <div>
                                     <p class="text-sm font-medium text-gray-500">Status Pendaftaran</p>

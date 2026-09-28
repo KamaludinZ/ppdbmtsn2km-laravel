@@ -42,7 +42,7 @@
 
         <!-- Section 1: AYAH KANDUNG -->
         <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
-            <h4 class="text-md font-semibold text-blue-900 mb-4 flex items-center">
+            <h4 class="text-base font-semibold text-blue-900 mb-4 flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                 AYAH KANDUNG
             </h4>
@@ -204,7 +204,7 @@
 
         <!-- Section 2: IBU KANDUNG -->
         <div class="bg-pink-50 border-2 border-pink-200 rounded-lg p-6">
-            <h4 class="text-md font-semibold text-pink-900 mb-4 flex items-center">
+            <h4 class="text-base font-semibold text-pink-900 mb-4 flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                 IBU KANDUNG
             </h4>
@@ -366,7 +366,7 @@
 
         <!-- Section 3: DATA WALI -->
         <div class="bg-purple-50 border-2 border-purple-200 rounded-lg p-6">
-            <h4 class="text-md font-semibold text-purple-900 mb-4 flex items-center">
+            <h4 class="text-base font-semibold text-purple-900 mb-4 flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 DATA WALI
             </h4>
@@ -543,7 +543,7 @@
 
         <!-- Section 4: KARTU BANTUAN (Optional) -->
         <div class="bg-amber-50 border-2 border-amber-200 rounded-lg p-6">
-            <h4 class="text-md font-semibold text-amber-900 mb-4 flex items-center">
+            <h4 class="text-base font-semibold text-amber-900 mb-4 flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
                 KARTU BANTUAN (Opsional)
             </h4>
@@ -574,7 +574,7 @@
 
         <!-- Section 1: AYAH KANDUNG - View Mode -->
         <div class="bg-blue-50 border-2 border-blue-200 rounded-lg p-6">
-            <h4 class="text-md font-semibold text-blue-900 mb-4 flex items-center">
+            <h4 class="text-base font-semibold text-blue-900 mb-4 flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                 AYAH KANDUNG
             </h4>
@@ -656,7 +656,7 @@
 
         <!-- Section 2: IBU KANDUNG - View Mode -->
         <div class="bg-pink-50 border-2 border-pink-200 rounded-lg p-6">
-            <h4 class="text-md font-semibold text-pink-900 mb-4 flex items-center">
+            <h4 class="text-base font-semibold text-pink-900 mb-4 flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
                 IBU KANDUNG
             </h4>
@@ -738,7 +738,7 @@
 
         <!-- Section 3: DATA WALI - View Mode -->
         <div class="bg-purple-50 border-2 border-purple-200 rounded-lg p-6">
-            <h4 class="text-md font-semibold text-purple-900 mb-4 flex items-center">
+            <h4 class="text-base font-semibold text-purple-900 mb-4 flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
                 DATA WALI
             </h4>
@@ -855,7 +855,7 @@
 
         <!-- Section 4: KARTU BANTUAN - View Mode -->
         <div class="bg-amber-50 border-2 border-amber-200 rounded-lg p-6">
-            <h4 class="text-md font-semibold text-amber-900 mb-4 flex items-center">
+            <h4 class="text-base font-semibold text-amber-900 mb-4 flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
                 KARTU BANTUAN (Opsional)
             </h4>

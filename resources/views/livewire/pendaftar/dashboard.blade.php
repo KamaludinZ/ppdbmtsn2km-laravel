@@ -1073,15 +1073,15 @@
                     <div class="grid grid-cols-3 gap-2">
                         <div class="bg-gray-50 rounded p-2 text-center">
                             <p class="text-[10px] text-gray-500 uppercase">B. Indo</p>
-                            <p class="text-md font-bold text-gray-900">{{ $pendaftar->nilai_b_indo_5_1 }}</p>
+                            <p class="text-base font-bold text-gray-900">{{ $pendaftar->nilai_b_indo_5_1 }}</p>
                         </div>
                         <div class="bg-gray-50 rounded p-2 text-center">
                             <p class="text-[10px] text-gray-500 uppercase">MTK</p>
-                            <p class="text-md font-bold text-gray-900">{{ $pendaftar->nilai_matematika_5_1 }}</p>
+                            <p class="text-base font-bold text-gray-900">{{ $pendaftar->nilai_matematika_5_1 }}</p>
                         </div>
                         <div class="bg-gray-50 rounded p-2 text-center">
                             <p class="text-[10px] text-gray-500 uppercase">IPA</p>
-                            <p class="text-md font-bold text-gray-900">{{ $pendaftar->nilai_ipa_5_1 }}</p>
+                            <p class="text-base font-bold text-gray-900">{{ $pendaftar->nilai_ipa_5_1 }}</p>
                         </div>
                     </div>
                 </div>
@@ -1092,15 +1092,15 @@
                     <div class="grid grid-cols-3 gap-2">
                         <div class="bg-gray-50 rounded p-2 text-center">
                             <p class="text-[10px] text-gray-500 uppercase">B. Indo</p>
-                            <p class="text-md font-bold text-gray-900">{{ $pendaftar->nilai_b_indo_5_2 }}</p>
+                            <p class="text-base font-bold text-gray-900">{{ $pendaftar->nilai_b_indo_5_2 }}</p>
                         </div>
                         <div class="bg-gray-50 rounded p-2 text-center">
                             <p class="text-[10px] text-gray-500 uppercase">MTK</p>
-                            <p class="text-md font-bold text-gray-900">{{ $pendaftar->nilai_matematika_5_2 }}</p>
+                            <p class="text-base font-bold text-gray-900">{{ $pendaftar->nilai_matematika_5_2 }}</p>
                         </div>
                         <div class="bg-gray-50 rounded p-2 text-center">
                             <p class="text-[10px] text-gray-500 uppercase">IPA</p>
-                            <p class="text-md font-bold text-gray-900">{{ $pendaftar->nilai_ipa_5_2 }}</p>
+                            <p class="text-base font-bold text-gray-900">{{ $pendaftar->nilai_ipa_5_2 }}</p>
                         </div>
                     </div>
                 </div>
@@ -1111,15 +1111,15 @@
                     <div class="grid grid-cols-3 gap-2">
                         <div class="bg-gray-50 rounded p-2 text-center">
                             <p class="text-[10px] text-gray-500 uppercase">B. Indo</p>
-                            <p class="text-md font-bold text-gray-900">{{ $pendaftar->nilai_b_indo_6_1 }}</p>
+                            <p class="text-base font-bold text-gray-900">{{ $pendaftar->nilai_b_indo_6_1 }}</p>
                         </div>
                         <div class="bg-gray-50 rounded p-2 text-center">
                             <p class="text-[10px] text-gray-500 uppercase">MTK</p>
-                            <p class="text-md font-bold text-gray-900">{{ $pendaftar->nilai_matematika_6_1 }}</p>
+                            <p class="text-base font-bold text-gray-900">{{ $pendaftar->nilai_matematika_6_1 }}</p>
                         </div>
                         <div class="bg-gray-50 rounded p-2 text-center">
                             <p class="text-[10px] text-gray-500 uppercase">IPA</p>
-                            <p class="text-md font-bold text-gray-900">{{ $pendaftar->nilai_ipa_6_1 }}</p>
+                            <p class="text-base font-bold text-gray-900">{{ $pendaftar->nilai_ipa_6_1 }}</p>
                         </div>
                     </div>
                 </div>

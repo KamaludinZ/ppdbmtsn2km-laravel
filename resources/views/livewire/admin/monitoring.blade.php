@@ -318,7 +318,7 @@
                             <!-- Recent Errors -->
                             @if(count($recentErrors) > 0)
                                 <div class="bg-white border border-red-200 rounded-lg p-4 mb-6">
-                                    <h4 class="text-md font-semibold text-gray-900 mb-3">
+                                    <h4 class="text-base font-semibold text-gray-900 mb-3">
                                         <i class="fas fa-exclamation-circle text-red-500 mr-2"></i>
                                         Recent Errors (Last 5)
                                     </h4>

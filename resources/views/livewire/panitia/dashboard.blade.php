@@ -399,7 +399,7 @@
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
-                                    <div class="w-3 h-3 rounded-full mr-3" style="background-color: {{ $jalur['warna'] }}"></div>
+                                    <div class="w-3 h-3 rounded-full mr-3" style="background-color: {{ \App\Models\JalurPendaftaran::hexWarna($jalur['warna']) }}"></div>
                                     <span class="text-sm font-medium text-gray-900">{{ $jalur['nama'] }}</span>
                                 </div>
                             </td>

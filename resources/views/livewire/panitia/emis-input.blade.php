@@ -441,7 +441,7 @@
                         </div>
                         
                         <div class="mt-6">
-                            <h4 class="text-md font-medium text-gray-900 mb-3">Dokumen</h4>
+                            <h4 class="text-base font-medium text-gray-900 mb-3">Dokumen</h4>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <div class="flex items-center justify-between p-3 bg-gray-50 rounded">
                                     <span class="text-sm">Kartu Keluarga</span>

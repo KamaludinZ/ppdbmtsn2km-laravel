@@ -156,7 +156,7 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-white" style="background-color: {{ $pendaftar['jalur_color'] ?? '#6B7280' }}">
+                                        <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-white" style="background-color: {{ \App\Models\JalurPendaftaran::hexWarna($pendaftar['jalur_color'] ?? null) }}">
                                             {{ $pendaftar['jalur'] }}
                                         </span>
                                     </td>
@@ -273,7 +273,7 @@
                         @foreach($jalurSetujuDaftarUlang as $jalur)
                             <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
                                 <div class="flex items-center">
-                                    <div class="w-3 h-3 rounded-full mr-3" style="background-color: {{ $jalur['warna'] }}"></div>
+                                    <div class="w-3 h-3 rounded-full mr-3" style="background-color: {{ \App\Models\JalurPendaftaran::hexWarna($jalur['warna']) }}"></div>
                                     <span class="text-sm font-medium text-gray-700">{{ $jalur['nama'] }}</span>
                                 </div>
                                 <span class="text-lg font-bold text-gray-900">{{ $jalur['count'] }}</span>
@@ -332,7 +332,7 @@
                     <tr class="hover:bg-gray-50 transition-colors">
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="flex items-center">
-                                <div class="w-3 h-3 rounded-full mr-3" style="background-color: {{ $jalur['warna'] }}"></div>
+                                <div class="w-3 h-3 rounded-full mr-3" style="background-color: {{ \App\Models\JalurPendaftaran::hexWarna($jalur['warna']) }}"></div>
                                 <span class="text-sm font-medium text-gray-900">{{ $jalur['nama'] }}</span>
                             </div>
                         </td>

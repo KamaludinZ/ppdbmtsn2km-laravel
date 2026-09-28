@@ -34,26 +34,10 @@
 <section class="mb-6 space-y-4" aria-label="Rekap daftar ulang">
     {{-- Ringkasan --}}
     <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div class="bg-white rounded-xl border border-gray-200 p-4 min-w-0">
-            <p class="text-xs font-medium text-gray-500">Wajib Daftar Ulang</p>
-            <p class="mt-1 text-2xl font-bold text-gray-900 tabular-nums">{{ number_format($total) }}</p>
-            <p class="mt-1 text-xs text-gray-500">Pendaftar lulus / diterima</p>
-        </div>
-        <div class="bg-white rounded-xl border border-emerald-200 p-4 min-w-0">
-            <p class="text-xs font-medium text-emerald-700">{{ $judul['selesai'] }}</p>
-            <p class="mt-1 text-2xl font-bold text-emerald-700 tabular-nums">{{ number_format($selesai) }}</p>
-            <p class="mt-1 text-xs text-gray-500">{{ $total > 0 ? round($selesai / $total * 100) : 0 }}% dari wajib</p>
-        </div>
-        <div class="bg-white rounded-xl border border-amber-200 p-4 min-w-0">
-            <p class="text-xs font-medium text-amber-700">{{ $judul['belum'] }}</p>
-            <p class="mt-1 text-2xl font-bold text-amber-700 tabular-nums">{{ number_format(max($total - $selesai, 0)) }}</p>
-            <p class="mt-1 text-xs text-gray-500">Termasuk belum konfirmasi</p>
-        </div>
-        <div class="bg-white rounded-xl border border-gray-200 p-4 min-w-0">
-            <p class="text-xs font-medium text-gray-500">Total Pendaftar</p>
-            <p class="mt-1 text-2xl font-bold text-gray-900 tabular-nums">{{ number_format((int) ($stats['total_pendaftar'] ?? $total)) }}</p>
-            <p class="mt-1 text-xs text-gray-500">Semua status pendaftaran</p>
-        </div>
+        <x-stat-card color="blue" label="Wajib Daftar Ulang" :value="$total" sub="Pendaftar lulus / diterima" />
+        <x-stat-card color="emerald" :label="$judul['selesai']" :value="$selesai" :sub="($total > 0 ? round($selesai / $total * 100) : 0) . '% dari wajib'" />
+        <x-stat-card color="amber" :label="$judul['belum']" :value="max($total - $selesai, 0)" sub="Termasuk belum konfirmasi" />
+        <x-stat-card color="gray" label="Total Pendaftar" :value="(int) ($stats['total_pendaftar'] ?? $total)" sub="Semua status pendaftaran" />
     </div>
 
     {{-- Rincian: jumlah semua kategori = Wajib Daftar Ulang --}}
