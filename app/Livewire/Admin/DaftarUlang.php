@@ -892,61 +892,25 @@ class DaftarUlang extends Component
     public function resetPersetujuan($pendaftarId)
     {
         try {
-            $pendaftar = Pendaftar::findOrFail($pendaftarId);
-
-            // Reset status persetujuan ke belum_memilih
-            $pendaftar->update([
-                'status_persetujuan_daftar_ulang' => 'belum_memilih',
-                'setuju_daftar_ulang' => false,
-                'tanggal_pilihan_daftar_ulang' => null,
-            ]);
-
-            // Hapus record daftar ulang jika ada (agar bisa dibuat ulang)
-            if ($pendaftar->daftarUlang) {
-                $pendaftar->daftarUlang->delete();
-            }
-
+            \App\Support\PersetujuanDaftarUlang::reset(Pendaftar::findOrFail($pendaftarId));
             $this->dispatch('saved', message: 'Persetujuan pendaftar berhasil direset. Pendaftar dapat memilih lagi.');
-
-        } catch (\Exception $e) {
-            $this->dispatch('saved', message: 'Gagal reset persetujuan: ' . $e->getMessage());
+        } catch (\Throwable $e) {
+            \Log::error('Gagal reset persetujuan daftar ulang', ['pendaftar_id' => $pendaftarId, 'error' => $e->getMessage()]);
+            $this->dispatch('saved', message: 'Gagal reset persetujuan. Silakan coba lagi.');
         }
     }
 
     public function changeStatusPersetujuan($pendaftarId, $status)
     {
         try {
-            $pendaftar = Pendaftar::findOrFail($pendaftarId);
-
-            // Update status persetujuan
-            $pendaftar->update([
-                'status_persetujuan_daftar_ulang' => $status,
-                'setuju_daftar_ulang' => $status === 'setuju',
-                'tanggal_pilihan_daftar_ulang' => now(),
-            ]);
-
-            // Create or update daftar ulang record if approving
-            if ($status === 'setuju') {
-                DaftarUlangModel::firstOrCreate(
-                    ['pendaftar_id' => $pendaftarId],
-                    ['status' => 'menunggu']
-                );
-            } elseif ($status === 'tidak_setuju' && $pendaftar->daftarUlang) {
-                // Delete daftar ulang record if rejecting
-                $pendaftar->daftarUlang->delete();
-            }
-
-            $statusLabels = [
-                'belum_memilih' => 'Belum Memilih',
-                'setuju' => 'Setuju',
-                'tidak_setuju' => 'Tidak Melanjutkan'
-            ];
-            $statusLabel = $statusLabels[$status] ?? $status;
-
-            $this->dispatch('saved', message: "Status persetujuan berhasil diubah menjadi {$statusLabel}.");
-
-        } catch (\Exception $e) {
-            $this->dispatch('saved', message: 'Gagal mengubah status persetujuan: ' . $e->getMessage());
+            \App\Support\PersetujuanDaftarUlang::ubahOlehPetugas(Pendaftar::findOrFail($pendaftarId), $status);
+            $label = \App\Support\PersetujuanDaftarUlang::label($status);
+            $this->dispatch('saved', message: "Status persetujuan berhasil diubah menjadi {$label}.");
+        } catch (\RuntimeException $e) {
+            $this->dispatch('saved', message: $e->getMessage());
+        } catch (\Throwable $e) {
+            \Log::error('Gagal mengubah persetujuan daftar ulang', ['pendaftar_id' => $pendaftarId, 'status' => $status, 'error' => $e->getMessage()]);
+            $this->dispatch('saved', message: 'Gagal mengubah status persetujuan. Silakan coba lagi.');
         }
     }
 

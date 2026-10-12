@@ -71,8 +71,8 @@ class DaftarUlangUkuranSheet implements FromQuery, WithHeadings, WithMapping, Wi
             $seragam->tinggi_badan ? $seragam->tinggi_badan . ' cm' : '-',
             $seragam->berat_badan ? $seragam->berat_badan . ' kg' : '-',
             $paketName, // Nama paket (readable)
-            $this->getStatusPersetujuanLabel($pendaftar->status_persetujuan_daftar_ulang),
-            $pendaftar->alasan_tidak_setuju ?? '-',
+            \App\Support\PersetujuanDaftarUlang::label(\App\Support\PersetujuanDaftarUlang::status($pendaftar)),
+            \App\Support\PersetujuanDaftarUlang::status($pendaftar) === 'tidak_setuju' ? ($pendaftar->alasan_tidak_setuju ?: '(tidak dicatat)') : '-',
             $seragam->ukuran_jas ?? '-',
             $seragam->ukuran_baju_olahraga ?? '-',
             $seragam->ukuran_celana_olahraga ?? '-',

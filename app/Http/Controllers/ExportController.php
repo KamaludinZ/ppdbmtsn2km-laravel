@@ -34,6 +34,11 @@ class ExportController extends Controller
             'date' => date('d F Y'),
             'periode' => Setting::get('tahun_pelajaran', date('Y') . '/' . (date('Y') + 1)),
             'jalurStats' => $jalurStats,
+            'persetujuanJalur' => \App\Support\RekapPendaftaran::persetujuanPerJalur([
+                'jalur' => $jalurId,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ]),
             // Identitas Cetak (Kop PDF)
             'printLogoLeft' => Setting::get('print_logo_left', ''),
             'printLogoRight' => Setting::get('print_logo_right', ''),

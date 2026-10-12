@@ -101,7 +101,15 @@ class Laporan extends Component
         $data = match ($this->activeTab) {
             'pendaftaran' => $this->dataPendaftaran(),
             'data_lengkap' => ['dataLengkapStats' => $this->getDataLengkapStats()],
-            'daftar_ulang' => ['rekapStats' => RekapDaftarUlang::statsTab('madrasah', $this->filterRekap())],
+            'daftar_ulang' => [
+                'rekapStats' => RekapDaftarUlang::statsTab('madrasah', $this->filterRekap()),
+                'tidakMelanjutkan' => RekapDaftarUlang::tidakMelanjutkan($this->filterRekap()),
+                'diLuarWajib' => RekapDaftarUlang::queryDiLuarWajib($this->filterRekap())
+                    ->with('jalurPendaftaran:id,nama')
+                    ->orderBy('nama_lengkap')
+                    ->limit(50)
+                    ->get(['id', 'nomor_pendaftaran', 'nama_lengkap', 'status_pendaftaran', 'status_persetujuan_daftar_ulang', 'setuju_daftar_ulang', 'jalur_pendaftaran_id']),
+            ],
             'daftar_ulang_seragam' => ['rekapStats' => RekapDaftarUlang::statsTab('seragam', $this->filterRekap())],
             'seragam' => ['rekapStats' => RekapDaftarUlang::statsTab('ukuran', $this->filterRekap())],
             'tes_psikologi' => ['tesPsikologiStats' => $this->getTesPsikologiStats()],
@@ -133,6 +141,7 @@ class Laporan extends Component
         return [
             'stats' => RekapPendaftaran::ringkasan($this->filterPendaftaran()),
             'jalurStats' => RekapPendaftaran::perJalur($this->filterPendaftaran()),
+            'persetujuanJalur' => RekapPendaftaran::persetujuanPerJalur($this->filterPendaftaran()),
             'statistikTahun' => StatistikTahun::with('jalurStats')->orderBy('tahun', 'desc')->get(),
         ];
     }

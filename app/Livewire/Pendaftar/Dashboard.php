@@ -668,58 +668,30 @@ class Dashboard extends Component
     public function setujuDaftarUlang()
     {
         try {
-            // Hanya bisa setuju jika status data disetujui (lulus)
-            if (!in_array($this->pendaftar->status_pendaftaran, ['lulus', 'diterima'])) {
-                $this->dispatch('statusUpdated', [
-                    'type' => 'error',
-                    'message' => 'Hanya pendaftar dengan status LULUS yang dapat menyetujui daftar ulang'
-                ]);
-                return;
-            }
-
-            // Jika sudah memilih (setuju atau tidak setuju), tidak bisa memilih lagi
-            if ($this->pendaftar->status_persetujuan_daftar_ulang && $this->pendaftar->status_persetujuan_daftar_ulang !== 'belum_memilih') {
-                $this->dispatch('statusUpdated', [
-                    'type' => 'info',
-                    'message' => 'Anda sudah membuat pilihan untuk daftar ulang sebelumnya'
-                ]);
-                return;
-            }
-
-            // Update status persetujuan
-            $this->pendaftar->update([
-                'setuju_daftar_ulang' => true,
-                'status_persetujuan_daftar_ulang' => 'setuju',
-                'tanggal_pilihan_daftar_ulang' => now(),
-            ]);
-
-            // Create record daftar ulang
-            \App\Models\DaftarUlang::create([
-                'pendaftar_id' => $this->pendaftar->id,
-                'status' => 'belum_diisi',
-                'batas_daftar_ulang' => now()->addMonths(2),
-            ]);
-
-            // Refresh data
-            $this->pendaftar = $this->pendaftar->fresh();
+            $this->pendaftar = \App\Support\PersetujuanDaftarUlang::pilihSetuju($this->pendaftar);
 
             $this->dispatch('statusUpdated', [
                 'type' => 'success',
                 'message' => 'Terima kasih! Persetujuan daftar ulang Anda telah tercatat. Silakan lengkapi persyaratan daftar ulang segera.'
             ]);
-
-        } catch (\Exception $e) {
+        } catch (\RuntimeException $e) {
+            // Pesan aturan (bukan lulus / sudah memilih) aman ditampilkan apa adanya
+            $this->pendaftar = $this->pendaftar->fresh();
+            $this->dispatch('statusUpdated', ['type' => 'info', 'message' => $e->getMessage()]);
+        } catch (\Throwable $e) {
+            \Log::error('Gagal menyimpan persetujuan daftar ulang', ['pendaftar_id' => $this->pendaftar->id, 'error' => $e->getMessage()]);
             $this->dispatch('statusUpdated', [
                 'type' => 'error',
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Pilihan belum tersimpan karena gangguan sistem. Silakan coba lagi beberapa saat lagi.'
             ]);
         }
     }
 
     public function showModalTidakSetuju()
     {
-        // Hanya bisa memilih jika status data disetujui (lulus)
-        if (!in_array($this->pendaftar->status_pendaftaran, ['lulus', 'diterima'])) {
+        $this->pendaftar = $this->pendaftar->fresh();
+
+        if (!\App\Support\PersetujuanDaftarUlang::wajibMemilih($this->pendaftar)) {
             $this->dispatch('statusUpdated', [
                 'type' => 'error',
                 'message' => 'Hanya pendaftar dengan status LULUS yang dapat membuat pilihan daftar ulang'
@@ -727,8 +699,7 @@ class Dashboard extends Component
             return;
         }
 
-        // Jika sudah memilih (setuju atau tidak setuju), tidak bisa memilih lagi
-        if ($this->pendaftar->status_persetujuan_daftar_ulang && $this->pendaftar->status_persetujuan_daftar_ulang !== 'belum_memilih') {
+        if (\App\Support\PersetujuanDaftarUlang::status($this->pendaftar) !== 'belum_memilih') {
             $this->dispatch('statusUpdated', [
                 'type' => 'info',
                 'message' => 'Anda sudah membuat pilihan untuk daftar ulang sebelumnya'
@@ -736,7 +707,7 @@ class Dashboard extends Component
             return;
         }
 
-        // Tampilkan modal alasan
+        $this->resetErrorBag();
         $this->showModalAlasan = true;
     }
 
@@ -749,53 +720,36 @@ class Dashboard extends Component
 
     public function tidakSetujuDaftarUlang()
     {
+        $this->validate([
+            'alasanTidakSetuju' => 'required|string|max:200',
+            'alasanLainnya' => 'required_if:alasanTidakSetuju,lainnya|nullable|string|max:' . \App\Support\PersetujuanDaftarUlang::ALASAN_MAKS,
+        ], [
+            'alasanTidakSetuju.required' => 'Silakan pilih alasan mengapa Anda tidak melanjutkan daftar ulang.',
+            'alasanLainnya.required_if' => 'Silakan isi alasan lainnya.',
+            'alasanLainnya.max' => 'Alasan maksimal ' . \App\Support\PersetujuanDaftarUlang::ALASAN_MAKS . ' karakter.',
+        ]);
+
+        $alasanFinal = $this->alasanTidakSetuju === 'lainnya' ? $this->alasanLainnya : $this->alasanTidakSetuju;
+
         try {
-            // Validasi alasan
-            $this->validate([
-                'alasanTidakSetuju' => 'required',
-                'alasanLainnya' => 'required_if:alasanTidakSetuju,lainnya',
-            ], [
-                'alasanTidakSetuju.required' => 'Silakan pilih alasan mengapa Anda tidak melanjutkan daftar ulang.',
-                'alasanLainnya.required_if' => 'Silakan isi alasan lainnya.',
-            ]);
-
-            // Tentukan alasan final
-            $alasanFinal = $this->alasanTidakSetuju === 'lainnya'
-                ? $this->alasanLainnya
-                : $this->alasanTidakSetuju;
-
-            // Update status persetujuan
-            $this->pendaftar->update([
-                'setuju_daftar_ulang' => false,
-                'status_persetujuan_daftar_ulang' => 'tidak_setuju',
-                'alasan_tidak_setuju' => $alasanFinal,
-                'tanggal_pilihan_daftar_ulang' => now(),
-            ]);
-
-            // Create record daftar ulang untuk mencatat keputusan tidak lanjut
-            // Status 'selesai' agar tidak menggantung sebagai proses aktif, dengan catatan jelas
-            \App\Models\DaftarUlang::create([
-                'pendaftar_id' => $this->pendaftar->id,
-                'status' => 'selesai',
-                'catatan' => 'Pendaftar memilih untuk TIDAK MELANJUTKAN daftar ulang. Alasan: ' . $alasanFinal,
-                'batas_daftar_ulang' => now(), // Selesai sekarang
-            ]);
-
-            // Close modal
+            // Tidak lagi membuat record daftar_ulang berstatus "selesai" (ditolak database dan
+            // membuat pilihan tersimpan setengah). Keputusan & alasan cukup dicatat di data pendaftar.
+            $this->pendaftar = \App\Support\PersetujuanDaftarUlang::pilihTidakSetuju($this->pendaftar, $alasanFinal);
             $this->closeModalAlasan();
-
-            // Refresh data
-            $this->pendaftar = $this->pendaftar->fresh();
 
             $this->dispatch('statusUpdated', [
                 'type' => 'info',
                 'message' => 'Pilihan Anda telah tercatat. Terima kasih atas partisipasi Anda dalam proses seleksi ini.'
             ]);
-
-        } catch (\Exception $e) {
+        } catch (\RuntimeException $e) {
+            $this->pendaftar = $this->pendaftar->fresh();
+            $this->closeModalAlasan();
+            $this->dispatch('statusUpdated', ['type' => 'info', 'message' => $e->getMessage()]);
+        } catch (\Throwable $e) {
+            \Log::error('Gagal menyimpan pilihan tidak melanjutkan daftar ulang', ['pendaftar_id' => $this->pendaftar->id, 'error' => $e->getMessage()]);
             $this->dispatch('statusUpdated', [
                 'type' => 'error',
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Pilihan belum tersimpan karena gangguan sistem. Silakan coba lagi beberapa saat lagi.'
             ]);
         }
     }

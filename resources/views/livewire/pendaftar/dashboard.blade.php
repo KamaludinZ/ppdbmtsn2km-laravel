@@ -249,9 +249,10 @@
         </div>
     @endif
 
-    <!-- Persetujuan Daftar Ulang (Only for LULUS) -->
-    @if($pendaftar->status_pendaftaran === 'lulus')
-        @if(!$pendaftar->status_persetujuan_daftar_ulang || $pendaftar->status_persetujuan_daftar_ulang === 'belum_memilih')
+    <!-- Persetujuan Daftar Ulang (pendaftar lulus / diterima) -->
+    @php $persetujuanDU = \App\Support\PersetujuanDaftarUlang::status($pendaftar); @endphp
+    @if(\App\Support\PersetujuanDaftarUlang::wajibMemilih($pendaftar))
+        @if($persetujuanDU === 'belum_memilih')
             <div class="bg-gradient-to-r from-amber-500 to-orange-600 rounded-lg shadow-lg p-8 mb-8 text-white border-4 border-yellow-400 animate-pulse">
                 <div class="flex items-start justify-between">
                     <div class="flex-1">
@@ -287,7 +288,7 @@
                             <button
                                 wire:click="setujuDaftarUlang"
                                 wire:loading.attr="disabled"
-                                @if($pendaftar->status_persetujuan_daftar_ulang && $pendaftar->status_persetujuan_daftar_ulang !== 'belum_memilih') disabled @endif
+                                @if($persetujuanDU !== 'belum_memilih') disabled @endif
                                 onclick="return confirm('Apakah Anda yakin ingin menyetujui daftar ulang? Setelah setuju, Anda perlu melengkapi semua persyaratan daftar ulang.')"
                                 class="bg-white text-orange-600 px-8 py-3 rounded-lg font-bold text-lg hover:bg-yellow-100 transition transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
                                 <span wire:loading.remove wire:target="setujuDaftarUlang">✓ Saya Setuju Daftar Ulang</span>
@@ -296,7 +297,7 @@
                             <button
                                 wire:click="showModalTidakSetuju"
                                 wire:loading.attr="disabled"
-                                @if($pendaftar->status_persetujuan_daftar_ulang && $pendaftar->status_persetujuan_daftar_ulang !== 'belum_memilih') disabled @endif
+                                @if($persetujuanDU !== 'belum_memilih') disabled @endif
                                 class="bg-gray-200 text-gray-700 px-8 py-3 rounded-lg font-bold text-lg hover:bg-gray-300 transition transform hover:scale-105 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed">
                                 <span wire:loading.remove wire:target="showModalTidakSetuju">✗ Tidak Melanjutkan Daftar Ulang</span>
                                 <span wire:loading wire:target="showModalTidakSetuju">Memproses...</span>
@@ -312,7 +313,7 @@
                 </div>
             </div>
         @else
-            @if($pendaftar->status_persetujuan_daftar_ulang === 'setuju')
+            @if($persetujuanDU === 'setuju')
                 <div class="bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg shadow-lg p-6 mb-8 text-white">
                     <div class="flex items-center justify-between">
                         <div>
@@ -332,7 +333,7 @@
                     </div>
                 </div>
             </div>
-            @elseif($pendaftar->status_persetujuan_daftar_ulang === 'tidak_setuju')
+            @elseif($persetujuanDU === 'tidak_setuju')
                 <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg shadow-lg p-6 mb-8 text-white">
                     <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-6">
                         <div class="flex-1">
@@ -1156,37 +1157,37 @@
 
                                 <div class="space-y-3">
                                     <label class="flex items-start p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition {{ $alasanTidakSetuju == 'Diterima di Sekolah Lain' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
-                                        <input type="radio" wire:model="alasanTidakSetuju" value="Diterima di Sekolah Lain" class="mt-1 text-emerald-600 focus:ring-emerald-500">
+                                        <input type="radio" wire:model.live="alasanTidakSetuju" value="Diterima di Sekolah Lain" class="mt-1 text-emerald-600 focus:ring-emerald-500">
                                         <span class="ml-3 text-sm font-medium text-gray-900">Diterima di Sekolah Lain</span>
                                     </label>
 
                                     <label class="flex items-start p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition {{ $alasanTidakSetuju == 'Perubahan Domisili atau Pindah Rumah' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
-                                        <input type="radio" wire:model="alasanTidakSetuju" value="Perubahan Domisili atau Pindah Rumah" class="mt-1 text-emerald-600 focus:ring-emerald-500">
+                                        <input type="radio" wire:model.live="alasanTidakSetuju" value="Perubahan Domisili atau Pindah Rumah" class="mt-1 text-emerald-600 focus:ring-emerald-500">
                                         <span class="ml-3 text-sm font-medium text-gray-900">Perubahan Domisili atau Pindah Rumah</span>
                                     </label>
 
                                     <label class="flex items-start p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition {{ $alasanTidakSetuju == 'Lokasi Sekolah Terlalu Jauh' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
-                                        <input type="radio" wire:model="alasanTidakSetuju" value="Lokasi Sekolah Terlalu Jauh" class="mt-1 text-emerald-600 focus:ring-emerald-500">
+                                        <input type="radio" wire:model.live="alasanTidakSetuju" value="Lokasi Sekolah Terlalu Jauh" class="mt-1 text-emerald-600 focus:ring-emerald-500">
                                         <span class="ml-3 text-sm font-medium text-gray-900">Lokasi Sekolah Terlalu Jauh</span>
                                     </label>
 
                                     <label class="flex items-start p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition {{ $alasanTidakSetuju == 'Tidak Sesuai Peminatan/Jurusan' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
-                                        <input type="radio" wire:model="alasanTidakSetuju" value="Tidak Sesuai Peminatan/Jurusan" class="mt-1 text-emerald-600 focus:ring-emerald-500">
+                                        <input type="radio" wire:model.live="alasanTidakSetuju" value="Tidak Sesuai Peminatan/Jurusan" class="mt-1 text-emerald-600 focus:ring-emerald-500">
                                         <span class="ml-3 text-sm font-medium text-gray-900">Tidak Sesuai Peminatan/Jurusan</span>
                                     </label>
 
                                     <label class="flex items-start p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition {{ $alasanTidakSetuju == 'Faktor Biaya/Ekonomi' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
-                                        <input type="radio" wire:model="alasanTidakSetuju" value="Faktor Biaya/Ekonomi" class="mt-1 text-emerald-600 focus:ring-emerald-500">
+                                        <input type="radio" wire:model.live="alasanTidakSetuju" value="Faktor Biaya/Ekonomi" class="mt-1 text-emerald-600 focus:ring-emerald-500">
                                         <span class="ml-3 text-sm font-medium text-gray-900">Faktor Biaya/Ekonomi</span>
                                     </label>
 
                                     <label class="flex items-start p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition {{ $alasanTidakSetuju == 'Kesehatan atau Alasan Pribadi Keluarga' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
-                                        <input type="radio" wire:model="alasanTidakSetuju" value="Kesehatan atau Alasan Pribadi Keluarga" class="mt-1 text-emerald-600 focus:ring-emerald-500">
+                                        <input type="radio" wire:model.live="alasanTidakSetuju" value="Kesehatan atau Alasan Pribadi Keluarga" class="mt-1 text-emerald-600 focus:ring-emerald-500">
                                         <span class="ml-3 text-sm font-medium text-gray-900">Kesehatan atau Alasan Pribadi Keluarga</span>
                                     </label>
 
                                     <label class="flex items-start p-3 border-2 rounded-lg cursor-pointer hover:bg-gray-50 transition {{ $alasanTidakSetuju == 'lainnya' ? 'border-emerald-500 bg-emerald-50' : 'border-gray-300' }}">
-                                        <input type="radio" wire:model="alasanTidakSetuju" value="lainnya" class="mt-1 text-emerald-600 focus:ring-emerald-500">
+                                        <input type="radio" wire:model.live="alasanTidakSetuju" value="lainnya" class="mt-1 text-emerald-600 focus:ring-emerald-500">
                                         <span class="ml-3 text-sm font-medium text-gray-900">Lainnya (Isi sendiri)</span>
                                     </label>
 
@@ -1194,6 +1195,7 @@
                                         <div class="ml-8">
                                             <textarea
                                                 wire:model="alasanLainnya"
+                                                maxlength="500"
                                                 rows="3"
                                                 class="w-full rounded-md border-gray-300 shadow-sm focus:border-emerald-500 focus:ring focus:ring-emerald-200"
                                                 placeholder="Tuliskan alasan Anda..."></textarea>

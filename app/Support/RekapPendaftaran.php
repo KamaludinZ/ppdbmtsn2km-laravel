@@ -106,6 +106,57 @@ class RekapPendaftaran
     /**
      * Pilihan jalur untuk filter: jalur aktif + jalur nonaktif yang masih punya pendaftar.
      */
+    /**
+     * Persetujuan melanjutkan daftar ulang per jalur, dari pendaftar lulus/diterima.
+     * Aturan status sama dengan PersetujuanDaftarUlang::status(): data lama yang hanya punya
+     * setuju_daftar_ulang = true dihitung setuju. Setiap pendaftar masuk tepat satu kolom,
+     * jadi setuju + tidak + belum = jumlah lulus/diterima.
+     *
+     * @return array{jalur: Collection, total: array}
+     */
+    public static function persetujuanPerJalur(array $filter = []): array
+    {
+        $belumPilih = "(status_persetujuan_daftar_ulang IS NULL OR status_persetujuan_daftar_ulang NOT IN ('setuju','tidak_setuju'))";
+        $setuju = "(status_persetujuan_daftar_ulang = 'setuju' OR ({$belumPilih} AND setuju_daftar_ulang = true))";
+
+        $baris = self::query(array_merge($filter, ['status' => RekapDaftarUlang::STATUS_WAJIB]))
+            ->select('jalur_pendaftaran_id')
+            ->selectRaw('COUNT(*) AS wajib')
+            ->selectRaw("SUM(CASE WHEN {$setuju} THEN 1 ELSE 0 END) AS setuju")
+            ->selectRaw("SUM(CASE WHEN status_persetujuan_daftar_ulang = 'tidak_setuju' THEN 1 ELSE 0 END) AS tidak_setuju")
+            ->groupBy('jalur_pendaftaran_id')
+            ->get()
+            ->keyBy('jalur_pendaftaran_id');
+
+        $persen = fn (int $n, int $dari) => $dari > 0 ? round($n / $dari * 100, 1) : 0;
+        $susun = function (int $wajib, int $setuju, int $tidak) use ($persen) {
+            $belum = $wajib - $setuju - $tidak;
+
+            return [
+                'wajib' => $wajib,
+                'setuju' => $setuju, 'setuju_persen' => $persen($setuju, $wajib),
+                'tidak_setuju' => $tidak, 'tidak_setuju_persen' => $persen($tidak, $wajib),
+                'belum_memilih' => $belum, 'belum_memilih_persen' => $persen($belum, $wajib),
+            ];
+        };
+
+        $jalur = JalurPendaftaran::query()
+            ->where(fn ($q) => $q->where('aktif', true)->orWhereIn('id', $baris->keys()))
+            ->when($filter['jalur'] ?? null, fn ($q, $v) => $q->where('id', $v))
+            ->ordered()
+            ->get(['id', 'nama', 'warna', 'aktif'])
+            ->map(function ($j) use ($baris, $susun) {
+                $row = $baris->get($j->id);
+
+                return ['nama' => $j->nama, 'warna' => $j->warna, 'nonaktif' => !$j->aktif]
+                    + $susun((int) ($row->wajib ?? 0), (int) ($row->setuju ?? 0), (int) ($row->tidak_setuju ?? 0));
+            });
+
+        $total = $susun((int) $baris->sum('wajib'), (int) $baris->sum('setuju'), (int) $baris->sum('tidak_setuju'));
+
+        return ['jalur' => $jalur, 'total' => $total];
+    }
+
     public static function pilihanJalur(): Collection
     {
         $dipakai = Pendaftar::query()->distinct()->pluck('jalur_pendaftaran_id')->filter();

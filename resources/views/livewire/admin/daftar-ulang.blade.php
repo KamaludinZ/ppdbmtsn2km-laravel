@@ -1468,7 +1468,7 @@
                                             'setuju' => '✓ Setuju',
                                             'tidak_setuju' => '✗ Tidak Melanjutkan',
                                         ];
-                                        $statusPersetujuan = $item->status_persetujuan_daftar_ulang ?? 'belum_memilih';
+                                        $statusPersetujuan = \App\Support\PersetujuanDaftarUlang::status($item);
                                         $persetujuanColor = $persetujuanColors[$statusPersetujuan] ?? 'bg-gray-100 text-gray-800';
                                         $persetujuanLabel = $persetujuanLabels[$statusPersetujuan] ?? 'Belum Memilih';
                                     @endphp
@@ -1478,6 +1478,9 @@
                                         </span>
                                         @if($item->tanggal_pilihan_daftar_ulang)
                                             <span class="text-xs text-gray-500">{{ $item->tanggal_pilihan_daftar_ulang->format('d/m/Y H:i') }}</span>
+                                        @endif
+                                        @if($statusPersetujuan === 'tidak_setuju')
+                                            <span class="max-w-[14rem] whitespace-normal text-xs text-red-700" title="{{ $item->alasan_tidak_setuju }}">Alasan: {{ \Illuminate\Support\Str::limit($item->alasan_tidak_setuju ?: 'tidak dicatat', 80) }}</span>
                                         @endif
                                     </div>
                                 </td>
@@ -1500,7 +1503,7 @@
                                              class="absolute right-0 z-[100] mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-md bg-white shadow-xl ring-1 ring-black/5 focus:outline-none" x-cloak>
                                             <div class="py-1">
                                                 <div class="px-4 py-2 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Pilih Status</div>
-                                                <button wire:click="changeStatusPersetujuan({{ $item->id }}, 'belum_memilih')"
+                                                <button wire:click="changeStatusPersetujuan({{ $item->id }}, 'belum_memilih')" wire:confirm="Kembalikan pendaftar ini ke 'Belum Memilih'? Pendaftar harus memilih ulang dari dashboard."
                                                         @click="open = false"
                                                         class="group flex w-full items-center px-4 py-2 text-xs text-gray-700 hover:bg-gray-50 hover:text-emerald-600 transition-colors">
                                                     <span class="mr-3 flex h-2 w-2 rounded-full bg-gray-400 group-hover:animate-pulse"></span>
@@ -1512,7 +1515,7 @@
                                                     <span class="mr-3 flex h-2 w-2 rounded-full bg-green-500 group-hover:ring-2 group-hover:ring-green-300"></span>
                                                     Setuju Daftar Ulang
                                                 </button>
-                                                <button wire:click="changeStatusPersetujuan({{ $item->id }}, 'tidak_setuju')"
+                                                <button wire:click="changeStatusPersetujuan({{ $item->id }}, 'tidak_setuju')" wire:confirm="Tandai pendaftar ini TIDAK MELANJUTKAN daftar ulang?"
                                                         @click="open = false"
                                                         class="group flex w-full items-center px-4 py-2 text-xs text-gray-700 hover:bg-red-50 hover:text-red-700 transition-colors">
                                                     <span class="mr-3 flex h-2 w-2 rounded-full bg-red-500 group-hover:ring-2 group-hover:ring-red-300"></span>

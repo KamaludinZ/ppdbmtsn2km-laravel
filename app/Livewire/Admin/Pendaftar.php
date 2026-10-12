@@ -418,30 +418,18 @@ class Pendaftar extends Component
     {
         try {
             $pendaftar = PendaftarModel::findOrFail($id);
-
-            // Batalkan persetujuan daftar ulang
-            // Kolom tanggal_setuju_daftar_ulang sudah di-rename menjadi tanggal_pilihan_daftar_ulang;
-            // status persetujuan juga dikembalikan agar rekap daftar ulang tetap konsisten.
-            $pendaftar->update([
-                'setuju_daftar_ulang' => false,
-                'status_persetujuan_daftar_ulang' => 'belum_memilih',
-                'tanggal_pilihan_daftar_ulang' => null,
-            ]);
-
-            // Hapus record daftar ulang jika ada
-            if ($pendaftar->daftarUlang) {
-                $pendaftar->daftarUlang->delete();
-            }
+            // Kembali ke "belum memilih"; bukti/surat yang sudah diunggah tidak ikut dihapus
+            \App\Support\PersetujuanDaftarUlang::reset($pendaftar);
 
             $this->dispatch('statusUpdated', [
                 'type' => 'success',
                 'message' => "Persetujuan daftar ulang {$pendaftar->nama_lengkap} berhasil dibatalkan"
             ]);
-
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
+            \Log::error('Gagal membatalkan persetujuan daftar ulang', ['pendaftar_id' => $id, 'error' => $e->getMessage()]);
             $this->dispatch('statusUpdated', [
                 'type' => 'error',
-                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+                'message' => 'Gagal membatalkan persetujuan. Silakan coba lagi.'
             ]);
         }
     }

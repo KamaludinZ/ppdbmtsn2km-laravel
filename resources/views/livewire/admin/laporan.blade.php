@@ -169,6 +169,8 @@
                     </div>
                 </section>
 
+                @include('livewire.admin.partials.laporan-persetujuan-jalur')
+
                 {{-- Statistik per tahun --}}
                 <section class="rounded-xl border border-gray-200 bg-white">
                     <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">
@@ -352,6 +354,10 @@
                     'filterProperty' => $konfig['properti'],
                     'clickLabel' => 'klik kategori untuk memfilter export',
                 ])
+
+                @if($activeTab === 'daftar_ulang')
+                    @include('livewire.admin.partials.laporan-persetujuan')
+                @endif
 
                 <p class="text-xs text-gray-500">{{ $konfig['isi'] }}</p>
             </div>
