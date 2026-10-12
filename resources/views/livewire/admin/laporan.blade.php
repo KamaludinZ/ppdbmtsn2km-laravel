@@ -169,6 +169,8 @@
                     </div>
                 </section>
 
+                @include('livewire.admin.partials.laporan-persetujuan-jalur')
+
                 {{-- Statistik per tahun --}}
                 <section class="rounded-xl border border-gray-200 bg-white">
                     <div class="flex flex-wrap items-center justify-between gap-3 border-b border-gray-100 px-5 py-4">

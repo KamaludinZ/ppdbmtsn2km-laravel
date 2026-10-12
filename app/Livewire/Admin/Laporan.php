@@ -141,6 +141,7 @@ class Laporan extends Component
         return [
             'stats' => RekapPendaftaran::ringkasan($this->filterPendaftaran()),
             'jalurStats' => RekapPendaftaran::perJalur($this->filterPendaftaran()),
+            'persetujuanJalur' => RekapPendaftaran::persetujuanPerJalur($this->filterPendaftaran()),
             'statistikTahun' => StatistikTahun::with('jalurStats')->orderBy('tahun', 'desc')->get(),
         ];
     }
