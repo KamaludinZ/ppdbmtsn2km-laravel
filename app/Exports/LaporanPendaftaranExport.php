@@ -11,17 +11,20 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use Maatwebsite\Excel\Concerns\WithColumnWidths;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\ShouldAutoSize;
+use Maatwebsite\Excel\Concerns\WithStrictNullComparison;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use PhpOffice\PhpSpreadsheet\Style\Fill;
 use PhpOffice\PhpSpreadsheet\Style\Border;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
 
-class LaporanPendaftaranExport implements FromCollection, WithHeadings, WithStyles, WithTitle, ShouldAutoSize
+class LaporanPendaftaranExport implements FromCollection, WithHeadings, WithStyles, WithTitle, ShouldAutoSize, WithStrictNullComparison
 {
     protected $jalurId;
     protected $status;
     protected $startDate;
     protected $endDate;
+    /** Nomor baris (1-based) tabel persetujuan, diisi saat collection() untuk styles() */
+    protected $barisPersetujuan = ['judul' => null, 'header' => null, 'total' => null];
 
     public function __construct($jalurId = null, $status = null, $startDate = null, $endDate = null)
     {
@@ -188,6 +191,29 @@ class LaporanPendaftaranExport implements FromCollection, WithHeadings, WithStyl
             ]);
         }
 
+        // Persetujuan daftar ulang per jalur (dari pendaftar lulus/diterima)
+        $persetujuan = \App\Support\RekapPendaftaran::persetujuanPerJalur([
+            'jalur' => $this->jalurId,
+            'start_date' => $this->startDate,
+            'end_date' => $this->endDate,
+        ]);
+        $data->push(['']);
+        $data->push(['PERSETUJUAN DAFTAR ULANG PER JALUR (dari pendaftar Lulus/Diterima)']);
+        $this->barisPersetujuan['judul'] = $data->count();
+        $data->push(['Jalur', 'Lulus/Diterima', 'Setuju', '% Setuju', 'Tidak Melanjutkan', '% Tidak', 'Belum Memilih', '% Belum']);
+        $this->barisPersetujuan['header'] = $data->count();
+        $baris = fn ($nama, $r) => [
+            $nama, $r['wajib'],
+            $r['setuju'], $r['setuju_persen'] . '%',
+            $r['tidak_setuju'], $r['tidak_setuju_persen'] . '%',
+            $r['belum_memilih'], $r['belum_memilih_persen'] . '%',
+        ];
+        foreach ($persetujuan['jalur'] as $j) {
+            $data->push($baris($j['nama'] . ($j['nonaktif'] ? ' (nonaktif)' : ''), $j));
+        }
+        $data->push($baris('TOTAL', $persetujuan['total']));
+        $this->barisPersetujuan['total'] = $data->count();
+
         // Add footer
         $data->push(['']); // Empty row
         $data->push([
@@ -288,6 +314,25 @@ class LaporanPendaftaranExport implements FromCollection, WithHeadings, WithStyl
                 'bold' => true,
             ],
         ]);
+
+        // Tabel persetujuan daftar ulang per jalur
+        if ($this->barisPersetujuan['judul']) {
+            ['judul' => $j, 'header' => $h, 'total' => $t] = $this->barisPersetujuan;
+            $sheet->mergeCells("A{$j}:H{$j}");
+            $sheet->getStyle("A{$j}")->applyFromArray([
+                'font' => ['bold' => true, 'size' => 12],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'D3D3D3']],
+            ]);
+            $sheet->getStyle("A{$h}:H{$h}")->applyFromArray([
+                'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => '10b981']],
+            ]);
+            $sheet->getStyle("A{$t}:H{$t}")->applyFromArray([
+                'font' => ['bold' => true],
+                'fill' => ['fillType' => Fill::FILL_SOLID, 'startColor' => ['rgb' => 'F3F4F6']],
+            ]);
+            $sheet->getStyle("B{$h}:H{$t}")->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
+        }
 
         return [];
     }

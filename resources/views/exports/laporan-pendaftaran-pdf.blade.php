@@ -221,5 +221,56 @@
         </tfoot>
     </table>
 
+    @isset($persetujuanJalur)
+        @php $pt = $persetujuanJalur['total']; @endphp
+        <!-- Persetujuan daftar ulang per jalur -->
+        <div class="section-title" style="margin-top: 18px;">PERSETUJUAN DAFTAR ULANG PER JALUR (DARI PENDAFTAR LULUS/DITERIMA)</div>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 3%;">No</th>
+                    <th style="width: 25%;">Jalur Pendaftaran</th>
+                    <th style="width: 12%;">Lulus/Diterima</th>
+                    <th style="width: 10%;">Setuju</th>
+                    <th style="width: 8%;">%</th>
+                    <th style="width: 12%;">Tidak Melanjutkan</th>
+                    <th style="width: 8%;">%</th>
+                    <th style="width: 12%;">Belum Memilih</th>
+                    <th style="width: 8%;">%</th>
+                </tr>
+            </thead>
+            <tbody>
+                @forelse($persetujuanJalur['jalur'] as $i => $pj)
+                    <tr>
+                        <td style="text-align: center;">{{ $i + 1 }}</td>
+                        <td>{{ $pj['nama'] }}{{ $pj['nonaktif'] ? ' (nonaktif)' : '' }}</td>
+                        <td style="text-align: center; font-weight: bold;">{{ number_format($pj['wajib']) }}</td>
+                        <td style="text-align: center; color: #059669; font-weight: bold;">{{ number_format($pj['setuju']) }}</td>
+                        <td style="text-align: center;">{{ $pj['setuju_persen'] }}%</td>
+                        <td style="text-align: center; color: #e11d48; font-weight: bold;">{{ number_format($pj['tidak_setuju']) }}</td>
+                        <td style="text-align: center;">{{ $pj['tidak_setuju_persen'] }}%</td>
+                        <td style="text-align: center; color: #4b5563; font-weight: bold;">{{ number_format($pj['belum_memilih']) }}</td>
+                        <td style="text-align: center;">{{ $pj['belum_memilih_persen'] }}%</td>
+                    </tr>
+                @empty
+                    <tr><td colspan="9" style="text-align: center; padding: 20px; color: #999;">Tidak ada data jalur pendaftaran</td></tr>
+                @endforelse
+            </tbody>
+            <tfoot>
+                <tr style="font-weight: bold; background-color: #e5e7eb;">
+                    <td colspan="2" style="text-align: right; padding-right: 10px;">TOTAL</td>
+                    <td style="text-align: center;">{{ number_format($pt['wajib']) }}</td>
+                    <td style="text-align: center;">{{ number_format($pt['setuju']) }}</td>
+                    <td style="text-align: center;">{{ $pt['setuju_persen'] }}%</td>
+                    <td style="text-align: center;">{{ number_format($pt['tidak_setuju']) }}</td>
+                    <td style="text-align: center;">{{ $pt['tidak_setuju_persen'] }}%</td>
+                    <td style="text-align: center;">{{ number_format($pt['belum_memilih']) }}</td>
+                    <td style="text-align: center;">{{ $pt['belum_memilih_persen'] }}%</td>
+                </tr>
+            </tfoot>
+        </table>
+        <p style="font-size: 9px; color: #6b7280; margin-top: 4px;">Persentase dihitung dari jumlah pendaftar Lulus/Diterima pada jalur yang sama. Setuju + Tidak Melanjutkan + Belum Memilih = Lulus/Diterima.</p>
+    @endisset
+
 </body>
 </html>
