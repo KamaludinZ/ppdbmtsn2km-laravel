@@ -93,10 +93,27 @@ Diuji dengan 612 pendaftar (termasuk 101 pendaftar di jalur yang sudah dinonakti
 
 Hasil export diverifikasi: jumlah baris dan kolom "Status Rekap" sama persis dengan angka di layar untuk semua kombinasi filter.
 
+## 6c. Persetujuan melanjutkan daftar ulang (12 Oktober 2026)
+
+| Masalah | Akibat | Perbaikan |
+|---|---|---|
+| Pilihan "Tidak Melanjutkan" membuat record `daftar_ulang` berstatus `selesai` yang ditolak database | Pilihan & alasan tersimpan setengah, pendaftar melihat pesan error | Keputusan dicatat di data pendaftar saja, dalam satu transaksi |
+| Kotak pilihan di dashboard hanya untuk status `lulus` | Pendaftar `diterima` tidak bisa memilih → selalu "belum konfirmasi" | Berlaku untuk lulus **dan** diterima |
+| Halaman daftar ulang hanya untuk `lulus` | Pendaftar `diterima` yang setuju tidak bisa mengisi daftar ulang | Sama: lulus & diterima |
+| Pilihan "Lainnya" tidak memunculkan kolom isian | Pendaftar tidak bisa menulis alasan sendiri | Pilihan alasan langsung diperbarui (`wire:model.live`) |
+| Klik ganda / setuju setelah reset | Record daftar ulang ganda atau error unik | Transaksi + kunci baris, `firstOrCreate` |
+| Ubah/reset oleh admin & panitia tanpa validasi, alasan lama tertinggal, reset menghapus bukti bayar | Data tidak konsisten / hilang | `App\Support\PersetujuanDaftarUlang` dipakai semua role; reset tidak menghapus record yang sudah berisi unggahan |
+| Data lama hanya punya `setuju_daftar_ulang = true` | Terhitung "belum konfirmasi" | Migrasi normalisasi + logika status ternormalisasi |
+| Pendaftar yang sudah memilih lalu statusnya diubah (bukan lulus/diterima) | Hilang dari rekap tanpa diketahui | Peringatan "tidak masuk rekap" + daftar namanya di Laporan |
+
+Laporan → tab Daftar Ulang Madrasah kini menampilkan jumlah Setuju / Tidak Melanjutkan / Belum Memilih (dicek = total wajib),
+ringkasan alasan, dan daftar pendaftar yang tidak melanjutkan. Export menambah kolom "Tanggal Pilihan".
+Diuji dengan 32 skenario otomatis (semua lulus) dan uji browser.
+
 ## 7. Langkah deploy ke production
 
 1. `git pull` branch ini (atau merge PR).
-2. `php artisan view:clear && php artisan route:clear && php artisan config:clear`
+2. `php artisan migrate --force` (normalisasi data persetujuan), lalu `php artisan view:clear && php artisan route:clear && php artisan config:clear`
 3. Pastikan ekstensi PHP **GD** aktif (untuk gambar captcha): `php -m | grep -i gd`
 4. `APP_ENV=production` di `.env` (agar route demo tidak aktif).
 5. Setiap menambah kelas Tailwind baru di view: jalankan `npm run build:css` lalu commit `public/css/app-production-full.css`.

@@ -113,8 +113,8 @@ class DaftarUlangSeragamSheet implements FromQuery, WithHeadings, WithMapping, W
             $pendaftar->jenis_kelamin === 'L' ? 'Laki-laki' : 'Perempuan',
             $pendaftar->telepon_ortu ?? $pendaftar->no_hp ?? '',
             $pendaftar->user->email ?? '',
-            $this->getStatusPersetujuanLabel($pendaftar->status_persetujuan_daftar_ulang),
-            $pendaftar->alasan_tidak_setuju ?? '-',
+            \App\Support\PersetujuanDaftarUlang::label(\App\Support\PersetujuanDaftarUlang::status($pendaftar)),
+            \App\Support\PersetujuanDaftarUlang::status($pendaftar) === 'tidak_setuju' ? ($pendaftar->alasan_tidak_setuju ?: '(tidak dicatat)') : '-',
             $paketName, // Nama paket (readable)
             $opsiName, // Opsi yang dipilih (bisa multi-select dengan +)
             'Rp ' . number_format($opsiAmount, 0, ',', '.'), // Nominal opsi yang dipilih

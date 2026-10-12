@@ -353,6 +353,10 @@
                     'clickLabel' => 'klik kategori untuk memfilter export',
                 ])
 
+                @if($activeTab === 'daftar_ulang')
+                    @include('livewire.admin.partials.laporan-persetujuan')
+                @endif
+
                 <p class="text-xs text-gray-500">{{ $konfig['isi'] }}</p>
             </div>
 

@@ -261,7 +261,7 @@
                                         'setuju' => '✓ Setuju',
                                         'tidak_setuju' => '✗ Tidak Melanjutkan',
                                     ];
-                                    $statusPersetujuan = $item->status_persetujuan_daftar_ulang ?? 'belum_memilih';
+                                    $statusPersetujuan = \App\Support\PersetujuanDaftarUlang::status($item);
                                     $persetujuanColor = $persetujuanColors[$statusPersetujuan] ?? 'bg-gray-100 text-gray-800';
                                     $persetujuanLabel = $persetujuanLabels[$statusPersetujuan] ?? 'Belum Memilih';
                                 @endphp
@@ -271,6 +271,9 @@
                                     </span>
                                     @if($item->tanggal_pilihan_daftar_ulang)
                                         <span class="text-xs text-gray-500">{{ $item->tanggal_pilihan_daftar_ulang->format('d/m/Y H:i') }}</span>
+                                    @endif
+                                    @if($statusPersetujuan === 'tidak_setuju')
+                                        <span class="max-w-[14rem] whitespace-normal text-xs text-red-700" title="{{ $item->alasan_tidak_setuju }}">Alasan: {{ \Illuminate\Support\Str::limit($item->alasan_tidak_setuju ?: 'tidak dicatat', 80) }}</span>
                                     @endif
                                 </div>
                             </td>

@@ -120,15 +120,23 @@ class DaftarUlang extends Component
         // 1. Status = lulus (passed selection test)
         // 2. setuju_daftar_ulang = true (agreed to re-register)
         // 3. Current date >= payment start date
-        if ($this->pendaftar->status_pendaftaran !== 'lulus') {
+        // Lulus maupun diterima sama-sama wajib daftar ulang (sama dengan syarat di dashboard)
+        if (!$this->pendaftar || !\App\Support\PersetujuanDaftarUlang::wajibMemilih($this->pendaftar)) {
             session()->flash('error', 'Halaman daftar ulang hanya dapat diakses oleh pendaftar yang dinyatakan lulus tes seleksi.');
             return redirect()->to('/pendaftar/dashboard');
         }
 
-        if (!$this->pendaftar->setuju_daftar_ulang) {
+        if (\App\Support\PersetujuanDaftarUlang::status($this->pendaftar) !== 'setuju') {
             session()->flash('error', 'Anda harus menyetujui untuk melanjutkan daftar ulang terlebih dahulu.');
             return redirect()->to('/pendaftar/dashboard');
         }
+
+        // Pastikan record daftar ulang ada (data lama bisa saja gagal terbentuk saat menyetujui)
+        \App\Models\DaftarUlang::firstOrCreate(
+            ['pendaftar_id' => $this->pendaftar->id],
+            ['status' => 'belum_diisi', 'batas_daftar_ulang' => now()->addMonths(2)]
+        );
+        $this->pendaftar->load('daftarUlang');
 
         // Load payment start dates
         $madrasahPaymentStart = Setting::get('daftar_ulang_madrasah_payment_start');

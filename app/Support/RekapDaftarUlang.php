@@ -38,7 +38,7 @@ class RekapDaftarUlang
      */
     public static function kategori(Pendaftar $pendaftar, string $jenis = 'madrasah'): string
     {
-        $persetujuan = $pendaftar->status_persetujuan_daftar_ulang ?: 'belum_memilih';
+        $persetujuan = PersetujuanDaftarUlang::status($pendaftar);
 
         if ($persetujuan === 'tidak_setuju') {
             return 'tidak_melanjutkan';
@@ -73,7 +73,7 @@ class RekapDaftarUlang
     public static function pendaftarWajib(array $filter = []): Collection
     {
         return Pendaftar::query()
-            ->select(['id', 'status_pendaftaran', 'status_persetujuan_daftar_ulang', 'jalur_pendaftaran_id', 'jenis_kelamin'])
+            ->select(['id', 'status_pendaftaran', 'status_persetujuan_daftar_ulang', 'setuju_daftar_ulang', 'jalur_pendaftaran_id', 'jenis_kelamin'])
             ->with([
                 'daftarUlang:id,pendaftar_id,status,surat_pernyataan_path',
                 'seragam:id,pendaftar_id,status_seragam,status_ukuran',
@@ -93,6 +93,13 @@ class RekapDaftarUlang
         $stats = self::stats($wajib, $tab === 'ukuran' ? 'ukuran' : ($tab === 'seragam' ? 'seragam' : 'madrasah'));
         $stats['total_pendaftar'] = Pendaftar::count();
         $stats['total_lulus'] = $stats['total'];
+
+        // Pilihan persetujuan apa adanya (jumlahnya = total wajib)
+        $persetujuan = $wajib->countBy(fn ($p) => PersetujuanDaftarUlang::status($p));
+        foreach (array_keys(PersetujuanDaftarUlang::STATUS) as $kunci) {
+            $stats['persetujuan_' . $kunci] = (int) ($persetujuan[$kunci] ?? 0);
+        }
+        $stats['di_luar_wajib'] = self::queryDiLuarWajib($filter)->count();
 
         if ($tab === 'seragam') {
             $ukuran = self::stats($wajib, 'ukuran');
@@ -122,19 +129,64 @@ class RekapDaftarUlang
         $statusIn = fn (array $values) => fn ($q) => $q->whereIn($column, $values);
         $belumAdaProses = fn ($q) => $q->whereDoesntHave($relation, fn ($r) => $r->whereNotNull($column)
             ->whereNotIn($column, ['', 'belum_diisi']));
+
+        // Sama dengan PersetujuanDaftarUlang::status(): data lama dengan setuju_daftar_ulang = true dianggap setuju
+        $belumPilih = fn ($w) => $w->whereNull('status_persetujuan_daftar_ulang')
+            ->orWhereNotIn('status_persetujuan_daftar_ulang', ['setuju', 'tidak_setuju']);
+        $setuju = fn ($q) => $q->where(fn ($w) => $w->where('status_persetujuan_daftar_ulang', 'setuju')
+            ->orWhere(fn ($x) => $x->where($belumPilih)->where('setuju_daftar_ulang', true)));
+        $belumKonfirmasi = fn ($q) => $q->where($belumPilih)
+            ->where(fn ($w) => $w->whereNull('setuju_daftar_ulang')->orWhere('setuju_daftar_ulang', false));
         $bukanTidakSetuju = fn ($q) => $q->where(fn ($w) => $w->whereNull('status_persetujuan_daftar_ulang')
             ->orWhere('status_persetujuan_daftar_ulang', '!=', 'tidak_setuju'));
 
         return match ($kategori) {
             'tidak_melanjutkan' => $query->where('status_persetujuan_daftar_ulang', 'tidak_setuju'),
-            'belum_konfirmasi' => $query->where(fn ($w) => $w->whereNull('status_persetujuan_daftar_ulang')
-                ->orWhereNotIn('status_persetujuan_daftar_ulang', ['setuju', 'tidak_setuju']))->where($belumAdaProses),
-            'belum_mengisi' => $query->where('status_persetujuan_daftar_ulang', 'setuju')->where($belumAdaProses),
+            'belum_konfirmasi' => $query->where($belumKonfirmasi)->where($belumAdaProses),
+            'belum_mengisi' => $query->where($setuju)->where($belumAdaProses),
             'menunggu_verifikasi' => $query->where($bukanTidakSetuju)->whereHas($relation, $statusIn(['menunggu', 'proses'])),
             'perlu_perbaikan' => $query->where($bukanTidakSetuju)->whereHas($relation, $statusIn(['perbaiki', 'perlu_perbaikan'])),
             'ditolak' => $query->where($bukanTidakSetuju)->whereHas($relation, $statusIn(['ditolak'])),
             'selesai' => $query->where($bukanTidakSetuju)->whereHas($relation, $statusIn(['disetujui', 'selesai'])),
         };
+    }
+
+    /**
+     * Pendaftar yang sudah memilih / punya data daftar ulang tetapi statusnya bukan lulus/diterima
+     * (mis. status diubah setelah memilih). Tidak masuk rekap wajib, jadi ditampilkan terpisah
+     * agar tidak ada yang "hilang" tanpa diketahui.
+     */
+    public static function queryDiLuarWajib(array $filter = [])
+    {
+        return Pendaftar::query()
+            ->whereNotIn('status_pendaftaran', self::STATUS_WAJIB)
+            ->where(fn ($q) => $q->whereIn('status_persetujuan_daftar_ulang', ['setuju', 'tidak_setuju'])
+                ->orWhere('setuju_daftar_ulang', true)
+                ->orWhereHas('daftarUlang'))
+            ->when($filter['jalur'] ?? null, fn ($q, $jalur) => $q->where('jalur_pendaftaran_id', $jalur))
+            ->when($filter['jenis_kelamin'] ?? null, fn ($q, $jk) => $q->where('jenis_kelamin', $jk));
+    }
+
+    /**
+     * Rekap pendaftar wajib yang memilih tidak melanjutkan: jumlah per alasan + daftar namanya.
+     */
+    public static function tidakMelanjutkan(array $filter = []): array
+    {
+        $daftar = Pendaftar::query()
+            ->with('jalurPendaftaran:id,nama')
+            ->select(['id', 'nomor_pendaftaran', 'nama_lengkap', 'jalur_pendaftaran_id', 'alasan_tidak_setuju', 'tanggal_pilihan_daftar_ulang'])
+            ->whereIn('status_pendaftaran', self::STATUS_WAJIB)
+            ->where('status_persetujuan_daftar_ulang', 'tidak_setuju')
+            ->when($filter['jalur'] ?? null, fn ($q, $jalur) => $q->where('jalur_pendaftaran_id', $jalur))
+            ->when($filter['jenis_kelamin'] ?? null, fn ($q, $jk) => $q->where('jenis_kelamin', $jk))
+            ->orderByDesc('tanggal_pilihan_daftar_ulang')
+            ->get();
+
+        $perAlasan = $daftar
+            ->countBy(fn ($p) => trim((string) $p->alasan_tidak_setuju) !== '' ? trim($p->alasan_tidak_setuju) : '(alasan tidak dicatat)')
+            ->sortDesc();
+
+        return ['daftar' => $daftar, 'per_alasan' => $perAlasan];
     }
 
     /** Label status proses mentah (daftar_ulang.status / status_seragam / status_ukuran). */
