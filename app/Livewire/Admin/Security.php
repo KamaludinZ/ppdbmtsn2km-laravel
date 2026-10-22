@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Admin;
 
+use App\Support\StatusKeamananPhp;
 use Livewire\Component;
 use Illuminate\Support\Facades\Auth;
 
@@ -20,7 +21,12 @@ class Security extends Component
 
     public function render()
     {
+        $statusPhp = StatusKeamananPhp::periksa();
+
         return view('livewire.admin.security', [
+            'statusPhp' => $statusPhp,
+            'ringkasanPhp' => StatusKeamananPhp::ringkasan($statusPhp),
+            'indikatorPhp' => StatusKeamananPhp::indikatorSerangan(),
             'loginAttempts' => $this->loginAttempts,
             'securityLogs' => $this->securityLogs,
             'suspiciousActivities' => $this->suspiciousActivities,

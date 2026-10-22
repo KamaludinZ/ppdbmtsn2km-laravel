@@ -110,6 +110,26 @@ Laporan → tab Daftar Ulang Madrasah kini menampilkan jumlah Setuju / Tidak Mel
 ringkasan alasan, dan daftar pendaftar yang tidak melanjutkan. Export menambah kolom "Tanggal Pilihan".
 Diuji dengan 32 skenario otomatis (semua lulus) dan uji browser.
 
+## 6d. Mitigasi PHP2Shell — CVE-2026-109618 & CVE-2026-109619 (22 Oktober 2026)
+
+Celah ada di **inti PHP** (bukan di kode aplikasi), jadi perbaikan utamanya adalah **update PHP di server hosting** ke rilis
+patch 21 Oktober 2026 atau lebih baru, lalu restart PHP. Yang dilakukan di aplikasi hanya mengurangi permukaan serangan:
+
+| Mitigasi | File | Keterangan |
+|---|---|---|
+| `session.upload_progress.enabled = Off` | `public/.user.ini` | Dibaca PHP-FPM / CGI / CloudLinux LSAPI. Menutup jalur CVE-2026-109618. Laravel tidak memakai fitur ini |
+| Sama, untuk mod_php / LiteSpeed | `public/.htaccess` (`php_flag` dalam `<IfModule>`) | Dibungkus `IfModule` agar tidak memicu error 500 di server lain |
+| Tolak `multipart/form-data` selain ke endpoint upload Livewire | `public/.htaccess` (mod_rewrite, `THE_REQUEST`) | PHP mengurai body multipart sebelum Laravel berjalan, jadi harus dicegat di web server. Upload aplikasi tetap jalan (semua lewat `/livewire-xxxx/upload-file`) |
+| Buang cookie `PHPSESSID` sebelum sampai ke PHP | `public/.htaccess` (`RequestHeader edit*`) | Laravel memakai cookie sesi sendiri; tanpa PHPSESSID fitur upload progress tidak bisa dipicu |
+| Header `X-Powered-By` dari PHP dihapus | `SecurityHeaders` (`header_remove`) | Versi PHP tidak diumumkan |
+| Kartu **Kesiapan Server PHP: PHP2Shell** | Admin → Keamanan Sistem (`App\Support\StatusKeamananPhp`) | Versi & tanggal build PHP, status upload progress, pembatas upload, `display_errors`, dan jumlah pesan "Allowed memory size … exhausted" di log yang bisa dibaca |
+
+Aturan `.htaccess` diuji di Apache 2.4 (docroot `public/` dan subdomain dengan `.htaccess.root`): multipart ke `/`, `/login`,
+`/index.php`, huruf besar/kecil, PUT, dan trik `upload-file/../../login` → 403; upload Livewire, POST form biasa dan JSON Livewire → lolos;
+`PHPSESSID` terbuang, cookie lain utuh; `.user.ini` tidak bisa diunduh.
+
+Bila nanti menambah form upload **non-Livewire**, tambahkan URL-nya di aturan multipart `public/.htaccess`.
+
 ## 7. Langkah deploy ke production
 
 1. `git pull` branch ini (atau merge PR).
@@ -117,6 +137,10 @@ Diuji dengan 32 skenario otomatis (semua lulus) dan uji browser.
 3. Pastikan ekstensi PHP **GD** aktif (untuk gambar captcha): `php -m | grep -i gd`
 4. `APP_ENV=production` di `.env` (agar route demo tidak aktif).
 5. Setiap menambah kelas Tailwind baru di view: jalankan `npm run build:css` lalu commit `public/css/app-production-full.css`.
+6. PHP2Shell: pastikan `public/.htaccess` dan `public/.user.ini` ikut ter-upload. Bila `git pull` menolak karena sudah ada
+   `public/.user.ini` buatan cPanel, gabungkan isinya (tambahkan baris `session.upload_progress.enabled = Off`).
+   Buka **Admin → Keamanan Sistem** dan pastikan `session.upload_progress.enabled` = Off (tunggu ±5 menit atau restart PHP).
+   Minta hosting memasang patch PHP 21 Oktober 2026 dan restart PHP.
 
 ## 8. Saran berikutnya
 

@@ -28,6 +28,10 @@ class SecurityHeaders
         $response->headers->remove('X-Powered-By');
         $response->headers->remove('Server');
         $response->headers->remove('X-Laravel-Version');
+        // X-Powered-By dari PHP sendiri (expose_php) tidak ada di $response->headers
+        if (!headers_sent()) {
+            header_remove('X-Powered-By');
+        }
 
         // Strict-Transport-Security (HSTS) - hanya untuk HTTPS
         if ($request->secure()) {

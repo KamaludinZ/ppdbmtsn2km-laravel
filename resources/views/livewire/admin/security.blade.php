@@ -11,6 +11,8 @@
             </div>
             
             <div class="px-4 py-5 sm:p-6">
+                @include('livewire.admin.partials.status-keamanan-php')
+
                 <!-- Two Column Layout -->
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <!-- Left Column -->

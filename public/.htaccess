@@ -57,6 +57,15 @@ Options -Indexes
     # Block access to .git folder
     RewriteRule ^\.\.\/\.git/.*$ - [F,L]
 
+    # Mitigasi PHP2Shell (CVE-2026-109618/109619): PHP mengurai body multipart/form-data
+    # SEBELUM Laravel berjalan, jadi pembatasan harus di sini. Unggah berkas di aplikasi ini
+    # hanya lewat endpoint Livewire /livewire-xxxx/upload-file; multipart ke URL lain ditolak (403)
+    # tanpa pernah sampai ke PHP. Bila nanti menambah form upload biasa, tambahkan URL-nya di sini.
+    RewriteCond %{HTTP:Content-Type} ^\s*multipart/ [NC]
+    # THE_REQUEST = baris permintaan asli (REQUEST_URI berubah jadi /index.php setelah rewrite di bawah).
+    RewriteCond %{THE_REQUEST} !^[A-Z]+\s+/livewire(-[0-9a-f]+)?/upload-file[?\s] [NC]
+    RewriteRule ^ - [F,L]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
@@ -96,6 +105,10 @@ Options -Indexes
 
     # Referrer Policy
     Header always set Referrer-Policy "strict-origin-when-cross-origin"
+
+    # Mitigasi PHP2Shell: Laravel tidak memakai cookie sesi bawaan PHP (PHPSESSID).
+    # Cookie ini dibuang sebelum sampai ke PHP agar fitur upload progress tidak bisa dipicu.
+    RequestHeader edit* Cookie "PHPSESSID=[^;]*;?\s*" ""
 
     # Remove server signature
     Header always unset X-Powered-By
@@ -153,6 +166,19 @@ ServerSignature Off
     php_flag log_errors On
     php_value error_log ../storage/logs/php_errors.log
     php_flag expose_php Off
+</IfModule>
+
+# Mitigasi PHP2Shell (CVE-2026-109618) untuk server mod_php / LiteSpeed.
+# PHP-FPM / CGI / CloudLinux LSAPI membaca public/.user.ini (isi sama).
+# Dibungkus IfModule agar tidak memicu error 500 di server yang tidak mendukung php_flag.
+<IfModule mod_php.c>
+    php_flag session.upload_progress.enabled off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag session.upload_progress.enabled off
+</IfModule>
+<IfModule Litespeed>
+    php_flag session.upload_progress.enabled off
 </IfModule>
 
 # Protect specific files
