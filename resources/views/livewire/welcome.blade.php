@@ -35,7 +35,7 @@
 
         <div class="mt-6 text-sm text-gray-600">
             <p>Aplikasi sudah siap untuk development dan production!</p>
-            <p class="mt-2">Lihat file <code class="bg-gray-100 px-2 py-1 rounded">SETUP.txt</code> untuk panduan lengkap.</p>
+            <p class="mt-2">Lihat <code class="bg-gray-100 px-2 py-1 rounded">README.md</code> untuk panduan lengkap.</p>
         </div>
     </div>
 </div>
