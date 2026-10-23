@@ -91,42 +91,12 @@ scripts\refresh-views.bat concurrent
 
 ---
 
-### Root Directory Scripts
-
-#### `deploy.sh`
-Automated deployment script untuk production.
-
-```bash
-# Deploy ke production
-./deploy.sh production
-
-# Deploy ke staging
-./deploy.sh staging
-```
-
-**Proses:**
-1. Backup database
-2. Enable maintenance mode
-3. Pull latest code
-4. Install dependencies
-5. Clear caches
-6. Run migrations
-7. Refresh materialized views
-8. Optimize application
-9. Set permissions
-10. Restart services
-11. Disable maintenance mode
-12. Verify deployment
-
----
-
 ## 🚀 Quick Start
 
 ### Setup Awal (Linux Production)
 
 ```bash
 # 1. Set permissions
-chmod +x deploy.sh
 chmod +x scripts/*.sh
 
 # 2. Setup cron job
@@ -166,9 +136,6 @@ REM 3. Setup Task Scheduler (lihat dokumentasi utama)
 
 ### Weekly Maintenance
 ```bash
-# Full deployment (jika ada update)
-./deploy.sh production
-
 # Manual refresh (optional)
 php artisan dashboard:refresh-views
 ```
@@ -259,6 +226,6 @@ sudo chmod -R 775 storage bootstrap/cache
 
 ## 🔗 Related Documentation
 
-- Main setup: `MATERIALIZED_VIEWS_SETUP.md`
+- Deploy Docker/Coolify (scheduler sudah berjalan sebagai container sendiri, cron tidak diperlukan): `docs/DEPLOY_COOLIFY.md`
 - Laravel docs: https://laravel.com/docs/scheduling
 - PostgreSQL materialized views: https://www.postgresql.org/docs/current/sql-creatematerializedview.html

@@ -73,8 +73,7 @@ class SimpleDemoSeeder extends Seeder
         $this->command->line('║  📝 Catatan:                                                   ║');
         $this->command->line('║  - Silakan lengkapi data pendaftar melalui aplikasi            ║');
         $this->command->line('║  - Buat jalur pendaftaran di menu admin                        ║');
-        $this->command->line('║  - Lihat DEMO_SIMPLE.md untuk panduan lengkap                  ║');
-        $this->command->line('╚════════════════════════════════════════════════════════════════╝');
+                $this->command->line('╚════════════════════════════════════════════════════════════════╝');
         $this->command->info('');
     }
 }

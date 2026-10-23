@@ -71,7 +71,7 @@ composer dev
 
 Buka browser: `http://localhost:8000`
 
-**Catatan**: Pastikan PostgreSQL sudah terinstall dan berjalan. Lihat `SETUP.txt` untuk panduan instalasi PostgreSQL.
+**Catatan**: Pastikan PostgreSQL sudah terinstall dan berjalan.
 
 ### Production Build
 
@@ -105,8 +105,6 @@ psql -U postgres
 # Buat database
 CREATE DATABASE spmbm_mtsn2km;
 ```
-
-Untuk panduan lengkap instalasi dan konfigurasi PostgreSQL, lihat bagian **KONFIGURASI POSTGRESQL** di file `SETUP.txt`.
 
 ### CORS Configuration
 
@@ -213,8 +211,6 @@ Layout unified untuk semua role dengan sidebar dinamis berdasarkan role.
 ✅ **Panitia Pendaftaran** - http://localhost:8000/panitia/dashboard
 ✅ **Panitia Daftar Ulang** - http://localhost:8000/daftarulang/dashboard
 
-**Dokumentasi Lengkap:** Lihat file `UI-UX-GUIDE.md`
-
 ## 📁 Project Structure
 
 ```
@@ -265,14 +261,18 @@ config/
 - Normal saat "Generating autoload files"
 - Disable antivirus sementara untuk folder project
 
+## 🐳 Deploy (Docker / Coolify)
+
+Aplikasi siap di-deploy dengan Docker: `Dockerfile` (Nginx + PHP-FPM 8.4) dan `docker-compose.yml`
+(web, worker antrian, scheduler, PostgreSQL). Langkah lengkap, pemindahan data dari cPanel, update,
+dan backup ada di [`docs/DEPLOY_COOLIFY.md`](docs/DEPLOY_COOLIFY.md).
+
 ## 📖 Documentation
 
-Lihat file `SETUP.txt` untuk dokumentasi lengkap mengenai:
-- Setup development & production
-- Security features detail
-- Export PDF & Excel advanced usage
-- Security checklist
-- Testing security
+- [`docs/DEPLOY_COOLIFY.md`](docs/DEPLOY_COOLIFY.md): deploy dengan Docker/Coolify, pindah data dari cPanel, update & backup
+- [`docs/AUDIT_REPORT_2026-09-27.md`](docs/AUDIT_REPORT_2026-09-27.md): hasil audit, perbaikan keamanan & langkah deploy cPanel
+- [`docs/referensi/`](docs/referensi/): dokumen field data siswa EMIS
+- [`scripts/README.md`](scripts/README.md): skrip cron & monitoring materialized views
 
 ## 📝 License
 

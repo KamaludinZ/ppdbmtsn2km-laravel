@@ -17,7 +17,7 @@ class PostalCodeSeeder extends Seeder
 
         if (!File::exists($sqlFile)) {
             $this->command->error("File postal_codes.sql tidak ditemukan di database/seeders/sql/");
-            $this->command->info("Jalankan: php export_postal_codes.php untuk generate file SQL");
+            $this->command->info("Pastikan file database/seeders/sql/postal_codes.sql ada (ambil dari repository)");
             return;
         }
 
