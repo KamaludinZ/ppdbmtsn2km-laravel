@@ -23,3 +23,14 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 nul
+
+# File rahasia/lokal: jangan pernah di-commit
+.env.*
+!.env.example
+!.env.production.example
+.claude/settings.local.json
+
+# Salinan cadangan & data uji lokal
+*.backup*
+*.bak
+storage/app/backups/

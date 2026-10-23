@@ -17,6 +17,12 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // Di belakang reverse proxy (Coolify/Traefik, Cloudflare) agar https, domain & IP pengunjung terbaca benar.
+        // Isi TRUSTED_PROXIES='*' hanya bila aplikasi TIDAK bisa diakses langsung tanpa proxy (seperti di Docker).
+        if ($trustedProxies = env('TRUSTED_PROXIES')) {
+            $middleware->trustProxies(at: $trustedProxies === '*' ? '*' : array_map('trim', explode(',', $trustedProxies)));
+        }
+
         // Maintenance mode middleware - check before other middleware
         $middleware->append(MaintenanceMode::class);
 
@@ -73,6 +79,17 @@ return Application::configure(basePath: dirname(__DIR__))
 
         // Custom error rendering for production
         $exceptions->render(function (\Throwable $e, $request) {
+            // Exception berikut punya respons khusus dari Laravel (arahkan ke login, kembali ke form dengan
+            // pesan error, 403/404/419). Jangan diubah jadi halaman 500.
+            if ($e instanceof \Illuminate\Auth\AuthenticationException
+                || $e instanceof \Illuminate\Validation\ValidationException
+                || $e instanceof \Illuminate\Session\TokenMismatchException
+                || $e instanceof \Illuminate\Auth\Access\AuthorizationException
+                || $e instanceof \Illuminate\Database\Eloquent\ModelNotFoundException
+                || $e instanceof \Illuminate\Http\Exceptions\HttpResponseException) {
+                return null;
+            }
+
             // In production, never show detailed error pages
             if (app()->environment('production') && !config('app.debug')) {
                 $statusCode = method_exists($e, 'getStatusCode') ? $e->getStatusCode() : 500;

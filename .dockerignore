@@ -1,0 +1,74 @@
+# Jangan masukkan ke image Docker: rahasia, cache lokal, dependensi yang di-install ulang saat build,
+# dan file dokumentasi/skrip lama di root.
+
+# Git & editor
+.git
+.github
+.claude
+.idea
+.vscode
+.fleet
+.zed
+.DS_Store
+Thumbs.db
+
+# Rahasia: .env diisi lewat environment variables di Coolify
+.env
+.env.*
+auth.json
+
+# Dependensi (di-install ulang di dalam build)
+node_modules
+vendor
+
+# Hasil build lokal
+public/build
+public/hot
+public/storage
+
+# Data runtime lokal (struktur folder tetap ikut lewat .gitignore-nya)
+storage/logs/*
+!storage/logs/.gitignore
+storage/framework/cache/data/*
+!storage/framework/cache/data/.gitignore
+storage/framework/sessions/*
+!storage/framework/sessions/.gitignore
+storage/framework/views/*
+!storage/framework/views/.gitignore
+storage/framework/testing/*
+!storage/framework/testing/.gitignore
+storage/app/private/*
+!storage/app/private/.gitignore
+storage/app/public/*
+!storage/app/public/.gitignore
+storage/app/backups
+storage/pail
+storage/*.key
+bootstrap/cache/*.php
+
+# Tidak dipakai di production
+tests
+docs
+backups
+phpunit.xml
+.phpunit.cache
+.phpunit.result.cache
+docker-compose*.yml
+Dockerfile
+.dockerignore
+
+# Dokumentasi & skrip lama di root, serta salinan cadangan
+/*.md
+/*.txt
+/*.bat
+/*.sh
+/*.sql
+/*.py
+/*.html
+/*.pdf
+/*.docx
+/*.php
+/deployment_info.json
+/root_htaccess_redirect
+**/*.backup*
+**/*.bak

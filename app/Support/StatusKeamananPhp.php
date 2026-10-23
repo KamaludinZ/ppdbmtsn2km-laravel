@@ -59,12 +59,16 @@ class StatusKeamananPhp
             : self::item('session.upload_progress.enabled', 'Off', 'aman',
                 'Jalur serangan CVE-2026-109618 tertutup. CVE-2026-109619 tetap butuh update PHP.');
 
+        // Image Docker (Nginx) menandai request lewat fastcgi_param; Nginx tidak membaca .htaccess.
         $htaccess = @file_get_contents(public_path('.htaccess')) ?: '';
-        $hasil[] = str_contains($htaccess, '/upload-file[?')
+        $hasil[] = (request()->server('PPDB_UPLOAD_GUARD') === 'nginx')
+            ? self::item('Pembatas upload (Nginx)', 'terpasang', 'aman',
+                'Permintaan multipart/form-data hanya diterima di endpoint upload Livewire.')
+            : (str_contains($htaccess, '/upload-file[?')
             ? self::item('Pembatas upload (.htaccess)', 'terpasang', 'aman',
                 'Permintaan multipart/form-data hanya diterima di endpoint upload Livewire.')
             : self::item('Pembatas upload (.htaccess)', 'tidak ditemukan', 'waspada',
-                'public/.htaccess tidak memuat aturan pembatas multipart. Pastikan file dari repository ikut ter-upload.');
+                'public/.htaccess tidak memuat aturan pembatas multipart. Pastikan file dari repository ikut ter-upload.'));
 
         $hasil[] = filter_var(ini_get('display_errors'), FILTER_VALIDATE_BOOLEAN) && $sapi !== 'cli'
             ? self::item('display_errors', 'On', 'waspada', 'Pesan error PHP bisa terlihat pengunjung. Matikan di cPanel MultiPHP INI Editor.')
