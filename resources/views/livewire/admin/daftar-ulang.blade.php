@@ -14,6 +14,10 @@
             <span x-text="message"></span>
         </div>
 
+        @if(session('error'))
+            <div class="rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800" role="alert">{{ session('error') }}</div>
+        @endif
+
         <!-- Tabs -->
         <div class="bg-white rounded-lg shadow">
             <div class="border-b border-gray-200">
@@ -113,6 +117,13 @@
                                 <option value="disetujui">Disetujui</option>
                                 <option value="ditolak">Ditolak</option>
                                 <option value="perbaiki">Perbaiki</option>
+                            </select>
+                        </div>
+                        <div>
+                            <select wire:model.live="filterSuratPernyataan" aria-label="Filter status surat pernyataan" class="w-full sm:w-auto text-sm rounded-lg border-gray-300 shadow-sm focus:border-emerald-500 focus:ring-emerald-500">
+                                <option value="">Semua Status Surat Pernyataan</option>
+                                <option value="sudah_upload">Sudah Upload</option>
+                                <option value="belum_upload">Belum Upload</option>
                             </select>
                         </div>
                         @endif
@@ -1284,7 +1295,7 @@
 
             <!-- Tab Content -->
             <div class="bg-white rounded-lg shadow overflow-hidden">
-                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-emerald-600 flex items-center justify-between">
+                <div class="px-4 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-emerald-600 flex flex-wrap items-center justify-between gap-3">
                     <div class="flex items-center">
                         <svg class="w-5 sm:w-6 h-5 sm:h-6 text-white mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
@@ -1299,30 +1310,58 @@
                             @endif
                         </h3>
                     </div>
-                    <!-- Edit Mode Toggle Switch -->
+                    <!-- Backup File & Edit Mode Toggle Switch -->
                     @if($activeTab == 'madrasah')
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs font-medium text-white">Mode Edit</span>
-                            <button
-                                wire:click="toggleMadrasahEditMode"
-                                type="button"
-                                class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-white transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600 {{ $madrasahEditMode ? 'bg-blue-500' : 'bg-red-500' }}"
-                                role="switch"
-                                aria-checked="{{ $madrasahEditMode ? 'true' : 'false' }}">
-                                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $madrasahEditMode ? 'translate-x-5' : 'translate-x-0' }}"></span>
-                            </button>
+                        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                            <a href="{{ route('admin.daftar-ulang.backup', 'surat-pernyataan') }}"
+                               class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-700 bg-white rounded-lg hover:bg-emerald-50 transition-colors"
+                               title="Unduh ZIP semua file surat pernyataan (semua status)">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                                Backup Surat Pernyataan
+                            </a>
+                            <a href="{{ route('admin.daftar-ulang.backup', 'bukti-pembayaran-madrasah') }}"
+                               class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-700 bg-white rounded-lg hover:bg-emerald-50 transition-colors"
+                               title="Unduh ZIP semua bukti pembayaran DU Madrasah (semua status)">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                                Backup Bukti Pembayaran
+                            </a>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-medium text-white">Mode Edit</span>
+                                <button
+                                    wire:click="toggleMadrasahEditMode"
+                                    type="button"
+                                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-white transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600 {{ $madrasahEditMode ? 'bg-blue-500' : 'bg-red-500' }}"
+                                    role="switch"
+                                    aria-checked="{{ $madrasahEditMode ? 'true' : 'false' }}">
+                                    <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $madrasahEditMode ? 'translate-x-5' : 'translate-x-0' }}"></span>
+                                </button>
+                            </div>
                         </div>
                     @elseif($activeTab == 'seragam')
-                        <div class="flex items-center gap-2">
-                            <span class="text-xs font-medium text-white">Mode Edit</span>
-                            <button
-                                wire:click="toggleSeragamEditMode"
-                                type="button"
-                                class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-white transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600 {{ $seragamEditMode ? 'bg-blue-500' : 'bg-red-500' }}"
-                                role="switch"
-                                aria-checked="{{ $seragamEditMode ? 'true' : 'false' }}">
-                                <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $seragamEditMode ? 'translate-x-5' : 'translate-x-0' }}"></span>
-                            </button>
+                        <div class="flex flex-wrap items-center gap-2 sm:gap-3">
+                            <a href="{{ route('admin.daftar-ulang.backup', 'bukti-pembayaran-seragam') }}"
+                               class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-700 bg-white rounded-lg hover:bg-emerald-50 transition-colors"
+                               title="Unduh ZIP semua bukti pembayaran DU Seragam (semua status)">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                                </svg>
+                                Backup Bukti Pembayaran
+                            </a>
+                            <div class="flex items-center gap-2">
+                                <span class="text-xs font-medium text-white">Mode Edit</span>
+                                <button
+                                    wire:click="toggleSeragamEditMode"
+                                    type="button"
+                                    class="relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-white transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-emerald-600 {{ $seragamEditMode ? 'bg-blue-500' : 'bg-red-500' }}"
+                                    role="switch"
+                                    aria-checked="{{ $seragamEditMode ? 'true' : 'false' }}">
+                                    <span class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out {{ $seragamEditMode ? 'translate-x-5' : 'translate-x-0' }}"></span>
+                                </button>
+                            </div>
                         </div>
                     @else
                         <div class="flex items-center gap-2">

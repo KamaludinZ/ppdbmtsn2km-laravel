@@ -28,6 +28,7 @@ class DaftarUlang extends Component
     public $filterStatusSeragam = '';
     public $filterStatusUkuran = '';
     public $filterRekap = ''; // kategori rekap daftar ulang (lihat App\Support\RekapDaftarUlang)
+    public $filterSuratPernyataan = ''; // '' | 'sudah_upload' | 'belum_upload' (khusus tab madrasah)
 
     // For verification
     public $verificationStatus = '';
@@ -268,6 +269,11 @@ class DaftarUlang extends Component
         $this->resetPage();
     }
 
+    public function updatedFilterSuratPernyataan()
+    {
+        $this->resetPage();
+    }
+
     public function updatedSelectedMessageTemplate()
     {
         $this->loadMessageTemplate();
@@ -385,6 +391,21 @@ class DaftarUlang extends Component
                 $query->whereHas('seragam', function($q) {
                     $q->where('status_ukuran', $this->filterStatusUkuran);
                 });
+            }
+        }
+
+        // Filter status surat pernyataan (khusus tab madrasah)
+        if ($this->filterSuratPernyataan && $this->activeTab === 'madrasah') {
+            $sudahUpload = function($q) {
+                $q->whereNotNull('surat_pernyataan_path')
+                  ->where('surat_pernyataan_path', '!=', '');
+            };
+
+            if ($this->filterSuratPernyataan === 'sudah_upload') {
+                $query->whereHas('daftarUlang', $sudahUpload);
+            } elseif ($this->filterSuratPernyataan === 'belum_upload') {
+                // Termasuk yang belum punya record daftar ulang sama sekali
+                $query->whereDoesntHave('daftarUlang', $sudahUpload);
             }
         }
 

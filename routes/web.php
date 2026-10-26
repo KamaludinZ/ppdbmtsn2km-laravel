@@ -283,6 +283,9 @@ Route::prefix('admin')->middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/informasi', \App\Livewire\Admin\Informasi::class)->name('admin.informasi');
     Route::get('/jadwal', \App\Livewire\Admin\Jadwal::class)->name('admin.jadwal');
     Route::get('/daftar-ulang', \App\Livewire\Admin\DaftarUlang::class)->name('admin.daftar-ulang');
+    Route::get('/daftar-ulang/backup/{jenis}', \App\Http\Controllers\Admin\DaftarUlangBackupController::class)
+        ->whereIn('jenis', ['surat-pernyataan', 'bukti-pembayaran-madrasah', 'bukti-pembayaran-seragam'])
+        ->name('admin.daftar-ulang.backup');
     Route::get('/kelulusan', \App\Livewire\Admin\Kelulusan::class)->name('admin.kelulusan');
     Route::get('/pengumuman', \App\Livewire\Admin\Pengumuman::class)->name('admin.pengumuman');
     Route::get('/pendaftar', \App\Livewire\Admin\Pendaftar::class)->name('admin.pendaftar');
