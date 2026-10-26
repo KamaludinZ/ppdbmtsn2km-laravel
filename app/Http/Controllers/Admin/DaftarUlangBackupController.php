@@ -68,7 +68,13 @@ class DaftarUlangBackupController extends Controller
         // Banyak file bisa butuh waktu lebih dari batas default
         @set_time_limit(300);
 
-        $zipPath = tempnam(sys_get_temp_dir(), 'backup_du_');
+        // Di dalam storage (bukan /tmp sistem) agar aman di hosting yang memakai open_basedir
+        $tmpDir = storage_path('app/tmp');
+        if (!is_dir($tmpDir)) {
+            @mkdir($tmpDir, 0755, true);
+        }
+
+        $zipPath = tempnam($tmpDir, 'backup_du_');
         $zip = new ZipArchive();
 
         if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
@@ -89,7 +95,10 @@ class DaftarUlangBackupController extends Controller
             }
 
             $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION)) ?: 'bin';
-            $zip->addFile($disk->path($path), "{$folder}/{$nama}.{$extension}");
+            $entry = "{$folder}/{$nama}.{$extension}";
+            $zip->addFile($disk->path($path), $entry);
+            // Gambar/PDF sudah terkompresi: simpan apa adanya agar ZIP cepat dibuat
+            $zip->setCompressionName($entry, ZipArchive::CM_STORE);
         }
 
         // Catat file yang terdaftar di database tetapi tidak ada di storage
