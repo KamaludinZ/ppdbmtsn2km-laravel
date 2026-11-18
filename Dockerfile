@@ -82,6 +82,7 @@ RUN composer dump-autoload --optimize --no-dev --no-interaction \
     # Link upload publik: public/storagepmbm -> storage/app/public (lihat config/filesystems.php)
     && rm -rf public/storagepmbm \
     && ln -s ../storage/app/public public/storagepmbm \
+    && rm -rf public/storage && ln -s ../storage/app/public public/storage \
     && mkdir -p storage/app/public storage/app/private storage/logs \
         storage/framework/cache/data storage/framework/sessions storage/framework/views bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache public/storagepmbm
